@@ -170,7 +170,19 @@ let projectId = "mystorage-371212"; // Get this from Google Cloud
 let keyFilename = './'+'mykey.json'; // Get this from Google Cloud -> Credentials -> Service Accounts
 const storageGCG = new Storage({
   projectId,
-  keyFilename,
+  // keyFilename,
+  credentials: {
+    "type": "service_account",
+    "project_id": "mystorage-371212",
+    "private_key_id": "a51f9201a6aaabd6caff7b0bf582b3b0e13ced01",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC4t4nkl1lsmmEL\n8T+uqCbJVD3ziVPVKxLdtYG0XovO61Wt7/6UCmwaERylFT1WQ/tQANOP/a8pTPYt\nvdb0D+MR5SEn0+owv1tpoLsVdIDtx3Q0P7A4r6YUGwzNikDgeCrVEXw9OYxMJOtm\nzmo96Xp7L/dViisoTSKua+rMI6MBoRCZbbafmOgiz3R+55ejHU/kyrmK8Yh0DwGV\nbDiTsHoZQrJJrqVbgkXCTppDgjJLeRTVNq/UjP2LJpWwJuHVRAlmeBgthOffd8m7\n53tHZoKLErjgo1Dr1Q6gk7AelgaFZTt3nBRJierR/OPpMB6kspRfAlLN3X6IBhBm\nTZib4z5BAgMBAAECggEABvNRCvru8Hk2oZ5oSQgmvXigBCPstZ6zTQhhYwoTtKuC\nQ9M9/xANVUXDkCqmbjKMqEv/qfFfv+wXb00vY2udnbTDdJ4yt7bbl7Pmlj4WA9x3\ncOfcl6V0WFlUN/+1xTyAUBgiVqNttgfFm860jLPWWgBKDDvwt8l/PpTs9tV4cr0u\nO6rV1CF9KXOYV69x3ogBFnLzwOP6Fnk9dJP+jPEyVNJ9pIifGL2UE13SaGl5UGsC\nSDIStvtl12+AH78d/2f0EK9GercwWI5xvqFl7GfxRRPw6po+XEsH58I0lYhNcp3n\nehdncdDE+c3Kf/n6HT4TIuj6Ia6HNHPPJRcqbBeNKQKBgQD7LT+R95gyAFH2BLOM\nnKA1zmdkHkYz26LDRdBH8llkl/UtYVr1/7Au/vOBi8O0gUTz2DPXnPqhOEAjeZxH\naOBvdIUWDBp8f8xwDh/F9PffPOWA7nrG/KEGy+L5ZAfd2rKHFur9vbPYdAV1ZYzm\nQ/QJCbio3871QAF5tCt9O0tKuwKBgQC8Q5UtRrK359ybaWhpFNPtm+LLKdepDS1X\nPqQgs6MmUhY+NYkVKRckk2fI90oK/DUYJKFf5Lfa40RWeDqx1J8JX292MW/qQhrQ\nHtD+bQWdLalgypblBoUw27ztkY+31Om3E8ePQbE9fka2YErDW/MIorg4FW/R2Qqm\nzA3Pds/hMwKBgEbOo6wXe00lL/XFr4QFJ1jjvdvIeQvnb8PSq3uMw0yLVe+cEVNl\n6Bnnf2fWqa35/yEqorq2oyTNwa7+emLbGuHwnA/yC4lrUYuJP8XDYBkLhrtI/02X\nLCHJWkvpuhn9q/RPLqGnV8q+Mke8//Jt156woeDhbutORtwzQUtFat0/AoGBAKdN\nZ8RUj33fDq0NfzvixnLhlSn2hTA2BZUCldh5ywLC8AFYkfm8ClT2qcRt/d7FQmmy\nI7aUCs76KECvl3lw+ePaa7MdO9dx52IMAK4ZNGP5sAvT/USKBtLkc4CrWoyDKS8I\n5M7qEhgTn8Nyzv3NOKzz7cHpSvWxa0XPEHbNnu8BAoGAIAQ4j6OYZHTYvvz5BBbP\nBJujyR4s1HRfGb0pAoErIEMyJ0MrmZLtLM4c4JAr/q/Q8cyDL/T/1pcdAgYX2vCr\nV8aflkDBJN+p/IG8C2oacdwpwM3+oZqkrOIfNAT7NKy74ghovZpD5mZT4c7pYrHS\nX0XNSDHsB6VWE9OMkuddu68=\n-----END PRIVATE KEY-----\n",
+    "client_email": "mystorageimage2@mystorage-371212.iam.gserviceaccount.com",
+    "client_id": "102661079380883436477",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mystorageimage2%40mystorage-371212.iam.gserviceaccount.com"
+  }
 });
 
 // ## go.garment.mail@gmail.com
@@ -178,7 +190,19 @@ let projectIdII = "mystorage-888888"; // Get this from Google Cloud
 let keyFilenameII = './'+'mykeyii.json'; // Get this from Google Cloud -> Credentials -> Service Accounts
 const storageGCGII = new Storage({
   projectIdII,
-  keyFilenameII,
+  // keyFilenameII,
+  credentials: {
+    "type": "service_account",
+    "project_id": "mystorage-888888",
+    "private_key_id": "750c38f58560a92195fbdba960dbc9d491e6a98e",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDarGov8W9rOmvA\n2VCV75nG+APY3RK9o/iQoM2XdV5MRIz1fScJpYus+a4WEtc58Eptl6EWNle9qAfj\n1km7ThvLRTXRcyOYvpDns2dHA7qrgF6e9l72ZbNdGfbrR3oEzHG11ufHcsvGXblD\nKAa/hWIRI9XhLXyX1lHG64pY6Xo6YXqOLkFyu9VyD9Qo9rCnYW3iopDn+/OTMJv7\nGCIOtFh47z/k93nBsPlmLq9O4UYthSVjABFOdXlmm0i0rvSqiqDcrxL/KoFbEBTK\njHbkbbwr8Y17348TxDab6wGNqmbJeKlc+Ee/NZfam8cDnwfhX4BMgwlUNgrksHNg\n9XYM/JqvAgMBAAECggEAH+j0D+3399pNGhW8PDz8IDxV92H/V5wjbBuDFNyEN7Xz\nKemq9i3prYK75C24qZRGkCqFz8N7V0o7aIR/Ou2Bgc6mNVvLcIEyjRUxd3v0VA2G\nAUVrgyJBI89jqF7EUAnzd/kV1pWKZfaMT9/56B3TOzQTBGqKWW/lfBUoGaRseTM2\nJ5xMOnOfP1+9VzwfZGy4Z6Uqd3jPTyOR+aIOuWnnV22QBni41uglqx0JePh/5bH3\nch8voX/l6PKuM0SDaf0gKaWR1NIvt1QTV+3x1nWoNR64laYaw2gOW4AkroEZsDus\ncjf12b9KoxgEClBmd2m0AkBPzxdwDKiymDufSGZUhQKBgQD8fkuYUFHqRn4udbRq\nagEYtBA78jYh1ZoMd54gqC+aDGbSvjI9ljAu1GRYsd+U/j8Da8gmLEejTO7THvxd\n4diEFEFwaH8CyZzeVsjK1q9wrjTQKpDzZslHPiGSxFfsGSW9Vd75pijE4ANdiyDq\n1Pg7pfwQPiXzfdOaS0hiYSCSiwKBgQDdteC1/W/o0I57m4eWfYKuZC/ZCCe+ftUu\nrF1QQtUwh2k3MuBljO1csQKhTAvT2DaW/rXG5b+eo+Pds7ZzweU/3nqvcLmj+gbL\nwMhnJ36mAFDNvlffUbs+7xzaCyo9umR9nFy4M9CSS8erB/kbYWN+9BEcJF0uRdm/\n23ZZLMzQ7QKBgQCuPs4WZ9+P6GPt1gbSpSLqlGDbrbRTtx/fWLFEYiyvh71x1BXB\n0KKhvqsdVmswXCDKUJhIV6h8dnweMDUC6PfNdlkOpN554v6hpYxeBrf98Aq8WZO8\nlYNz6dmreloeseAMgHUnHdbmvp0z8e6egKhqKYsA/pKcLYpY4Xkrg1HCLwKBgEqA\nAUBmJyKuYhJ7Erao+i6rj8B4ExLZ/7ytQrXjn0utVNetiuXU0zXgbSfSK+9FqiJW\n+LIbJaajH8Cx0M9ZCjXKBqPJVzgYngv9fdnb1ZzmYkCgg1qRVkAxjRpfwhP3/CiR\nUD69eoqOWEvKZBSlRw+z58PzHDSeWCs2DbCtcy2JAoGBAJ3zXx1dz6MXvNiWazIs\nqB93tPHKFizWdeoKGDoisDwTS5v2wMwZGkHWsYj8dRYofbqvhilAw3t1VljbDIe3\nW//A05J0oTdCQ7QiZOaCrs9Vo9EU4uVMUlklLKbJHwG7IYphzg5zFZNCaopjQN/g\nbyz3H4doDhTWA09Sxo+PDaJC\n-----END PRIVATE KEY-----\n",
+    "client_email": "mystorage8@mystorage-888888.iam.gserviceaccount.com",
+    "client_id": "104493806110500049988",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mystorage8%40mystorage-888888.iam.gserviceaccount.com"
+  }
 });
 
 /*  bucket name
@@ -221,7 +245,7 @@ router.post('/update/upload/images/gcs',
       // console.log(req.imageData.mydatajson);
       // console.log(JSON.parse(req.imageData.mydatajson));
       const imageMainPath = process.env.GOOGLESTORAGEAPIPATH;
-
+      // console.log(`Current directory: ${process.cwd()}`);
       
       // ## bucket name
       // ##  productEditImageProfile
