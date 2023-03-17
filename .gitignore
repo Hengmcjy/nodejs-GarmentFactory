@@ -12,8 +12,8 @@
 npm-debug.log
 yarn-error.log
 config.env
-mykey.json
-mykeyii.json
+# mykey.json
+# mykeyii.json
 
 *.rar
 *.zip

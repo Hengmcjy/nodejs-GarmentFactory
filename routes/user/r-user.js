@@ -237,8 +237,6 @@ router.post('/update/upload/images/gcs',
 
       }
 
-      
-
       // const bucketI = storageGCG.bucket("companyfactorygarmentworld1sthighquality"); // Get this from Google Cloud -> Storage 
       // const bucketII = storageGCGII.bucket("garmentproductionprocessgarmentworld001sthighquality"); // Get this from Google Cloud -> Storage 
 
