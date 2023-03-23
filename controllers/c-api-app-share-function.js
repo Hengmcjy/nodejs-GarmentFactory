@@ -1255,6 +1255,7 @@ exports.getOrder= async (companyID, orderID) => {
         orderDate: 1,	
         deliveryDate: 1,
         customerOR: 1,		
+        orderTargetPlace: 1,	
         productOR: 1,	
         createBy: 1,
 
@@ -1281,6 +1282,7 @@ exports.getOrders= async (companyID, page, limit) => {
         orderDate: 1,	
         deliveryDate: 1,
         customerOR: 1,		
+        orderTargetPlace: 1,
         productOR: 1,
         createBy: 1,
     }	},
@@ -1308,7 +1310,8 @@ exports.getOrdersByOrderIDs= async (companyID, orderIDArr, page, limit) => {
         orderDetail: 1,		
         orderDate: 1,	
         deliveryDate: 1,
-        customerOR: 1,		
+        customerOR: 1,	
+        orderTargetPlace: 1,	
         productOR: 1,
         createBy: 1,
     }	},
@@ -1749,13 +1752,14 @@ exports.getNodeStations= async (companyID, factoryID, status, page, limit) => {
     { $match: { $and: [
       {"companyID":companyID},
       {"factoryID":factoryID},
-      {"status":{$in: status}}
+      // {"status":{$in: status}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,		
         factoryID: 1,	
         nodeID: 1,	
+        nodeName: 1,
         status: 1,
         nodeInfo: 1,
         userNode: 1,
@@ -1783,6 +1787,7 @@ exports.getNodeStationByUUID= async (uuid, statusArr) => {
       factoryID: 1,		
       companyID: 1,
       nodeID: 1,
+      nodeName: 1,
       status: 1,
       editDate: 1,
       nodeInfo: 1,
@@ -1848,6 +1853,7 @@ exports.getNodeStation= async (companyID, factoryID, status, nodeID) => {
         companyID: 1,		
         factoryID: 1,	
         nodeID: 1,	
+        nodeName: 1,
         status: 1,
         nodeInfo: 1,
         userNode: 1,
@@ -2047,6 +2053,29 @@ exports.getNodeFlows= async (companyID, factoryID, page, limit) => {
   return nodeFlows;
 }
 
+// ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
+exports.getNodeFlow= async (companyID, factoryID, nodeFlowID) => {
+  const nodeFlow = await NodeFlow.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"nodeFlowID":nodeFlowID},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        nodeFlowID: 1,	
+        companyID: 1,		
+        factoryID: 1,	
+        flowType: 1,
+        registDate: 1,
+        flowCondition: 1,
+        flowSeq: 1,
+    }	},
+  ]);
+  // console.log(nodeFlow);
+  return nodeFlow.length>0?nodeFlow[0]:null;
+}
+
 exports.getNodeFlow1= async (companyID, factoryID, nodeFlowID) => {
   const nodeFlow = await NodeFlow.aggregate([
     { $match: { $and: [
@@ -2106,6 +2135,7 @@ exports.editNodeStation= async (companyID, factoryID, nodeID, nodeStation) => {
       {"nodeID":nodeID},
     ]},
     { 
+      "nodeName": nodeStation.nodeName,
       "status": nodeStation.status,
       "editDate": current,
       "nodeInfo.nodeType": nodeStation.nodeInfo.nodeType,
@@ -2864,6 +2894,102 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
   // console.log(orderProductRep);
   // return orderProductRep.length>0?orderProduct[0]:null;
   return orderProductRep;
+}
+
+// ShareFunc.getProductionPeriodC(companyID, productStatusArr, productionNodeStatusArr)
+exports.getProductionPeriodC = async (companyID, productStatusArr, productionNodeStatusArr) => {
+  // console.log('getRepCFNCurrentProductQtyByOrderID');
+  // console.log(companyID, productStatusArr, productionNodeStatusArr);
+  const productionPeriod = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"productStatus":{$in: productStatusArr}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+        productionNode: 1,
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      productBarcodeNo: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
+      color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+
+    { $match: { $and: [
+      {"status":{$in: productionNodeStatusArr}}
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      productBarcodeNo: 1,
+      style: 1,
+      color: 1,
+      size: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      toNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        style: '$style',
+        color: '$color',
+        size: '$size',
+        toNode: '$toNode',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ]);
+
+  // console.log(productionPeriod);
+  const productionPeriodM = await productionPeriod.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID,
+    style: fw._id.style,
+    color: fw._id.color,
+    size: fw._id.size,
+    toNode: fw._id.toNode,
+    sumProductQty: fw.sumProductQty,
+  }));
+  // console.log(productionPeriodM);
+  return productionPeriodM;
 }
 
 // await ShareFunc.getRepCFNCurrentProductQtyByOrderID(companyID, factoryID, nodeID, productStatusArr);
@@ -4831,6 +4957,77 @@ exports.getCurrentCompanyOrder= async (companyID, orderStatusArr) => {
   // console.log(currentOrder);
 
   return currentCompanyOrder;
+}
+
+exports.getCurrentCompanyOrderStyleSize= async (companyID, orderStatusArr) => {
+  // ##
+  const currentCompanyOrderStyleSizef = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderStatus":{$in: orderStatusArr}}
+    ] } },
+    { $unwind: "$productOR.productORInfo" },
+    { $project: {			
+        _id: 0,	
+        orderID: 1,
+        companyID: 1,
+        // bundleNo: 1,
+        orderStatus: 1,
+        // orderDetail: 1,		
+        // orderDate: 1,	
+        // deliveryDate: 1,
+        // customerOR: 1,		
+        // createBy: 1,
+
+        productID: "$productOR.productID",
+        // productName: "$productOR.productName",
+        // productORDetail: "$productOR.productORDetail",
+        // productCustomerCode: "$productOR.productCustomerCode",
+
+        productBarcode: "$productOR.productORInfo.productBarcode",
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        // targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
+        // targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
+        // countryID: "$productOR.productORInfo.targetPlace.countryID",
+        // countryName: "$productOR.productORInfo.targetPlace.countryName",
+        productColor: "$productOR.productORInfo.productColor",
+        productSize: "$productOR.productORInfo.productSize",
+        productQty: "$productOR.productORInfo.productQty",
+        // productYear: "$productOR.productORInfo.productYear",
+        // productSex: "$productOR.productORInfo.productSex",
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        productID: '$productID',
+        style: '$style',
+        productColor: '$productColor',
+        productSize: '$productSize',
+        // targetPlaceID: '$targetPlaceID',
+        // countryID: '$countryID',
+    },
+      // countBetNumber: {$sum: 1} ,
+      sumQty: {$sum:  '$productQty'} ,
+      // sumAffBetNumber: {$sum:  '$betAffNumber'} ,
+      // sumRewardBetNumber: {$sum:  '$reward'} ,
+    }	},
+
+  ]);
+  // console.log(currentCompanyOrderf);
+  const currentCompanyOrderStyleSize = await currentCompanyOrderStyleSizef.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID, 
+    productID: fw._id.productID,
+    style: fw._id.style,
+    productColor: fw._id.productColor,
+    productSize: fw._id.productSize,
+    sumQty: fw.sumQty
+  }));
+  // console.log(currentCompanyOrderStyleSize);
+
+  // console.log(currentCompanyOrderStyleSize);
+  return currentCompanyOrderStyleSize;
 }
 
 // ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr);

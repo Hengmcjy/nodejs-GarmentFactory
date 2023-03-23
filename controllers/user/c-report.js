@@ -106,8 +106,8 @@ exports.getRepCurrentProductions = async (req, res, next) => {
   const productStatusArr = JSON.parse(req.params.productStatus);
   // console.log(companyID, factoryID, nodeID, productStatusArr);
   try {
-    // // ## get Rep CFN Current Production Queue
-    // queueInfoRep = await ShareFunc.getProductionQueueCFN(companyID, factoryID, page, limit);
+    // ## get Rep Company Current Production work in period
+    // queueInfoRep = await ShareFunc.getProductionQueueC(companyID, factoryID, nodeID, productStatusArr);
 
     // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
     currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
@@ -116,8 +116,8 @@ exports.getRepCurrentProductions = async (req, res, next) => {
     res.status(200).json({
       token: '',
       expiresIn: process.env.expiresIn,
-      currentProductAllDetailCFN: currentProductAllDetailCFN,
-      countProductionsAll: countCurrentProductAllDetailCFN,
+      // currentProductAllDetailCFN: currentProductAllDetailCFN,
+      // countProductionsAll: countCurrentProductAllDetailCFN,
     });
   } catch (err) {
     return res.status(501).json({
@@ -129,6 +129,53 @@ exports.getRepCurrentProductions = async (req, res, next) => {
     });
   }
 }
+
+
+// // ## get node getRepCurrentProductions
+// router.get("/noder/rep7/current/productions/period/c/:companyID/:nodeID/:productStatus/:orderStatus"
+//         , reportController.getRepCurrentProductionPeriod);
+exports.getRepCurrentProductionPeriod = async (req, res, next) => {
+  const companyID = req.params.companyID;
+  // const factoryID = req.params.factoryID;
+  // const nodeID = req.params.nodeID;
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;  // ## records we need to get
+  // const productIDArr = JSON.parse(req.params.productIDArr);
+  const productStatusArr = JSON.parse(req.params.productStatus); // normal , problem, complete
+  const productionNodeStatusArr = ['normal'];
+  const orderStatusArr = JSON.parse(req.params.orderStatus);
+  // console.log(companyID, productStatusArr, productionNodeStatusArr);
+  try {
+    // ## get Rep Company Current Production work in period
+    currentProductionPeriod = await ShareFunc.getProductionPeriodC(companyID, productStatusArr, productionNodeStatusArr);
+    // console.log(currentProductionPeriod);
+
+    orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
+    currentCompanyOrderStyleSize = await ShareFunc.getCurrentCompanyOrderStyleSize(companyID, orderStatusArr);
+
+    // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
+    // currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
+    // countCurrentProductAllDetailCFN = await ShareFunc.getCountCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: '',
+      expiresIn: process.env.expiresIn,
+      currentProductionPeriod: currentProductionPeriod,
+      orderStyleColorSize: orderStyleColorSize,
+      currentCompanyOrderStyleSize: currentCompanyOrderStyleSize,
+    });
+  } catch (err) {
+    
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp008', 
+        mode:'errRepCurrentCompanyProductionPeroidAll', 
+        value: "error report current company production period all"
+      }
+    });
+  }
+}
+
 
 // // ## get node getRepCurrentProductQtyCFN
 // router.get("/noder/rep1/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName", nsController.getRepCurrentProductQtyCFN);

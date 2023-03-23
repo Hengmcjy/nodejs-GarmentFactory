@@ -18,6 +18,7 @@ const orderProductionSchema = mongoose.Schema({
   productCount : {type: Number},  
   productionDate : {type: Date, required: true},  // ## วันที่เริ่มต้นผลิต
   productStatus : {type: String},  
+  forLoss : {type: Boolean},  
   // productProblem: [{   // ## 
   //   productProblemID : {type: String},
   //   productProblemDate : {type: String}, 

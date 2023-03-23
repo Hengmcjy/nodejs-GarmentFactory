@@ -17,6 +17,11 @@ const router = express.Router();
 // ## report node station ############################################################################
 
 // ## get node getRepCurrentProductions
+router.get("/noder/rep7/current/productions/period/c/:companyID/:productStatus/:orderStatus"
+        , reportController.getRepCurrentProductionPeriod);
+// // ##
+
+// ## get node getRepCurrentProductions
 router.get("/noder/rep6/current/productions/cfn/:companyID/:factoryID/:nodeID/:productStatus/:page/:limit"
         , reportController.getRepCurrentProductions);
 // // ##

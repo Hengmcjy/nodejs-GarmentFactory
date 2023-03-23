@@ -5,6 +5,7 @@ const nodeStationSchema = mongoose.Schema({
   companyID: { type: String, required: true },
   factoryID: { type: String, required: true },
   nodeID: { type: String, required: true },
+  nodeName: {type: String},
   status: {type: String},
   editDate: {type: Date, required: true},
   nodeInfo: {

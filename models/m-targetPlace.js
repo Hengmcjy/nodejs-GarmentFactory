@@ -6,6 +6,8 @@ const targetPlaceSchema = mongoose.Schema({
   targetPlace: {
     targetPlaceID: {type: String},
     targetPlaceName: {type: String},
+    countryID : {type: String},
+    countryName : {type: String},
   }
 });
 

@@ -300,27 +300,6 @@ exports.getNodeFlows = async (req, res, next) => {
   try {
     // ## get node flow 1 page
     const nodeFlows = await ShareFunc.getNodeFlows(companyID, factoryID, page, limit);
-
-    // // dummy data
-    // const nodeFlows = [
-    //   {
-    //     nodeFlowID: 'nf001',
-    //     nodeFlowName: 'nf001-name',
-    //     factoryID: factoryID,
-    //     companyID: companyID,
-    //     flowType: 'main',
-    //     flowCondition: {
-    //       isFlowSequence: true
-    //     },
-    //     flowSeq: [
-    //       {seqNo: 1 , nodeID: 'n1'},
-    //       {seqNo: 2 , nodeID: 'n2'},
-    //       {seqNo: 3 , nodeID: 'n3'},
-    //       {seqNo: 4 , nodeID: 'n4'},
-    //     ]
-    //   }
-    // ];	
-
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -330,6 +309,50 @@ exports.getNodeFlows = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       nodeFlows: nodeFlows,
+      success: true
+      // factory: factory
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns001', 
+        mode:'errNodeFlowsList', 
+        value: "error get node flow list"
+      }
+    });
+  }
+}
+
+// router.get("/nodef/nodeflow/:companyID/:factoryID/:nodeFlowID", checkAuth, checkUUID, nsController.getNodeFlow);
+exports.getNodeFlow = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const nodeFlowID = req.params.nodeFlowID;
+  const userID = req.userData.tokenSet.userID;
+  // console.log('getNodeFlows');
+  const status = ['a','c'];
+
+  
+  try {
+    // ## get node flow 1 page
+    const nodeFlow = await ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
+
+    // getNodeStations= async (companyID, factoryID, status, page, limit)
+    const nodeStations = await ShareFunc.getNodeStations(companyID, factoryID, status, 1, 10000);
+    // console.log(nodeStations);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      nodeFlow: nodeFlow,
+      nodeStations: nodeStations,
       success: true
       // factory: factory
     });
@@ -386,6 +409,7 @@ exports.postNodeStationCreateNew = async (req, res, next) => {
         {"nodeID":nodeID},
       ]} , 
       {
+        "nodeName": "",
         "status": data.nodeStation.status,
         "editDate": current,
         "nodeInfo": data.nodeStation.nodeInfo,
@@ -1279,7 +1303,7 @@ exports.putOrderProductionRepaired = async (req, res, next) => {
         });
       } else {
         // console.log(orderProduction);
-        const status = 'normal';
+        const status = 'repaired';
         const toNode = orderProduction.productionNode[0].fromNode;
         const fromNode = orderProduction.productionNode[0].toNode;
         const productionNode = {

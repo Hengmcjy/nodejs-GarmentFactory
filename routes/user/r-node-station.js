@@ -27,6 +27,9 @@ router.post("/nodeflow/createnew", checkAuth, checkUUID, nsController.postNodeFl
 // ## get node flow
 router.get("/node/nodeflows/:companyID/:factoryID/:page/:limit", checkAuth, checkUUID, nsController.getNodeFlows);
 
+// ## get node flow
+router.get("/nodef/nodeflow/:companyID/:factoryID/:nodeFlowID", checkAuth, checkUUID, nsController.getNodeFlow);
+
 // ## /api/ns/nodeflow/edit  editMode === 'flowType'  'flowCondition'  'flowSeq'
 router.put("/nodeflow/edit", checkAuth, checkUUID, nsController.putNodeFlowEdit);
 

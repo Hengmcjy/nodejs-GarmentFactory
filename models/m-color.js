@@ -7,6 +7,7 @@ const colorSchema = mongoose.Schema({
     colorID: {type: String},
     colorName: {type: String},
     colorValue: {type: String},
+    colorCode: {type: String},
   }
 });
 

@@ -13,6 +13,15 @@ const orderSchema = mongoose.Schema({
     customerID: {type: String},
     customerName: {type: String},
   },
+  orderTargetPlace:[{
+    seq: {type: Number},
+    targetPlace: {
+      targetPlaceID: {type: String},
+      targetPlaceName: {type: String},
+      countryID : {type: String},
+      countryName : {type: String},
+    }
+  }],
   productOR: {
     productID: {type: String},
     productName: {type: String},
@@ -29,6 +38,7 @@ const orderSchema = mongoose.Schema({
       productColor : {type: String},
       productSize : {type: String},
       productQty : {type: Number},
+      productLossQty : {type: Number},
       productYear : {type: String},
       productSex : {type: String},
     }],

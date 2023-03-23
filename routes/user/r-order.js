@@ -24,6 +24,9 @@ router.post("/createnew", checkAuth, checkUUID, orderController.postOrderCreateN
 // ## /api/order/update
 router.put("/update", checkAuth, checkUUID, orderController.putOrderUpdate);
 
+// ## /api/order/update2/setzone
+router.put("/update2/setzone", checkAuth, checkUUID, orderController.putOrderZoneUpdate);
+
 // // ## /api/order/orderProduction/createnew
 // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
 

@@ -170,6 +170,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
         "orderDate": orderDate,
         "deliveryDate": deliveryDate,
         "customerOR": customerOR,
+        "orderTargetPlace": [],
         "productOR": productOR,
         "createBy": createBy,
       }, {upsert: true}); 
@@ -250,6 +251,60 @@ exports.putOrderUpdate = async (req, res, next) => {
       }
     });
 
+  }
+}
+
+// // ## /api/order/update2/setzone
+// router.put("/update2/setzone", checkAuth, checkUUID, orderController.putOrderZoneUpdate);
+exports.putOrderZoneUpdate = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+
+  try {
+    // ##  create order 
+    const companyID = data.order.companyID;
+    const orderID = data.order.orderID;
+    // const orderDetail = data.order.orderDetail;
+    // const orderDate = new Date(moment(data.order.orderDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    // const deliveryDate = new Date(moment(data.order.deliveryDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    // const productOR = data.order.productOR;
+    // const customerOR = data.order.customerOR;
+    const orderTargetPlace = data.order.orderTargetPlace;
+
+    const orderUpdate = await Order.updateOne({$and: [
+        {"companyID":companyID},
+        {"orderID":orderID}, 
+      ]} , 
+      {
+        "orderTargetPlace": orderTargetPlace,
+        // "orderDate": orderDate,
+        // "deliveryDate": deliveryDate,
+        // "customerOR": customerOR,   // ## not allow to update customerOR , it can set at the new create only
+        // "productOR": productOR,
+      }); 
+
+    // ## get 1 order
+    // exports.getOrder= async (companyID, orderID) 
+    const order = await ShareFunc.getOrder(companyID, orderID);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      order: order
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO010', 
+        mode:'errEditOrderZone', 
+        value: "error edit order zone"
+      }
+    });
   }
 }
 
@@ -472,6 +527,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     const targetPlace = data.targetPlace;
     let queueInfo = data.queueInfo;  // array
     const qty = data.qty;
+    const forLoss = data.forLoss;
     const productStatusArr = [''];
     const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     // queueInfo.queueDate = current;
@@ -563,6 +619,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
           productCount: productCount,
           productionDate: current,
           productStatus: 'normal',
+          forLoss: forLoss,
           //productProblem: [],
           productionNode: [{
             fromNode: 'starterNode',
