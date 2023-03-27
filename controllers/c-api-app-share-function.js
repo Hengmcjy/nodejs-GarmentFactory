@@ -1121,6 +1121,14 @@ exports.getProducts= async (companyID, page, limit) => {
   return products;
 }
 
+// ShareFunc.getOrdersCount(companyID);
+exports.getProductsCount= async (companyID) => {
+  rows = await Product.countDocuments({$and: [
+    {"companyID":companyID}
+  ]});
+  return rows;
+}
+
 // 
 exports.getProductsByProductIDs= async (companyID, productIDArr, page, limit) => {
   let i = 0;
@@ -1292,6 +1300,14 @@ exports.getOrders= async (companyID, page, limit) => {
   ]);
   // console.log(orders);
   return orders;
+}
+
+// ShareFunc.getOrdersCount(companyID);
+exports.getOrdersCount= async (companyID, page, limit) => {
+  rows = await Order.countDocuments({$and: [
+    {"companyID":companyID}
+  ]});
+  return rows;
 }
 
 exports.getOrdersByOrderIDs= async (companyID, orderIDArr, page, limit) => {
@@ -2937,8 +2953,8 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      toNode: "$productionNode.toNode",
+      fromNode: "$productionNode.fromNode",
+      // toNode: "$productionNode.toNode",
       status: "$productionNode.status",
       // datetime: "$productionNode.datetime",
       // createBy: "$productionNode.createBy",
@@ -2960,7 +2976,7 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
       size: 1,
       // productProblem: 1,
       // fromNode: 1,
-      toNode: 1,
+      fromNode: 1,
       // datetime: 1,
       // createBy: 1,
     }},
@@ -2972,7 +2988,7 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
         style: '$style',
         color: '$color',
         size: '$size',
-        toNode: '$toNode',
+        fromNode: '$fromNode',
     },
       sumProductQty: {$sum: 1} ,
     }}  
@@ -2985,7 +3001,7 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
     style: fw._id.style,
     color: fw._id.color,
     size: fw._id.size,
-    toNode: fw._id.toNode,
+    fromNode: fw._id.fromNode,
     sumProductQty: fw.sumProductQty,
   }));
   // console.log(productionPeriodM);
@@ -5107,3 +5123,88 @@ exports.getCurrentCompanyOrderStyle= async (companyID, orderStatusArr) => {
 // #######################################################################################################
 
 
+// #######################################################################################################
+// ## update manual data
+
+// ## update targetPlace / countryID all
+exports.updateTargetPlaceOrder= async () => {
+  const countryID1 = '';
+  const countryName1 = '';
+  const countryID2 = '';
+  const countryName2 = '';
+  const countryAll = [
+    {countryID1: 'HGKG', countryID2: 'HKG1', countryName2: 'HONGKONG1'},
+    {countryID1: 'MEH', countryID2: 'MEH1', countryName2: 'MEH1'},
+    {countryID1: 'JAPN', countryID2: 'JPN1', countryName2: 'JAPAN1'},
+    {countryID1: 'SGHI', countryID2: 'SGHI1', countryName2: 'SHANGHAI1'},
+    {countryID1: 'KORE', countryID2: 'KOR1', countryName2: 'KOREA1'},
+    {countryID1: 'TAWN', countryID2: 'TWN1', countryName2: 'TAIWAN1'},
+    {countryID1: 'MALA', countryID2: 'MLS1', countryName2: 'MALAYSIA1'},
+    {countryID1: 'SGP', countryID2: 'SGP1', countryName2: 'SINGAPORE1'},
+    {countryID1: 'AUS', countryID2: 'AUS1', countryName2: 'AUS1'},
+    {countryID1: 'INDI', countryID2: 'IND1', countryName2: 'INDIA1'},
+    {countryID1: 'CAD', countryID2: 'CAD1', countryName2: 'CAD1'},
+    {countryID1: 'NY', countryID2: 'NY1', countryName2: 'NY1'},
+    {countryID1: 'UAE', countryID2: 'UAE1', countryName2: 'UAE1'},
+    {countryID1: 'MEH', countryID2: 'MEH1', countryName2: 'MEH1'}
+  ];
+
+  await this.asyncForEach(countryAll , async (item) => {
+    result1 = await OrderProduction.updateMany(
+      {$and: [
+        {"targetPlace.countryID":item.countryID1} , 
+      ]},
+      {
+        "targetPlace.countryID": item.countryID2,
+        "targetPlace.countryName": item.countryID2,
+      }); 
+
+    result2 = await TargetPlace.updateMany(
+      {$and: [
+        {"targetPlace.countryID":item.countryID1} , 
+      ]},
+      {
+        "targetPlace.countryID": item.countryID2,
+        "targetPlace.countryName": item.countryID2,
+      }); 
+
+    const order1 = await Order.updateMany(
+      {$and: [
+        {"companyID":'c000001'} , 
+        // {"lottoRoundID":lottoRoundID}, 
+        // {"lottoMainTypeID":lottoMainTypeID},
+      ]},
+      { $set: { 
+        "orderTargetPlace.$[elem].targetPlace.countryID" : item.countryID2, 
+        "orderTargetPlace.$[elem].targetPlace.countryName" :item.countryID2
+      }},
+      {
+        multi: true,
+        arrayFilters: [  {"elem.targetPlace.countryID": item.countryID1 } ]
+      });
+
+    const order2 = await Order.updateMany(
+      {$and: [
+        {"companyID":'c000001'} , 
+        // {"lottoRoundID":lottoRoundID}, 
+        // {"lottoMainTypeID":lottoMainTypeID},
+      ]},
+      { $set: { 
+        "productOR.productORInfo.$[elem].targetPlace.countryID" : item.countryID2, 
+        "productOR.productORInfo.$[elem].targetPlace.countryName" :item.countryID2
+      }},
+      {
+        multi: true,
+        arrayFilters: [  {"elem.targetPlace.countryID": item.countryID1 } ]
+      });
+
+  });
+  console.log('updated targetPlace');
+}
+
+// countryID : {type: String},
+// countryName : {type: String},
+
+
+// ## pdate manual data
+// #######################################################################################################

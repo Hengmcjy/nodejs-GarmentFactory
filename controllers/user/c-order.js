@@ -116,6 +116,7 @@ exports.getOrders = async (req, res, next) => {
     // exports.getOrders= async (companyID, page, limit)
     const orders = await ShareFunc.getOrders(companyID, page, limit);
     // console.log(orders);
+    const ordersCount = await ShareFunc.getOrdersCount(companyID);
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
@@ -126,6 +127,7 @@ exports.getOrders = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       orders: orders,
+      ordersCount: ordersCount
       // factory: factory
     });
 
