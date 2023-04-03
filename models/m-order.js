@@ -22,6 +22,15 @@ const orderSchema = mongoose.Schema({
       countryName : {type: String},
     }
   }],
+  orderColor:[{
+    seq: {type: Number},
+    color: {
+      colorID: {type: String},
+      colorName: {type: String},
+      colorValue: {type: String},
+      colorCode: {type: String},
+    }
+  }],
   productOR: {
     productID: {type: String},
     productName: {type: String},

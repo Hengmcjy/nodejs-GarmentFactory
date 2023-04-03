@@ -143,11 +143,110 @@ exports.getOrders = async (req, res, next) => {
   }
 }
 
+// // ## get order list /api/order/getlist2/:companyID/:userID/:orderids  getOrdersByOrderIDs
+// router.get("/getlist2/:companyID/:userID/:orderids", checkAuth, checkUUID, orderController.getOrdersByOrderIDs);
+exports.getOrdersByOrderIDs = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getOrdersByOrderIDs');
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  const orderIDs = JSON.parse(req.params.orderids);
+
+  // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
+
+  // const test = uuidv5("Hello World", process.env.IOID); // ⇨ 'a572fa0f-9bfa-5103-9882-16394770ad11'
+  // console.log(test);
+  // console.log(uuidv4());
+
+  try {
+    // exports.getOrders= async (companyID, page, limit)
+    const orders = await ShareFunc.getOrdersByOrderIDsAll(companyID, orderIDs);
+
+    // currentCompanyOrderZoneStyleSize = await ShareFunc.getCurrentCompanyOrderZoneStyleSize(companyID, orderStatusArr);
+    // console.log(orders);
+    // const ordersCount = await ShareFunc.getOrdersCount(companyID);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      orders: orders,
+      // ordersCount: ordersCount
+      // factory: factory
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO001', 
+        mode:'errOrderList', 
+        value: "error get Order list"
+      }
+    });
+  }
+}
+
+// // ## get order list /api/order/getlist2/:companyID/:userID/:orderids  getOrdersByOrderIDs
+// router.get("/getlist3/:companyID/:userID/:orderids/:orderStatus", checkAuth, checkUUID, orderController.getOrdersZoneStyleSizeByOrderIDs);
+exports.getOrdersZoneStyleSizeByOrderIDs = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getOrdersByOrderIDs');
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  const orderIDs = JSON.parse(req.params.orderids);
+  const orderStatusArr = JSON.parse(req.params.orderStatus);
+
+  // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
+
+  // const test = uuidv5("Hello World", process.env.IOID); // ⇨ 'a572fa0f-9bfa-5103-9882-16394770ad11'
+  // console.log(test);
+  // console.log(uuidv4());
+
+  try {
+    // exports.getOrders= async (companyID, page, limit)
+    const orders = await ShareFunc.getOrdersByOrderIDsAll(companyID, orderIDs);
+    this.orderIDs = Array.from(new Set(orders.map((item) => item.orderID)));
+    // console.log(orderIDs);
+    currentCompanyOrderZoneStyleSize = await ShareFunc.getCurrentCompanyOrderZoneStyleSize(companyID, orderStatusArr, orderIDs);
+    // console.log(orders);
+    // const ordersCount = await ShareFunc.getOrdersCount(companyID);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      orders: orders,
+      currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize
+      // factory: factory
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO001', 
+        mode:'errOrderList', 
+        value: "error get Order list"
+      }
+    });
+  }
+}
+
 // // ## /api/order/creataenew
 // router.post("/createnew", checkAuth, checkUUID, orderController.postOrderCreateNew);
 exports.postOrderCreateNew = async (req, res, next) => {
   // try {} catch (err) {}
   const data = req.body;
+  // console.log(err);
 
   try {
     // ##  create order 
@@ -173,6 +272,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
         "deliveryDate": deliveryDate,
         "customerOR": customerOR,
         "orderTargetPlace": [],
+        "orderColor": [],
         "productOR": productOR,
         "createBy": createBy,
       }, {upsert: true}); 
@@ -207,7 +307,9 @@ exports.postOrderCreateNew = async (req, res, next) => {
 exports.putOrderUpdate = async (req, res, next) => {
   // try {} catch (err) {}
   const data = req.body;
+  // console.log(data);
 
+  // return '';
   try {
     // ##  create order 
     const companyID = data.order.companyID;
@@ -217,7 +319,7 @@ exports.putOrderUpdate = async (req, res, next) => {
     const deliveryDate = new Date(moment(data.order.deliveryDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     const productOR = data.order.productOR;
     const customerOR = data.order.customerOR;
-
+    // console.log(productOR);
     const orderUpdate = await Order.updateOne({$and: [
         {"companyID":companyID},
         {"orderID":orderID}, 
@@ -227,7 +329,9 @@ exports.putOrderUpdate = async (req, res, next) => {
         "orderDate": orderDate,
         "deliveryDate": deliveryDate,
         // "customerOR": customerOR,   // ## not allow to update customerOR , it can set at the new create only
-        "productOR": productOR,
+        // "productOR": productOR,
+        "productOR.productORDetail": productOR.productORDetail,
+        $push: {"productOR.productORInfo": productOR.productORInfo},
       }); 
 
     // ## get 1 order
@@ -266,11 +370,6 @@ exports.putOrderZoneUpdate = async (req, res, next) => {
     // ##  create order 
     const companyID = data.order.companyID;
     const orderID = data.order.orderID;
-    // const orderDetail = data.order.orderDetail;
-    // const orderDate = new Date(moment(data.order.orderDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-    // const deliveryDate = new Date(moment(data.order.deliveryDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-    // const productOR = data.order.productOR;
-    // const customerOR = data.order.customerOR;
     const orderTargetPlace = data.order.orderTargetPlace;
 
     const orderUpdate = await Order.updateOne({$and: [
@@ -279,10 +378,6 @@ exports.putOrderZoneUpdate = async (req, res, next) => {
       ]} , 
       {
         "orderTargetPlace": orderTargetPlace,
-        // "orderDate": orderDate,
-        // "deliveryDate": deliveryDate,
-        // "customerOR": customerOR,   // ## not allow to update customerOR , it can set at the new create only
-        // "productOR": productOR,
       }); 
 
     // ## get 1 order
@@ -305,6 +400,52 @@ exports.putOrderZoneUpdate = async (req, res, next) => {
         messageID: 'errO010', 
         mode:'errEditOrderZone', 
         value: "error edit order zone"
+      }
+    });
+  }
+}
+
+// // ## /api/order/update2/setcolor
+// router.put("/update3/setcolor", checkAuth, checkUUID, orderController.putOrderColorUpdate);
+exports.putOrderColorUpdate = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('putOrderColorUpdate');
+  const data = req.body;
+
+  try {
+    // ##  create order 
+    const companyID = data.order.companyID;
+    const orderID = data.order.orderID;
+    const orderColor = data.order.orderColor;
+
+    const orderUpdate = await Order.updateOne({$and: [
+        {"companyID":companyID},
+        {"orderID":orderID}, 
+      ]} , 
+      {
+        "orderColor": orderColor,
+      }); 
+
+    // ## get 1 order
+    // exports.getOrder= async (companyID, orderID) 
+    const order = await ShareFunc.getOrder(companyID, orderID);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      order: order
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO011', 
+        mode:'errEditOrderColor', 
+        value: "error edit order color"
       }
     });
   }
@@ -665,6 +806,57 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         messageID: 'errO005-1', 
         mode:'errCreateOrderProductions', 
         value: "create Order Productions error"
+      }
+    });
+  }
+}
+
+// // ## get getProductionQueueBarcodeSumQty
+// router.get("/order3/getsumqty/queue/:companyID/:orderID/:productID", 
+//       checkAuth, checkUUID, orderController.getProductionQueueBarcodeSumQty)
+exports.getProductionQueueBarcodeSumQty = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  // const factoryID = req.params.factoryID;
+  const orderID = req.params.orderID;
+  const productID = req.params.productID;
+  const productBarcode = req.params.productBarcode;
+  const userID = req.userData.tokenSet.userID;
+  // console.log('getProductionQueueBarcodeSumQty');
+  try {
+    // ## get last n record production queue by barcodeNo
+    const productionQueuedQtySumf = await ShareFunc.getTotalProductionQueued
+                              (companyID, orderID, productID);
+    // console.log(productionQueuedQtySum);
+    const productionQueuedQtySum = productionQueuedQtySumf.map(fw => ({
+      productBarcode: fw._id.productBarcode, 
+      forLoss: fw._id.forLoss, 
+      countProductionQueueByBarcode: fw.countProductionQueueByBarcode,
+      sumProductionQueueByBarcode: fw.sumProductionQueueByBarcode,
+    }));
+
+
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      productionQueuedQtySum: productionQueuedQtySum,
+      // countProductionQueueByBarcode: countProductionQueueByBarcode,
+      // sumProductionQueueByBarcode: sumProductionQueueByBarcode,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO012', 
+        mode:'errOrderQueuedSumQty', 
+        value: "error get Order queued  sum qty"
       }
     });
   }

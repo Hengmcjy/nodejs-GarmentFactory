@@ -18,6 +18,12 @@ router.get("/order/getlist1/:companyID/:userID/:orderID", checkAuth, checkUUID, 
 // ## get order list /api/order/getlist/:companyID/:userID/:page/:limit
 router.get("/getlist/:companyID/:userID/:page/:limit", checkAuth, checkUUID, orderController.getOrders);
 
+// ## get order list /api/order/getlist2/:companyID/:userID/:orderids  getOrdersByOrderIDs
+router.get("/getlist2/:companyID/:userID/:orderids", checkAuth, checkUUID, orderController.getOrdersByOrderIDs);
+
+// ## get order list /api/order/getlist3/:companyID/:userID/:orderids  getOrdersByOrderIDs
+router.get("/getlist3/:companyID/:userID/:orderids/:orderStatus", checkAuth, checkUUID, orderController.getOrdersZoneStyleSizeByOrderIDs);
+
 // ## /api/order/creataenew
 router.post("/createnew", checkAuth, checkUUID, orderController.postOrderCreateNew);
 
@@ -27,6 +33,9 @@ router.put("/update", checkAuth, checkUUID, orderController.putOrderUpdate);
 // ## /api/order/update2/setzone
 router.put("/update2/setzone", checkAuth, checkUUID, orderController.putOrderZoneUpdate);
 
+// ## /api/order/update2/setcolor
+router.put("/update3/setcolor", checkAuth, checkUUID, orderController.putOrderColorUpdate);
+
 // // ## /api/order/orderProduction/createnew
 // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
 
@@ -35,6 +44,10 @@ router.post("/orderProductionQueue/createnew", checkAuth, checkUUID, orderContro
 
 // ## /api/order2/orderProductionQueues/lists/createnew   postOrderProductionQueuesCreateNew
 router.post("/order2/orderProductionQueues/lists/createnew", checkAuth, checkUUID, orderController.postOrderProductionQueuesCreateNew);
+
+// ## get getProductionQueueBarcodeSumQty
+router.get("/order3/getsumqty/queue/:companyID/:orderID/:productID", 
+      checkAuth, checkUUID, orderController.getProductionQueueBarcodeSumQty);
 
 // ## get last n record production queue by barcodeNo
 router.get("/lastProduction/getlists/:companyID/:orderID/:productID/:productBarcode/:page/:limit", 

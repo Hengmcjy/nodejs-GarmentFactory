@@ -22,11 +22,16 @@ router.get("/noder/rep7/current/productions/period/c/:companyID/:productStatus/:
 // // ##
 
 // ## get node getRepCurrentProductions
+router.get("/noder/rep8/current/productions/zoneperiod/c/:companyID/:productStatus/:orderStatus"
+        , reportController.getRepCurrentProductionZonePeriod);
+// // ##
+
+// ## get node getRepCurrentProductions
 router.get("/noder/rep6/current/productions/cfn/:companyID/:factoryID/:nodeID/:productStatus/:page/:limit"
         , reportController.getRepCurrentProductions);
 // // ##
 
-// ## get node getRepCurrentProductQtyCFN
+// ## get node getRepCurrentProductQueue
 router.get("/noder/rep5/current/productqueue/cf/:companyID/:factoryID/:productIDArr/:page/:limit"
         , reportController.getRepCurrentProductQueue);
 // // ##
