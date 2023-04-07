@@ -643,7 +643,7 @@ exports.getRepCompanyOrder = async (req, res, next) => {
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
   // const repListNameArr = JSON.parse(req.params.repListName);
-  // console.log(companyID, factoryID, nodeID, productStatusArr);
+  // console.log(companyID, orderStatusArr);
 
   try {
 
@@ -652,6 +652,8 @@ exports.getRepCompanyOrder = async (req, res, next) => {
     currentCompanyOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
     currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr);
     
+    // console.log(orderStyleColorSize, currentCompanyOrder, currentOrderStyle);
+
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
       token: token,
@@ -669,6 +671,7 @@ exports.getRepCompanyOrder = async (req, res, next) => {
       // nodeFlow: nodeFlow
     });
   } catch (err) {
+    console.log(err);
     return res.status(501).json({
       message: {
         messageID: 'errrp002', 

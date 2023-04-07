@@ -251,6 +251,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
   try {
     // ##  create order 
     const companyID = data.order.companyID;
+    const factoryID = data.order.factoryID;
     const bundleNo = data.order.bundleNo;
     const orderID = data.order.orderID;
     const orderDetail = data.order.orderDetail;
@@ -265,6 +266,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
         {"orderID":orderID}, 
       ]} , 
       {
+        "factoryID": factoryID,
         "bundleNo": bundleNo,
         "orderStatus": 'open',
         "orderDetail": orderDetail,

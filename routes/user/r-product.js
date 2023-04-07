@@ -25,36 +25,4 @@ router.post("/get/image/profiles", checkAuth, checkUUID, productController.postG
 // ## /api/product/edit
 router.put("/edit", checkAuth, checkUUID, productController.putEditProduct);
 
-// // ## general info
-// router.get("/generalinfo", productController.getGeneralInfo);
-
-// // ## auth
-// router.get("/login", checkAuth, checkUUID, c.getuserLogin);
-
-// router.post("/signup", productController.createUser);
-
-// router.post("/login", productController.userLogin);
-
-// router.get("/uinfo/:userID", checkAuth, checkUUID, productController.getuserInfo);
-
-// router.post("/logout", productController.userLogout);
-
-
-// // ## user company
-
-// // ## create new company 
-// router.post("/create/company", checkAuth, checkUUID, productController.createUserCompany);
-
-// // ## get user company 
-// router.get("/get/company/:userID/:page/:limit", checkAuth, checkUUID, productController.getUserCompany);
-
-// // ## user factory
-
-// // ## create new factory 
-// router.post("/create/factory", checkAuth, checkUUID, productController.createUserFactory);
-
-// // ## get  user  factory by userID companyID
-// router.get("/get/factory/:userID/:companyID/:page/:limit", checkAuth, checkUUID, productController.getUserFactory);
-
-
 module.exports = router;

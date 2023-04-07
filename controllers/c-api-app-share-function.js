@@ -1257,6 +1257,7 @@ exports.getOrder= async (companyID, orderID) => {
         _id: 1,	
         orderID: 1,
         companyID: 1,
+        factoryID: 1,
         bundleNo: 1,
         orderStatus: 1,
         orderDetail: 1,		
@@ -1286,6 +1287,7 @@ exports.getOrdersByOrderIDsAll= async (companyID, orderIDs) => {
         _id: 1,	
         orderID: 1,
         companyID: 1,
+        factoryID: 1,
         bundleNo: 1,
         orderStatus: 1,
         orderDetail: 1,		
@@ -1314,6 +1316,7 @@ exports.getOrders= async (companyID, page, limit) => {
         _id: 1,	
         orderID: 1,
         companyID: 1,
+        factoryID: 1,
         bundleNo: 1,
         orderStatus: 1,
         orderDetail: 1,		
@@ -1352,6 +1355,7 @@ exports.getOrdersByOrderIDs= async (companyID, orderIDArr, page, limit) => {
         _id: 1,	
         orderID: 1,
         companyID: 1,
+        factoryID: 1,
         bundleNo: 1,
         orderStatus: 1,
         orderDetail: 1,		
@@ -1416,8 +1420,8 @@ exports.getLastRunningNoOrderProduction= async (companyID, orderID, productID, p
       {"productID":productID},
     ] } },
     { $project: { 
-      productBarcode: { $substr: [ "$productBarcodeNo", 0, 28 ] },	
-      barcodeNo: { $substr: [ "$productBarcodeNo", 28, 5 ] },	
+      productBarcode: { $substr: [ "$productBarcodeNo", 0, 37 ] },	
+      barcodeNo: { $substr: [ "$productBarcodeNo", 37, 5 ] },	
       // queueDate: "$queueInfo.queueDate",
       // factoryID: "$queueInfo.factoryID",
       // toNode: "$queueInfo.toNode",
@@ -2562,7 +2566,7 @@ exports.getMaxProductIDRunningNo = async (companyID, productBarcode) => {
     { $match: { $and: [
       {"companyID":companyID},
       {$expr: {
-        $eq: [{ $substr: ["$productBarcodeNo", 0, 32] }, productBarcode]
+        $eq: [{ $substr: ["$productBarcodeNo", 0, 37] }, productBarcode]
       }}
     ] } },
     { $project: {			
@@ -2573,7 +2577,7 @@ exports.getMaxProductIDRunningNo = async (companyID, productBarcode) => {
         // bundleNo: 1,
         // productID: 1,
         // productBarcodeNo: 1,
-        no: { $toUpper:{ $substr: [ "$productBarcodeNo", 32, 5 ] }},
+        no: { $toUpper:{ $substr: [ "$productBarcodeNo", 37, 5 ] }},
         // productCount: 1,
         // productionDate: 1,
         // productStatus: 1,
@@ -3078,10 +3082,12 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
       // bundleNo: 1,
       // productID: 1,
       productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
-      color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", process.env.targetIDPos, process.env.targetIDDigit ] }},
+      // countryID: { $toUpper:{ $substr: [ "$productBarcodeNo", process.env.countryIDPos, process.env.countryIDDigit ] }},
+      // year: { $toUpper:{ $substr: [ "$productBarcodeNo", process.env.yearPos, process.env.yearDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.sizePos, +process.env.sizeDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -3179,10 +3185,9 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
       // targetPlace: 1,
       targetPlaceID: 1,
       targetPlaceName: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
-      color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.sizePos, +process.env.sizeDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -3892,7 +3897,7 @@ exports.getRepCFNProductStateStyle = async (companyID, factoryID, nodeID, produc
       // bundleNo: 1,
       // productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},	
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
       // lottoMainTypeID: { $substr: [ "$lottoRoundID", 9, 3 ] },	
       // item: { $toUpper: "$item" },
       // productCount: 1,
@@ -3961,8 +3966,8 @@ exports.getRepCFNProductStateTargetPlace = async (companyID, factoryID, nodeID, 
       // bundleNo: 1,
       // productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},	
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -4053,9 +4058,8 @@ exports.getRepCFNProductStateColor = async (companyID, factoryID, nodeID, produc
       // bundleNo: 1,
       // productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
-      color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.colorPos, +process.env.colorDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -4146,9 +4150,8 @@ exports.getRepCFNProductStateSize = async (companyID, factoryID, nodeID, product
       // bundleNo: 1,
       // productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
-      size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.sizePos, +process.env.sizeDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -4239,10 +4242,10 @@ exports.getRepCFNProductStateStyleTargetPlaceColorSize = async (companyID, facto
       // bundleNo: 1,
       productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
-      color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.sizePos, +process.env.sizeDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -4350,7 +4353,7 @@ exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, product
       // bundleNo: 1,
       productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
       // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
       // color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
       // size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
@@ -4425,10 +4428,10 @@ exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatus
       // bundleNo: 1,
       productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
-      color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.sizePos, +process.env.sizeDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -4504,10 +4507,9 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
       productID: 1,
       targetPlaceID: "$targetPlace.targetPlaceID",
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
-      color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.sizePos, +process.env.sizeDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -4583,8 +4585,8 @@ exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, product
       // bundleNo: 1,
       productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.targetIDPos, +process.env.targetIDDigit ] }},		
       // color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
       // size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
       // productCount: 1,
@@ -4648,9 +4650,9 @@ exports.getComCurrentProductQtyCountryCSAll = async (companyID, factoryIDArr, pr
         productID: 1,
         targetPlace: 1,
         // productBarcodeNo: 1,
-        style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-        color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
-        size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+        style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+        color: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.colorPos, +process.env.colorDigit ] }},
+        size: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.sizePos, +process.env.sizeDigit ] }},
         // productCount: 1,
         // productionDate: 1,
         // productStatus: 1,
@@ -4708,7 +4710,7 @@ exports.getComCurrentProductQtyCountryAll = async (companyID, factoryIDArr, prod
         productID: 1,
         targetPlace: 1,
         // productBarcodeNo: 1,
-        style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
+        style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
         // productCount: 1,
         // productionDate: 1,
         // productStatus: 1,
@@ -4780,10 +4782,10 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
       // bundleNo: 1,
       productID: 1,
       // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNo", 0, 12 ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 12, 4 ] }},		
-      color: { $toUpper:{ $substr: [ "$productBarcodeNo", 18, 10 ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNo", 28, 3 ] }},
+      style: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNo", +process.env.sizePos, +process.env.sizeDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
@@ -4853,6 +4855,7 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
 
 // ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
 exports.getCurrentCompanyOrderSpec= async (companyID, orderStatusArr) => {
+  // console.log(+process.env.stylePos, +process.env.styleDigit);
   // ## get group style color size
   const orderStyleColorSizef = await Order.aggregate([
     { $match: { $and: [
@@ -4878,7 +4881,7 @@ exports.getCurrentCompanyOrderSpec= async (companyID, orderStatusArr) => {
         // productCustomerCode: "$productOR.productCustomerCode",
 
         productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
         // targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
         // targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
         // countryID: "$productOR.productORInfo.targetPlace.countryID",
@@ -5009,7 +5012,7 @@ exports.getCurrentCompanyOrderCountryStyle= async (companyID, orderStatusArr) =>
         // productCustomerCode: "$productOR.productCustomerCode",
 
         productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
         targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
         targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
         countryID: "$productOR.productORInfo.targetPlace.countryID",
@@ -5082,7 +5085,7 @@ exports.getCurrentCompanyOrderZoneStyle= async (companyID, orderStatusArr) => {
         // productCustomerCode: "$productOR.productCustomerCode",
 
         productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
         targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
         targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
         // countryID: "$productOR.productORInfo.targetPlace.countryID",
@@ -5155,7 +5158,7 @@ exports.getCurrentCompanyOrderZone= async (companyID, orderStatusArr) => {
         // productCustomerCode: "$productOR.productCustomerCode",
 
         productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
         targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
         targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
         // countryID: "$productOR.productORInfo.targetPlace.countryID",
@@ -5228,7 +5231,7 @@ exports.getCurrentCompanyOrder= async (companyID, orderStatusArr) => {
         // productCustomerCode: "$productOR.productCustomerCode",
 
         productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
         targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
         targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
         countryID: "$productOR.productORInfo.targetPlace.countryID",
@@ -5308,7 +5311,7 @@ exports.getCurrentCompanyOrderZoneStyleSize= async (companyID, orderStatusArr, o
         // productCustomerCode: "$productOR.productCustomerCode",
 
         productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
         targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
         targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
         // countryID: "$productOR.productORInfo.targetPlace.countryID",
@@ -5383,7 +5386,7 @@ exports.getCurrentCompanyOrderStyleSize= async (companyID, orderStatusArr) => {
         // productCustomerCode: "$productOR.productCustomerCode",
 
         productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
         // targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
         // targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
         // countryID: "$productOR.productORInfo.targetPlace.countryID",
@@ -5455,7 +5458,7 @@ exports.getCurrentCompanyOrderStyle= async (companyID, orderStatusArr) => {
         // productCustomerCode: "$productOR.productCustomerCode",
 
         // productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
         // targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
         // targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
         // countryID: "$productOR.productORInfo.targetPlace.countryID",
@@ -5587,6 +5590,227 @@ exports.updateTargetPlaceOrder= async () => {
 // countryID : {type: String},
 // countryName : {type: String},
 
+// ## update productBarcodeNo
+exports.updateTargetPlaceCountryIDOrder= async () => {
+  const companyID = 'c000001';
+  const countryAll = [
+    
+    {countryID1: 'JPN1', countryID2: 'JPN1-', countryName2: 'JPN1'},
+    {countryID1: 'JPN2', countryID2: 'JPN2-', countryName2: 'JPN2'},
+    {countryID1: 'JPN3', countryID2: 'JPN3-', countryName2: 'JPN3'},
+    {countryID1: 'JPN4', countryID2: 'JPN4-', countryName2: 'JPN4'},
+
+    {countryID1: 'SGHI1', countryID2: 'SGHI1', countryName2: 'SGHI1'},
+    {countryID1: 'SGHI2', countryID2: 'SGHI2', countryName2: 'SGHI2'},
+    {countryID1: 'SGHI3', countryID2: 'SGHI3', countryName2: 'SGHI3'},
+
+    {countryID1: 'HKG1', countryID2: 'HKG1-', countryName2: 'HKG1'},
+    {countryID1: 'HKG2', countryID2: 'HKG2-', countryName2: 'HKG2'},
+    {countryID1: 'HKG3', countryID2: 'HKG3-', countryName2: 'HKG3'},
+    {countryID1: 'KOR1', countryID2: 'KOR1-', countryName2: 'KOR1'},
+    {countryID1: 'KOR2', countryID2: 'KOR2-', countryName2: 'KOR2'},
+    {countryID1: 'KOR3', countryID2: 'KOR3-', countryName2: 'KOR3'},
+    {countryID1: 'TWN1', countryID2: 'TWN1-', countryName2: 'TWN1'},
+    {countryID1: 'TWN2', countryID2: 'TWN2-', countryName2: 'TWN2'},
+    {countryID1: 'TWN3', countryID2: 'TWN3-', countryName2: 'TWN3'},
+    {countryID1: 'MLS1', countryID2: 'MLS1-', countryName2: 'MLS1'},
+    {countryID1: 'MLS2', countryID2: 'MLS2-', countryName2: 'MLS2'},
+    {countryID1: 'MLS3', countryID2: 'MLS3-', countryName2: 'MLS3'},
+    {countryID1: 'SGP1', countryID2: 'SGP1-', countryName2: 'SGP1'},
+    {countryID1: 'SGP2', countryID2: 'SGP2-', countryName2: 'SGP2'},
+    {countryID1: 'SGP3', countryID2: 'SGP3-', countryName2: 'SGP3'},
+    {countryID1: 'AUS1', countryID2: 'AUS1-', countryName2: 'AUS1'},
+    {countryID1: 'AUS2', countryID2: 'AUS2-', countryName2: 'AUS2'},
+    {countryID1: 'AUS3', countryID2: 'AUS3-', countryName2: 'AUS3'},
+    {countryID1: 'IND1', countryID2: 'IND1-', countryName2: 'IND1'},
+    {countryID1: 'IND2', countryID2: 'IND2-', countryName2: 'IND2'},
+    {countryID1: 'IND3', countryID2: 'IND3-', countryName2: 'IND3'},
+
+    {countryID1: 'THA1', countryID2: 'THA1-', countryName2: 'THA1'},
+    {countryID1: 'THA2', countryID2: 'THA2-', countryName2: 'THA2'},
+    {countryID1: 'THA3', countryID2: 'THA3-', countryName2: 'THA3'},
+    {countryID1: 'VTN1', countryID2: 'VTN1-', countryName2: 'VTN1'},
+    {countryID1: 'VTN2', countryID2: 'VTN2-', countryName2: 'VTN2'},
+    {countryID1: 'VTN3', countryID2: 'VTN3-', countryName2: 'VTN3'},
+    {countryID1: 'PHL1', countryID2: 'PHL1-', countryName2: 'PHL1'},
+    {countryID1: 'PHL2', countryID2: 'PHL2-', countryName2: 'PHL2'},
+    {countryID1: 'PHL3', countryID2: 'PHL3-', countryName2: 'PHL3'},
+
+    {countryID1: 'CAD1', countryID2: 'CAD1-', countryName2: 'CAD1'},
+    {countryID1: 'CAD2', countryID2: 'CAD2-', countryName2: 'CAD2'},
+    {countryID1: 'CAD3', countryID2: 'CAD3-', countryName2: 'CAD3'},
+    {countryID1: 'NY1', countryID2: 'NY1--', countryName2: 'NY1'},
+    {countryID1: 'NY2', countryID2: 'NY2--', countryName2: 'NY2'},
+    {countryID1: 'NY3', countryID2: 'NY3--', countryName2: 'NY3'},
+    {countryID1: 'UAE1', countryID2: 'UAE1-', countryName2: 'UAE1'},
+    {countryID1: 'UAE2', countryID2: 'UAE2-', countryName2: 'UAE2'},
+    {countryID1: 'UAE3', countryID2: 'UAE3-', countryName2: 'UAE3'},
+    {countryID1: 'MEH1', countryID2: 'MEH1-', countryName2: 'MEH1'},
+    {countryID1: 'MEH2', countryID2: 'MEH2-', countryName2: 'MEH2'},
+    {countryID1: 'MEH3', countryID2: 'MEH3-', countryName2: 'MEH3'},
+  ];
+
+  const xx = [
+    { _id: { countryID: 'NY2', countryName: 'NY2' } },
+    { _id: { countryID: 'SGP1', countryName: 'SGP1' } },
+    { _id: { countryID: 'MEH3', countryName: 'MEH3' } },
+    { _id: { countryID: 'NY1', countryName: 'NY1' } },
+    { _id: { countryID: 'KOR1', countryName: 'KOR1' } },
+    { _id: { countryID: 'MEH2', countryName: 'MEH2' } },
+    { _id: { countryID: 'HKG1', countryName: 'HKG1' } },
+    { _id: { countryID: 'UAE1', countryName: 'UAE1' } },
+    { _id: { countryID: 'MLS1', countryName: 'MLS1' } },
+    { _id: { countryID: 'IND1', countryName: 'IND1' } },
+    { _id: { countryID: 'JPN1', countryName: 'JPN1' } },
+    { _id: { countryID: 'AUS1', countryName: 'AUS1' } },
+    { _id: { countryID: 'HKG2', countryName: 'HKG2' } },
+    { _id: { countryID: 'VTN1', countryName: 'VTN1' } },
+    { _id: { countryID: 'MEH1', countryName: 'MEH1' } },
+    { _id: { countryID: 'CAD1', countryName: 'CAD1' } },
+    { _id: { countryID: 'THA1', countryName: 'THA1' } },
+    { _id: { countryID: 'TWN1', countryName: 'TWN1' } },
+    { _id: { countryID: 'SGHI1', countryName: 'SGHI1' } }
+  ];
+
+  const order = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        orderID: 1,
+        // orderDetail: 1,		
+        // orderDate: 1,	
+        // deliveryDate: 1,
+        // bundleNo: 1,
+        companyID: 1,
+        factoryID: 1,
+        // customerOR: 1,	
+        // orderTargetPlace: 1,	
+        // orderColor: 1,
+        productOR: 1,	
+        // orderStatus: 1,
+        // createBy: 1,
+
+    }	}
+  ]);
+
+  await this.asyncForEach(order , async (item) => {
+    // console.log(item);
+    // console.log(item.productOR.productORInfo);
+    
+    await this.asyncForEach2(item.productOR.productORInfo , async (item2) => {
+      // console.log(item2);
+      const countryID2 = await this.xxFindCountry(countryAll, item2.targetPlace.countryID);
+      item2.targetPlace.countryID = countryID2;
+      item2.factoryID = 'f000001';
+      // console.log(item2.targetPlace.countryID);
+    });
+    // console.log(item);
+    // console.log(item.productOR.productORInfo);
+
+
+    orderUpdate2 = await Order.updateOne(
+      {$and: [
+        {"companyID": item.companyID},
+        {"orderID": item.orderID},
+      ]},
+      {
+        // "factoryID":'f000001',
+        "productOR":item.productOR,
+      });
+
+  });
+  
+
+  // // ## update order --> set field factoryID
+  // orderUpdate = await Order.updateMany(
+  //   {$and: [
+  //     {"companyID":companyID}
+  //   ]},
+  //   {
+  //     "factoryID":'f000001',
+  //   });
+
+  console.log('update complete');
+}
+
+exports.xxFindCountry= async (countryAll, countryID) => {
+  const countryF = await countryAll.filter(i=>(i.countryID1 == countryID));
+  // const hilo = await userBetTotalNumberf.filter(i=>(i._id.lottoBetType == 'hilo'));
+  if (countryF.length > 0) {
+    return countryF[0].countryID2;
+  }
+  return countryID;
+}
+
+exports.xxFindCountry2= async (countryAll, countryName) => {
+  const countryF = await countryAll.filter(i=>(i.countryName == countryName));
+  // const hilo = await userBetTotalNumberf.filter(i=>(i._id.lottoBetType == 'hilo'));
+  if (countryF.length > 0) {
+    return countryF[0].countryID2;
+  }
+  // console.log('not found');
+  return countryName;
+}
+
+exports.xxFindOrder= async () => {
+  const companyID = 'c000001';
+  const order = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+    ] } },
+    { $unwind: "$productOR.productORInfo" },
+    { $project: {			
+        _id: 0,	
+        orderID: 1,
+        companyID: 1,
+        // bundleNo: 1,
+        orderStatus: 1,
+        // orderDetail: 1,		
+        // orderDate: 1,	
+        // deliveryDate: 1,
+        // customerOR: 1,		
+        // createBy: 1,
+
+        productID: "$productOR.productID",
+        // productName: "$productOR.productName",
+        // productORDetail: "$productOR.productORDetail",
+        // productCustomerCode: "$productOR.productCustomerCode",
+
+        productBarcode: "$productOR.productORInfo.productBarcode",
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", 0, 12 ] },	
+        targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
+        targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
+        countryID: "$productOR.productORInfo.targetPlace.countryID",
+        countryName: "$productOR.productORInfo.targetPlace.countryName",
+        // productColor: "$productOR.productORInfo.productColor",
+        // productSize: "$productOR.productORInfo.productSize",
+        // productQty: "$productOR.productORInfo.productQty",
+        // productYear: "$productOR.productORInfo.productYear",
+        // productSex: "$productOR.productORInfo.productSex",
+    }	},
+    { $group: {			
+      _id: { 
+        // companyID: '$companyID',
+        // orderID: '$orderID',
+        // productID: '$productID',
+        // style: '$style',
+        // productColor: '$productColor',
+        // productSize: '$productSize',
+        // targetPlaceID: '$targetPlaceID',
+        countryID: '$countryID',
+        countryName: '$countryName',
+    },
+      // countBetNumber: {$sum: 1} ,
+      // sumQty: {$sum:  '$productQty'} ,
+      // sumAffBetNumber: {$sum:  '$betAffNumber'} ,
+      // sumRewardBetNumber: {$sum:  '$reward'} ,
+    }	},
+  ]);
+  console.log(order);
+
+}
 
 // ## pdate manual data
 // #######################################################################################################

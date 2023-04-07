@@ -7,6 +7,7 @@ const orderSchema = mongoose.Schema({
   orderDate: {type: Date, required: true},
   deliveryDate: {type: Date},
   companyID: {type: String},
+  factoryID: {type: String},
   bundleNo: {type: Number},
   orderStatus: {type: String},
   customerOR: {
@@ -37,6 +38,7 @@ const orderSchema = mongoose.Schema({
     productORDetail: {type: String},
     productCustomerCode: {type: String},
     productORInfo: [{   // ## sequence of work flow
+      factoryID: {type: String},
       productBarcode : {type: String},
       targetPlace : {
         targetPlaceID : {type: String},

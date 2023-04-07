@@ -49,7 +49,7 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
-// // ## http://192.168.1.23:3968/api/user/test/test
+// // ## http://192.168.1.10:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {
   // console.log('getTestTest');
@@ -62,6 +62,12 @@ exports.getTestTest = async (req, res, next) => {
 
   // // updateTargetPlaceOrder
   // const updateTargetPlaceOrder = await ShareFunc.updateTargetPlaceOrder();
+
+  // // updateTargetPlaceCountryIDOrder
+  // const updateTargetPlaceCountryIDOrder = await ShareFunc.updateTargetPlaceCountryIDOrder();
+
+  // // xxFindCountry2
+  // const updateTargetPlaceCountryIDOrder = await ShareFunc.xxFindOrder();
 
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {
