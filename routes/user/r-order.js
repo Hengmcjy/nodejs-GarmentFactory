@@ -61,7 +61,8 @@ router.get("/lastProduction/getlists/:companyID/:orderID/:productID/:page/:limit
 router.get("/lastroderProduction/runningno/:companyID/:orderID/:productID/:productBarcode", 
             checkAuth, checkUUID, orderController.getLastNoOrderProductionBarcode);
         
-
+//
+router.get("/order4/:companyID/:style/:ordertatus", checkAuth, checkUUID, orderController.getCompanyOrderByStyle);
 
 
 

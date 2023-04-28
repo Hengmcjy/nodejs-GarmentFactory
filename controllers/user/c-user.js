@@ -49,6 +49,37 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
+// // ## http://192.168.1.131:3968/api/user/test/test2
+// router.get("/test/test2", userController.getTestTest2);
+exports.getTestTest2 = async (req, res, next) => {
+  
+  // // xxFindCountry2
+  // const updateTargetPlaceCountryIDOrder = await ShareFunc.xxFindOrder();
+
+  // ## test array filter
+  // https://www.mongodb.com/docs/manual/reference/operator/aggregation/filter/
+  // productBarcodeNo    productBarcodeNoReserve  []
+  const productBarcodeNo = '';
+
+  // ## test socket IO
+  io.getIO().emit(process.env.IOID+'/iomessage/user', {
+    action: 'sent by socketIO',
+    post: { socket: 'IO', creator: { _id: req.body.userID, name: 'namex' } }
+  });
+
+  
+  const test = await ShareFunc.test1();
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>2.) test command mongodb</title><head>');
+  res.write('<body>');
+  res.write('<h1>2.) test command mongodb</h1></br>');
+  res.write('<h1>Hello from my Node.js Server!</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 // // ## http://192.168.1.10:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {
@@ -79,8 +110,11 @@ exports.getTestTest = async (req, res, next) => {
   const test = await ShareFunc.test1();
   res.setHeader('Content-Type', 'text/html');
   res.write('<html>');
-  res.write('<head><title>My First Page</title><head>');
-  res.write('<body><h1>Hello from my Node.js Server!</h1></body>');
+  res.write('<head><title>1.) general test</title><head>');
+  res.write('<body>');
+  res.write('<h1>1.) general test</h1></br>');
+  res.write('<h1>Hello from my Node.js Server!</h1>');
+  res.write('</body>');
   res.write('</html>');
   return res.end();
 }

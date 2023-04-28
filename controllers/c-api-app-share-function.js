@@ -5204,6 +5204,104 @@ exports.getCurrentCompanyOrderZone= async (companyID, orderStatusArr) => {
   return currentCompanyOrderZone;
 }
 
+// ShareFunc.getCurrentCompanyOrderByStyle(companyID, style, orderStatusArr);
+exports.getCurrentCompanyOrderByStyle= async (companyID, style, orderStatusArr) => {
+  // ##
+  const currentCompanyOrderf = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderStatus":{$in: orderStatusArr}}
+    ] } },
+    { $unwind: "$productOR.productORInfo" },
+    { $project: {			
+        _id: 0,	
+        orderID: 1,
+        companyID: 1,
+        // bundleNo: 1,
+        orderStatus: 1,
+        // orderDetail: 1,		
+        // orderDate: 1,	
+        // deliveryDate: 1,
+        // customerOR: 1,		
+        // createBy: 1,
+
+        productID: "$productOR.productID",
+        // productName: "$productOR.productName",
+        // productORDetail: "$productOR.productORDetail",
+        // productCustomerCode: "$productOR.productCustomerCode",
+
+        productBarcode: "$productOR.productORInfo.productBarcode",
+        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
+        targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
+        targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
+        // countryID: "$productOR.productORInfo.targetPlace.countryID",
+        // countryName: "$productOR.productORInfo.targetPlace.countryName",
+        productColor: "$productOR.productORInfo.productColor",
+        productSize: "$productOR.productORInfo.productSize",
+        productQty: "$productOR.productORInfo.productQty",
+        // productYear: "$productOR.productORInfo.productYear",
+        // productSex: "$productOR.productORInfo.productSex",
+    }	},
+    { $match: { $and: [
+      {"style":style}
+    ] } },
+    { $project: {			
+      _id: 0,	
+      orderID: 1,
+      companyID: 1,
+      orderStatus: 1,
+      productID: 1,
+      productBarcode: 1,
+      style: 1,	
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      // countryID: 1,
+      // countryName: 1,
+      productColor: 1,
+      productSize: 1,
+      productQty: 1,
+  }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        productID: '$productID',
+        style: '$style',
+        productColor: '$productColor',
+        productSize: '$productSize',
+        targetPlaceID: '$targetPlaceID',
+        // countryID: '$countryID',
+    },
+      // countBetNumber: {$sum: 1} ,
+      sumQty: {$sum:  '$productQty'} ,
+      // sumAffBetNumber: {$sum:  '$betAffNumber'} ,
+      // sumRewardBetNumber: {$sum:  '$reward'} ,
+    }	},
+
+  ]);
+  // console.log(currentCompanyOrderf);
+  const currentCompanyOrder = await currentCompanyOrderf.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID, 
+    productID: fw._id.productID,
+    style: fw._id.style,
+    productColor: fw._id.productColor,
+    productSize: fw._id.productSize,
+    targetPlaceID: fw._id.targetPlaceID,
+    // countryID: fw._id.countryID,
+    sumQty: fw.sumQty
+  }));
+  // console.log(currentCompanyOrder);
+
+  // const currentOrder = {
+  //   orderStyleColorSize: orderStyleColorSize,
+  //   currentCompanyOrder: currentCompanyOrder
+  // };
+  // console.log(currentOrder);
+
+  return currentCompanyOrder;
+}
+
 // ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr)
 exports.getCurrentCompanyOrder= async (companyID, orderStatusArr) => {
   // ##

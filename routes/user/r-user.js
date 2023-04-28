@@ -17,6 +17,7 @@ const router = express.Router();
 // ## http://192.168.1.39:3022/api/user/test/test
 // ## test
 router.get("/test/test", userController.getTestTest);
+router.get("/test/test2", userController.getTestTest2);
 
 // ## general info / starting data
 router.get("/generalinfo/:languageID/:classLimit", userController.getGeneralInfo);
