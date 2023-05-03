@@ -5606,8 +5606,20 @@ exports.getCurrentCompanyOrderStyle= async (companyID, orderStatusArr) => {
 // #######################################################################################################
 
 
+
 // #######################################################################################################
 // ## update manual data
+
+exports.updateTargetPlaceOrderProduction= async () => {
+  result1 = await OrderProduction.updateMany(
+    {$and: [
+      {"companyID":'c000001'} ,
+    ]},
+    {
+      "targetPlace.targetPlaceID": 'SGHI',
+      "targetPlace.targetPlaceName": 'SHANGHAI',
+    }); 
+}
 
 // ## update targetPlace / countryID all
 exports.updateTargetPlaceOrder= async () => {

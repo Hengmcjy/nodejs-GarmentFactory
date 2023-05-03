@@ -49,12 +49,15 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
-// // ## http://192.168.1.131:3968/api/user/test/test2
+// // ## http://192.168.1.21:3968/api/user/test/test2
 // router.get("/test/test2", userController.getTestTest2);
 exports.getTestTest2 = async (req, res, next) => {
   
   // // xxFindCountry2
   // const updateTargetPlaceCountryIDOrder = await ShareFunc.xxFindOrder();
+
+  // updateTargetPlaceOrderProduction
+  // const updateTargetPlaceOrderProduction = await ShareFunc.updateTargetPlaceOrderProduction();
 
   // ## test array filter
   // https://www.mongodb.com/docs/manual/reference/operator/aggregation/filter/

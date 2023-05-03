@@ -1096,6 +1096,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
   const mode = data.mode;
   // console.log(mode , productBarcodeNo);
   
+  // console.log(nodeID , productBarcodeNo, mode);
   try {
     await ShareFunc.upsertUserSession1hr(userID);
 
@@ -1123,7 +1124,8 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
         });
       } else {  // orderProduction.productionNode.length === 1
         // console.log(nodeID ,'--' , orderProduction.productionNode[0]);
-        if (orderProduction.productionNode[0].fromNode === nodeID) { // ## back from repaired
+        if (orderProduction.productionNode[0].fromNode === nodeID && mode === 'backfromrepair') { // ## back from repaired
+        // if (orderProduction.productionNode[orderProduction.productionNode.length-1].fromNode === nodeID) { // ## back from repaired
           // console.log(nodeID ,'--' , orderProduction.productionNode[0].fromNode);
           return res.status(200).json({
             tokenNS: '',
@@ -1138,7 +1140,8 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             mode: 'backfromrepair'
           });
 
-        } else if (orderProduction.productionNode[0].toNode === nodeID) {  // ## send to repair
+        } else if (orderProduction.productionNode[0].toNode === nodeID && mode === 'sendtorepair') {  // ## send to repair
+        // } else if (orderProduction.productionNode[orderProduction.productionNode.length-1].toNode === nodeID) {  // ## send to repair
           // ## orderProduction.productionNode[0].toNode === nodeID
           // console.log(nodeID ,'--' , orderProduction.productionNode[0].toNode);
           return res.status(200).json({
@@ -1152,6 +1155,19 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             orderProduction: orderProduction,
             success: true,
             mode: 'sendtorepair'
+          });
+        } else if (orderProduction.productionNode[0].toNode === nodeID && mode === 'scan') {
+          return res.status(200).json({
+            tokenNS: '',
+            expiresIn: process.env.expiresIn,
+            userID: userID,
+            companyID: companyID,
+            factoryID: factoryID,
+            nodeID: nodeID,
+            stationID: stationID,
+            orderProduction: orderProduction,
+            success: true,
+            mode: 'scan'
           });
         } else {
           

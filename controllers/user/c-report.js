@@ -387,7 +387,7 @@ exports.getRepCurrentProductQtyAllCFNode = async (req, res, next) => {
 
     // ## get Rep C Current company Production  all
     const orderProductCFNodeRep = await ShareFunc.getCurrentProductQtyAllCFNode(companyID, factoryIDArr, productStatusArr);
-
+    // console.log(orderProductCFNodeRep);
     // ## get Rep CF Current factory Production  all
     // const currentProductQtyAllCF = await ShareFunc.getCFCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr);
     
