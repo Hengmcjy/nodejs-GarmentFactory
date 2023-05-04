@@ -18,6 +18,7 @@ const Factory = require("../../models/m-factory");
 const Order = require("../../models/m-order");
 const OrderProduction = require("../../models/m-orderProduction");
 const OrderProductionQueue = require("../../models/m-orderProductionQueue");
+const OrderProductionQueueList = require("../../models/m-orderProductionQueueList");
 
 moment.tz.setDefault('Asia/Bangkok');
 
@@ -96,6 +97,41 @@ exports.getOrder = async (req, res, next) => {
     });
   }
 }
+
+// router.get("/order5/getlist/:companyID/:orderStatus/:userID", checkAuth, checkUUID, orderController.getOrderStyles);
+exports.getOrderStyles = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  const orderStatus = JSON.parse(req.params.orderStatus);
+  // const orderIDs = JSON.parse(req.params.orderids);
+
+  try {
+    // ## get 1 order
+    // getOrderStyleByStatus= async (companyID, statusArr) 
+    const orderStyles = await ShareFunc.getOrderStyleByStatus(companyID, orderStatus);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      orderStyles: orderStyles
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO013', 
+        mode:'errOrderStyleList', 
+        value: "error get Order style list"
+      }
+    });
+  }
+}
+
 
 // // ## get order list /api/order/getlist/:companyID/:userID/:page/:limit
 // router.get("/getlist/:companyID/:userID/:page/:limit", checkAuth, checkUUID, productController.getOrders);
@@ -675,6 +711,14 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     const qty = data.qty;
     const forLoss = data.forLoss;
     const productStatusArr = [''];
+
+    const bundleNoFrom = queueInfo[0].bundleNo;
+    const bundleNoTo = queueInfo[queueInfo.length-1].bundleNo;
+    const toNode1 = queueInfo[0].toNode;
+    const numberFrom1 = queueInfo[0].numberFrom;
+    const numberTo1 = queueInfo[queueInfo.length-1].numberTo;
+    // console.log(bundleNoFrom,bundleNoTo,toNode1,numberFrom1,numberTo1);
+
     const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     // queueInfo.queueDate = current;
     // console.log(targetPlace);
@@ -694,13 +738,14 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     // console.log(test);
     // console.log(uuidv4());
 
-    let maxNo = 0;
+    let maxNo = +queueInfo[0].numberFrom - 1;
+    // let maxNo = 0;
     await this.asyncForEach(queueInfo, async (item1) => {
       const uuid = uuidv4();
-      if (maxNo === 0) {
-        // ## find max running number  getMaxProductIDRunningNo = async (companyID, productStatusArr)
-        maxNo = await ShareFunc.getMaxProductIDRunningNo(companyID, item1.productBarcode);
-      }
+      // if (maxNo === 0) {
+      //   // ## find max running number  getMaxProductIDRunningNo = async (companyID, productStatusArr)
+      //   maxNo = await ShareFunc.getMaxProductIDRunningNo(companyID, item1.productBarcode);
+      // }
       // console.log(maxNo);
       item1.queueDate = current;
       item1.bundleID = uuid;
@@ -736,6 +781,24 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     // console.log(existed);
     // console.log('existed' , existed);
     if (!existed) {
+      // ## insert one orderProductionQueueList
+      const orderProductionQueueList1 = [{
+        companyID: companyID,
+        orderID: orderID,
+        productID: productID,
+        factoryID: factoryID,
+        queueDate: current,
+        forLoss: forLoss,
+        toNode: toNode1,
+        numberFrom: numberFrom1,
+        numberTo: numberTo1,
+        bundleNoFrom: bundleNoFrom,
+        bundleNoTo: bundleNoTo,
+        createBy: createBy
+      }];
+      // console.log(companyID, current, userID, logID, note);
+      const insertone = await OrderProductionQueueList.insertMany(orderProductionQueueList1);
+
       // ##  add array new queue 
       const result1 = await OrderProductionQueue.updateOne(
         {$and: [
@@ -1034,7 +1097,7 @@ exports.getLastNoOrderProductionBarcode = async (req, res, next) => {
 }
 
 
-// router.get("/order4/:companyID/:style/:ordertatus", checkAuth, checkUUID, reportController.getCompanyOrderByStyle);
+// router.get("/order4/:companyID/:style/:ordertatus/:productStatus", checkAuth, checkUUID, reportController.getCompanyOrderByStyle);
 exports.getCompanyOrderByStyle = async (req, res, next) => {
   // try {} catch (err) {}
 
@@ -1044,11 +1107,13 @@ exports.getCompanyOrderByStyle = async (req, res, next) => {
   const style = req.params.style;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
+  const productStatusArr = JSON.parse(req.params.productStatus);
   // const repListNameArr = JSON.parse(req.params.repListName);
   // console.log(companyID, orderStatusArr);
 
   try {
 
+    const currentProductQtyAllC = await ShareFunc.getCCurrentProductQtyAllByStyleC(companyID, style, productStatusArr);
     // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
     orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
     currentCompanyOrder = await ShareFunc.getCurrentCompanyOrderByStyle(companyID, style, orderStatusArr);
@@ -1063,7 +1128,7 @@ exports.getCompanyOrderByStyle = async (req, res, next) => {
       orderStyleColorSize: orderStyleColorSize,
       currentCompanyOrder: currentCompanyOrder,
       currentOrderStyle: currentOrderStyle,
-      // repDataFormat1: repDataFormat1,
+      currentProductQtyAllC: currentProductQtyAllC,
       // orders: orders,
       // products: products,
       // orderProductAllQtyRep: orderProductAllQtyRep,

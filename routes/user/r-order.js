@@ -15,6 +15,9 @@ const router = express.Router();
 // ## get order1
 router.get("/order/getlist1/:companyID/:userID/:orderID", checkAuth, checkUUID, orderController.getOrder);
 
+// ## get order all style
+router.get("/order5/getlist/:companyID/:orderStatus/:userID", checkAuth, checkUUID, orderController.getOrderStyles);
+
 // ## get order list /api/order/getlist/:companyID/:userID/:page/:limit
 router.get("/getlist/:companyID/:userID/:page/:limit", checkAuth, checkUUID, orderController.getOrders);
 
@@ -62,7 +65,7 @@ router.get("/lastroderProduction/runningno/:companyID/:orderID/:productID/:produ
             checkAuth, checkUUID, orderController.getLastNoOrderProductionBarcode);
         
 //
-router.get("/order4/:companyID/:style/:ordertatus", checkAuth, checkUUID, orderController.getCompanyOrderByStyle);
+router.get("/order4/:companyID/:style/:ordertatus/:productStatus", checkAuth, checkUUID, orderController.getCompanyOrderByStyle);
 
 
 
