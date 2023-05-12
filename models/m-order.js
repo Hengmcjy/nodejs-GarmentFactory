@@ -16,6 +16,7 @@ const orderSchema = mongoose.Schema({
   },
   orderTargetPlace:[{
     seq: {type: Number},
+    deliveryDate: {type: Date},
     targetPlace: {
       targetPlaceID: {type: String},
       targetPlaceName: {type: String},

@@ -7,6 +7,7 @@ const productSchema = mongoose.Schema({
   productDetail: {type: String},
   productCustomerCode: {type: String},
   productGroupCode: {type: String},
+  seasonYear: {type: String},
   companyID: {type: String},
   imageProfile: {type: String},
   pdPic: [{type: String}],

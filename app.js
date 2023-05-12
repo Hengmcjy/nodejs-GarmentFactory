@@ -18,6 +18,7 @@ const userUserRoutes = require("./routes/user/r-user");
 const mailUserRoutes = require("./routes/user/r-mail");
 const productUserRoutes = require("./routes/user/r-product");
 const orderUserRoutes = require("./routes/user/r-order");
+const yarnUserRoutes = require("./routes/user/r-yarn");
 const cusRoutes = require("./routes/user/r-customer");
 const nsRoutes = require("./routes/user/r-node-station");
 const repRoutes = require("./routes/user/r-report");
@@ -88,9 +89,12 @@ app.use("/api/user", userUserRoutes);
 app.use("/api/mail", mailUserRoutes);
 app.use("/api/product", productUserRoutes);
 app.use("/api/order", orderUserRoutes);
+app.use("/api/yarn", yarnUserRoutes);
 app.use("/api/cus", cusRoutes);
 app.use("/api/ns", nsRoutes);
 app.use("/api/rep", repRoutes);
+
+
 
 app.get('/500', errorController.get500);
 

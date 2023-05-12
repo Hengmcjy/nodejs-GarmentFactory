@@ -14,6 +14,9 @@ const Company = require("../../models/m-company");
 const Factory = require("../../models/m-factory");
 const NodeStation = require("../../models/m-nodeStation");
 
+const UnitSize = require("../../models/m-unitSize");
+const UnitWeight = require("../../models/m-unitWeight");
+
 
 moment.tz.setDefault('Asia/Bangkok');
 
@@ -155,6 +158,22 @@ exports.getGeneralInfo = async (req, res, next) => {
     // ## get io ID
     const controlApp = await ShareFunc.getControlAppClientControl();
 
+    // ## system info'
+    const sysInfo = [
+      {id: 'mgdb', data: process.env.MGDB},
+      {id: 'appVer', data: process.env.APPVER},
+      {id: 'appName', data: process.env.APPNAME},
+      {id: 'appMail', data: process.env.APPEMAIL},
+    ];
+    // const sysInfo2 = {
+    //   mgdb: process.env.MGDB,
+    //   appVer: process.env.APPVER,
+    //   appName: process.env.APPNAME,
+    //   appMail: process.env.APPEMAIL,
+
+    // };
+    // MGDB=nodeGarmentSystem2  APPVER=1.0  APPNAME=go.garment.com APPEMAIL=go.garment.mail@gmail.com
+
     return res.status(200).json({
       generalInfo: generalInfo,
       targetPlaces: targetPlaces,
@@ -164,6 +183,7 @@ exports.getGeneralInfo = async (req, res, next) => {
       langData: langData,
       userClass: userClass,
       controlApp: controlApp,
+      sysInfo: sysInfo
     });
   } catch (err) {
     console.log(err);

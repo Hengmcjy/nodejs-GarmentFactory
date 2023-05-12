@@ -23,6 +23,7 @@ const Product = require("../models/m-product");
 const Order = require("../models/m-order");
 const OrderProduction = require("../models/m-orderProduction");
 const OrderProductionQueue = require("../models/m-orderProductionQueue");
+const Yarn = require("../models/m-yarn");
 const Customer = require("../models/m-customer");
 const ControlApp = require("../models/m-controlApp");
 const Color = require("../models/m-color");
@@ -31,6 +32,9 @@ const TargetPlace = require("../models/m-targetPlace");
 const NodeFlow = require("../models/m-nodeFlow");
 const NodeStation = require("../models/m-nodeStation");
 const NodeStationLoginRequest = require("../models/m-nodeStationLoginRequest");
+const UnitSize = require("../models/m-unitSize");
+const UnitWeight = require("../models/m-unitWeight");
+const ProductBox = require("../models/m-productBox");
 
 // ## declare route socketIO
 const messageIOU = require("../socketio/user/socketioUser");
@@ -1846,6 +1850,42 @@ exports.checkExistOrderProductionByBarcodeNo= async (companyID, factoryID, order
 // ## order zone ####################################################################
 // #################################################################################
 
+
+// #################################################################################
+// ## yarn zone ####################################################################
+
+exports.getYarnsCount= async (companyID) => {
+  rows = await Yarn.countDocuments({$and: [
+    {"companyID":companyID}
+  ]});
+  return rows;
+}
+
+// ## get yarns
+exports.getYarns= async (companyID) => {
+  // limit = +limit; // ## change to number
+  const yarns = await Yarn.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        yarnID: 1,
+        yarnName: 1,		
+        yarnFullName: 1,	
+        detail: 1,
+        companyID: 1,
+        seq: 1,		
+    }	},
+    { $sort: { seq: 1 } }
+  ]);
+  // console.log(yarns);
+  return yarns;
+}
+
+
+// ## yarn zone ####################################################################
+// #################################################################################
 
 
 // #################################################################################
