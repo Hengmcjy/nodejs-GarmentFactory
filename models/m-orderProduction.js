@@ -9,9 +9,14 @@ const orderProductionSchema = mongoose.Schema({
   bundleID : {type: String},
   productID : {type: String, required: true},  
   productBarcodeNo : {type: String, required: true},   // ## all product เสื้อทุกตัว barcode
+  productBarcodeNoReal : {type: String},  // ## qrcode แท้จิงจะอยู่ที่นี้ ในกรณีใช้ qrcode replacement
   productBarcodeNoReserve : [{       // ## last one @ first element   ตัวล่าสุดเอาไว้ช่องแรก
     productBarcodeNo : {type: String},
-    datetimeReserve : {type: Date}
+    datetimeReserve : {type: Date},
+    createBy: {
+      userID: {type: String},
+      userName: {type: String},
+    }
   }],  
   targetPlace : {
     targetPlaceID : {type: String},

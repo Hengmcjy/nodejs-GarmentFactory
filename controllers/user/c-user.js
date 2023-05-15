@@ -52,7 +52,7 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
-// // ## http://192.168.1.21:3968/api/user/test/test2
+// // ## http://192.168.1.141:3968/api/user/test/test2
 // router.get("/test/test2", userController.getTestTest2);
 exports.getTestTest2 = async (req, res, next) => {
   
@@ -65,6 +65,11 @@ exports.getTestTest2 = async (req, res, next) => {
   // ## test array filter
   // https://www.mongodb.com/docs/manual/reference/operator/aggregation/filter/
   // productBarcodeNo    productBarcodeNoReserve  []
+
+  // ## update QRcode real
+  // const updateQrCodeRealOrderProduction = await ShareFunc.updateQrCodeRealOrderProduction();
+  // console.log(updateQrCodeRealOrderProduction);
+
   const productBarcodeNo = '';
 
   // ## test socket IO
@@ -158,6 +163,8 @@ exports.getGeneralInfo = async (req, res, next) => {
     // ## get io ID
     const controlApp = await ShareFunc.getControlAppClientControl();
 
+    // const updateQrCodeRealOrderProduction = await ShareFunc.updateQrCodeRealOrderProduction();
+
     // ## system info'
     const sysInfo = [
       {id: 'mgdb', data: process.env.MGDB},
@@ -183,7 +190,8 @@ exports.getGeneralInfo = async (req, res, next) => {
       langData: langData,
       userClass: userClass,
       controlApp: controlApp,
-      sysInfo: sysInfo
+      sysInfo: sysInfo,
+      // updateQrCodeRealOrderProduction: updateQrCodeRealOrderProduction
     });
   } catch (err) {
     console.log(err);

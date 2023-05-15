@@ -824,6 +824,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
           bundleID: productBarcodeNoUUID[j],
           productID: productID,
           productBarcodeNo: productBarcodeNo,
+          productBarcodeNoReal: productBarcodeNo,
           productBarcodeNoReserve: [],
           targetPlace: targetPlace,
           productCount: productCount,

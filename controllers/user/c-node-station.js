@@ -1233,7 +1233,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
         );
 
 
-    // ## this for a moment for 
+    // ## this for a moment for cross some department "6.pressing"
     } else if (productionNode.toNode === '6.PRESSING') {
       result1 = await OrderProduction.updateMany(
         {$and: [
@@ -1249,7 +1249,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
         },
       );
       productionNode.fromNode = '6.PRESSING';
-      productionNode.fromNode = '7.QC';
+      productionNode.toNode = '7.QC';
       result2 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},

@@ -5787,6 +5787,37 @@ exports.getCurrentCompanyOrderStyle= async (companyID, orderStatusArr) => {
 // #######################################################################################################
 // ## update manual data
 
+exports.updateQrCodeRealOrderProduction= async () => {
+  const orderProduction = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID": 'c000001'},
+      // {"orderStatus":{$in: orderStatusArr}}
+    ] } },
+    { $project: {			
+      _id: 0,	
+      orderID: 1,
+      companyID: 1,
+      productBarcodeNo: 1,
+  }	},
+  ]);
+  // console.log(orderProduction);
+
+  await this.asyncForEach(orderProduction , async (item) => {
+    const barcode = item.productBarcodeNo;
+    result1 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID": 'c000001'},
+        {"productBarcodeNo": item.productBarcodeNo}, 
+      ]},
+      {
+        "productBarcodeNoReal": barcode,
+
+      }); 
+  });
+  console.log('updateQrCodeRealOrderProduction complete');
+  // return orderProduction;
+}
+
 exports.updateTargetPlaceOrderProduction= async () => {
   result1 = await OrderProduction.updateMany(
     {$and: [
