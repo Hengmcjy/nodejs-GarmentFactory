@@ -1231,6 +1231,39 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
           "productStatus": 'complete'
         },
         );
+
+
+    // ## this for a moment for 
+    } else if (productionNode.toNode === '6.PRESSING') {
+      result1 = await OrderProduction.updateMany(
+        {$and: [
+          {"companyID":companyID},
+          {"factoryID":factoryID},
+          {"orderID":orderID},
+          {"productID":productID},
+          {"productBarcodeNo":{$in: productBarcodeNos}}
+        ]}, 
+        // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+        {
+          $push: {productionNode: productionNode}
+        },
+      );
+      productionNode.fromNode = '6.PRESSING';
+      productionNode.fromNode = '7.QC';
+      result2 = await OrderProduction.updateMany(
+        {$and: [
+          {"companyID":companyID},
+          {"factoryID":factoryID},
+          {"orderID":orderID},
+          {"productID":productID},
+          {"productBarcodeNo":{$in: productBarcodeNos}}
+        ]}, 
+        // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+        {
+          $push: {productionNode: productionNode}
+        },
+      );
+
     } else {
       // ##  edit next node productionNode
       result1 = await OrderProduction.updateMany(

@@ -67,7 +67,8 @@ router.get("/lastroderProduction/runningno/:companyID/:orderID/:productID/:produ
 //
 router.get("/order4/:companyID/:style/:ordertatus/:productStatus", checkAuth, checkUUID, orderController.getCompanyOrderByStyle);
 
-
+// productBarcode  startNO   endNo
+router.get("/order7/getbundlenos/:companyID/:productBarcode/:startNO/:endNo", checkAuth, checkUUID, orderController.getOrderProductBundleNos);
 
 // ## for worker scan zone  for work station
 

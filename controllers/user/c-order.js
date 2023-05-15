@@ -1149,5 +1149,68 @@ exports.getCompanyOrderByStyle = async (req, res, next) => {
   }
 }
 
+// // productBarcode  startNO   endNo
+// router.get("/order7/:companyID/:productBarcode/:startNO/:endNo", checkAuth, checkUUID, orderController.getOrderProductBundleNos);
+exports.getOrderProductBundleNos = async (req, res, next) => {
+  // try {} catch (err) {}
+
+  // console.log('getRepCompanyOrder');
+
+  const companyID = req.params.companyID;
+  const productBarcode = req.params.productBarcode;
+  // const nodeID = req.params.nodeID;
+  const startNO = +req.params.startNO;
+  const endNo = +req.params.endNo;
+  // const repListNameArr = JSON.parse(req.params.repListName);
+  // console.log(companyID, orderStatusArr);
+
+  try {
+
+    // ## gen barcodeNo
+    let productBarcodeNoArr = [];
+    let i = startNO;
+    while (i <= endNo){
+      const num5 = await ShareFunc.setStrLen(5, i);
+      productBarcodeNoArr.push(productBarcode+num5);
+      i++;
+    }
+    const orderProductionBundleNos = await ShareFunc.getCOrderProductionBundleNos(companyID, productBarcodeNoArr);
+
+    // // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
+    // orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
+    // currentCompanyOrder = await ShareFunc.getCurrentCompanyOrderByStyle(companyID, style, orderStatusArr);
+    // currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr);
+    
+    // console.log(orderStyleColorSize, currentCompanyOrder, currentOrderStyle);
+
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      orderProductionBundleNos: orderProductionBundleNos,
+      // currentCompanyOrder: currentCompanyOrder,
+      // currentOrderStyle: currentOrderStyle,
+      // currentProductQtyAllC: currentProductQtyAllC,
+      // orders: orders,
+      // products: products,
+      // orderProductAllQtyRep: orderProductAllQtyRep,
+      // factory: factory,
+      // nodeStation: nodeStation,
+      // nodeFlows: nodeFlows,
+      // nodeFlow: nodeFlow
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO014', 
+        mode:'errOrderProductionBundleNos', 
+        value: "error get Order production bundle no list"
+      }
+    });
+  }
+}
+
+
 // ## order
 // #############################################################

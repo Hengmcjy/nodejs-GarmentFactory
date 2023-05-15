@@ -1110,6 +1110,7 @@ exports.getProducts= async (companyID, page, limit) => {
         productDetail: 1,	
         productCustomerCode: 1,
         productGroupCode: 1,
+        seasonYear: 1,
         productFeature: 1,
         companyID: 1,
         imageProfile: 1,
@@ -1153,6 +1154,7 @@ exports.getProductsByProductIDs= async (companyID, productIDArr, page, limit) =>
         productDetail: 1,	
         productCustomerCode: 1,
         productGroupCode: 1,
+        seasonYear: 1,
         productFeature: 1,
         companyID: 1,
         imageProfile: 1,
@@ -1186,6 +1188,7 @@ exports.getProduct= async (companyID, productID) => {
         productDetail: 1,	
         productCustomerCode: 1,	
         productGroupCode: 1,
+        seasonYear: 1,
         productFeature: 1,
         companyID: 1,
         imageProfile: 1,
@@ -1517,6 +1520,8 @@ exports.getTotalProductionQueue= async (companyID, orderID, productID) => {
   return totalProductionQueueAll.length>0?totalProductionQueueAll:[];
 }
 
+
+
 // // ShareFunc.getProductionQueuedQtySum(companyID, orderID, productID, productBarcode);
 // exports.getProductionQueuedQtySum= async (companyID, orderID, productID, productBarcode) => {
 //   // limit = +limit; // ## change to number
@@ -1818,6 +1823,32 @@ exports.getTotalRowsProductionQueueByFactoryProductIDs= async (companyID, factor
     rows = countProductionQueueAll[0].count;
   }
   return rows;
+}
+
+// ShareFunc.getCOrderProductionBundleNos(companyID, productBarcodeNo);
+exports.getCOrderProductionBundleNos= async (companyID, productBarcodeNoArr) => {
+  // productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
+  // limit = +limit; // ## change to number
+  const orderProductionBundleNos = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"orderID":orderID},
+      // {"productID":productID},
+      {"productBarcodeNo":{$in: productBarcodeNoArr}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        // orderID: 1,	
+        // productID: 1,
+        productBarcodeNo: 1,
+        bundleNo: 1,
+    }	}
+  ]);
+  // console.log(orderProductionBundleNos);
+  return orderProductionBundleNos;
 }
 
 // checkExistOrderProductionByBarcodeNo
