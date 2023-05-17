@@ -489,6 +489,61 @@ exports.putOrderColorUpdate = async (req, res, next) => {
   }
 }
 
+// // ## /api/order/update4/qrcode/replacement
+// router.put("/update4/qrcode/replacement", checkAuth, checkUUID, orderController.putOrderProductionQrcodeReplacement);
+exports.putOrderProductionQrcodeReplacement = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('putOrderColorUpdate');
+  const data = req.body;
+
+  try {
+    // ##  create order 
+    const companyID = data.companyID;
+    const factoryID = data.factoryID;
+    const orderID = data.orderID;
+    const productBarcodeNo = data.productBarcodeNo;
+    const productBarcodeNoNew = data.productBarcodeNoNew;
+    let productBarcodeNoReserve = data.productBarcodeNoReserve;
+    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    productBarcodeNoReserve.datetime = current;
+
+    const orderProductionUpdate = await OrderProduction.updateOne({$and: [
+        {"companyID":companyID},
+        // {"factoryID":factoryID},
+        {"orderID":orderID}, 
+        {"productBarcodeNoReal":productBarcodeNo}, 
+      ]} , 
+      {
+        "productBarcodeNo": productBarcodeNoNew,
+        $push: {productBarcodeNoReserve: {$each:[productBarcodeNoReserve],  $position: 0}}  // ## add new element at the first
+      }); 
+
+
+    // ## get 1 order
+    const orderProduct = await ShareFunc.getOrderProduct01(companyID, factoryID, productBarcodeNoNew);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      orderProduct: orderProduct
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO015', 
+        mode:'errEditOrderProductionQrcodeReplacement', 
+        value: "error edit order production Qrcode replacement"
+      }
+    });
+  }
+}
+
+
 // // // ## /api/order/orderProduction/createnew
 // // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
 // exports.postOrderProductionCreateNew = async (req, res, next) => {
@@ -614,6 +669,7 @@ exports.postOrderProductionQueueCreateNew = async (req, res, next) => {
           orderID: orderID,
           productID: productID,
           productBarcodeNo: productBarcodeNo,
+          productBarcodeNoReal: productBarcodeNo,
           productBarcodeNoReserve: [],
           productionDate: current,
           productStatus: 'normal',
@@ -717,6 +773,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     const toNode1 = queueInfo[0].toNode;
     const numberFrom1 = queueInfo[0].numberFrom;
     const numberTo1 = queueInfo[queueInfo.length-1].numberTo;
+    const yarnLot = queueInfo[0].yarnLot;
     // console.log(bundleNoFrom,bundleNoTo,toNode1,numberFrom1,numberTo1);
 
     const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
@@ -794,6 +851,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         numberTo: numberTo1,
         bundleNoFrom: bundleNoFrom,
         bundleNoTo: bundleNoTo,
+        yarnLot: yarnLot,
         createBy: createBy
       }];
       // console.log(companyID, current, userID, logID, note);
@@ -831,7 +889,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
           productionDate: current,
           productStatus: 'normal',
           forLoss: forLoss,
-          //productProblem: [],
+          yarnLot: yarnLot,
           productionNode: [{
             fromNode: 'starterNode',
             toNode: toNode,

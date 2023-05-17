@@ -12,7 +12,8 @@ const orderProductionSchema = mongoose.Schema({
   productBarcodeNoReal : {type: String},  // ## qrcode แท้จิงจะอยู่ที่นี้ ในกรณีใช้ qrcode replacement
   productBarcodeNoReserve : [{       // ## last one @ first element   ตัวล่าสุดเอาไว้ช่องแรก
     productBarcodeNo : {type: String},
-    datetimeReserve : {type: Date},
+    datetime : {type: Date},
+    nodeID : {type: String},
     createBy: {
       userID: {type: String},
       userName: {type: String},
@@ -28,10 +29,9 @@ const orderProductionSchema = mongoose.Schema({
   productionDate : {type: Date, required: true},  // ## วันที่เริ่มต้นผลิต
   productStatus : {type: String},  
   forLoss : {type: Boolean},  
-  // productProblem: [{   // ## 
-  //   productProblemID : {type: String},
-  //   productProblemDate : {type: String}, 
-  // }],
+  yarnLot: [{   // ## 
+    yarnLotID : {type: String},
+  }],
   productionNode: [{   // ## อยู่ในการผลิตขั้นตอนไหน
     fromNode : {type: String},
     toNode : {type: String},

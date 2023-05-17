@@ -109,6 +109,14 @@ nsController.getProblemProductCFN);
 router.get("/node15/orderProduction/repair/:companyID/:factoryID/:nodeID/:productStatus/:page/:limit", 
 nsController.getRepairProductCFN);
 
+// ##
+router.get("/node16/orderProduction/qrcodelist/:companyID/:factoryID/:nodeID/:style/:productStatus/:page/:limit", 
+nsController.getQRCodeListProductStyleCFN);
+
+// ##
+router.get("/node17/orderProductionZoneSizeColor/qrcodelist/:companyID/:factoryID/:nodeID/:style/:zone/:size/:color/:productStatus/:page/:limit", 
+nsController.getQRCodeListProductStyleZoneSizeColorCFN);
+
 // ## worker zone 
 // #########################################################################################
 
@@ -131,10 +139,7 @@ nsController.getRepairProductCFN);
 // router.get("/noder/rep1/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName"
 //         , nsController.getRepCurrentProductQtyCFN);
 
-// // ##
-// // ## get node product record productBarcodeNo  getDatarecordProductBarcodeNo
-// router.get("/noder/reptest/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName"
-// , nsController.getDatarecordProductBarcodeNo);
+
 
 // ## report..... 
 // #######################################################################################################

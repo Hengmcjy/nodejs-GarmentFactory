@@ -17,6 +17,9 @@ const orderProductionQueueSchema = mongoose.Schema({
     productCount : {type: Number},
     numberFrom : {type: Number},
     numberTo : {type: Number},
+    yarnLot: [{   // ## 
+      yarnLotID : {type: String},
+    }],
     createBy: {
       userID: {type: String},
       userName: {type: String},

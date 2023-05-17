@@ -1210,6 +1210,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
   const orderID = data.orderID;
   const productID = data.productID;
   let productionNode = data.productionNode;
+  const washingAndPressingMerge = data.washingAndPressingMerge;
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   productionNode.datetime = current;
   try {
@@ -1234,7 +1235,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
 
 
     // ## this for a moment for cross some department "6.pressing"
-    } else if (productionNode.toNode === '6.PRESSING') {
+    } else if (productionNode.toNode === '6.PRESSING' && washingAndPressingMerge) {
       result1 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
@@ -1590,6 +1591,94 @@ exports.getRepairProductCFN = async (req, res, next) => {
       // userID: userID,
       currentProductAllDetailCFN: currentProductAllDetailCFN,
       productionCount: productionRepairCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errns020', 
+        mode:'errGetProductRepair', 
+        value: "error get product repair"
+      }
+    });
+  }
+}
+
+// router.get("/node16/orderProduction/qrcodelist/:companyID/:factoryID/:nodeID/:style/:productStatus/:page/:limit", 
+// nsController.getQRCodeListProductStyleCFN);
+exports.getQRCodeListProductStyleCFN = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getRepairProductCFN');
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const nodeID = req.params.nodeID;
+  const style = req.params.style;
+  const page = +req.params.page;
+  const limit = +req.params.limit;  // ## records we need to get
+  const productStatusArr = JSON.parse(req.params.productStatus);
+
+  // console.log(nodeID);
+  try {
+
+
+    const currentProductStyleQRCodeCFN = 
+      await ShareFunc.getCFNCurrentProductStyleQRCode(companyID, factoryID, nodeID, style, productStatusArr, page, limit);
+    //
+    const currentProductStyleCount = await ShareFunc.getCFNCurrentProductStyleCount(companyID, factoryID, nodeID, style, productStatusArr);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      // userID: userID,
+      currentProductStyleQRCodeCFN: currentProductStyleQRCodeCFN,
+      currentProductStyleCount: currentProductStyleCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errns020', 
+        mode:'errGetProductRepair', 
+        value: "error get product repair"
+      }
+    });
+  }
+}
+
+// router.get("/node17/orderProductionZoneSizeColor/qrcodelist/:companyID/:factoryID/:nodeID/:style/:zone/:size/:color/:productStatus/:page/:limit", 
+// nsController.getQRCodeListProductStyleZoneSizeColorCFN);
+exports.getQRCodeListProductStyleZoneSizeColorCFN = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getRepairProductCFN');
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const nodeID = req.params.nodeID;
+  const style = req.params.style;
+  const zone = req.params.zone;
+  const size = req.params.size;
+  const color = req.params.color;
+  const page = +req.params.page;
+  const limit = +req.params.limit;  // ## records we need to get
+  const productStatusArr = JSON.parse(req.params.productStatus);
+
+  // console.log(style, zone, size, color);
+  try {
+
+
+    const currentProductStyleQRCodeCFN = 
+      await ShareFunc.getCFNCurrentProductStyleZoneSizeColorQRCode(companyID, factoryID, nodeID, style, zone, size, color, productStatusArr, page, limit);
+    //
+    const currentProductStyleCount = 
+      await ShareFunc.getCFNCurrentProductStyleZoneSizeColorCount(companyID, factoryID, nodeID, style, zone, size, color, productStatusArr);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      // userID: userID,
+      currentProductStyleQRCodeCFN: currentProductStyleQRCodeCFN,
+      currentProductStyleCount: currentProductStyleCount,
     });
   } catch (err) {
     return res.status(501).json({

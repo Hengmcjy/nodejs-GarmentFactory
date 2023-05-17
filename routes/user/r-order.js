@@ -39,6 +39,9 @@ router.put("/update2/setzone", checkAuth, checkUUID, orderController.putOrderZon
 // ## /api/order/update2/setcolor
 router.put("/update3/setcolor", checkAuth, checkUUID, orderController.putOrderColorUpdate);
 
+// ## /api/order/update4/qrcode/replacement
+router.put("/update4/qrcode/replacement", checkAuth, checkUUID, orderController.putOrderProductionQrcodeReplacement);
+
 // // ## /api/order/orderProduction/createnew
 // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
 
@@ -69,6 +72,10 @@ router.get("/order4/:companyID/:style/:ordertatus/:productStatus", checkAuth, ch
 
 // productBarcode  startNO   endNo
 router.get("/order7/getbundlenos/:companyID/:productBarcode/:startNO/:endNo", checkAuth, checkUUID, orderController.getOrderProductBundleNos);
+
+
+
+// router.get("/order8/getqrcodelist/:companyID/:factoryID/:page/:limit", checkAuth, checkUUID, orderController.getOrderProductQRCodeList);
 
 // ## for worker scan zone  for work station
 
