@@ -1252,6 +1252,11 @@ exports.getProductImageProfiles= async (companyID, productIDs) => {
 // #################################################################################
 // ## order zone ####################################################################
 
+exports.editOrderForLossToStyleZone= async (companyID, factoryID, orderID, productBarcode, targetPlace,  forLossQty) => {
+  // find order zone list
+
+}
+
 // ## get 1 order
 exports.getOrder= async (companyID, orderID) => {
   // limit = +limit; // ## change to number
@@ -1446,6 +1451,8 @@ exports.getLastProductionQueue= async (companyID, orderID, productID, page, limi
   // console.log(queueInfos);
   return queueInfos?queueInfos:[];
 }
+
+
 
 // const runningNo = await ShareFunc.getLastRunningNoOrderProduction(companyID, orderID, productID, productBarcode);
 exports.getLastRunningNoOrderProduction= async (companyID, orderID, productID, productBarcode) => {

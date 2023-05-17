@@ -765,6 +765,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     const targetPlace = data.targetPlace;
     let queueInfo = data.queueInfo;  // array
     const qty = data.qty;
+    const orderQty = data.orderQty; // full order zone qty
     const forLoss = data.forLoss;
     const productStatusArr = [''];
 
@@ -795,7 +796,10 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     // console.log(test);
     // console.log(uuidv4());
 
+    
+
     let maxNo = +queueInfo[0].numberFrom - 1;
+    let numberTo = 0;
     // let maxNo = 0;
     await this.asyncForEach(queueInfo, async (item1) => {
       const uuid = uuidv4();
@@ -814,19 +818,38 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       // const numberFrom = item1.numberFrom;
       // const numberTo = item1.numberTo;
       const numberFrom = +maxNo + 1;
-      const numberTo = +maxNo + +productCount;
+      numberTo = +maxNo + +productCount;
       item1.numberFrom = numberFrom;
       item1.numberTo = numberTo;
+      let forLossQty = 0;
       for(let i = numberTo; i >= numberFrom;i--) {
         // console.log(i);
+        if (i > orderQty) { forLossQty++; }
         const num5 = await ShareFunc.setStrLen(5, i);
         productBarcodeNo.push(productBarcode+num5);
         productBarcodeNoUUID.push(uuid);
         maxNo++;
       }
+      item1.forLossQty = forLossQty;
+      forLossQty = 0;
     });
     // console.log(productBarcodeNo);
     // console.log(queueInfo);
+    
+    // ## find forLossQty
+    // ## get last running number order production  by barcodeNo
+    // console.log(numberTo);
+    const productBarcodeX = queueInfo[0].productBarcode; 
+    const runningLastNo = await ShareFunc.getLastRunningNoOrderProduction(companyID, orderID, productID, productBarcodeX);
+    let forLossQty = 0;
+    if (numberTo > orderQty) {  // not over qty
+      if (+runningLastNo <= orderQty) {
+        forLossQty = numberTo - orderQty;
+      } else { // +runningLastNo > orderQtyo
+        forLossQty = numberTo - +runningLastNo;
+      }
+    }
+
 
     await ShareFunc.upsertUserSession1hr(userID);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -846,6 +869,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         factoryID: factoryID,
         queueDate: current,
         forLoss: forLoss,
+        forLossQty: forLossQty,
         toNode: toNode1,
         numberFrom: numberFrom1,
         numberTo: numberTo1,
@@ -864,8 +888,10 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
           {"orderID":orderID},
           {"productID":productID},
         ]}, 
-        // {$push: {queueInfo: {$each:[queueInfo],  $position: 0}}},  // ## add new element at the first
-        {$push: {queueInfo: {$each:queueInfo,  $position: 0}}},  // ## add new element at the first
+        {
+          // "forLossQty": forLossQty,
+          $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
+        },
         {upsert: true});
   
       // ## add new record to orderProduction n record
@@ -874,6 +900,8 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       let orderProductionArr = [];
       let j = 0;
       await this.asyncForEach(productBarcodeNo , async (productBarcodeNo) => {
+        const runningNO = +productBarcodeNo.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+        const forLossX = runningNO > orderQty;
         orderProductionArr.push({
           companyID: companyID,
           factoryID: factoryID,
@@ -888,7 +916,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
           productCount: productCount,
           productionDate: current,
           productStatus: 'normal',
-          forLoss: forLoss,
+          forLoss: forLossX,
           yarnLot: yarnLot,
           productionNode: [{
             fromNode: 'starterNode',
@@ -903,6 +931,13 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       });
       // console.log(orderProductionArr);
       const result2 = await OrderProduction.insertMany(orderProductionArr);
+
+      // ## edit order if qty > orderQty ----> forLoss case
+      if (forLossQty > 0) {
+        const resultX = await ShareFunc.editOrderForLossToStyleZone
+                              (companyID, factoryID, orderID, productBarcode, targetPlace,  forLossQty);
+        // companyID factoryID orderID productBarcode targetPlace  forLossQty
+      }
 
     } else {  // ## err --> had Order Production  BarcodeNo , existed
       return res.status(422).json({

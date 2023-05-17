@@ -11,6 +11,7 @@ const orderProductionQueueSchema = mongoose.Schema({
     queueDate : {type: Date},  // ## วันที่ queue
     factoryID: { type: String, required: true },  // ## โรงงานไหน
     forLoss : {type: Boolean},
+    forLossQty : {type: Number},
     bundleNo : {type: Number},
     bundleID : {type: String},
     toNode : {type: String},
