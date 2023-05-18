@@ -63,6 +63,8 @@ exports.test1= async () => {
 
 }
 
+
+
 exports.asyncForEach= async (array, callback) => {
 // async function asyncForEach(array, callback) {
   for (let index = 0; index < array.length; index++) {
@@ -89,6 +91,20 @@ exports.asyncForEach4= async (array, callback) => {
   for (let index = 0; index < array.length; index++) {
     await callback(array[index], index, array);
   }
+}
+
+// function escapeRegExp(str) {
+//   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+// }
+exports.escapeRegExp= async (str) => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+// function strReplaceAll(str, find, replace) {
+//   return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);
+// }
+exports.strReplaceAll= async (str, find, replace) => {
+  return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);
 }
 
 function returnDDMMYYYY(numFromToday = 0, sign = '-'){
@@ -1253,9 +1269,137 @@ exports.getProductImageProfiles= async (companyID, productIDs) => {
 // ## order zone ####################################################################
 
 exports.editOrderForLossToStyleZone= async (companyID, factoryID, orderID, productBarcode, targetPlace,  forLossQty) => {
-  // find order zone list
+  // this.strReplaceAll(barcodeNo.substr(this.targetIDPos, this.targetIDDigit), '-', '');
+  // const runningNO = +productBarcodeNo.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+  const productColor = productBarcode.substr(+process.env.colorPos, 2);
+  const productSize = await this.strReplaceAll(productBarcode.substr(+process.env.sizePos, +process.env.sizeDigit), '-', '');
+  // console.log(productColor, productSize);
 
+  // find order zone list
+  const order = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        orderID: 1,
+        companyID: 1,
+        // factoryID: 1,
+        // bundleNo: 1,
+        orderStatus: 1,
+        // orderDetail: 1,		
+        // orderDate: 1,	
+        // deliveryDate: 1,
+        // customerOR: 1,		
+        // orderTargetPlace: 1,	
+        // orderColor: 1,
+        productOR: 1,	
+        // createBy: 1,
+
+    }	},
+    { $unwind: "$productOR.productORInfo" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,	
+      orderID: 1,	
+      orderStatus: 1,
+      // factoryID: "$productOR.factoryID",
+      productBarcode: "$productOR.productORInfo.productBarcode",
+      targetPlace: "$productOR.productORInfo.targetPlace",
+      productColor: "$productOR.productORInfo.productColor",
+      productSize: "$productOR.productORInfo.productSize",
+      productQty: "$productOR.productORInfo.productQty",
+      productLossQty: "$productOR.productORInfo.productLossQty",
+      productYear: "$productOR.productORInfo.productYear",
+      productSex: "$productOR.productORInfo.productSex",
+    }},
+    { $match: { $and: [
+      // {"factoryID":factoryID},
+      {"productColor":productColor},
+      {"productSize":productSize},
+      {"targetPlace.targetPlaceID":targetPlace.targetPlaceID},
+      {"productQty": { $gt: 0}} , 
+    ] } },
+    { $project: {			
+      _id: 1,	
+      orderID: 1,
+      companyID: 1,
+      orderStatus: 1,
+      factoryID: 1,	
+
+      productBarcode: 1,	
+      targetPlace: 1,
+      // customerOR: 1,		
+      // orderTargetPlace: 1,	
+      productColor: 1,
+      productSize: 1,	
+      productQty: 1,
+      productLossQty: 1,
+      productYear: 1,
+      productSex: 1,
+    }	},
+  ]);
+  // console.log(order.length, order);
+  // console.log(productBarcode );
+  const order1 = order.length>0?order[0]:false;
+  const forLossQtyTotal = +forLossQty + +order1.productLossQty;
+  // console.log('order1 ==== ',order1 );
+  // console.log(forLossQtyTotal );
+  if (order1) {
+    const result1 = await Order.updateOne(
+      {$and: [
+        {"companyID":companyID},
+        {"orderID":order1.orderID}
+        // {"factoryID":factoryID},
+        // {"nodeID":nodeID},
+      ]},
+      {$set: { "productOR.productORInfo.$[elem].productLossQty" : forLossQtyTotal}}, 
+      {
+        multi: true, 
+        arrayFilters: [  {
+          "elem.productBarcode": order1.productBarcode,  
+          "elem.targetPlace.targetPlaceID": order1.targetPlace.targetPlaceID,
+          "elem.targetPlace.countryID": order1.targetPlace.countryID,
+          "elem.productColor": order1.productColor,
+          "elem.productSize": order1.productSize,
+        } ] 
+      });
+  }
+  return true;
 }
+
+// exports.updateAccJournallist= async (companyID, acID, journal, current) => {
+//   const status = 'o'; // ## o= open
+//   const journal_id = [journal._id];
+//   resultAccJournal = await AccJournal.updateMany(
+//     {$and: [
+//       {"companyID":companyID} , 
+//       {"acID":acID},
+//       {"journalID":journal.journalID} , 
+//       {"status":status} ,
+//     ]},
+//     {$set: { "journal.$[elem].editDate" : current, 
+//       "journal.$[elem].amount" : journalArr[0].amount, "journal.$[elem].note" : journalArr[0].note}}, 
+//     {
+//       multi: true,
+//       arrayFilters: [  {"elem.lottoBetType": "up2" , "elem.betNumber": upNum2, "elem.cancel": false} ]
+//     });
+// }
+
+// const editUserUUIDNodeStation = await NodeStation.updateOne(
+//   {$and: [
+//     {"companyID":companyID},
+//     {"factoryID":factoryID},
+//     {"nodeID":nodeID},
+//   ]},
+//   {$set: { "userNode.$[elem].uuid" : uuid}}, 
+//   {
+//     multi: true, 
+//     arrayFilters: [  {"elem.stationID": stationID } ] 
+//   });
+
+
 
 // ## get 1 order
 exports.getOrder= async (companyID, orderID) => {
