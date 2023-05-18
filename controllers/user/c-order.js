@@ -867,6 +867,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         orderID: orderID,
         productID: productID,
         factoryID: factoryID,
+        productBarcode: productBarcode,
         queueDate: current,
         forLoss: forLoss,
         forLossQty: forLossQty,

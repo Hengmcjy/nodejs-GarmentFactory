@@ -66,9 +66,18 @@ exports.getTestTest2 = async (req, res, next) => {
   // https://www.mongodb.com/docs/manual/reference/operator/aggregation/filter/
   // productBarcodeNo    productBarcodeNoReserve  []
 
+ 
+  // // editQueueInfoOfOrderProductionQueue
+  // // orderProductionQueue
+  // const result01 = await ShareFunc.editQueueInfoOfOrderProductionQueue_CancelOrderProduction01();
+
   // ## update QRcode real
   // const updateQrCodeRealOrderProduction = await ShareFunc.updateQrCodeRealOrderProduction();
   // console.log(updateQrCodeRealOrderProduction);
+
+  //  edit OrderProduction
+  const editOrderProduction02 = await ShareFunc.editOrderProduction02();
+  
 
   const productBarcodeNo = '';
 

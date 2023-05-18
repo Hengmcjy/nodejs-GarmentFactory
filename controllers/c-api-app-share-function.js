@@ -6724,5 +6724,37 @@ exports.xxFindOrder= async () => {
 
 }
 
+exports.editQueueInfoOfOrderProductionQueue_CancelOrderProduction01= async () => {
+  // const orderID = 'AA0Q1A3A';
+  // const productBarcode = 'AA0Q1A3A    UK-------23BK--------M---';
+  // const productBarcode2 = 'AA0Q1A3A    JAPN-----23GR--------M---';
+  
+  result1 = await OrderProductionQueue.updateOne({$and: [
+    {"companyID":'c000001'} , 
+    {"orderID":orderID} ,
+  ]} , 
+  {
+    $pull: {queueInfo: {productBarcode: productBarcode}}
+  });
+  // result1 = await User.updateOne({userID:userID} , {$pull: {numberSet: {numberSetID: numberSetID}}}).session(session);
+  console.log('editQueueInfoOfOrderProductionQueue ok');
+}
+
+exports.editOrderProduction02= async () => {
+  // const orderID = 'AA0Q1A3A';
+  // const orderID2 = 'AA0PKA3A';
+  // // const productBarcodeNo = '';
+  // const productBarcode = 'AA0Q1A3A    UK-------23BK--------M---'; 
+  // const productBarcode2 = 'AA0PKA3A    SGHI-----23RW--------S--F';
+
+  // deleteALL = await OrderProduction.deleteMany({$and: [
+  //   {"companyID":'c000001'} , 
+  //   {"orderID":orderID} ,
+  //   {"productBarcodeNo": new RegExp(productBarcode) }  // function "like" = sql
+  // ]}); 
+
+  console.log('editOrderProduction02 ok');
+}
+
 // ## pdate manual data
 // #######################################################################################################
