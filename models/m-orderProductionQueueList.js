@@ -18,6 +18,7 @@ const orderProductionQueueListSchema = mongoose.Schema({
   bundleNoTo : {type: Number},
   yarnLot: [{   // ## 
     yarnLotID : {type: String},
+    yarnWeight : {type: Number},
   }],
   createBy: {
     userID: {type: String},

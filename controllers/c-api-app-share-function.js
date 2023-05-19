@@ -23,6 +23,7 @@ const Product = require("../models/m-product");
 const Order = require("../models/m-order");
 const OrderProduction = require("../models/m-orderProduction");
 const OrderProductionQueue = require("../models/m-orderProductionQueue");
+const OrderProductionQueueList = require("../models/m-orderProductionQueueList");
 const Yarn = require("../models/m-yarn");
 const Customer = require("../models/m-customer");
 const ControlApp = require("../models/m-controlApp");
@@ -820,7 +821,9 @@ exports.getControlApp= async () => {
 
 // await ShareFunc.getControlAppClientControl();
 exports.getControlAppClientControl= async () => {
+  // console.log('appControl');
   const controlAppf = await ControlApp.findOne();
+  // console.log(controlAppf);
   const controlApp = {
     clientControl: controlAppf.clientControl,
   };
@@ -1596,7 +1599,52 @@ exports.getLastProductionQueue= async (companyID, orderID, productID, page, limi
   return queueInfos?queueInfos:[];
 }
 
+exports.getOrderQueueList= async (companyID, orderID, productBarcode, page, limit) => {
+  // limit = +limit; // ## change to number
+  // productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
+  const queueList = await OrderProductionQueueList.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":orderID},
+      {"productBarcode":productBarcode},
+    ] } },
+    { $project: {			
+      _id: 1,	
+      orderID: 1,
+      companyID: 1,
+      factoryID: 1,
+      productID: 1,
+      productBarcode: 1,
+      queueDate: 1,		
+      forLossQty: 1,	
+      toNode: 1,
+      numberFrom: 1,
+      numberTo: 1,
+      bundleNoFrom: 1,
+      bundleNoTo: 1,
+      yarnLot: 1,
+      createBy: 1,
+    }	},
+    { $sort: { queueDate: -1 } },
+    { $skip: (page-1) *  limit},
+    { $limit: limit }
+  ]);
 
+  // console.log(queueInfos);
+  return queueList?queueList:[];
+}
+
+// ShareFunc.getOrderQueueListCount(companyID, orderID, productBarcode);
+exports.getOrderQueueListCount= async (companyID, orderID, productBarcode) => {
+  rows = await OrderProductionQueueList.countDocuments({$and: [
+    {"companyID":companyID},
+    // {"factoryID":factoryID},
+    {"orderID":orderID},
+    {"productBarcode":productBarcode},
+  ]});
+  return rows;
+}
 
 // const runningNo = await ShareFunc.getLastRunningNoOrderProduction(companyID, orderID, productID, productBarcode);
 exports.getLastRunningNoOrderProduction= async (companyID, orderID, productID, productBarcode) => {
@@ -5087,6 +5135,7 @@ exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, product
 exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
+  // console.log(companyID, factoryIDArr, productStatusArr);
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -6754,6 +6803,92 @@ exports.editOrderProduction02= async () => {
   // ]}); 
 
   console.log('editOrderProduction02 ok');
+}
+
+exports.getCCurrentProductQtyAllXX = async () => {
+  // ## CFN = /:companyID/:factoryID/:nodeID
+  // console.log('getRepCFNCurrentProductQtyByOrderID');
+  // const
+  // const productStatus = ['normal', 'problem', 'repaired'];
+  // const factoryIDArrx = [ 'f000001', 'f000002', 'f000003' ];
+  // const orderProductRep = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":'c000001'} , 
+  //     {"factoryID":{$in: factoryIDArrx}},
+  //     {"productStatus":{$in: productStatus}}
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,
+  //       // factoryID: 1,		
+  //       // orderID: 1,	
+  //       // bundleNo: 1,
+  //       productID: 1,
+  //       productBarcodeNo: 1,
+  //       productBarcodeNoReal: 1,
+  //       // productCount: 1,
+  //       // productionDate: 1,
+  //       // productStatus: 1,
+  //       productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+  //   }	},
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     // factoryID: 1,		
+  //     // orderID: 1,	
+  //     // bundleNo: 1,
+  //     productID: 1,
+  //     productBarcodeNo: 1,
+  //     productBarcodeNoReal: 1,
+  //     targetPlace: 1,
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     bundleNo: 1,
+  //     bundleID: 1,
+
+  //     // productStatus: 1,
+  //     // fromNode: "$productionNode.fromNode",
+  //     // toNode: "$productionNode.toNode",
+  //     // datetime: "$productionNode.datetime",
+  //     // createBy: "$productionNode.createBy",
+  //   }},
+  //   { $match: { $and: [
+  //     {"size":'---'} , 
+
+  //   ] } },
+
+  // ]);
+  console.log(orderProductRep);
+
+  // const orderProductRepF = await orderProductRep.map(fw => ({
+  //   companyID: fw._id.companyID, 
+  //   productID: fw._id.productID,
+  //   style: fw._id.style,
+  //   size: fw._id.size,
+  //   targetPlace: fw._id.targetPlace,
+  //   color: fw._id.color,
+  //   countQty: fw.countQty,
+  // }));
+  // console.log(orderProductRepF);
+  // return orderProductRepF;
+
+//   const barcodes = [
+//     'AA0Q1A3A    ---------23--------------00001',
+//     'AA0Q1A3A    ---------23--------------00002',
+//     'AA0Q1A3A    ---------23--------------00003',
+//     'AA0Q1A3A    ---------23--------------00004',
+//     'AA0Q1A3A    ---------23--------------00005'
+//   ];
+//   deleteALL = await OrderProduction.deleteMany({$and: [
+//     {"companyID":'c000001'} , 
+//     {"orderID":'AA0Q1A3A'} , 
+//       {"factoryID":{$in: factoryIDArrx}},
+//       {"productStatus":{$in: productStatus}},
+//       {"productBarcodeNoReal":{$in: barcodes}},
+//   ]}); 
 }
 
 // ## pdate manual data

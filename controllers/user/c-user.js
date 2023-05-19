@@ -76,8 +76,9 @@ exports.getTestTest2 = async (req, res, next) => {
   // console.log(updateQrCodeRealOrderProduction);
 
   //  edit OrderProduction
-  const editOrderProduction02 = await ShareFunc.editOrderProduction02();
+  // const editOrderProduction02 = await ShareFunc.editOrderProduction02();
   
+  const editOrderProduction02 = await ShareFunc.getCCurrentProductQtyAllXX();
 
   const productBarcodeNo = '';
 

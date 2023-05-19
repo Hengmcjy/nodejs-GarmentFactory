@@ -774,13 +774,20 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     const toNode1 = queueInfo[0].toNode;
     const numberFrom1 = queueInfo[0].numberFrom;
     const numberTo1 = queueInfo[queueInfo.length-1].numberTo;
-    const yarnLot = queueInfo[0].yarnLot;
+    const yarnLot = data.yarnLots;
     // console.log(bundleNoFrom,bundleNoTo,toNode1,numberFrom1,numberTo1);
 
     const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     // queueInfo.queueDate = current;
     // console.log(targetPlace);
     // console.log(queueInfo);
+
+    // console.log(yarnLot);
+    let yarnLot2 = [];
+    await this.asyncForEach(yarnLot, async (item1) => {
+      yarnLot2.push({yarnLotID: item1.yarnLotID});
+    });
+    // console.log(yarnLot2);
 
     await queueInfo.sort((a,b)=>{return a.bundleNo >b.bundleNo?1:a.bundleNo <b.bundleNo?-1:0}); // ## เรียง น้อยไปมาก asec
 
@@ -830,6 +837,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         productBarcodeNoUUID.push(uuid);
         maxNo++;
       }
+      item1.yarnLot = yarnLot2;
       item1.forLossQty = forLossQty;
       forLossQty = 0;
     });
@@ -876,7 +884,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         numberTo: numberTo1,
         bundleNoFrom: bundleNoFrom,
         bundleNoTo: bundleNoTo,
-        yarnLot: yarnLot,
+        yarnLot: yarnLot2,
         createBy: createBy
       }];
       // console.log(companyID, current, userID, logID, note);
@@ -918,7 +926,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
           productionDate: current,
           productStatus: 'normal',
           forLoss: forLossX,
-          yarnLot: yarnLot,
+          yarnLot: yarnLot2,
           productionNode: [{
             fromNode: 'starterNode',
             toNode: toNode,
@@ -972,6 +980,50 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     });
   }
 }
+
+// // ## get order list /api/order/getqlist1/:companyID/:userID/:orderID/:productBarcode/:page/:limit  getOrdersQueueList
+// router.get("/getqlist1/:companyID/:userID/:orderID/:productBarcode/:page/:limit", checkAuth, checkUUID, orderController.getOrdersQueueList);
+exports.getOrdersQueueList = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const orderID = req.params.orderID;
+  const productBarcode = req.params.productBarcode;
+  const page = +req.params.page;
+  const limit = +req.params.limit;  // ## records we need to get
+  const userID = req.userData.tokenSet.userID;
+  // console.log('getOrdersQueueList');
+  // console.log(companyID, orderID, productBarcode);
+  try {
+    //  getOrderQueueList= async (companyID, orderID, productBarcode, page, limit)
+    const queueList = await ShareFunc.getOrderQueueList(companyID, orderID, productBarcode, page, limit);
+    const queueListCount = await ShareFunc.getOrderQueueListCount(companyID, orderID, productBarcode);
+    // console.log(queueListCount, queueList);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      queueList: queueList,
+      queueListCount: queueListCount,
+      // sumProductionQueueByBarcode: sumProductionQueueByBarcode,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO016', 
+        mode:'errGetOrderListQueue', 
+        value: "error get order list queue"
+      }
+    });
+  }
+}
+
 
 // // ## get getProductionQueueBarcodeSumQty
 // router.get("/order3/getsumqty/queue/:companyID/:orderID/:productID", 
