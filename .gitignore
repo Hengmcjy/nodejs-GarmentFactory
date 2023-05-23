@@ -17,6 +17,10 @@ mykeyii.json
 
 *.rar
 *.zip
+*.xls
+*.xlsx
+*.doc
+*.docx
 
 # # IDEs and editors
 # .idea/
