@@ -7,6 +7,7 @@ const languageSchema = mongoose.Schema({
   seq: { type: Number },
   show: { type: Boolean},
   languageData: [{   // ## 
+    Idno: { type: Number },
     lType : {type: String},
     lID : {type: String},
     lText : {type: String},

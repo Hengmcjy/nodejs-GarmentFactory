@@ -7,6 +7,7 @@ const moment = require('moment-timezone');
 const jwt = require("jsonwebtoken");
 const nodemailer = require('nodemailer');
 const bcrypt = require("bcryptjs");
+const XLSX = require("xlsx");
 
 const Session1hr = require('../models/m-session1hrs');  // check this for current login
 const Session1ys = require('../models/m-session1ys');
@@ -36,6 +37,7 @@ const NodeStationLoginRequest = require("../models/m-nodeStationLoginRequest");
 const UnitSize = require("../models/m-unitSize");
 const UnitWeight = require("../models/m-unitWeight");
 const ProductBox = require("../models/m-productBox");
+
 
 // ## declare route socketIO
 const messageIOU = require("../socketio/user/socketioUser");
@@ -2046,6 +2048,7 @@ exports.getCOrderProductionBundleNos= async (companyID, productBarcodeNoArr) => 
         productBarcodeNo: 1,
         productBarcodeNoReal: 1,
         bundleNo: 1,
+        yarnLot:1,
     }	}
   ]);
   // console.log(orderProductionBundleNos);
@@ -6893,3 +6896,118 @@ exports.getCCurrentProductQtyAllXX = async () => {
 
 // ## pdate manual data
 // #######################################################################################################
+
+
+// #######################################################################################################
+// ## xlsx
+
+// ## import language master
+exports.readXLSXFileForLang = async () => {
+  // const xlsx = require('xlsx'); // # add line at the top
+  let workbook = XLSX.readFile('lang.xlsx'); // ## file location ==> app root path
+  let worksheet = workbook.Sheets[workbook.SheetNames[0]];  // ## sheet #1
+  // console.log(worksheet);
+  let posts = [];
+  let post = {};
+
+  for (let cell in worksheet) {
+    const cellAsString = cell.toString();
+    // console.log(cellAsString);
+    // console.log(cellAsString[0]);
+    // console.log(cellAsString[1]);
+
+    // if (cellAsString[1] !== 'r' && cellAsString[1] !== 'm' && cellAsString[1] > 1) {
+        if (cellAsString[0] === 'A') {
+            post.Idno = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'B') {
+            post.lType = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'C') {
+          post.lID = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'D') {
+          post.en = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'E') {
+          post.th = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'F') {
+          post.cn = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'G') {
+          post.mm = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'K') {         // ## this cell have to have value , not blank
+            post.endofcol = worksheet[cell].v;
+            posts.push(post);
+            post = {};
+        }
+      }
+  // }
+  console.log(posts);
+  console.log('len = ',posts.length);
+
+  return true;
+}
+
+// ## import yarn master data
+exports.readXLSXFileForYarn = async () => {
+  // const xlsx = require('xlsx'); // # add line at the top
+  let workbook = XLSX.readFile('yarn.xlsx'); // ## file location ==> app root path
+  let worksheet = workbook.Sheets[workbook.SheetNames[0]];  // ## sheet #1
+  // console.log(worksheet);
+  let posts = [];
+  let post = {};
+
+  for (let cell in worksheet) {
+    const cellAsString = cell.toString();
+    // console.log(cellAsString);
+    // console.log(cellAsString[0]);
+    // console.log(cellAsString[1]);
+
+    // if (cellAsString[1] !== 'r' && cellAsString[1] !== 'm' && cellAsString[1] > 1) {
+        if (cellAsString[0] === 'A') {
+            post.yarnID = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'B') {
+            post.yarnNmae = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'C') {
+          post.yarn1 = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'D') {
+          post.yarn2 = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'E') {
+          post.yarn3 = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'F') {
+          post.yarn4 = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'G') {
+          post.yarn5 = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'K') {         // ## this cell have to have value , not blank
+            post.endofcol = worksheet[cell].v;
+            posts.push(post);
+            post = {};
+        }
+      }
+  // }
+  console.log(posts);
+  console.log('len = ',posts.length);
+
+  return true;
+
+}
+
+
+
+// ## xlsx
+// #######################################################################################################
+
+
+
+
+

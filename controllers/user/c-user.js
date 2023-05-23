@@ -52,7 +52,7 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
-// // ## http://192.168.1.141:3968/api/user/test/test2
+// // ## http://192.168.1.12:3968/api/user/test/test2
 // router.get("/test/test2", userController.getTestTest2);
 exports.getTestTest2 = async (req, res, next) => {
   
@@ -77,8 +77,16 @@ exports.getTestTest2 = async (req, res, next) => {
 
   //  edit OrderProduction
   // const editOrderProduction02 = await ShareFunc.editOrderProduction02();
+
+
   
-  const editOrderProduction02 = await ShareFunc.getCCurrentProductQtyAllXX();
+  // const editOrderProduction02 = await ShareFunc.getCCurrentProductQtyAllXX();
+
+  // // read xlsx file
+  // // import xlsx file
+  // // yarn and language
+  // const readXLSXFileForLang = await ShareFunc.readXLSXFileForLang();
+  // const readXLSXFileForYarn = await ShareFunc.readXLSXFileForYarn();
 
   const productBarcodeNo = '';
 
