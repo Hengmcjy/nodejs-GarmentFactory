@@ -10,6 +10,7 @@ const orderProductionQueueSchema = mongoose.Schema({
     productBarcode : {type: String},   // ## all product เสื้อทุกตัว barcode
     queueDate : {type: Date},  // ## วันที่ queue
     factoryID: { type: String, required: true },  // ## โรงงานไหน
+    isOutsource : {type: Boolean},
     forLoss : {type: Boolean},
     forLossQty : {type: Number},
     bundleNo : {type: Number},

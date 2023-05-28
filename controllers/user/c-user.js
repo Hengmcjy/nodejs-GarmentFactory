@@ -178,8 +178,12 @@ exports.getGeneralInfo = async (req, res, next) => {
     // ## get user class
     const userClass = await ShareFunc.getUserClass(classLimit);
 
-    // ## get io ID
+    // ## get client control
     const controlApp = await ShareFunc.getControlAppClientControl();
+
+    // ## get client control
+    const outSourceLocationDepartment = (await ShareFunc.getControlAppOutSourceLocationDepartment()).outSourceLocationDepartment;
+    // console.log(outSourceLocationDepartment);
 
     // const updateQrCodeRealOrderProduction = await ShareFunc.updateQrCodeRealOrderProduction();
 
@@ -209,6 +213,7 @@ exports.getGeneralInfo = async (req, res, next) => {
       userClass: userClass,
       controlApp: controlApp,
       sysInfo: sysInfo,
+      outSourceLocationDepartment: outSourceLocationDepartment
       // updateQrCodeRealOrderProduction: updateQrCodeRealOrderProduction
     });
   } catch (err) {

@@ -54,6 +54,9 @@ router.post("/order2/orderProductionQueues/lists/createnew", checkAuth, checkUUI
 // ## get order list /api/order/getqlist1/:companyID/:userID/:orderID/:productBarcode/:page/:limit  getOrdersQueueList
 router.get("/getqlist1/:companyID/:userID/:orderID/:productBarcode/:page/:limit", checkAuth, checkUUID, orderController.getOrdersQueueList);
 
+// ## get order list /api/order/getqsetlist2/:companyID/:userID/:orderID/:page/:limit  getOrdersQueueSetList
+router.get("/getqsetlist2/:companyID/:userID/:orderID/:page/:limit", checkAuth, checkUUID, orderController.getOrdersQueueSetList);
+
 // ## get getProductionQueueBarcodeSumQty
 router.get("/order3/getsumqty/queue/:companyID/:orderID/:productID", 
       checkAuth, checkUUID, orderController.getProductionQueueBarcodeSumQty);

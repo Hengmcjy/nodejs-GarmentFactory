@@ -833,6 +833,17 @@ exports.getControlAppClientControl= async () => {
   return controlApp;
 }
 
+exports.getControlAppOutSourceLocationDepartment= async () => {
+  // console.log('appControl');
+  const controlAppf = await ControlApp.findOne();
+  // console.log(controlAppf);
+  const controlApp = {
+    outSourceLocationDepartment: controlAppf.outSourceLocationDepartment,
+  };
+  // console.log(appControl);
+  return controlApp;
+}
+
 // ## update control app  --> companyRunID
 exports.updateControlAppCompanyRunID= async (appID, companyRunID) => {
     result1 = await ControlApp.updateOne({"app.appID":appID}, {"app.companyRunID": companyRunID});
@@ -1582,6 +1593,7 @@ exports.getLastProductionQueue= async (companyID, orderID, productID, page, limi
     { $unwind: "$queueInfo" },
     { $project: { 
       productBarcode: "$queueInfo.productBarcode",
+      isOutsource: "$queueInfo.isOutsource",
       queueDate: "$queueInfo.queueDate",
       factoryID: "$queueInfo.factoryID",
       bundleNo: "$queueInfo.bundleNo",
@@ -1618,6 +1630,7 @@ exports.getOrderQueueList= async (companyID, orderID, productBarcode, page, limi
       factoryID: 1,
       productID: 1,
       productBarcode: 1,
+      isOutsource: 1,
       queueDate: 1,		
       forLossQty: 1,	
       toNode: 1,
@@ -1644,6 +1657,55 @@ exports.getOrderQueueListCount= async (companyID, orderID, productBarcode) => {
     // {"factoryID":factoryID},
     {"orderID":orderID},
     {"productBarcode":productBarcode},
+  ]});
+  return rows;
+}
+
+// getOrderQueueSetList(companyID, orderID, productBarcode, page, limit);
+exports.getOrderQueueSetList= async (companyID, orderID, page, limit) => {
+  // limit = +limit; // ## change to number
+  // productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
+  const queueList = await OrderProductionQueueList.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":orderID},
+      // {"productBarcode":productBarcode},
+    ] } },
+    { $project: {			
+      _id: 1,	
+      orderID: 1,
+      companyID: 1,
+      factoryID: 1,
+      productID: 1,
+      productBarcode: 1,
+      isOutsource: 1,
+      queueDate: 1,		
+      forLossQty: 1,	
+      toNode: 1,
+      numberFrom: 1,
+      numberTo: 1,
+      bundleNoFrom: 1,
+      bundleNoTo: 1,
+      yarnLot: 1,
+      createBy: 1,
+    }	},
+    { $sort: { queueDate: -1 } },
+    { $skip: (page-1) *  limit},
+    { $limit: limit }
+  ]);
+
+  // console.log(queueInfos);
+  return queueList?queueList:[];
+}
+
+// ShareFunc.getOrderQueueSetListCount(companyID, orderID, productBarcode);
+exports.getOrderQueueSetListCount= async (companyID, orderID) => {
+  rows = await OrderProductionQueueList.countDocuments({$and: [
+    {"companyID":companyID},
+    // {"factoryID":factoryID},
+    {"orderID":orderID},
+    // {"productBarcode":productBarcode},
   ]});
   return rows;
 }

@@ -12,6 +12,7 @@ const factorySchema = mongoose.Schema({
     tel: {type: String},
     email: {type: String},
     registDate: {type: Date, required: true},
+    isOutsource: {type: Boolean},  // ## true = this factory is outsource
     createBy: {
       userID: {type: String},
       userName: {type: String},
@@ -24,6 +25,7 @@ const factorySchema = mongoose.Schema({
 
   },
 });
+
 
 factorySchema.plugin(uniqueValidator);
 

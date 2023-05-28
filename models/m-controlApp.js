@@ -16,9 +16,14 @@ const controlAppSchema = mongoose.Schema({
   clientControl: {
     ioID: { type: String, required: true},
   },
+  outSourceLocationDepartment: [{   // ## for location scan outsource in and out
+    companyID : {type: String},
+    factoryID : {type: String},
+    nodeID : {type: String},
+    scanOutsource : {type: Boolean}
+  }],
 });
 
 controlAppSchema.plugin(uniqueValidator);
-
 module.exports = mongoose.model("ControlApp", controlAppSchema);
-
+					
