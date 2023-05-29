@@ -770,7 +770,7 @@ exports.createRangeProductBarcodeNoArr= async (productBarcode, qty, startNo, toN
     // console.log(productBarcodeNoRange);
     return productBarcodeNoRange;
   } else {  // roundSet
-    const roundSet = Math.floor(qty / createOrderQtyMaxPerRound)
+    const roundSet = Math.floor(qty / createOrderQtyMaxPerRound);
     const fraction = qty % createOrderQtyMaxPerRound;
 
     let startNoRun = startNo;
@@ -939,9 +939,9 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     // console.log(startNo , toNo);
     // console.log(productBarcode );
 
-    const bundleItems = data.bundleItems;
-    const bundleNoFrom = data.bundleNoFrom;
-    const bundleNoTo = data.bundleNoTo;
+    const bundleItems = +data.bundleItems;
+    const bundleNoFrom = +data.bundleNoFrom;
+    const bundleNoTo = +data.bundleNoTo;
     const toNode1 = data.toNode1;
     const toNode = data.toNode1;
     const numberFrom1 = startNo;
@@ -1007,10 +1007,13 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         productBarcodeNoUUID.push(uuid);
       }
 
+      // console.log('0000');
       let bundleNoArr = [];
-      for (i = bundleNoFrom; i <= bundleNoTo; i++) {
+      for (i = +bundleNoFrom; i <= +bundleNoTo; i++) {
         bundleNoArr.push(i);
       }
+      // console.log(bundleNoArr);
+      // console.log('1111');
 
       // ## check running number exist /  check existed for productBarcodeNo
       const existed = await ShareFunc.checkExistOrderProductionByBarcodeNo(
@@ -1042,15 +1045,24 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
           }
           let orderProductionArr = [];
           let j = 0;
+          let x = 1; // ## qty running
           await this.asyncForEach2(productBarcodeNoArr , async (productBarcodeNo) => {
             const runningNO = +productBarcodeNo.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
             const forLossX = runningNO > orderQty;
+
+            // ## find bundle no
+            const bundleNoCount = Math.floor(x / +bundleItems)
+            const bundleNofraction = (x % +bundleItems) > 0 ? 1 : 0;
+            const bundleNoF = +bundleNoCount + +bundleNofraction;
+
+            // console.log('bundleNoF ' , bundleNoF);
+
             orderProductionArr.push({
               companyID: companyID,
               factoryID: factoryID,
               orderID: orderID,
-              bundleNo: +bundleNoArr[j],
-              bundleID: productBarcodeNoUUID[j],
+              bundleNo: +bundleNoArr[bundleNoF - 1],
+              bundleID: productBarcodeNoUUID[bundleNoF - 1],
               productID: productID,
               productBarcodeNo: productBarcodeNo,
               productBarcodeNoReal: productBarcodeNo,
@@ -1065,16 +1077,19 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               productionNode: [productionNode1]
             });
             lastQty = +runningNO;
-            j++;
+            // j++;
+            x++;
           });
           // console.log(orderProductionArr);
           // console.log('orderProductionArr size = ', Buffer.byteLength(orderProductionArr));
           const result3 = await OrderProduction.insertMany(orderProductionArr, { session: session3 });
+          // console.log('1111');
 
           // ## gen queueInfo
           const queueInfo = await this.createQueueInfo(item1, productBarcodeNoUUID, current, 
                         factoryID, isOutsource, forLoss, forLossQty,
                         toNode, yarnLot, createBy);
+          // console.log('222222');
           // ## edit queueInfo to OrderProductionQueue.queueInfo
           const result5 = await OrderProductionQueue.updateOne(
             {$and: [
@@ -1087,7 +1102,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
             },
             {upsert: true}).session(session2);
-          
+          // console.log('3333333');
 
       } else {  // ## err --> had Order Production  BarcodeNo , existed
           await session.abortTransaction(); 
@@ -1111,7 +1126,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
 
     });
 
-    
+    // console.log('yyyy');
 
     // ## insert one orderProductionQueueList
     const orderProductionQueueList1 = [{
@@ -1135,6 +1150,8 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     }];
     // console.log(companyID, current, userID, logID, note);
     const insertone = await OrderProductionQueueList.insertMany(orderProductionQueueList1, { session: session });
+
+    // console.log('zzzzz');
 
     // ## edit order if qty > orderQty ----> forLoss case
     if (forLossQty > 0) {
