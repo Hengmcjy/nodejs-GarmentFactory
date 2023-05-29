@@ -1688,6 +1688,7 @@ exports.getOrderQueueSetList= async (companyID, orderID, page, limit) => {
       bundleNoFrom: 1,
       bundleNoTo: 1,
       yarnLot: 1,
+      outsourceData: 1,
       createBy: 1,
     }	},
     { $sort: { queueDate: -1 } },

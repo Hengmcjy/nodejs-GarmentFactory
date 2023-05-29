@@ -920,6 +920,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
   session3.startTransaction();
   try {
     // ##  
+    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     const companyID = data.companyID;
     const factoryID = data.factoryID;
     
@@ -948,13 +949,14 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     const yarnLot = data.yarnLots;
     const isOutsource = data.isOutsource;
     const txtOutsource = 'outsource';
+    let outsourceData = data.outsourceData;
+    outsourceData.datetime = current;
 
     const createBy = data.createBy;
     // console.log(queueInfo[0]);
     // console.log(isOutsource, bundleNoFrom,bundleNoTo,toNode1,numberFrom1,numberTo1);
     // console.log(qty);
 
-    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     // queueInfo.queueDate = current;
     // console.log(targetPlace);
     // console.log(queueInfo);
@@ -964,14 +966,12 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     await this.asyncForEach(yarnLot, async (item1) => {
       yarnLot2.push({yarnLotID: item1.yarnLotID});
     });
+
+    let outsourceData1 = [];
+    if (outsourceData.factoryID !== '') {
+      outsourceData1 = [outsourceData];
+    }
     // console.log(yarnLot2);
-
-    // await queueInfo.sort((a,b)=>{return a.bundleNo >b.bundleNo?1:a.bundleNo <b.bundleNo?-1:0}); // ## เรียง น้อยไปมาก asec
-
-    // let productBarcodeNo = [];
-    // let productBarcodeNoUUID = [];
-    // let productCount = 0;
-    // let lastQty = 0;
 
     const createOrderQtyMaxPerRound = process.env.createOrderQtyMaxPerRound; // ## 1200 record
 
@@ -1056,6 +1056,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               productStatus: 'normal',
               forLoss: forLossX,
               yarnLot: yarnLot2,
+              outsourceData: outsourceData1,
               productionNode: [productionNode1]
             });
             lastQty = +runningNO;
@@ -1124,6 +1125,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       bundleNoFrom: bundleNoFrom,
       bundleNoTo: bundleNoTo,
       yarnLot: yarnLot2,
+      outsourceData: outsourceData1,
       createBy: createBy
     }];
     // console.log(companyID, current, userID, logID, note);

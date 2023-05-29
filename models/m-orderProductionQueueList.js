@@ -21,6 +21,10 @@ const orderProductionQueueListSchema = mongoose.Schema({
     yarnLotID : {type: String},
     yarnWeight : {type: Number},
   }],
+  outsourceData: [{   // ## 
+    factoryID : {type: String},
+    datetime : {type: Date},
+  }],
   createBy: {
     userID: {type: String},
     userName: {type: String},

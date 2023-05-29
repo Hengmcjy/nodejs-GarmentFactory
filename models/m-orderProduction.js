@@ -32,6 +32,10 @@ const orderProductionSchema = mongoose.Schema({
   yarnLot: [{   // ## 
     yarnLotID : {type: String},
   }],
+  outsourceData: [{   // ## 
+    factoryID : {type: String},
+    datetime : {type: Date},
+  }],
   productionNode: [{   // ## อยู่ในการผลิตขั้นตอนไหน
     fromNode : {type: String},
     toNode : {type: String},
@@ -46,6 +50,9 @@ const orderProductionSchema = mongoose.Schema({
     }
   }]
 });
+
+				
+
 
 orderProductionSchema.plugin(uniqueValidator);
 
