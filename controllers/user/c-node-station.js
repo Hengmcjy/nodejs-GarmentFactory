@@ -1821,6 +1821,91 @@ exports.getDatarecordProductBarcodeNo = async (req, res, next) => {
   }
 }
 
+// ## outsource  /////////////////////////////////////////////////////
+
+// // ## get scan order production for receive from outsource putScanOrderProductionBarcodeNoReceiveOutsource
+// router.put("/outsource1/receive/scanroderProduction/productBarcodeNo", nsController.putScanOrderProductionBarcodeNoReceiveOutsource);
+exports.putScanOrderProductionBarcodeNoReceiveOutsource = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  const userID = data.userID;
+  // console.log('putScanOrderProductionBarcodeNo');
+  // console.log(data);
+
+  const productBarcodeNo = data.productBarcodeNo;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const nodeID = data.nodeID;
+  const stationID = data.stationID;
+  const mode = data.mode;
+  // console.log(mode , productBarcodeNo);
+  
+  // console.log(nodeID , productBarcodeNo, mode);
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    // ##  get data productBarcodeNo  getOrderProductReceiveOutsource= async (companyID, productBarcodeNo)
+    const orderProduction = await ShareFunc.getOrderProductReceiveOutsource(companyID, productBarcodeNo);
+    // console.log(orderProduction);
+    if (!orderProduction) {
+      return res.status(501).json({
+        message: {
+          messageID: 'errns022', 
+          mode:'errWorkerScanOrderProductionReceiveOutsource', 
+          value: "error worker scan order production rceive outsource"
+        },
+        success: false
+      });
+
+    } else {
+      if (orderProduction.productionNode.length === 0) {
+        return res.status(501).json({
+          message: {
+            messageID: 'errns022', 
+            mode:'errWorkerScanOrderProductionReceiveOutsource', 
+            value: "error worker scan order production rceive outsource"
+          },
+          success: false
+        });
+      } else {  // orderProduction.productionNode.length === 1
+        // console.log(nodeID ,'--' , orderProduction.productionNode[0]);
+        if (!orderProduction.productionNode[orderProduction.productionNode.length - 1].isOutsource) {
+          return res.status(501).json({
+            message: {
+              messageID: 'errns022-1', 
+              mode:'errWorkerScanOrderProductionReceiveOutsource_notIsOutsource', 
+              value: "error worker scan order production rceive outsource = 'this is not outsource product'"
+            },
+            success: false
+          });
+        } else { // product is outsource product 
+          return res.status(200).json({
+            tokenNS: '',
+            expiresIn: process.env.expiresIn,
+            userID: userID,
+            companyID: companyID,
+            factoryID: factoryID,
+            nodeID: nodeID,
+            stationID: stationID,
+            orderProduction: orderProduction,
+            success: true,
+            mode: mode
+          });
+        }
+      }
+    } 
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns022', 
+        mode:'errWorkerScanOrderProductionReceiveOutsource', 
+        value: "error worker scan order production rceive outsource"
+      },
+      success: false
+    });
+  }
+}
 
 // ## staff/worker factory login to node workstation
 // #######################################################################################################

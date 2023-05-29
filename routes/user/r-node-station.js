@@ -117,6 +117,13 @@ nsController.getQRCodeListProductStyleCFN);
 router.get("/node17/orderProductionZoneSizeColor/qrcodelist/:companyID/:factoryID/:nodeID/:style/:zone/:size/:color/:productStatus/:page/:limit", 
 nsController.getQRCodeListProductStyleZoneSizeColorCFN);
 
+
+
+// ## outsource  /////////////////////////////////////////////////////
+
+// ## get scan order production for receive from outsource putScanOrderProductionBarcodeNoReceiveOutsource
+router.put("/outsource1/receive/scanroderProduction/productBarcodeNo", nsController.putScanOrderProductionBarcodeNoReceiveOutsource);
+
 // ## worker zone 
 // #########################################################################################
 

@@ -1007,6 +1007,11 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         productBarcodeNoUUID.push(uuid);
       }
 
+      let bundleNoArr = [];
+      for (i = bundleNoFrom; i <= bundleNoTo; i++) {
+        bundleNoArr.push(i);
+      }
+
       // ## check running number exist /  check existed for productBarcodeNo
       const existed = await ShareFunc.checkExistOrderProductionByBarcodeNo(
                             companyID, factoryID, orderID, productID, productBarcodeNoArr);
@@ -1044,7 +1049,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               companyID: companyID,
               factoryID: factoryID,
               orderID: orderID,
-              bundleNo: +item1.bundleNoFrom + j,
+              bundleNo: +bundleNoArr[j],
               bundleID: productBarcodeNoUUID[j],
               productID: productID,
               productBarcodeNo: productBarcodeNo,
