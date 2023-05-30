@@ -86,6 +86,12 @@ router.post("/create/factory", checkAuth, checkUUID, userController.createUserFa
 // ## get  user  factory by userID companyID
 router.get("/get/factory/:userID/:companyID/:page/:limit", checkAuth, checkUUID, userController.getUserFactory);
 
+// ## get  user  factories by  companyID
+router.get("/get/factories/by/:userID/:companyID", checkAuth, checkUUID, userController.getFactoriesByCompanyID);
+
+// ## get  gn  factories by  companyID   / gn=general
+router.get("/get/gn/factories/by/:companyID", userController.getGNFactoriesByCompanyID);
+
 // ## get  user  factory by  companyID factoryID
 router.get("/get1/factory/:companyID/:factoryID", checkAuth, checkUUID, userController.getFactory1);
 

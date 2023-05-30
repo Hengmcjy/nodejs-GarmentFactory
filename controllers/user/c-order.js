@@ -1029,6 +1029,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
                 datetime: current,
                 status: txtOutsource,
                 isOutsource: isOutsource,
+                outsourceData: outsourceData1,
                 productProblemID: '',
                 createBy: createBy
               };

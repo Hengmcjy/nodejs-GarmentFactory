@@ -53,7 +53,34 @@ exports.asyncForEach4= async (array, callback) => {
 // ## general
 
 
+// // ## get    factories by  companyID
+// router.get("/get/factories/by/:companyID", nsController.getNodeDatageneral);
+exports.getNodeDatageneral = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  // console.log('getNodeDatageneral', companyID);
+  try {
+    const factories = await ShareFunc.getFactoryArrByCompanyID(companyID);
+    // console.log(factories);
 
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      factories: factories,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errf002', 
+        mode:'errGetFactoryInfo', 
+        value: "get company info error"
+      }
+    });
+  }
+
+}
 
 // ## general
 // #######################################################################################################
@@ -1878,7 +1905,8 @@ exports.putScanOrderProductionBarcodeNoReceiveOutsource = async (req, res, next)
             },
             success: false
           });
-        } else { // product is outsource product 
+        } else if (orderProduction.productionNode[orderProduction.productionNode.length - 1].isOutsource &&
+                  orderProduction.productionNode[orderProduction.productionNode.length - 1].toNode === 'outsource') { // product is outsource product 
           return res.status(200).json({
             tokenNS: '',
             expiresIn: process.env.expiresIn,
@@ -1891,6 +1919,15 @@ exports.putScanOrderProductionBarcodeNoReceiveOutsource = async (req, res, next)
             success: true,
             mode: mode
           });
+        } else {
+          return res.status(501).json({
+            message: {
+              messageID: 'errns022-1', 
+              mode:'errWorkerScanOrderProductionReceiveOutsource_notIsOutsource', 
+              value: "error worker scan order production rceive outsource = 'this is not outsource product'"
+            },
+            success: false
+          });
         }
       }
     } 
@@ -1901,6 +1938,215 @@ exports.putScanOrderProductionBarcodeNoReceiveOutsource = async (req, res, next)
         messageID: 'errns022', 
         mode:'errWorkerScanOrderProductionReceiveOutsource', 
         value: "error worker scan order production rceive outsource"
+      },
+      success: false
+    });
+  }
+}
+
+exports.putScanOrderProductionBarcodeNoReceiveOutsourceSendOut = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  const userID = data.userID;
+  // console.log('putScanOrderProductionBarcodeNo');
+  // console.log(data);
+
+  const productBarcodeNo = data.productBarcodeNo;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const nodeID = data.nodeID;
+  const stationID = data.stationID;
+  const mode = data.mode;
+  const toNode = data.toNode;
+  // console.log(mode , productBarcodeNo);
+  
+  // console.log(nodeID , productBarcodeNo, mode);
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    // ##  get data productBarcodeNo  getOrderProductReceiveOutsource= async (companyID, productBarcodeNo)
+    const orderProduction = await ShareFunc.getOrderProductReceiveOutsource(companyID, productBarcodeNo);
+    // console.log(orderProduction);
+    if (!orderProduction) {
+      return res.status(501).json({
+        message: {
+          messageID: 'errns022', 
+          mode:'errWorkerScanOrderProductionReceiveOutsource', 
+          value: "error worker scan order production rceive outsource"
+        },
+        success: false
+      });
+
+    } else {
+      if (orderProduction.productionNode.length === 0) {
+        return res.status(501).json({
+          message: {
+            messageID: 'errns022', 
+            mode:'errWorkerScanOrderProductionReceiveOutsource', 
+            value: "error worker scan order production rceive outsource"
+          },
+          success: false
+        });
+      } else {  // orderProduction.productionNode.length === 1
+        // console.log(nodeID ,'--' , orderProduction.productionNode[0]);
+        if (orderProduction.productionNode[orderProduction.productionNode.length - 1].toNode !== toNode) {
+          return res.status(501).json({
+            message: {
+              messageID: 'errns022-2', 
+              mode:'errWorkerScanOrderProductionReceiveOutsource_notNodeIDSame', 
+              value: "error worker scan order production rceive outsource = this is not same for nodeID"
+            },
+            success: false
+          });		
+
+        } else if (orderProduction.productionNode[orderProduction.productionNode.length - 1].toNode === toNode) { // product is outsource product 
+          return res.status(200).json({
+            tokenNS: '',
+            expiresIn: process.env.expiresIn,
+            userID: userID,
+            companyID: companyID,
+            factoryID: factoryID,
+            nodeID: nodeID,
+            stationID: stationID,
+            orderProduction: orderProduction,
+            success: true,
+            mode: mode
+          });
+        } else {
+          return res.status(501).json({
+            message: {
+              messageID: 'errns022-2', 
+              mode:'errWorkerScanOrderProductionReceiveOutsource_notNodeIDSame', 
+              value: "error worker scan order production rceive outsource = this is not same for nodeID"
+            },
+            success: false
+          });	
+        }
+      }
+    } 
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns022', 
+        mode:'errWorkerScanOrderProductionReceiveOutsource', 
+        value: "error worker scan order production rceive outsource"
+      },
+      success: false
+    });
+  }
+}
+
+// // ## edit order production  send product to next department 
+// router.put("/outsource2/edit/oderProduction/nextnode", nsController.putOutsourceOrderProductionNextNodeID);
+exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
+  // try {} catch (err) {}
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const data = req.body;
+  const userID = data.userID;
+  // console.log('putOutsourceOrderProductionNextNodeID');
+  // console.log(data);
+  const productBarcodeNos = data.productBarcodeNos;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const orderID = data.orderID;
+  const productID = data.productID;
+  let productionNodeArr = data.productionNode;
+  // const washingAndPressingMerge = data.washingAndPressingMerge;
+  // productionNode.datetime = current;
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    // ## check last node it collect to add next
+    
+
+    // ## update datetime
+    await this.asyncForEach2(productionNodeArr , async (productionNode) => {
+      productionNode.datetime = current;
+      productionNode.outsourceData[0].datetime = current;
+    });
+
+    result1 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        {"factoryID":factoryID},
+        {"orderID":orderID},
+        {"productID":productID},
+        {"productBarcodeNo":{$in: productBarcodeNos}}
+      ]}, 
+      // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+      {
+        $push: {productionNode: {$each: productionNodeArr}}
+      },
+    );
+    return res.status(200).json({
+      tokenNS: '',
+      expiresIn: process.env.expiresIn,
+      success: true,
+      productBarcodeNos: productBarcodeNos
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns023', 
+        mode:'errEditNextNodeOutsource', 
+        value: "err edit next node outsource"
+      },
+      success: false
+    });
+  }
+}
+
+// // ## edit order production  send product to send out
+// router.put("/outsource4/edit/oderProduction/sendout", nsController.putOutsourceOrderProductionSendOut);
+exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
+  // try {} catch (err) {}
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const data = req.body;
+  const userID = data.userID;
+  // console.log('putOutsourceOrderProductionSendOut');
+  // console.log(data);
+  const productBarcodeNos = data.productBarcodeNos;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const orderID = data.orderID;
+  const productID = data.productID;
+  let productionNode = data.productionNode;
+  // const washingAndPressingMerge = data.washingAndPressingMerge;
+  // productionNode.datetime = current;
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    // ## check last node it collect to add next
+    
+
+    result1 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        {"factoryID":factoryID},
+        {"orderID":orderID},
+        {"productID":productID},
+        {"productBarcodeNo":{$in: productBarcodeNos}}
+      ]}, 
+      // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+      {
+        $push: {productionNode: productionNode}
+      },
+    );
+    return res.status(200).json({
+      tokenNS: '',
+      expiresIn: process.env.expiresIn,
+      success: true,
+      productBarcodeNos: productBarcodeNos
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns023', 
+        mode:'errEditNextNodeOutsource', 
+        value: "err edit next node outsource"
       },
       success: false
     });

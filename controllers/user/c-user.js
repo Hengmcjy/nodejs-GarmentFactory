@@ -52,7 +52,7 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
-// // ## http://192.168.1.12:3968/api/user/test/test2
+// // ## http://192.168.1.141:3968/api/user/test/test2
 // router.get("/test/test2", userController.getTestTest2);
 exports.getTestTest2 = async (req, res, next) => {
   
@@ -79,6 +79,8 @@ exports.getTestTest2 = async (req, res, next) => {
   // const editOrderProduction02 = await ShareFunc.editOrderProduction02();
 
 
+  // // delete OrderProduction
+  // const deleteManyOrderProductionbyOrderID = await ShareFunc.deleteManyOrderProductionbyOrderID();
   
   // const editOrderProduction02 = await ShareFunc.getCCurrentProductQtyAllXX();
 
@@ -1280,6 +1282,74 @@ exports.getUserFactory = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       factory: factory,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errf002', 
+        mode:'errGetFactoryInfo', 
+        value: "get company info error"
+      }
+    });
+  }
+
+}
+
+// // ## get  user  factories by  companyID
+// router.get("/get/factories/by/:userID/:companyID", checkAuth, checkUUID, userController.getFactoriesByCompanyID);
+exports.getFactoriesByCompanyID = async (req, res, next) => {
+  // try {} catch (err) {}
+  // companyID userID page limit
+  // console.log(req.params);
+  const userID = req.params.userID;
+  const companyID = req.params.companyID;
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;
+
+  try {
+    // ## get user factory info
+    // let userf = await User.findOne({ userID: userID });
+    const factories = await ShareFunc.getFactoryArrByCompanyID(companyID);
+    // console.log(factoryArr);
+
+    // // ## getFactoryInfo= async (factoryIDArr, page, limit)
+    // const factory = await ShareFunc.getFactoryInfo(factoryArr, companyID, +page , +limit);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      factories: factories,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errf002', 
+        mode:'errGetFactoryInfo', 
+        value: "get company info error"
+      }
+    });
+  }
+
+}
+
+// // ## get  gn  factories by  companyID   / gn=general
+// router.get("/get/gn/factories/by/:companyID", userController.getGNFactoriesByCompanyID);
+exports.getGNFactoriesByCompanyID = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  try {
+    // ## get user factory info
+    // let userf = await User.findOne({ userID: userID });
+    const factories = await ShareFunc.getFactoryArrByCompanyID(companyID);
+    // console.log(factories);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      factories: factories,
     });
   } catch (err) {
     return res.status(501).json({

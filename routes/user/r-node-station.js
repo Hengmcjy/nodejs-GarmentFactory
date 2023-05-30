@@ -14,6 +14,9 @@ const router = express.Router();
 
 // ## /api/ns/
 
+// ## get    factories by  companyID
+router.get("/get/nodedatageneral/by/:companyID", nsController.getNodeDatageneral);
+
 // ## get node stations
 router.get("/node/lists/:companyID/:factoryID/:status/:page/:limit", checkAuth, checkUUID, nsController.getNodeStations);
 
@@ -123,6 +126,16 @@ nsController.getQRCodeListProductStyleZoneSizeColorCFN);
 
 // ## get scan order production for receive from outsource putScanOrderProductionBarcodeNoReceiveOutsource
 router.put("/outsource1/receive/scanroderProduction/productBarcodeNo", nsController.putScanOrderProductionBarcodeNoReceiveOutsource);
+
+// putScanOrderProductionBarcodeNoReceiveOutsourceSendOut
+// ## get scan order production for sendout from us putScanOrderProductionBarcodeNoReceiveOutsourceSendOut
+router.put("/outsource3/sendout/scanroderProduction/productBarcodeNo", nsController.putScanOrderProductionBarcodeNoReceiveOutsourceSendOut);
+
+// ## edit order production  send product to next department 
+router.put("/outsource2/edit/oderProduction/nextnode", nsController.putOutsourceOrderProductionNextNodeID);
+
+// ## edit order production  send product to send out
+router.put("/outsource4/edit/oderProduction/sendout", nsController.putOutsourceOrderProductionSendOut);
 
 // ## worker zone 
 // #########################################################################################

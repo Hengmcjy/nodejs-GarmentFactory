@@ -488,6 +488,28 @@ exports.getFactoryInfo= async (factoryIDArr, companyID, page, limit) => {
   return factory;
 }
 
+// ShareFunc.getFactoryArrByCompanyID(companyID);
+exports.getFactoryArrByCompanyID= async (companyID) => {
+  const factory = await Factory.aggregate([
+    { $match: { $and: [
+      // {"factoryID":{$in: factoryIDArr}},
+      {"companyID":companyID}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        factoryID: 1,
+        companyID: 1,		
+        fDescription: 1,	
+        fInfo: 1,
+    }	},
+    // { $sort: { _id: 1 } },
+    // { $skip: (page-1) *  limit},
+    // { $limit: limit }
+  ]);
+  // console.log(factory);
+  return factory;
+}
+
 // await ShareFunc.getFactoryArr(userf.uFactory);
 exports.getFactoryArr= async (uFactory) => {
   let factoryArr = [];
@@ -7099,7 +7121,17 @@ exports.readXLSXFileForYarn = async () => {
 }
 
 
-
+exports.deleteManyOrderProductionbyOrderID = async () => {
+  const orderID = 'BA1OEA3A';
+  const factoryID = 'f000001';
+  const companyID = 'c000001';
+  result1 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"factoryID":factoryID} ,
+    {"orderID":orderID} ,
+  ]}); 
+  console.log('delete ok');
+}
 // ## xlsx
 // #######################################################################################################
 

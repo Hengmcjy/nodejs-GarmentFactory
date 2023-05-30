@@ -44,6 +44,9 @@ const orderProductionSchema = mongoose.Schema({
     problemID : {type: String},
     problemName : {type: String},
     isOutsource : {type: Boolean}, 
+    outsourceData: [{   // ## 
+      factoryID : {type: String},
+    }],
     createBy: {
       userID: {type: String},
       userName: {type: String},
