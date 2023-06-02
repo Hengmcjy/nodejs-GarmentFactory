@@ -54,6 +54,28 @@ const orderSchema = mongoose.Schema({
       productYear : {type: String},
       productSex : {type: String},
     }],
+    productORRewriteInfo: [{   // ## rewrite order qty record
+      datetime: {type: Date},
+      factoryID: {type: String},
+      productBarcode : {type: String},
+      targetPlace : {
+        targetPlaceID : {type: String},
+        targetPlaceName : {type: String},
+        countryID : {type: String},
+        countryName : {type: String},
+      },
+      productColor : {type: String},
+      productSize : {type: String},
+      productQtyOld : {type: Number},
+      productQty : {type: Number},
+      productLossQty : {type: Number},
+      productYear : {type: String},
+      productSex : {type: String},
+      createBy: {
+        userID: {type: String},
+        userName: {type: String},
+      },
+    }],
   },
   createBy: {
     userID: {type: String},

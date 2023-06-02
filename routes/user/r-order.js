@@ -45,6 +45,9 @@ router.put("/update4/qrcode/replacement", checkAuth, checkUUID, orderController.
 // // ## /api/order/orderProduction/createnew
 // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
 
+// ## /api/order/orderrewrite/orderqty/rewrite  putOrderProductionQtyRewrite
+router.put("/orderrewrite/orderqty/rewrite", checkAuth, checkUUID, orderController.putOrderProductionQtyRewrite);
+
 // ## /api/order/orderProductionQueue/createnew   postOrderProductionQueueCreateNew
 router.post("/orderProductionQueue/createnew", checkAuth, checkUUID, orderController.postOrderProductionQueueCreateNew);
 

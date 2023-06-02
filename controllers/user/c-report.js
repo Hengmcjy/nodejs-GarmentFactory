@@ -682,8 +682,55 @@ exports.getRepCompanyOrder = async (req, res, next) => {
   }
 }
 
+// router.get("/cpn/rep9/current/order/:companyID/:ordertatus/:orderID", checkAuth, checkUUID, reportController.getRepCompanyOrderByOrderID);
+exports.getRepCompanyOrderByOrderID = async (req, res, next) => {
+  // try {} catch (err) {}
 
+  // console.log('getRepCompanyOrder');
 
+  const companyID = req.params.companyID;
+  // const factoryID = req.params.factoryID;
+  const orderID = req.params.orderID;
+  const orderStatusArr = JSON.parse(req.params.ordertatus);
+  // const repListNameArr = JSON.parse(req.params.repListName);
+  // console.log(companyID, orderStatusArr);
+
+  try {
+
+    // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
+    orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpecByOrderID(companyID, orderStatusArr, orderID);
+    currentCompanyOrder = await ShareFunc.getCurrentCompanyOrderByOrderID(companyID, orderStatusArr, orderID);
+    currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyleByOrderID(companyID, orderStatusArr, orderID);
+    
+    // console.log(orderStyleColorSize, currentCompanyOrder, currentOrderStyle);
+
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      orderStyleColorSize: orderStyleColorSize,
+      currentCompanyOrder: currentCompanyOrder,
+      currentOrderStyle: currentOrderStyle,
+      // repDataFormat1: repDataFormat1,
+      // orders: orders,
+      // products: products,
+      // orderProductAllQtyRep: orderProductAllQtyRep,
+      // factory: factory,
+      // nodeStation: nodeStation,
+      // nodeFlows: nodeFlows,
+      // nodeFlow: nodeFlow
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp002', 
+        mode:'errRepCurrentCompanyOrder', 
+        value: "error report current company order"
+      }
+    });
+  }
+}
 
 // // router.get("/cpn/rep2/current/orderstyle/:companyID/:ordertatus", checkAuth, checkUUID, reportController.getRepCompanyOrderStyle);
 // exports.getRepCompanyOrderStyle = async (req, res, next) => {

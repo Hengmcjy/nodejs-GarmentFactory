@@ -72,7 +72,7 @@ router.get("/node/rep3/current/productqty/com/:companyID/:factoryIDArr/:ordertat
 
 router.get("/cpn/rep1/current/order/:companyID/:ordertatus", checkAuth, checkUUID, reportController.getRepCompanyOrder);
 
-
+router.get("/cpn/rep9/current/order/:companyID/:ordertatus/:orderID", checkAuth, checkUUID, reportController.getRepCompanyOrderByOrderID);
 
 // // ## 
 // router.get("/cpn/rep2/current/orderstyle/:companyID/:ordertatus", checkAuth, checkUUID, reportController.getRepCompanyOrderStyle);

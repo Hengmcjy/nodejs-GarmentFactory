@@ -92,6 +92,10 @@ exports.getTestTest2 = async (req, res, next) => {
 
   const productBarcodeNo = '';
 
+  // // ## test get data
+  // const testview2 = await ShareFunc.testview2();
+  // console.log(testview2);
+
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {
     action: 'sent by socketIO',

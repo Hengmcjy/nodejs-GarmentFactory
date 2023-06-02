@@ -2057,28 +2057,52 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
   try {
     await ShareFunc.upsertUserSession1hr(userID);
 
-    // ## check last node it collect to add next
-    
 
+    const uuid = uuidv4();
     // ## update datetime
     await this.asyncForEach2(productionNodeArr , async (productionNode) => {
       productionNode.datetime = current;
       productionNode.outsourceData[0].datetime = current;
     });
 
-    result1 = await OrderProduction.updateMany(
+    result1 = await OrderProduction.updateOne(
       {$and: [
         {"companyID":companyID},
         {"factoryID":factoryID},
         {"orderID":orderID},
         {"productID":productID},
         {"productBarcodeNo":{$in: productBarcodeNos}}
+        // {"productBarcodeNo":{$in: productBarcodeNos}}
       ]}, 
-      // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
       {
-        $push: {productionNode: {$each: productionNodeArr}}
-      },
-    );
+        // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+        $push: {productionNode: {$each: productionNodeArr}},
+        // $inc: {productCount: -1},
+        "productCount": 1,
+        "bundleID": uuid
+      });
+
+    
+
+    // // ## update datetime
+    // await this.asyncForEach2(productionNodeArr , async (productionNode) => {
+    //   productionNode.datetime = current;
+    //   productionNode.outsourceData[0].datetime = current;
+    // });
+
+    // result1 = await OrderProduction.updateMany(
+    //   {$and: [
+    //     {"companyID":companyID},
+    //     {"factoryID":factoryID},
+    //     {"orderID":orderID},
+    //     {"productID":productID},
+    //     {"productBarcodeNo":{$in: productBarcodeNos}}
+    //   ]}, 
+    //   // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+    //   {
+    //     $push: {productionNode: {$each: productionNodeArr}}
+    //   });
+
     return res.status(200).json({
       tokenNS: '',
       expiresIn: process.env.expiresIn,
