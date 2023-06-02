@@ -831,7 +831,7 @@ exports.createProductBarcodeNoArr= async (productBarcodeNoRange) => {
   let numberFrom = productBarcodeNoRange.startNo;
   let numberTo = productBarcodeNoRange.toNo;
   let productBarcodeNoArr = [];
-  for(let i = numberTo; i >= numberFrom;i--) {
+  for(let i = numberFrom; i <= numberTo;i++) {
     // console.log(i);
     // if (i > orderQty) { forLossQty++; }
     const num5 = await ShareFunc.setStrLen(5, i);
