@@ -51,6 +51,9 @@ router.put("/orderrewrite/orderqty/rewrite", checkAuth, checkUUID, orderControll
 // ## /api/order/orderProductionQueue/createnew   postOrderProductionQueueCreateNew
 router.post("/orderProductionQueue/createnew", checkAuth, checkUUID, orderController.postOrderProductionQueueCreateNew);
 
+// ## /api/order/delorder1/orderProductionQueues/cancel  deleteOrderProductionQueuesCancel
+router.post("/delorder1/orderProductionQueues/cancel", checkAuth, checkUUID, orderController.deleteOrderProductionQueuesCancel);
+
 // ## /api/order2/orderProductionQueues/lists/createnew   postOrderProductionQueuesCreateNew
 router.post("/order2/orderProductionQueues/lists/createnew", checkAuth, checkUUID, orderController.postOrderProductionQueuesCreateNew);
 

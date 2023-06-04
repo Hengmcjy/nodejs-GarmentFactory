@@ -738,6 +738,166 @@ exports.postOrderProductionQueueCreateNew = async (req, res, next) => {
   }
 }
 
+// // ## /api/order/delorder1/orderProductionQueues/cancel  deleteOrderProductionQueuesCancel
+// router.post("/delorder1/orderProductionQueues/cancel", checkAuth, checkUUID, orderController.deleteOrderProductionQueuesCancel);
+exports.deleteOrderProductionQueuesCancel = async (req, res, next) => {
+  const data = req.body.orderProductionQueueList;
+  const userID = req.userData.tokenSet.userID;
+  // console.log('postOrderProductionQueuesCreateNew');
+  // console.log(data);
+
+  let session = await mongoose.startSession();
+  session.startTransaction();
+  let session2 = await mongoose.startSession();
+  session2.startTransaction();
+  let session3 = await mongoose.startSession();
+  session3.startTransaction();
+  try {
+    // ##  
+    // const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    const companyID = data.companyID;
+    const orderID = data.orderID;
+    const productID = data.productID;
+    const productBarcode = data.productBarcode;
+    const isOutsource = data.isOutsource;
+
+    const bundleNoFrom = +data.bundleNoFrom;
+    const bundleNoTo = +data.bundleNoTo;
+    // const createBy = data.createBy;
+    const numberFrom = +data.numberFrom;
+    const numberTo = +data.numberTo;
+
+    const page = +req.body.page;
+    const limit = +req.body.limit;
+
+    // ## gen productBarcodeNoArr
+    const productBarcodeNoArr = await ShareFunc.genProductBarcodeNoArr(productBarcode, +numberFrom, +numberTo);
+
+    // ## check first ===>  must orderProduction have to not scaned by somw staff for update to next station
+    const checkArrLen = await OrderProduction.aggregate([
+      { $match: { $and: [
+        {"companyID":companyID}, 
+        {"orderID":orderID}, 
+        {"productID":productID}, 
+        {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
+        { $expr:{$gte: [{$size: "$productionNode"}, 2]}}
+      ] } },
+      { $project: {			
+          _id: 1,	
+          productBarcodeNo: 1,
+          productBarcodeNoReal: 1,
+      }	}
+    ]);
+    // console.log(checkArrLen);
+
+    if (checkArrLen.length === 0) {
+
+      //  ## delete orderProductionQueueList
+      const result1 = await OrderProductionQueueList.deleteMany({$and: [
+        {"companyID":companyID}, 
+        {"orderID":orderID}, 
+        {"productID":productID}, 
+
+        {"productBarcode":productBarcode}, 
+        {"isOutsource":isOutsource}, 
+        {"numberFrom":numberFrom}, 
+        {"numberTo":numberTo}, 
+        {"bundleNoFrom":bundleNoFrom}, 
+        {"bundleNoTo":bundleNoTo}, 
+      ]}).session(session); 
+
+
+      //  ## update orderProductionQueue / delete array 1 element 
+      const result2 = await OrderProductionQueue.updateOne(
+        {$and: [
+          {"companyID":companyID},
+          {"orderID":orderID},
+          {"productID":productID},
+        ]}, 
+        {
+          $pull: { queueInfo: {                // ## delete n element for this condition
+            productBarcode: productBarcode, 
+            isOutsource: isOutsource,
+
+            numberFrom: { $gte: numberFrom},   // ## numberFrom ===>  >= numberFrom  && <= numberTo
+            numberFrom: { $lte : numberTo},
+
+            numberTo: { $gte: numberFrom},   // ## numberTo ===>  >= numberFrom  && <= numberTo
+            numberTo: { $lte : numberTo},
+
+            bundleNo: { $gte: bundleNoFrom},   // ## bundleNo ===>  >= bundleNoFrom  && <= bundleNoTo
+            bundleNo: { $lte : bundleNoTo},
+            
+          } }  
+        },
+        {upsert: true}).session(session2);
+
+      // ## delete orderProduction
+      const result3 = await OrderProduction.deleteMany({$and: [
+        {"companyID":companyID}, 
+        {"orderID":orderID}, 
+        {"productID":productID}, 
+        {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
+      ]}).session(session3);
+      
+    // ## err / have some orderProduction scanned already 
+    } else {
+      return res.status(501).json({
+        message: {
+          messageID: 'errO018', 
+          mode:'errCancelOrderProduction', 
+          value: "cancel Order Production error"
+        }
+      });
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+    await session2.commitTransaction();
+    session2.endSession();
+    await session3.commitTransaction();
+    session3.endSession();
+
+    // queueList: OrderProductionQueueList[]; queueListCount: number
+    const queueList = await ShareFunc.getOrderQueueSetList(companyID, orderID, page, limit);
+    const queueListCount = await ShareFunc.getOrderQueueSetListCount(companyID, orderID);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      success: true,
+      queueList: queueList,
+      queueListCount: queueListCount
+    });
+
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    await session2.abortTransaction(); 
+    session2.endSession();
+    await session3.abortTransaction(); 
+    session3.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'errO018', 
+        mode:'errCancelOrderProduction', 
+        value: "cancel Order Production error"
+      }
+    });
+  }  finally {
+    session.endSession();
+    session2.endSession();
+    session3.endSession();
+  }
+}
+
+
+
 exports.getbundleNoByRunningNo= async (queueInfo, productBarcodeNo) => {
   let bundleNo = 0;
   const num = +productBarcodeNo.slice(-5);

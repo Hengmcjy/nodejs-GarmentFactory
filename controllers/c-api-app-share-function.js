@@ -1306,6 +1306,16 @@ exports.getProductImageProfiles= async (companyID, productIDs) => {
 // #################################################################################
 // ## order zone ####################################################################
 
+exports.genProductBarcodeNoArr= async (productBarcode, numberFrom, numberTo) => {
+  let productBarcodeNoArr = [];
+  for(let i = +numberFrom; i <= +numberTo; i++) {
+    const num5 = await this.setStrLen(5, i);
+    productBarcodeNoArr.push(productBarcode+num5);
+  }
+  return productBarcodeNoArr;
+}
+
+
 exports.editOrderForLossToStyleZone= async (companyID, factoryID, orderID, productBarcode, targetPlace,  forLossQty) => {
   // this.strReplaceAll(barcodeNo.substr(this.targetIDPos, this.targetIDDigit), '-', '');
   // const runningNO = +productBarcodeNo.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
