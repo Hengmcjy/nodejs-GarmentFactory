@@ -2955,6 +2955,38 @@ exports.getOrderProductReceiveOutsource= async (companyID, productBarcodeNo) => 
   return orderProduct.length>0?orderProduct[0]:null;
 }
 
+exports.getOrderProductReceiveOutsource01= async (companyID, productBarcodeNos) => {
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"productBarcodeNo":productBarcodeNo},
+      {"productBarcodeNoReal":{$in: productBarcodeNos}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        bundleID: 1,
+        productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productBarcodeNoReserve: 1,
+        productCount: 1,
+        productionDate: 1,
+        productStatus: 1,
+        yarnLot: 1,
+        outsourceData: 1,
+        productionNode: 1,  // ## 
+    }	}
+  ]);
+  // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
+  // console.log(orderProduct);
+  return orderProduct.length>0?orderProduct[0]:null;
+}
+
 exports.getOrderProductByOrderID1= async (companyID, factoryID, orderID, productID, productBarcodeNo) => {
   productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
   const orderProduct = await OrderProduction.aggregate([

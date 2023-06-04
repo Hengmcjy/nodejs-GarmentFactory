@@ -2057,7 +2057,7 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
   try {
     await ShareFunc.upsertUserSession1hr(userID);
 
-
+    // console.log('productionNodeArr  ===' ,productionNodeArr);
     const uuid = uuidv4();
     // ## update datetime
     await this.asyncForEach2(productionNodeArr , async (productionNode) => {
@@ -2065,22 +2065,57 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
       productionNode.outsourceData[0].datetime = current;
     });
 
-    result1 = await OrderProduction.updateOne(
-      {$and: [
-        {"companyID":companyID},
-        {"factoryID":factoryID},
-        {"orderID":orderID},
-        {"productID":productID},
-        {"productBarcodeNo":{$in: productBarcodeNos}}
-        // {"productBarcodeNo":{$in: productBarcodeNos}}
-      ]}, 
-      {
-        // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
-        $push: {productionNode: {$each: productionNodeArr}},
-        // $inc: {productCount: -1},
-        "productCount": 1,
-        "bundleID": uuid
+    // ## old last record (toNode) have to the same  first element of new record (fromNode)
+    // ## or old last record (toNode) is outsource and has 1 element  / first element of new record
+
+    const orderProduct = await ShareFunc.getOrderProductReceiveOutsource01(companyID, productBarcodeNos);
+    let canUpdate = false; // set default
+    let productionNode;
+    if (orderProduct) {
+      // console.log(orderProduct.productionNode);
+      productionNode = orderProduct.productionNode;
+      if (productionNode[productionNode.length - 1].toNode === 'outsource') {
+        if (productionNode.length === 1 && productionNodeArr[0].fromNode === 'starterNode') {
+          canUpdate = true;
+        } else if (productionNode.length > 1) {  // ## productionNode.length  > 1  ///
+          if (productionNode[productionNode.length - 2].toNode === productionNodeArr[0].fromNode) {
+            canUpdate = true;
+          }
+        }
+
+      } else {
+        canUpdate = false;
+      }
+    }
+
+
+    if (canUpdate) {
+      result1 = await OrderProduction.updateOne(
+        {$and: [
+          {"companyID":companyID},
+          {"factoryID":factoryID},
+          {"orderID":orderID},
+          {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
+          // {"productBarcodeNo":{$in: productBarcodeNos}}
+        ]}, 
+        {
+          // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+          $push: {productionNode: {$each: productionNodeArr}},
+          // $inc: {productCount: -1},
+          "productCount": 1,
+          "bundleID": uuid
+        });
+    } else {
+      return res.status(501).json({
+        message: {
+          messageID: 'errns023', 
+          mode:'errEditNextNodeOutsource', 
+          value: "err edit next node outsource"
+        },
+        success: false
       });
+    }
 
     
 
