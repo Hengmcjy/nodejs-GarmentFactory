@@ -2177,8 +2177,8 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
 
   let session = await mongoose.startSession();
   session.startTransaction();
-  let session2 = await mongoose.startSession();
-  session2.startTransaction();
+  // let session2 = await mongoose.startSession();
+  // session2.startTransaction();
 
   try {
     await ShareFunc.upsertUserSession1hr(userID);
@@ -2186,13 +2186,15 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
     // ## check last node it collect to add next
 
     // ## udate-upsert outsourceData  / check existing in outsourceData
-    // getOrderProductReceiveOutsource01= async (companyID, productBarcodeNos) 
     const orderProduct = await ShareFunc.getOrderProductReceiveOutsource01(companyID, productBarcodeNos);
     const outsourceDataF = orderProduct.outsourceData.filter(i=>(i.factoryID === productionNode.outsourceData[0].factoryID));
     // const BundleGroupColorScanF = this.bundleGroupColorScan.filter(i=>(i.bundleNo === bundleNo));
 
+    // console.log(outsourceDataF);
+
     if (outsourceDataF.length === 0) {
       const outsourceData1 = productionNode.outsourceData[0];
+      // console.log(outsourceData1);
       result0 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
@@ -2203,31 +2205,33 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
         ]}, 
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
-          $push: {outsourceData: outsourceData1}
+          $push: {
+            outsourceData: outsourceData1,
+            productionNode: productionNode,
+          }
+        },
+      ).session(session);
+    } else {
+      result0 = await OrderProduction.updateMany(
+        {$and: [
+          {"companyID":companyID},
+          {"factoryID":factoryID},
+          {"orderID":orderID},
+          {"productID":productID},
+          {"productBarcodeNo":{$in: productBarcodeNos}}
+        ]}, 
+        // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+        {
+          $push: {productionNode: productionNode}
         },
       ).session(session);
     }
 
-    result1 = await OrderProduction.updateMany(
-      {$and: [
-        {"companyID":companyID},
-        {"factoryID":factoryID},
-        {"orderID":orderID},
-        {"productID":productID},
-        {"productBarcodeNo":{$in: productBarcodeNos}}
-      ]}, 
-      // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
-      {
-        $push: {productionNode: productionNode}
-      },
-    ).session(session2);
+    await session.commitTransaction();
+    session.endSession();
 
-    if (outsourceDataF.length === 0) {
-      await session.commitTransaction();
-      session.endSession();
-    }
-    await session2.commitTransaction();
-    session2.endSession();
+    // await session2.commitTransaction();
+    // session2.endSession();
 
     return res.status(200).json({
       tokenNS: '',
@@ -2239,8 +2243,8 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
     console.log(err);
     await session.abortTransaction(); 
     session.endSession();
-    await session2.abortTransaction(); 
-    session2.endSession();
+    // await session2.abortTransaction(); 
+    // session2.endSession();
     return res.status(501).json({
       message: {
         messageID: 'errns023', 
@@ -2251,7 +2255,7 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
     });
   } finally {
     session.endSession();
-    session2.endSession();
+    // session2.endSession();
   }
 }
 
