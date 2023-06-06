@@ -24,7 +24,7 @@ router.get("/getlist/:companyID/:userID/:page/:limit", checkAuth, checkUUID, ord
 // ## get order list /api/order/getlist2/:companyID/:userID/:orderids  getOrdersByOrderIDs
 router.get("/getlist2/:companyID/:userID/:orderids", checkAuth, checkUUID, orderController.getOrdersByOrderIDs);
 
-// ## get order list /api/order/getlist3/:companyID/:userID/:orderids  getOrdersByOrderIDs
+// ## get order list /api/order/getlist3/:companyID/:userID/:orderids  getOrdersZoneStyleSizeByOrderIDs
 router.get("/getlist3/:companyID/:userID/:orderids/:orderStatus", checkAuth, checkUUID, orderController.getOrdersZoneStyleSizeByOrderIDs);
 
 // ## /api/order/creataenew

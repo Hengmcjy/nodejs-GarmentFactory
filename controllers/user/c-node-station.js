@@ -2187,12 +2187,12 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
 
     // ## udate-upsert outsourceData  / check existing in outsourceData
     const orderProduct = await ShareFunc.getOrderProductReceiveOutsource01(companyID, productBarcodeNos);
-    const outsourceDataF = orderProduct.outsourceData.filter(i=>(i.factoryID === productionNode.outsourceData[0].factoryID));
-    // const BundleGroupColorScanF = this.bundleGroupColorScan.filter(i=>(i.bundleNo === bundleNo));
+    let outsourceDataF = [];
+    if (orderProduct.outsourceData) {
+      outsourceDataF = orderProduct.outsourceData.filter(i=>(i.factoryID === productionNode.outsourceData[0].factoryID));
+    }
 
-    // console.log(outsourceDataF);
-
-    if (outsourceDataF.length === 0) {
+    if (outsourceDataF.length === 0 || !orderProduct.outsourceData) {
       const outsourceData1 = productionNode.outsourceData[0];
       // console.log(outsourceData1);
       result0 = await OrderProduction.updateMany(

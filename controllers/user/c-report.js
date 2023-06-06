@@ -628,6 +628,62 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
 // ## report
 // #############################################################
 
+// ###################################################################################################
+// ## report company order outsource ############################################################################
+
+// router.get("/cpn/rep10/current/order/:companyID/:ordertatus", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsource);
+exports.getRepCompanyOrderOutsource = async (req, res, next) => {
+  // try {} catch (err) {}
+
+  console.log('getRepCompanyOrderOutsource');
+
+  const companyID = req.params.companyID;
+  // const factoryID = req.params.factoryID;
+  // const nodeID = req.params.nodeID;
+  const orderStatusArr = JSON.parse(req.params.ordertatus);
+  // const repListNameArr = JSON.parse(req.params.repListName);
+  // console.log(companyID, orderStatusArr);
+
+  try {
+
+    // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
+    currentCompanyOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
+    orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
+    currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr);
+    
+    // console.log(orderStyleColorSize, currentCompanyOrder, currentOrderStyle);
+
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      orderStyleColorSize: orderStyleColorSize,
+      currentCompanyOrder: currentCompanyOrder,
+      currentOrderStyle: currentOrderStyle,
+      // repDataFormat1: repDataFormat1,
+      // orders: orders,
+      // products: products,
+      // orderProductAllQtyRep: orderProductAllQtyRep,
+      // factory: factory,
+      // nodeStation: nodeStation,
+      // nodeFlows: nodeFlows,
+      // nodeFlow: nodeFlow
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp002', 
+        mode:'errRepCurrentCompanyOrder', 
+        value: "error report current company order"
+      }
+    });
+  }
+}
+
+// ## report company order outsource ############################################################################
+// ###################################################################################################
+
 
 // ###################################################################################################
 // ## report company ############################################################################
