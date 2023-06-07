@@ -635,7 +635,7 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
 exports.getRepCompanyOrderOutsource = async (req, res, next) => {
   // try {} catch (err) {}
 
-  console.log('getRepCompanyOrderOutsource');
+  // console.log('getRepCompanyOrderOutsource');
 
   const companyID = req.params.companyID;
   // const factoryID = req.params.factoryID;
@@ -650,8 +650,27 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
     currentCompanyOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
     orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
     currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr);
+
+    // #################################
+    // ## outsource
+
+    // ## get orderIDs  
+    let orderIDs = [];
+    await this.asyncForEach(currentOrderStyle, async (item1) => {
+      orderIDs.push(item1.orderID);
+    });
+    // console.log(orderIDs);
+
+    orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
+    // console.log(factoryOutsource);
+    let outsourcefactoryID = [];
+    await this.asyncForEach(orderProductFacOuts, async (item1) => {
+      outsourcefactoryID.push(item1.outsourcefactoryID);
+    });
     
-    // console.log(orderStyleColorSize, currentCompanyOrder, currentOrderStyle);
+    // ## get outsource factory qty
+    orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+    // console.log(orderProductFacOutQTY);
 
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -660,8 +679,8 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
       orderStyleColorSize: orderStyleColorSize,
       currentCompanyOrder: currentCompanyOrder,
       currentOrderStyle: currentOrderStyle,
-      // repDataFormat1: repDataFormat1,
-      // orders: orders,
+      outsourcefactoryID: outsourcefactoryID,
+      orderProductFacOutQTY: orderProductFacOutQTY,
       // products: products,
       // orderProductAllQtyRep: orderProductAllQtyRep,
       // factory: factory,

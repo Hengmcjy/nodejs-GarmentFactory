@@ -2259,6 +2259,129 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
   }
 }
 
+// // ## edit order production  send product to next department 
+// router.put("/outsource5/editcancel/oderProduction/received", nsController.putCancelOutsourceOrderProductionReceived);
+exports.putCancelOutsourceOrderProductionReceived = async (req, res, next) => {
+  // try {} catch (err) {}
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const data = req.body;
+  const userID = data.userID;
+  // console.log('putOutsourceOrderProductionNextNodeID');
+  // console.log(data);
+  const productBarcodeNos = data.productBarcodeNos;
+  const companyID = data.companyID;
+  // const factoryID = data.factoryID;
+  // const orderID = data.orderID;
+  // const productID = data.productID;
+  // let productionNodeArr = data.productionNode;
+  // const washingAndPressingMerge = data.washingAndPressingMerge;
+  // productionNode.datetime = current;
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    // ## check productBarcodeNos , are ever received or not 
+    // ## and orderProduction.productionNode.length > 1
+    // ## and last element of orderProduction.productionNode.toNode !== 'outsource'
+    // ## and .status = 'normal' and .isOutsource = true
+
+    const orderProduct = await ShareFunc.getOrderProductReceiveOutsource01(companyID, productBarcodeNos);
+    let canUpdateDelete = false; // set default
+    let productionNode;
+    if (orderProduct) {
+      // console.log(orderProduct.productionNode);
+      productionNode = orderProduct.productionNode;
+      if (productionNode[productionNode.length - 1].toNode !== 'outsource' && productionNode.length > 1 
+          && productionNode[productionNode.length - 1].status === 'normal' 
+          && productionNode[productionNode.length - 1].isOutsource === true) {
+          canUpdateDelete = true
+      } else {
+        canUpdate = false;
+      }
+    }
+
+  //   let productionNode: ProductionNode = {
+  //     fromNode: 'outsource',
+  //     toNode: 'outsource',
+  //     datetime: new Date(),
+  //     status: 'outsource',
+  //     problemID: '',
+  //     problemName: '',
+  //     isOutsource: isOutsource,
+  //     outsourceData: outsourceData,
+  //     createBy: createBy
+  // };
+
+    const productionNode1 = [...orderProduct.productionNode];
+    let i = 0;
+    let idx = -1;  // ## index of productionNode , we need to
+    // ## gen orderProduction.productionNode array new
+    await this.asyncForEach(productionNode1 , async (productionNode) => {
+      if (productionNode.toNode === 'outsource' && productionNode.status === 'outsource' && productionNode.isOutsource === true) {
+        idx = i;
+      }
+      i++;
+    });
+
+    let productionNode2 = [];
+    if (idx > -1) {
+
+      for (let ii = 0; ii <= idx; ii++){
+        productionNode2.push(productionNode1[ii]);
+      }
+    }
+
+    // console.log(canUpdateDelete , productionNode2);
+    if (canUpdateDelete) {
+
+      result1 = await OrderProduction.updateOne(
+        {$and: [
+          {"companyID":companyID},
+          // {"factoryID":factoryID},
+          // {"orderID":orderID},
+          // {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
+          // {"productBarcodeNo":{$in: productBarcodeNos}}
+        ]}, 
+        {
+          // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+          // $push: {productionNode: {$each: productionNodeArr}},
+          // $inc: {productCount: -1},
+          // "productCount": 1,
+          "productionNode": productionNode2
+        });
+
+    } else {
+      return res.status(501).json({
+        message: {
+          messageID: 'errns024', 
+          mode:'errEditCancelRecivedOutsource', 
+          value: "err edit cancel received  outsource"
+        },
+        success: false
+      });
+    }
+
+    return res.status(200).json({
+      tokenNS: '',
+      expiresIn: process.env.expiresIn,
+      success: true,
+      productBarcodeNos: productBarcodeNos
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns024', 
+        mode:'errEditCancelRecivedOutsource', 
+        value: "err edit cancel received  outsource"
+      },
+      success: false
+    });
+  }
+}
+
+
+
 // ## staff/worker factory login to node workstation
 // #######################################################################################################
 

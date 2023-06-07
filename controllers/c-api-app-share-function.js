@@ -2987,6 +2987,102 @@ exports.getOrderProductReceiveOutsource01= async (companyID, productBarcodeNos) 
   return orderProduct.length>0?orderProduct[0]:null;
 }
 
+// ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs)
+exports.getCurrentCompanyOrderOutsource= async (companyID, orderIDs) => {
+  const orderProductFacOuts = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        // orderID: 1,	
+        outsourceData: 1
+    }	},
+    { $unwind: "$outsourceData"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      // orderID: 1,	
+      outsourcefactoryID: "$outsourceData.factoryID",
+  }	},
+  { $group: {			
+    _id: { 
+      companyID: '$companyID',
+      // orderID: '$orderID',
+      outsourcefactoryID: '$outsourcefactoryID',
+  }}}  
+]);
+
+// // console.log(orderProductFacOuts);
+const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
+  companyID: fw._id.companyID, 
+  outsourcefactoryID: fw._id.outsourcefactoryID,
+}));
+    
+  return orderProductFacOutsF;
+}
+
+// ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {
+  const orderProductFacOutQTY = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        // orderID: 1,	
+        productionNode: 1
+    }	},
+    { $unwind: "$productionNode"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      isOutsource: "$productionNode.isOutsource",
+      outsourceData: "$productionNode.outsourceData",
+    }	},
+    { $match: { $and: [
+      {"isOutsource":true},
+    ] } },
+    { $unwind: "$outsourceData"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      outsourcefactoryID: "$outsourceData.factoryID",
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        // orderID: '$orderID',
+        outsourcefactoryID: '$outsourcefactoryID',
+      },
+      sumFactoryOutsQty: {$sum: 1} ,
+    }}  
+    // { $group: {			
+    //   _id: { 
+    //     companyID: '$companyID',
+    //     orderID: '$orderID',
+    //     style: '$style',
+    //     color: '$color',
+    //     size: '$size',
+    //     fromNode: '$fromNode',
+    // },
+    //   sumProductQty: {$sum: 1} ,
+    // }}  
+  ]);
+
+  const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
+    companyID: fw._id.companyID, 
+    outsourcefactoryID: fw._id.outsourcefactoryID,
+    sumFactoryOutsQty: fw.sumFactoryOutsQty,
+  }));
+  return orderProductFacOutQTYF;
+}
+
+
 exports.getOrderProductByOrderID1= async (companyID, factoryID, orderID, productID, productBarcodeNo) => {
   productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
   const orderProduct = await OrderProduction.aggregate([
