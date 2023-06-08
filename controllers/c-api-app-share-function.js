@@ -2998,43 +2998,6 @@ exports.getCurrentCompanyOrderOutsource= async (companyID, orderIDs) => {
         _id: 1,	
         companyID: 1,	
         // orderID: 1,	
-        outsourceData: 1
-    }	},
-    { $unwind: "$outsourceData"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      // orderID: 1,	
-      outsourcefactoryID: "$outsourceData.factoryID",
-  }	},
-  { $group: {			
-    _id: { 
-      companyID: '$companyID',
-      // orderID: '$orderID',
-      outsourcefactoryID: '$outsourcefactoryID',
-  }}}  
-]);
-
-// // console.log(orderProductFacOuts);
-const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
-  companyID: fw._id.companyID, 
-  outsourcefactoryID: fw._id.outsourcefactoryID,
-}));
-    
-  return orderProductFacOutsF;
-}
-
-// ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
-exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {
-  const orderProductFacOutQTY = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
-    ] } },
-    { $project: {			
-        _id: 1,	
-        companyID: 1,	
-        // orderID: 1,	
         productionNode: 1
     }	},
     { $unwind: "$productionNode"},
@@ -3058,28 +3021,274 @@ exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {
         companyID: '$companyID',
         // orderID: '$orderID',
         outsourcefactoryID: '$outsourcefactoryID',
+      }
+    }}  
+ 
+  ]);
+
+// // console.log(orderProductFacOuts);
+const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
+  companyID: fw._id.companyID, 
+  outsourcefactoryID: fw._id.outsourcefactoryID,
+}));
+    
+  return orderProductFacOutsF;
+}
+
+// ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {
+  const orderProductFacOutQTY = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        outsourceData: 1
+    }	},
+    { $unwind: "$outsourceData"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      outsourcefactoryID: "$outsourceData.factoryID",
+    }	},
+    // { $match: { $and: [
+    //   {"isOutsource":true},
+    // ] } },
+    // { $unwind: "$outsourceData"},
+    // { $project: {			
+    //   _id: 1,	
+    //   companyID: 1,	
+    //   orderID: 1,	
+    //   outsourcefactoryID: "$outsourceData.factoryID",
+    // }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        outsourcefactoryID: '$outsourcefactoryID',
       },
       sumFactoryOutsQty: {$sum: 1} ,
-    }}  
-    // { $group: {			
-    //   _id: { 
-    //     companyID: '$companyID',
-    //     orderID: '$orderID',
-    //     style: '$style',
-    //     color: '$color',
-    //     size: '$size',
-    //     fromNode: '$fromNode',
-    // },
-    //   sumProductQty: {$sum: 1} ,
-    // }}  
+    }}   
   ]);
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
     companyID: fw._id.companyID, 
+    orderID: fw._id.orderID, 
     outsourcefactoryID: fw._id.outsourcefactoryID,
     sumFactoryOutsQty: fw.sumFactoryOutsQty,
   }));
+
   return orderProductFacOutQTYF;
+}
+
+// orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
+exports.getCurrentCompanyOrderOutsourceRemianQTY= async (companyID, orderIDs) => {
+  const status = 'outsource';
+  const orderProductFacOutQTY = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        // productionNode: 1,
+        // productBarcodeNo: 1,
+        // productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+
+    }	},
+    { $unwind: "$productionNode"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      status: "$productionNode.status",
+      isOutsource: "$productionNode.isOutsource",
+      outsourceData: "$productionNode.outsourceData",
+    }	},
+    { $match: { $and: [
+      {"isOutsource":true},
+      {"status":status},
+    ] } },
+    { $unwind: "$outsourceData"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      outsourcefactoryID: "$outsourceData.factoryID",
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        outsourcefactoryID: '$outsourcefactoryID',
+      },
+      sumFactoryOutsQty: {$sum: 1} ,
+    }}   
+  ]);
+
+  const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID, 
+    outsourcefactoryID: fw._id.outsourcefactoryID,
+    sumFactoryOutsQty: fw.sumFactoryOutsQty,
+  }));
+
+  return orderProductFacOutQTYF;
+}
+
+// ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
+exports.getCurrentCompanyOrderStyleColorSizeOutsourceQTY= async (companyID, orderIDs) => {
+  const orderProductFacOutQTY = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        outsourceData: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+    }	},
+    { $unwind: "$outsourceData"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+      outsourcefactoryID: "$outsourceData.factoryID",
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        // factoryID: '$factoryID',
+        orderID: '$orderID',
+        outsourcefactoryID: '$outsourcefactoryID',
+        style: '$style',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+        // productID: '$productID',
+        // bundleNo: '$bundleNo',
+        // mode: '$mode',
+      },
+      countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }} ,
+ 
+  ]);
+
+  const result = await orderProductFacOutQTY.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID,
+    outsourcefactoryID: fw._id.outsourcefactoryID,
+    style: fw._id.style,
+    targetPlace: fw._id.targetPlace,
+    color: fw._id.color,
+    size: fw._id.size,
+    countQty: fw.countQty,
+  }));
+
+  return result;
+}
+
+// ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
+exports.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY= async (companyID, orderIDs) => {
+  const status = 'outsource';
+  const orderProductFacOutQTY = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        // productionNode: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+
+    }	},
+    { $unwind: "$productionNode"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+      status: "$productionNode.status",
+      isOutsource: "$productionNode.isOutsource",
+      outsourceData: "$productionNode.outsourceData",
+    }	},
+    { $match: { $and: [
+      {"isOutsource":true},
+      {"status":status},
+    ] } },
+    { $unwind: "$outsourceData"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      outsourcefactoryID: "$outsourceData.factoryID",
+      style: 1,	
+      targetPlace: 1,	
+      color: 1,	
+      size: 1,	
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        // factoryID: '$factoryID',
+        orderID: '$orderID',
+        outsourcefactoryID: '$outsourcefactoryID',
+        style: '$style',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+        // productID: '$productID',
+        // bundleNo: '$bundleNo',
+        // mode: '$mode',
+      },
+      countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }} ,  
+  ]);
+
+  const result = await orderProductFacOutQTY.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID,
+    outsourcefactoryID: fw._id.outsourcefactoryID,
+    style: fw._id.style,
+    targetPlace: fw._id.targetPlace,
+    color: fw._id.color,
+    size: fw._id.size,
+    countQty: fw.countQty,
+  }));
+
+  return result;
 }
 
 
@@ -7409,7 +7618,46 @@ exports.testview2 = async () => {
   return orderProductRep;
 }
 
-// ## pdate manual data
+// ## update nested array 
+exports.updateOrderProduction2 = async () => {
+  const orderIDs = [
+    'AA0PVA3A', 'BA1ODA3A',
+    'BAI13A3A', 'BA1NIA3A',
+    'AA0PKA3A', 'AA0Q1A3A',
+    'BA1NWA3A', 'AA0PJA3A',
+    'AA0Q6A3A', 'BA1NUA3A',
+    'BA1O0A3A', 'BA1OEA3A'
+  ];
+  const outsourcefactoryID = [ 'f000009', 'f000004', 'f000005', 'f000006' ];
+  const factoryID1 = 'f000001';
+  const companyID = 'c000001';
+  const order1 = await OrderProduction.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}}
+    ]},
+    { $set: { 
+      "productionNode.$[pn].outsourceData.$[outs].fromFactoryID" : factoryID1, 
+    }},
+    {
+      multi: true,
+      arrayFilters: [
+        {
+          "pn.outsourceData": {
+            $exists: true
+          }
+        },
+        {
+          // "outs.factoryID": "f000005"
+          "outs.factoryID": {$in: outsourcefactoryID}
+        }
+      ]
+    });
+    // console.log(order1);
+    console.log('completed');
+}
+
+// ## update manual data
 // #######################################################################################################
 
 

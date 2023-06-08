@@ -2380,7 +2380,156 @@ exports.putCancelOutsourceOrderProductionReceived = async (req, res, next) => {
   }
 }
 
+// // ## edit order production  send product to next department 
+// router.put("/outsource6/editcancel/oderProduction/sendout", nsController.putCancelOutsourceOrderProductionsendout);
+exports.putCancelOutsourceOrderProductionsendout = async (req, res, next) => {
+  // try {} catch (err) {}
+  // const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const data = req.body;
+  const userID = data.userID;
+  // console.log('putOutsourceOrderProductionSendOut');
+  // console.log(data);
+  const productBarcodeNos = data.productBarcodeNos;
+  const companyID = data.companyID;
+  // const factoryID = data.factoryID;
+  // const orderID = data.orderID;
+  // const productID = data.productID;
+  // let productionNode = data.productionNode;  // ## object
+  // const washingAndPressingMerge = data.washingAndPressingMerge;
+  // productionNode.datetime = current;
 
+  let session = await mongoose.startSession();
+  session.startTransaction();
+  // let session2 = await mongoose.startSession();
+  // session2.startTransaction();
+
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    // ## check last node it collect to add next
+
+    // ## udate-upsert outsourceData  / check existing in outsourceData
+    const orderProduct = await ShareFunc.getOrderProductReceiveOutsource01(companyID, productBarcodeNos);
+    
+    let canUpdateDelete = false; // set default
+    let productionNode;
+    if (orderProduct) {
+      // console.log(orderProduct.productionNode);
+      productionNode = orderProduct.productionNode;
+      if (productionNode[productionNode.length - 1].toNode === 'outsource' && productionNode.length > 1 
+          && productionNode[productionNode.length - 1].status === 'outsource' 
+          && productionNode[productionNode.length - 1].isOutsource === true) {
+          canUpdateDelete = true
+      } else {
+        canUpdate = false;
+      }
+    }
+
+    //   const productionNode: ProductionNode = {
+    //     fromNode: 'outsource',
+    //     toNode: 'outsource',
+    //     datetime: new Date(),
+    //     status: 'outsource',
+    //     problemID: '',
+    //     problemName: '',
+    //     isOutsource: isOutsource,
+    //     outsourceData: outsourceData,
+    //     createBy: createBy
+    // };
+
+    // db.students.updateOne( { _id: 1 }, { $pop: { scores: -1 } } )
+    if (canUpdateDelete) {
+      result0 = await OrderProduction.updateMany(
+        {$and: [
+          {"companyID":companyID},
+          {"productBarcodeNo":{$in: productBarcodeNos}}
+        ]}, 
+        {
+          $pop: { productionNode: 1, outsourceData: 1 },  // ## delete last element of productionNode
+          // $pop: { outsourceData: 1 }
+        },
+      ).session(session);
+
+    } else {
+      return res.status(501).json({
+        message: {
+          messageID: 'errns025', 
+          mode:'errEditCancelSentoutOutsource', 
+          value: "err edit cancel sentout  outsource"
+        },
+        success: false
+      });
+    } 
+
+    
+
+    // if (outsourceDataF.length === 0 || !orderProduct.outsourceData) {
+    //   const outsourceData1 = productionNode.outsourceData[0];
+    //   // console.log(outsourceData1);
+    //   result0 = await OrderProduction.updateMany(
+    //     {$and: [
+    //       {"companyID":companyID},
+    //       // {"factoryID":factoryID},
+    //       // {"orderID":orderID},
+    //       // {"productID":productID},
+    //       {"productBarcodeNo":{$in: productBarcodeNos}}
+    //     ]}, 
+    //     // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+    //     {
+    //       $push: {
+    //         outsourceData: outsourceData1,
+    //         productionNode: productionNode,
+    //       }
+    //     },
+    //   ).session(session);
+    // } else {
+    //   result0 = await OrderProduction.updateMany(
+    //     {$and: [
+    //       {"companyID":companyID},
+    //       {"factoryID":factoryID},
+    //       {"orderID":orderID},
+    //       {"productID":productID},
+    //       {"productBarcodeNo":{$in: productBarcodeNos}}
+    //     ]}, 
+    //     // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+    //     {
+    //       $push: {productionNode: productionNode}
+    //     },
+    //   ).session(session);
+    // }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    // await session2.commitTransaction();
+    // session2.endSession();
+
+    return res.status(200).json({
+      tokenNS: '',
+      expiresIn: process.env.expiresIn,
+      success: true,
+      productBarcodeNos: productBarcodeNos
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    // await session2.abortTransaction(); 
+    // session2.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'errns025', 
+        mode:'errEditCancelSentoutOutsource', 
+        value: "err edit cancel sentout  outsource"
+      },
+      success: false
+    });
+  } finally {
+    session.endSession();
+    // session2.endSession();
+  }
+}
+// errns025	errEditCancelSentoutOutsource	err edit cancel sentout  outsource
 
 // ## staff/worker factory login to node workstation
 // #######################################################################################################

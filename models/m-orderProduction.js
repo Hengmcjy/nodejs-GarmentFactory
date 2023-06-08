@@ -34,6 +34,7 @@ const orderProductionSchema = mongoose.Schema({
   }],
   outsourceData: [{   // ## 
     factoryID : {type: String},
+    fromFactoryID : {type: String},
     datetime : {type: Date},
   }],
   productionNode: [{   // ## อยู่ในการผลิตขั้นตอนไหน
@@ -46,6 +47,7 @@ const orderProductionSchema = mongoose.Schema({
     isOutsource : {type: Boolean}, 
     outsourceData: [{   // ## 
       factoryID : {type: String},
+      fromFactoryID : {type: String},
     }],
     createBy: {
       userID: {type: String},

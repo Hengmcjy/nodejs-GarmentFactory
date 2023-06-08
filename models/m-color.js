@@ -3,6 +3,7 @@ const uniqueValidator = require("mongoose-unique-validator");
 
 const colorSchema = mongoose.Schema({
   seq: {type: Number},
+  setName: {type: String},
   color: {
     colorID: {type: String},
     colorName: {type: String},

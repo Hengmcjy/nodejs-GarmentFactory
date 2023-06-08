@@ -140,6 +140,9 @@ router.put("/outsource4/edit/oderProduction/sendout", nsController.putOutsourceO
 // ## edit order production  send product to next department 
 router.put("/outsource5/editcancel/oderProduction/received", nsController.putCancelOutsourceOrderProductionReceived);
 
+// ## edit order production  send product to next department 
+router.put("/outsource6/editcancel/oderProduction/sendout", nsController.putCancelOutsourceOrderProductionsendout);
+
 // ## worker zone 
 // #########################################################################################
 

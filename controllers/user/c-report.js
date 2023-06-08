@@ -13,6 +13,7 @@ const User = require("../../models/m-user");
 const MailSignup = require("../../models/m-mailSignup");
 const Factory = require("../../models/m-factory");
 const Customer = require("../../models/m-customer");
+const OrderProduction = require("../../models/m-orderProduction");
 
 moment.tz.setDefault('Asia/Bangkok');
 
@@ -634,7 +635,6 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
 // router.get("/cpn/rep10/current/order/:companyID/:ordertatus", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsource);
 exports.getRepCompanyOrderOutsource = async (req, res, next) => {
   // try {} catch (err) {}
-
   // console.log('getRepCompanyOrderOutsource');
 
   const companyID = req.params.companyID;
@@ -670,20 +670,29 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
     
     // ## get outsource factory qty
     orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+    // ## get outsource factory qty remain
+    orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
     // console.log(orderProductFacOutQTY);
+    // console.log(orderProductFacOutRemainQTY);
+
+    // ## style zone color size
+    orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
+    orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
+    // console.log(orderProductFacOutStyleColorSizeQTY);
 
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
+      orderIDs: orderIDs,
       orderStyleColorSize: orderStyleColorSize,
       currentCompanyOrder: currentCompanyOrder,
       currentOrderStyle: currentOrderStyle,
       outsourcefactoryID: outsourcefactoryID,
       orderProductFacOutQTY: orderProductFacOutQTY,
-      // products: products,
-      // orderProductAllQtyRep: orderProductAllQtyRep,
-      // factory: factory,
+      orderProductFacOutRemainQTY: orderProductFacOutRemainQTY,
+      orderProductFacOutStyleColorSizeQTY: orderProductFacOutStyleColorSizeQTY,
+      orderProductFacOutStyleColorSizeRemainQTY: orderProductFacOutStyleColorSizeRemainQTY,
       // nodeStation: nodeStation,
       // nodeFlows: nodeFlows,
       // nodeFlow: nodeFlow

@@ -23,6 +23,7 @@ const orderProductionQueueListSchema = mongoose.Schema({
   }],
   outsourceData: [{   // ## 
     factoryID : {type: String},
+    fromFactoryID : {type: String},
     datetime : {type: Date},
   }],
   createBy: {
