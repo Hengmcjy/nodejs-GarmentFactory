@@ -2069,6 +2069,7 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
     // ## or old last record (toNode) is outsource and has 1 element  / first element of new record
 
     const orderProduct = await ShareFunc.getOrderProductReceiveOutsource01(companyID, productBarcodeNos);
+    // console.log('orderProduct  ===' ,orderProduct);
     let canUpdate = false; // set default
     let productionNode;
     if (orderProduct) {

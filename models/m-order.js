@@ -26,6 +26,7 @@ const orderSchema = mongoose.Schema({
   }],
   orderColor:[{
     seq: {type: Number},
+    setName: {type: String},
     color: {
       colorID: {type: String},
       colorName: {type: String},

@@ -226,6 +226,7 @@ exports.colorInfo= async () => {
     { $project: {			
         _id: 0,	
         seq: 1,		
+        setName: 1,
         color: 1
     }	},
     { $sort: { seq: 1 } }
@@ -1539,11 +1540,12 @@ exports.getOrderStyleByStatus= async (companyID, statusArr) => {
 }
 		
 // ## get orders
-exports.getOrders= async (companyID, page, limit) => {
+exports.getOrders= async (companyID, statusArr, page, limit) => {
   // limit = +limit; // ## change to number
   const orders = await Order.aggregate([
     { $match: { $and: [
-      {"companyID":companyID}
+      {"companyID":companyID},
+      {"orderStatus":{$in: statusArr}}
     ] } },
     { $project: {			
         _id: 1,	
@@ -1570,9 +1572,10 @@ exports.getOrders= async (companyID, page, limit) => {
 }
 
 // ShareFunc.getOrdersCount(companyID);
-exports.getOrdersCount= async (companyID, page, limit) => {
+exports.getOrdersCount= async (companyID, statusArr) => {
   rows = await Order.countDocuments({$and: [
-    {"companyID":companyID}
+    {"companyID":companyID},
+    {"orderStatus":{$in: statusArr}}
   ]});
   return rows;
 }
@@ -7657,6 +7660,10 @@ exports.updateOrderProduction2 = async () => {
     console.log('completed');
 }
 
+
+exports.updateColorSetOrderProductionMuji = async () => {
+
+}
 // ## update manual data
 // #######################################################################################################
 

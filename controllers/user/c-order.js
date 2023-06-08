@@ -141,6 +141,7 @@ exports.getOrders = async (req, res, next) => {
   const userID = req.params.userID;
   const page = +req.params.page;
   const limit = +req.params.limit;
+  const status = ['open'];
 
   // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
 
@@ -150,9 +151,9 @@ exports.getOrders = async (req, res, next) => {
 
   try {
     // exports.getOrders= async (companyID, page, limit)
-    const orders = await ShareFunc.getOrders(companyID, page, limit);
+    const orders = await ShareFunc.getOrders(companyID, status, page, limit);
     // console.log(orders);
-    const ordersCount = await ShareFunc.getOrdersCount(companyID);
+    const ordersCount = await ShareFunc.getOrdersCount(companyID, status);
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);

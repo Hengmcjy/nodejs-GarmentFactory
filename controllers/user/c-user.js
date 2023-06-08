@@ -96,6 +96,10 @@ exports.getTestTest2 = async (req, res, next) => {
   // const testview2 = await ShareFunc.testview2();
   // console.log(testview2);
 
+  // ## update colorset name for muji
+  // updateColorSetOrderProductionMuji
+  const result01 = await ShareFunc.updateColorSetOrderProductionMuji();
+
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {
     action: 'sent by socketIO',
