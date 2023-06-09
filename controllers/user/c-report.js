@@ -141,7 +141,7 @@ exports.getRepCurrentProductionPeriod = async (req, res, next) => {
   // const limit = +req.params.limit;  // ## records we need to get
   // const productIDArr = JSON.parse(req.params.productIDArr);
   const productStatusArr = JSON.parse(req.params.productStatus); // normal , problem, complete
-  const productionNodeStatusArr = ['normal'];
+  const productionNodeStatusArr = ['normal', 'complete'];
   const orderStatusArr = JSON.parse(req.params.orderStatus);
   // console.log(companyID, productStatusArr, productionNodeStatusArr);
   try {
