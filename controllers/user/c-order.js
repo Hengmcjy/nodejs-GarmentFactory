@@ -1155,6 +1155,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
           let productionNode1;
           if (isOutsource) {  // ## case id outsource
             productionNode1 = {
+                factoryID: outsourceData1[0].factoryID,
                 fromNode: txtOutsource,
                 toNode: txtOutsource,
                 datetime: current,
@@ -1166,6 +1167,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               };
           } else {
             productionNode1 = {
+                factoryID: factoryID,
                 fromNode: 'starterNode',
                 toNode: toNode,
                 datetime: current,

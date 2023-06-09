@@ -38,6 +38,7 @@ const orderProductionSchema = mongoose.Schema({
     datetime : {type: Date},
   }],
   productionNode: [{   // ## อยู่ในการผลิตขั้นตอนไหน
+    factoryID : {type: String},  // that factory did / ฝีมือโรงงานไหน
     fromNode : {type: String},
     toNode : {type: String},
     datetime : {type: Date},
