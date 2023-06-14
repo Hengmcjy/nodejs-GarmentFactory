@@ -90,6 +90,48 @@ exports.getNodeDatageneral = async (req, res, next) => {
 // #######################################################################################################
 // ## node station
 
+// router.get("/nodestation/lists/:companyID/:factoryID/:status/:page/:limit", nsController.getNodeStationsList);
+exports.getNodeStationsList = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const status = JSON.parse(req.params.status);
+  const page = +req.params.page;
+  const limit = +req.params.limit;
+  // const userID = req.userData.tokenSet.userID;
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;
+  // console.log('getNodeFlows');
+
+  
+  try {
+    // exports.getNodeStations= async (companyID, factoryID, status, page, limit)
+    const nodeStations = await ShareFunc.getNodeStations(companyID, factoryID, status, page, limit);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // // console.log(req.userData.tokenSet);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      // userID: userID,
+      nodeStations: nodeStations,
+      success: true
+      // factory: factory
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns002', 
+        mode:'errNodeStationsList', 
+        value: "error get node stations list"
+      }
+    });
+  }
+}
+
 // // ## get node stations
 // router.get("/node/lists/:companyID/:factoryID/:status/:page/:limit", checkAuth, checkUUID, nsController.getNodeStations);
 exports.getNodeStations = async (req, res, next) => {
@@ -981,6 +1023,10 @@ exports.postLoginNodeStationByUUID = async (req, res, next) => {
     const nodestationf = await ShareFunc.getNodeStationByUUID(uuid, statusArr);
     // console.log(nodestationf);
     const nodeStation = nodestationf?nodestationf.nodeStation:null;
+
+    
+    let company;
+    let factory;
     // console.log(nodeStation);
     if (!nodeStation) {
       return res.status(501).json({
@@ -996,16 +1042,25 @@ exports.postLoginNodeStationByUUID = async (req, res, next) => {
       const stationID = nodestationf.stationID?nodestationf.stationID:'';
       if (nodeStation.nodeID) {  // ## check exist
         canLogin = true;
+        // ## get company  getCompany1Info= async (companyID)
+        company = await ShareFunc.getCompany1Info(nodeStation.companyID);
+        // console.log('-------------------------------company-----------------------------------------------');
+        // console.log(company);
+
+        // ## get factory  exports.getFactory1Info= async (companyID, factoryID) 
+        factory = await ShareFunc.getFactory1Info(nodeStation.companyID, nodeStation.factoryID);
       }
       
       // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
       res.status(200).json({
         tokenNS: 'xx',
         // expiresIn: process.env.expiresIn,
+        company: company,
+        factory: factory,
         nodeStation: nodeStation,
         stationID: stationID,
         canLogin: canLogin,
-        success: true
+        success: true,
       });
     }
 
@@ -1183,6 +1238,21 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             success: true,
             mode: 'sendtorepair'
           });
+        } else if (mode === 'scan-receive-affiliate') {
+          // console.log('scan-receive-affiliat');
+          return res.status(200).json({
+            tokenNS: '',
+            expiresIn: process.env.expiresIn,
+            userID: userID,
+            companyID: companyID,
+            factoryID: factoryID,
+            nodeID: nodeID,
+            stationID: stationID,
+            orderProduction: orderProduction,
+            success: true,
+            mode: 'scan-receive-affiliate'
+          });
+
         } else if (orderProduction.productionNode[0].toNode === nodeID && mode === 'scan') {
           return res.status(200).json({
             tokenNS: '',
@@ -2532,6 +2602,120 @@ exports.putCancelOutsourceOrderProductionsendout = async (req, res, next) => {
 }
 // errns025	errEditCancelSentoutOutsource	err edit cancel sentout  outsource
 
+// // ## put add factory affiliate 
+// // ## edit order production  send product to next department 
+// router.put("/affiliate1/edit/oderProduction/nextnode", nsController.putAffiliateOrderProductionNextNodeID);
+exports.putAffiliateOrderProductionNextNodeID = async (req, res, next) => {
+  // try {} catch (err) {}
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const data = req.body;
+  const userID = data.userID;
+  // console.log('putAffiliateOrderProductionNextNodeID');
+  // console.log(data);
+  const productBarcodeNos = data.productBarcodeNos;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const orderID = data.orderID;
+  const productID = data.productID;
+  let productionNodeArr = data.productionNode;
+  // const washingAndPressingMerge = data.washingAndPressingMerge;
+  // productionNode.datetime = current;
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    let firstNode = '';
+    // ## update datetime
+    await this.asyncForEach2(productionNodeArr , async (productionNode) => {
+      productionNode.datetime = current;
+      // productionNode.outsourceData[0].datetime = current;
+      firstNode = productionNodeArr[0].fromNode;
+    });
+
+    // ## old last record (toNode) have to the same  first element of new record (fromNode)
+    // ## or old last record (toNode) is outsource and has 1 element  / first element of new record
+
+    // console.log(companyID  , productBarcodeNos);
+    const orderProduct = await ShareFunc.getCOrderProduct1(companyID, productBarcodeNos);
+    // console.log('orderProduct  ===' ,orderProduct);
+    let canUpdate = true; // set default
+
+    // let productionNode;
+    // if (orderProduct) {
+    //   // console.log(orderProduct.productionNode);
+    //   productionNode = orderProduct.productionNode;
+    //   if (productionNode[productionNode.length - 1].toNode === 'outsource') {
+    //     if (productionNode.length === 1 && productionNodeArr[0].fromNode === 'starterNode') {
+    //       canUpdate = true;
+    //     } else if (productionNode.length > 1) {  // ## productionNode.length  > 1  ///
+    //       if (productionNode[productionNode.length - 2].toNode === productionNodeArr[0].fromNode) {
+    //         canUpdate = true;
+    //       }
+    //     }
+
+    //   } else {
+    //     canUpdate = false;
+    //   }
+    // }
+
+    // console.log(firstNode  , orderProduct.length);
+    await this.asyncForEach(orderProduct , async (item1) => {
+      // console.log(item1.productionNode[item1.productionNode.length - 1].toNode , firstNode  );
+      if (item1.productionNode[item1.productionNode.length - 1].toNode !== firstNode) {
+        canUpdate = false;
+      }
+    });
+
+    if (canUpdate && orderProduct.length > 0) {
+      // console.log(productionNodeArr);
+      result1 = await OrderProduction.updateMany(
+        {$and: [
+          {"companyID":companyID},
+          // {"factoryID":factoryID},
+          {"orderID":orderID},
+          {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
+          // {"productBarcodeNo":{$in: productBarcodeNos}}
+        ]}, 
+        {
+          // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+          $push: {productionNode: {$each: productionNodeArr}},
+          // // $inc: {productCount: -1},
+          // "productCount": 1,
+          "factoryID": factoryID
+        });
+
+    } else {
+      return res.status(501).json({
+        message: {
+          messageID: 'errns017', 
+          mode:'errEditNextNode', 
+          value: "err edit next node"
+        },
+        success: false
+      });
+    }
+
+    
+
+    return res.status(200).json({
+      tokenNS: '',
+      expiresIn: process.env.expiresIn,
+      success: true,
+      productBarcodeNos: productBarcodeNos
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns017', 
+        mode:'errEditNextNode', 
+        value: "err edit next node"
+      },
+      success: false
+    });
+  }
+}
+
 // ## staff/worker factory login to node workstation
 // #######################################################################################################
 
@@ -2678,4 +2862,55 @@ exports.putCancelOutsourceOrderProductionsendout = async (req, res, next) => {
 
 
 // ## report..... staff/worker factory login to node workstation
+// #######################################################################################################
+
+// #######################################################################################################
+// ## order
+
+exports.getOrders = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  const page = +req.params.page;
+  const limit = +req.params.limit;
+  const status = ['open'];
+
+  // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
+
+  // const test = uuidv5("Hello World", process.env.IOID); // ⇨ 'a572fa0f-9bfa-5103-9882-16394770ad11'
+  // console.log(test);
+  // console.log(uuidv4());
+
+  try {
+    // exports.getOrders= async (companyID, page, limit)
+    const orders = await ShareFunc.getOrders(companyID, status, page, limit);
+    // console.log(orders);
+    const ordersCount = await ShareFunc.getOrdersCount(companyID, status);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // // console.log(req.userData.tokenSet);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      // userID: userID,
+      orders: orders,
+      ordersCount: ordersCount
+      // factory: factory
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO001', 
+        mode:'errOrderList', 
+        value: "error get Order list"
+      }
+    });
+  }
+}
+
+// ## order
 // #######################################################################################################

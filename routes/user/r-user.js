@@ -18,6 +18,7 @@ const router = express.Router();
 // ## test
 router.get("/test/test", userController.getTestTest);
 router.get("/test/test2", userController.getTestTest2);
+router.get("/test/test3", userController.getTestTest3);
 
 // ## general info / starting data
 router.get("/generalinfo/:languageID/:classLimit", userController.getGeneralInfo);

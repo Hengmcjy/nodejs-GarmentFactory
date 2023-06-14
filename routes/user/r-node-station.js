@@ -82,6 +82,7 @@ router.post("/node8/del/nodeStationLoginByUUID", nsController.postLoginNodeStati
 // #########################################################################################
 // ## worker zone 
 
+router.get("/nodestation/lists/:companyID/:factoryID/:status/:page/:limit", nsController.getNodeStationsList);
 
 // ## staff login to node workstation staffNodeLogin
 router.post("/nodestation/staff/login", nsController.staffNodeLogin);
@@ -143,6 +144,10 @@ router.put("/outsource5/editcancel/oderProduction/received", nsController.putCan
 // ## edit order production  send product to next department 
 router.put("/outsource6/editcancel/oderProduction/sendout", nsController.putCancelOutsourceOrderProductionsendout);
 
+// ## put add factory affiliate 
+// ## edit order production  send product to next department 
+router.put("/affiliate1/edit/oderProduction/nextnode", nsController.putAffiliateOrderProductionNextNodeID);
+
 // ## worker zone 
 // #########################################################################################
 
@@ -170,5 +175,15 @@ router.put("/outsource6/editcancel/oderProduction/sendout", nsController.putCanc
 // ## report..... 
 // #######################################################################################################
 
+
+// #######################################################################################################
+// ## order 
+
+
+// ## get order list /api/order/getlist/:companyID/:userID/:page/:limit
+router.get("/getlist/:companyID/:userID/:page/:limit", nsController.getOrders);
+
+// ## order 
+// #######################################################################################################
 
 module.exports = router;

@@ -255,27 +255,33 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     
 
     // const isRunNumberUp = runNumberUpType.includes(lottoBetTypeX);
+    console.log(' 1 - getRepCFNCurrentProductQty');
     if (repListNameArr.includes('getRepCFNCurrentProductQty')) {
       const orderProductAllQtyRep = await ShareFunc.getRepCFNCurrentProductQty(companyID, factoryID, nodeID, productStatusArr);
       allProductQty = orderProductAllQtyRep.length;  // ## current all product qty in nodeID 
       // console.log(orderProductAllQtyRep);
     }
 
+    console.log(' 2 - getRepCFNCurrentProductQtyByOrderID');
     if (repListNameArr.includes('getRepCFNCurrentProductQtyByOrderID')) {
       // ## get Rep CFN Current Product Qty by orderID
       orderProductQtyByOrderIDRep = await ShareFunc.getRepCFNCurrentProductQtyByOrderID(companyID, factoryID, nodeID, productStatusArr);
     }
-                             //  getRepCFNCurrentProductQtyByOrderIDProductID
+
+    //  getRepCFNCurrentProductQtyByOrderIDProductID
+    console.log(' 3 - getRepCFNCurrentProductQtyByOrderIDProductID');
     if (repListNameArr.includes('getRepCFNCurrentProductQtyByOrderIDProductID')) {
       // ## get Rep CFN Current Product Qty by orderID productID
       orderProductQtyByOrderIDProductIDRep = await ShareFunc.getRepCFNCurrentProductQtyByOrderIDProductID(companyID, factoryID, nodeID, productStatusArr);
     }
 
+    console.log(' 4 - getRepCFNCurrentProductBundleList');
     if (repListNameArr.includes('getRepCFNCurrentProductBundleList')) {
       // ## get Rep CFN Current Product bundle list
       orderProductQtyBundleListRep = await ShareFunc.getRepCFNCurrentProductBundleList(companyID, factoryID, nodeID, productStatusArr);
     }
 
+    console.log(' 5 - getAllOrderAndProductFromOrderProduction');
     if (repListNameArr.includes('getAllOrderAndProductFromOrderProduction')) {
       // ## get all order product from orderProduction
       const allOrder = await ShareFunc.getAllOrderFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
@@ -286,6 +292,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       // console.log(orders, products);
     }
 
+    console.log(' 6 - getRepCFNProductState');
     // ## style-targetPlace-year-5color-size-sex-#####    /   8   4	  2   10    3    1   99999
     if (repListNameArr.includes('getRepCFNProductState')) {
       // // ## get Rep CFN Current Product state style-targetPlace-year-5color-size-sex
@@ -301,24 +308,27 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       // console.log(productStateStyleTargetPlaceColorSize);
     }
 
+    console.log(' 7 - getRepCFNCurrentProductionQueueCFN');
     if (repListNameArr.includes('getRepCFNCurrentProductionQueueCFN')) {
       // ## get Rep CFN Current Production Queue
       // exports.getProductionQueueCFN= async (companyID, factoryID, page, limit)
       queueInfoRep = await ShareFunc.getProductionQueueCFN(companyID, factoryID, 1, 20);
     }
 
-    
+    console.log(' 8 - getRepCFNCurrentProductAllDetail');
     if (repListNameArr.includes('getRepCFNCurrentProductAllDetail')) {
       // ## get Rep CFN Current Production Queue
       // exports.getProductionQueueCFN= async (companyID, factoryID, page, limit)
       currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetail(companyID, factoryID, nodeID, productStatusArr);
     }
 
+    console.log(' 9 - getRepCFNCurrentProductAllRepairCount');
     // 'getRepCFNCurrentProductAllRepairCount',
     if (repListNameArr.includes('getRepCFNCurrentProductAllRepairCount')) {
       productionRepairCount = await ShareFunc.getCFNCurrentProductAllRepairCount(companyID, factoryID, nodeID, productProbelmStatusArr);
     }
 
+    console.log(' 10 -  getRepCFNCurrentProductAllProblemCount');
     // 'getRepCFNCurrentProductAllProblemCount',
     if (repListNameArr.includes('getRepCFNCurrentProductAllProblemCount')) {
       productionProblemCount = await ShareFunc.getCFNCurrentProductAllProblemCount(companyID, factoryID, nodeID, productProbelmStatusArr);
@@ -327,6 +337,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     // await ShareFunc.upsertUserSession1hr(userID);
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
 
+    console.log(' ---------- end  query ------------------');
     repDataFormat1 = {
       allProductQty: allProductQty,
       orderProductQtyByOrderIDRep: orderProductQtyByOrderIDRep,

@@ -52,7 +52,32 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
-// // ## http://192.168.1.141:3968/api/user/test/test2
+// // ## http://192.168.1.11:3968/api/user/test/test3
+exports.getTestTest3 = async (req, res, next) => {
+
+  // // read xlsx file
+  // // import xlsx file
+  // // yarn and language
+  // const readXLSXFileForLang = await ShareFunc.readXLSXFileForLang();
+  const readXLSXFileForYarn = await ShareFunc.readXLSXFileForYarn();
+
+  return res.status(200).json({
+    readXLSXFileForYarn: readXLSXFileForYarn,
+    // targetPlaces: targetPlaces,
+    // colors: colors,
+    // sizes: sizes,
+    // langs: langs,
+    // langData: langData,
+    // userClass: userClass,
+    // controlApp: controlApp,
+    // sysInfo: sysInfo,
+    // outSourceLocationDepartment: outSourceLocationDepartment
+    // updateQrCodeRealOrderProduction: updateQrCodeRealOrderProduction
+  });
+
+}
+
+// // ## http://192.168.1.249:3968/api/user/test/test2
 // router.get("/test/test2", userController.getTestTest2);
 exports.getTestTest2 = async (req, res, next) => {
   
@@ -84,21 +109,19 @@ exports.getTestTest2 = async (req, res, next) => {
   
   // const editOrderProduction02 = await ShareFunc.getCCurrentProductQtyAllXX();
 
-  // // read xlsx file
-  // // import xlsx file
-  // // yarn and language
-  // const readXLSXFileForLang = await ShareFunc.readXLSXFileForLang();
-  // const readXLSXFileForYarn = await ShareFunc.readXLSXFileForYarn();
-
-  const productBarcodeNo = '';
-
+  
   // // ## test get data
   // const testview2 = await ShareFunc.testview2();
   // console.log(testview2);
 
-  // ## update colorset name for muji
-  // updateColorSetOrderProductionMuji
-  const result01 = await ShareFunc.updateColorSetOrderProductionMuji();
+  // // ## update colorset name for muji
+  // // updateColorSetOrderProductionMuji
+  // const result01 = await ShareFunc.updateColorSetOrderProductionMuji();
+
+
+  // // ## edit order factoryID
+  // // updateOrderAboutFactory
+  // const result01 = await ShareFunc.updateOrderAboutFactory();
 
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {

@@ -2868,8 +2868,8 @@ exports.getOrderProduct01= async (companyID, factoryID, productBarcodeNo) => {
   const orderProduct = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
-      {"productBarcodeNo":productBarcodeNo},
+      // {"factoryID":factoryID},
+      {"productBarcodeNoReal":productBarcodeNo},
     ] } },
     { $project: {			
         _id: 1,	
@@ -2894,13 +2894,44 @@ exports.getOrderProduct01= async (companyID, factoryID, productBarcodeNo) => {
   return orderProduct.length>0?orderProduct[0]:null;
 }
 
+exports.getCOrderProduct1= async (companyID, productBarcodeNos) => {
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"productBarcodeNo":productBarcodeNo},
+      {"productBarcodeNoReal":{$in: productBarcodeNos}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        bundleID: 1,
+        productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productBarcodeNoReserve: 1,
+        productCount: 1,
+        productionDate: 1,
+        productStatus: 1,
+        yarnLot: 1,
+        outsourceData: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	}
+  ]);
+  // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
+  // console.log(orderProduct);
+  return orderProduct.length>0?orderProduct:[];
+}
+
 // await ShareFunc.getOrderProduct1(companyID, factoryID, productBarcodeNo);
 exports.getOrderProduct1= async (companyID, factoryID, productBarcodeNo) => {
   const orderProduct = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       {"factoryID":factoryID},
-      {"productBarcodeNo":productBarcodeNo},
+      {"productBarcodeNoReal":productBarcodeNo},
     ] } },
     { $project: {			
         _id: 1,	
@@ -2932,7 +2963,7 @@ exports.getOrderProductReceiveOutsource= async (companyID, productBarcodeNo) => 
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productBarcodeNo":productBarcodeNo},
+      {"productBarcodeNoReal":productBarcodeNo},
     ] } },
     { $project: {			
         _id: 1,	
@@ -3303,7 +3334,7 @@ exports.getOrderProductByOrderID1= async (companyID, factoryID, orderID, product
       {"factoryID":factoryID},
       {"orderID":orderID},
       {"productID":productID},
-      {"productBarcodeNo":productBarcodeNo},
+      {"productBarcodeNoReal":productBarcodeNo},
     ] } },
     { $project: {			
         _id: 1,	
@@ -7123,6 +7154,84 @@ exports.getCurrentCompanyOrderStyleByOrderID= async (companyID, orderStatusArr, 
 // #######################################################################################################
 // ## update manual data
 
+// const outsourcefactoryID = [ 'f000009', 'f000004', 'f000005', 'f000006' ];
+//   const factoryID1 = 'f000001';
+//   const companyID = 'c000001';
+//   const order1 = await OrderProduction.updateMany(
+//     {$and: [
+//       {"companyID":companyID},
+//       {"orderID":{$in: orderIDs}}
+//     ]},
+//     { $set: { 
+//       "productionNode.$[pn].outsourceData.$[outs].fromFactoryID" : factoryID1, 
+//     }},
+//     {
+//       multi: true,
+//       arrayFilters: [
+//         {
+//           "pn.outsourceData": {
+//             $exists: true
+//           }
+//         },
+//         {
+//           // "outs.factoryID": "f000005"
+//           "outs.factoryID": {$in: outsourcefactoryID}
+//         }
+//       ]
+// });
+
+exports.updateOrderAboutFactory= async () => {
+  const fromFactoryID = 'f000001';
+  const toFactoryID = 'f000003';
+  const orderID = 'GL-92B';
+
+  const result1 = await OrderProduction.updateMany(
+    {$and: [
+      {"orderID":orderID} , 
+      // {"lottoRoundID":lottoRoundID}, 
+      // {"lottoMainTypeID":lottoMainTypeID},
+    ]},
+    { $set: { 
+      "productionNode.$[elem].factoryID" : toFactoryID, 
+      "factoryID": toFactoryID,
+
+    }},
+    {
+      multi: true,
+      arrayFilters: [  {"elem.factoryID": fromFactoryID } ]
+    });
+
+    const result2 = await OrderProductionQueueList.updateMany(
+      {$and: [
+        {"orderID":orderID}  ,
+        {"factoryID":fromFactoryID}  ,
+      ]},
+      {
+        "factoryID": toFactoryID,
+
+      }); 
+
+    //
+    const result3 = await OrderProductionQueue.updateMany(
+      {$and: [
+        {"orderID":orderID} , 
+        // {"lottoRoundID":lottoRoundID}, 
+        // {"lottoMainTypeID":lottoMainTypeID},
+      ]},
+      { $set: { 
+        "queueInfo.$[elem].factoryID" : toFactoryID, 
+  
+      }},
+      {
+        multi: true,
+        arrayFilters: [  {"elem.factoryID": fromFactoryID } ]
+      });  
+
+
+
+  console.log('update order about factoryID complete');
+}
+
 exports.updateQrCodeRealOrderProduction= async () => {
   const orderProduction = await OrderProduction.aggregate([
     { $match: { $and: [
@@ -7737,38 +7846,41 @@ exports.readXLSXFileForYarn = async () => {
     // console.log(cellAsString[1]);
 
     // if (cellAsString[1] !== 'r' && cellAsString[1] !== 'm' && cellAsString[1] > 1) {
-        if (cellAsString[0] === 'A') {
+        if (cellAsString[0] === 'A') {   // ## Idno	lType	lID	en	th	cn	mm	jp
             post.yarnID = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'B') {
+        if (cellAsString[0] === 'B') { // ## 	lType	
             post.yarnNmae = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'C') {
+        if (cellAsString[0] === 'C') { // ## lID	
           post.yarn1 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'D') {
+        if (cellAsString[0] === 'D') { // ## en
           post.yarn2 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'E') {
+        if (cellAsString[0] === 'E') { // ## th
           post.yarn3 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'F') {
+        if (cellAsString[0] === 'F') { // ## cn
           post.yarn4 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'G') {
+        if (cellAsString[0] === 'G') { // ## mm
           post.yarn5 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'K') {         // ## this cell have to have value , not blank
+        if (cellAsString[0] === 'H') { // ## jp
+          post.yarn5 = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'K') {         // ## this cell have to have value , not blank / ===  'ok'
             post.endofcol = worksheet[cell].v;
             posts.push(post);
             post = {};
         }
       }
   // }
-  console.log(posts);
-  console.log('len = ',posts.length);
+  // console.log(posts);
+  // console.log('len = ',posts.length);
 
-  return true;
+  return posts;
 
 }
 
