@@ -4002,6 +4002,18 @@ exports.getCFNCurrentProductStyleZoneSizeColorQRCode = async (companyID, factory
   return currentProductStyleQRCodeCFN;
 }  
 
+
+
+// exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, productStatusArr) => {
+//   // lottoRoundRows = await LottoRound.countDocuments({$and: [
+//   //   // {"roundShow":true} , 
+//   //   {"yeekeeSubList":false} ,
+//   //   {"company.companyID":companyID},
+//   //   // {"roundShow":true} ,
+//   //   {"del":'n'}
+//   // ]});
+// }
+
 exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, productStatusArr) => {
   // console.log('getRepCFNCurrentProductQty');
   const orderProductRep = await OrderProduction.aggregate([
@@ -4080,6 +4092,102 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
   // console.log(orderProductRep);
   // return orderProductRep.length>0?orderProduct[0]:null;
   return orderProductRep;
+}
+
+exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, productStatusArr) => {
+  // console.log('getRepCFNCurrentProductQty');
+  const orderProductRep = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"productStatus":{$in: productStatusArr}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productBarcodeNoReserve: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        yarnLot: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcodeNoReserve: 1,
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      yarnLot: 1,
+      fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      productProblemID: "$productionNode.productProblemID",
+      datetime: "$productionNode.datetime",
+      createBy: "$productionNode.createBy",
+    }},
+    { $match: { $and: [
+      {"toNode":nodeID},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcodeNoReserve: 1,
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      yarnLot: 1,
+
+      fromNode: 1,
+      toNode: 1,
+      status: 1,
+      toNode: 1,
+      productProblemID: 1,
+      createBy: 1,
+    }},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+    },
+      sumProductQty: {$sum: 1} ,
+    }} 
+  ]);
+
+
+  // const productionPeriodM = await productionPeriod.map(fw => ({
+  //   companyID: fw._id.companyID, 
+  //   orderID: fw._id.orderID,
+  //   style: fw._id.style,
+  //   color: fw._id.color,
+  //   size: fw._id.size,
+  //   fromNode: fw._id.fromNode,
+  //   sumProductQty: fw.sumProductQty,
+  // }));
+
+  // console.log(orderProductRep);
+  const allQTY = orderProductRep[0].sumProductQty;
+  // return orderProductRep.length>0?orderProduct[0]:null;
+  return allQTY;
 }
 
 // ShareFunc.getProductionPeriodC(companyID, productStatusArr, productionNodeStatusArr)

@@ -55,6 +55,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+// GET, PUT, POST, DELETE, HEAD, OPTIONS, PATCH, PROPFIND, PROPPATCH, MKCOL, COPY, MOVE, LOCK
+
 // ## check req.body have database location for change or not
 // ## logging --> go to localhost mongoDB server
 // ## not logging --> go to real mongoDB server
