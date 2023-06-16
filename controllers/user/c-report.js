@@ -299,10 +299,11 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     // console.log(' 5 - getAllOrderAndProductFromOrderProduction');
     if (repListNameArr.includes('getAllOrderAndProductFromOrderProduction')) {
       // ## get all order product from orderProduction
-      const allOrder = await ShareFunc.getAllOrderFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
+      // const allOrder = await ShareFunc.getAllOrderFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
       const allProduct = await ShareFunc.getAllProductFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
       // console.log(allOrder, allProduct);
-      orders = await ShareFunc.getOrdersByOrderIDs(companyID, allOrder, 1, 1000);
+      // getOrders= async (companyID, statusArr, page, limit)
+      orders = await ShareFunc.getOrders(companyID, ['open'], 1, 1000);
       products = await ShareFunc.getProductsByProductIDs(companyID, allProduct, 1, 1000);
       // console.log(orders, products);
     }
@@ -659,6 +660,88 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     });
   }
 }
+
+// // ## get node getRepNodeStaffScannedByDate12
+// router.get("/node/scan1/rep/current/productqty/com/:companyID/:factoryIDArr/:orderIDsArr/:date12/:infoType", checkAuth, checkUUID, 
+//         reportController.getRepNodeStaffScannedByDate12);
+// ##  infoType = call by who {staffOffice, 'staffProduction'}
+exports.getRepNodeStaffScannedByDate12 = async (req, res, next) => { 
+  // try {} catch (err) {}
+  // ## CF = /:companyID/:factoryID
+  // console.log('getRepNodeStaffScannedByDate12');
+  const companyID = req.params.companyID;
+  const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+  // const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  // const nodeID = req.params.nodeID;
+  const orderIDs = JSON.parse(req.params.orderIDsArr);
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const date12Arr = JSON.parse(req.params.date12);  // have 2 date
+  const statusArr = ['normal', 'complete'];
+  // const orderStatusArr = JSON.parse(req.params.ordertatus);
+  // console.log(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
+  
+  try {
+
+    // ## report staff scanned by date1 - date2
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    // console.log(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
+    
+    const nodeScanProductStyle = await ShareFunc.getCFStaffScannedByDate12Style(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
+    
+    const nodeScanProductStyleZone = await ShareFunc.getCFStaffScannedByDate12StyleZone(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
+    
+
+    // const nodeScanProductStyleZoneColorSize = await ShareFunc.getCFStaffScannedByDate12StyleZoneColorSize(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
+    // console.log(nodeScanProductStyleZoneColorSize);
+    const nodeScanProductStyleZoneColorSize = [];
+
+    
+    // ## const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+    let token = '';
+    if (infoType === 'staffOffice') {
+      token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    }
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+
+      nodeScanProductStyle: nodeScanProductStyle,
+      nodeScanProductStyleZone: nodeScanProductStyleZone,
+      nodeScanProductStyleZoneColorSize: nodeScanProductStyleZoneColorSize,
+
+      // currentCompanyOrderZoneStyle: currentCompanyOrderZoneStyle,
+      // currentCompanyOrderCountryStyle: currentCompanyOrderCountryStyle,
+
+      // companyCurrentProductQtyAll: companyCurrentProductQtyAll,
+      // companyCurrentProductQtyCompleteAll: companyCurrentProductQtyCompleteAll,
+
+      // currentCompanyProductQtyZoneAll: currentCompanyProductQtyZoneAll,
+      // currentCompanyProductQtyZoneCompleteAll: currentCompanyProductQtyZoneCompleteAll,
+
+      // currentProductQtyAllC: currentProductQtyAllC,
+      // currentProductQtyAllCompleteC: currentProductQtyAllCompleteC,
+
+      // currentCompanyProductQtyCountryAll: currentCompanyProductQtyCountryAll,
+      // currentCompanyProductQtyCountryCompleteAll: currentCompanyProductQtyCountryCompleteAll,
+
+      // currentCompanyProductQtyCountryCSAll: currentCompanyProductQtyCountryCSAll,
+      // currentCompanyProductQtyCountryCSCompleteAll: currentCompanyProductQtyCountryCSCompleteAll,
+
+      // orderStyleColorSize: orderStyleColorSize,
+
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp010', 
+        mode:'errRepStaffScanned', 
+        value: "error report staff scanned"
+      }
+    });
+  }
+}
+
 
 // ## report
 // #############################################################

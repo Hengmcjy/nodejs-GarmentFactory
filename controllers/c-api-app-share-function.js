@@ -6282,6 +6282,325 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
   return orderProductRepF;
 }
 
+exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
+  const staffScan = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: 1,  // ## 
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      datetime: "$productionNode.datetime",
+      factoryID: "$productionNode.factoryID",	
+      fromNode: "$productionNode.fromNode",
+      status: "$productionNode.status",
+      // toNode: "$productionNode.toNode",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+    { $match: { $and: [
+      {"factoryID":{$in: factoryIDArr}},
+      {"status":{$in: statusArr}},
+      {"datetime": { $gte: dateStart}} , 
+      {"datetime": { $lte : dateEnd}} ,
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      style: 1,	
+      // targetPlace: 1,
+      // color: 1,
+      // size: 1,
+      factoryID: 1,	
+      fromNode: 1,
+      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
+      // lottoMainTypeID: { $substr: [ "$lottoRoundID", 9, 3 ] },	
+      // item: { $toUpper: "$item" },
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // productProblem: 1,
+      // toNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+        orderID: '$orderID',
+        fromNode: '$fromNode',
+        // dayMonthUTC: '$dayMonthUTC',
+        style: '$style',
+        // targetPlace: '$targetPlace',
+        // color: '$color',
+        // size: '$size',
+
+      },
+      countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ]);
+
+  const staffScanF = await staffScan.map(fw => ({
+    companyID: fw._id.companyID, 
+    factoryID: fw._id.factoryID,
+    orderID: fw._id.orderID,
+    fromNode: fw._id.fromNode,
+    dayMonthUTC: fw._id.dayMonthUTC,
+    style: fw._id.style,
+    // targetPlace: fw._id.targetPlace,
+    // color: fw._id.color,
+    // size: fw._id.size,
+    countQty: fw.countQty,
+  }));
+  return staffScanF;
+}
+
+exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
+  const staffScan = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: 1,  // ## 
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      datetime: "$productionNode.datetime",
+      factoryID: "$productionNode.factoryID",	
+      fromNode: "$productionNode.fromNode",
+      status: "$productionNode.status",
+      // toNode: "$productionNode.toNode",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+    { $match: { $and: [
+      {"factoryID":{$in: factoryIDArr}},
+      {"status":{$in: statusArr}},
+      {"datetime": { $gte: dateStart}} , 
+      {"datetime": { $lte : dateEnd}} ,
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      style: 1,	
+      targetPlace: 1,
+      // color: 1,
+      // size: 1,
+      factoryID: 1,	
+      fromNode: 1,
+      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
+      // lottoMainTypeID: { $substr: [ "$lottoRoundID", 9, 3 ] },	
+      // item: { $toUpper: "$item" },
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // productProblem: 1,
+      // toNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+        orderID: '$orderID',
+        fromNode: '$fromNode',
+        // dayMonthUTC: '$dayMonthUTC',
+        style: '$style',
+        targetPlace: '$targetPlace',
+        // color: '$color',
+        // size: '$size',
+
+      },
+      countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ]);
+
+  const staffScanF = await staffScan.map(fw => ({
+    companyID: fw._id.companyID, 
+    factoryID: fw._id.factoryID,
+    orderID: fw._id.orderID,
+    fromNode: fw._id.fromNode,
+    dayMonthUTC: fw._id.dayMonthUTC,
+    style: fw._id.style,
+    targetPlace: fw._id.targetPlace,
+    // color: fw._id.color,
+    // size: fw._id.size,
+    countQty: fw.countQty,
+  }));
+  return staffScanF;
+}
+
+// ShareFunc.getCFStaffScannedByDate12(companyID, factoryIDArr, orderIDs, dateStart, dateEnd)
+exports.getCFStaffScannedByDate12StyleZoneColorSize = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
+  const staffScan = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: 1,  // ## 
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      datetime: "$productionNode.datetime",
+      factoryID: "$productionNode.factoryID",	
+      fromNode: "$productionNode.fromNode",
+      status: "$productionNode.status",
+      // toNode: "$productionNode.toNode",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+    { $match: { $and: [
+      {"factoryID":{$in: factoryIDArr}},
+      {"status":{$in: statusArr}},
+      {"datetime": { $gte: dateStart}} , 
+      {"datetime": { $lte : dateEnd}} ,
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      style: 1,	
+      targetPlace: 1,
+      color: 1,
+      size: 1,
+      factoryID: 1,	
+      fromNode: 1,
+      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
+      // lottoMainTypeID: { $substr: [ "$lottoRoundID", 9, 3 ] },	
+      // item: { $toUpper: "$item" },
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // productProblem: 1,
+      // toNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+        orderID: '$orderID',
+        fromNode: '$fromNode',
+        // dayMonthUTC: '$dayMonthUTC',
+        style: '$style',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+
+      },
+      countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ]);
+
+  const staffScanF = await staffScan.map(fw => ({
+    companyID: fw._id.companyID, 
+    factoryID: fw._id.factoryID,
+    orderID: fw._id.orderID,
+    fromNode: fw._id.fromNode,
+    dayMonthUTC: fw._id.dayMonthUTC,
+    style: fw._id.style,
+    targetPlace: fw._id.targetPlace,
+    color: fw._id.color,
+    size: fw._id.size,
+    countQty: fw.countQty,
+  }));
+  return staffScanF;
+}
+
 // ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
 exports.getCurrentCompanyOrderSpec= async (companyID, orderStatusArr) => {
   // console.log(+process.env.stylePos, +process.env.styleDigit);

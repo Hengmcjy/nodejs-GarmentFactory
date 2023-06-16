@@ -63,6 +63,11 @@ router.get("/node/rep3/current/productqty/com/:companyID/:factoryIDArr/:ordertat
 // // ##
 
 
+// ## get node getRepNodeStaffScannedByDate12
+router.get("/node/scan1/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:date12/:infoType", checkAuth, checkUUID, 
+        reportController.getRepNodeStaffScannedByDate12);
+// // ##
+
 
 // ## report node station ############################################################################
 // ###################################################################################################

@@ -90,6 +90,50 @@ exports.getNodeDatageneral = async (req, res, next) => {
 // #######################################################################################################
 // ## node station
 
+// router.get("/nodef/nodeflow/:companyID/:factoryID/:nodeFlowID", nsController.stfGetNodeFlow)
+exports.stfGetNodeFlow = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const nodeFlowID = req.params.nodeFlowID;
+  // const userID = req.userData.tokenSet.userID;
+  // console.log('getNodeFlows');
+  const status = ['a','c'];
+
+  
+  try {
+    // ## get node flow 1 page
+    const nodeFlow = await ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
+
+    // getNodeStations= async (companyID, factoryID, status, page, limit)
+    const nodeStations = await ShareFunc.getNodeStations(companyID, factoryID, status, 1, 10000);
+    // console.log(nodeStations);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // // console.log(req.userData.tokenSet);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      // userID: userID,
+      nodeFlow: nodeFlow,
+      nodeStations: nodeStations,
+      success: true
+      // factory: factory
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errns001', 
+        mode:'errNodeFlowsList', 
+        value: "error get node flow list"
+      }
+    });
+  }
+}
+
 // router.get("/nodestation/lists/:companyID/:factoryID/:status/:page/:limit", nsController.getNodeStationsList);
 exports.getNodeStationsList = async (req, res, next) => {
   // try {} catch (err) {}

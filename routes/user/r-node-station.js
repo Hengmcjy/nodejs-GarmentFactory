@@ -82,6 +82,9 @@ router.post("/node8/del/nodeStationLoginByUUID", nsController.postLoginNodeStati
 // #########################################################################################
 // ## worker zone 
 
+// ## get node flow
+router.get("/stf/nodef/nodeflow/:companyID/:factoryID/:nodeFlowID", nsController.stfGetNodeFlow)
+
 router.get("/nodestation/lists/:companyID/:factoryID/:status/:page/:limit", nsController.getNodeStationsList);
 
 // ## staff login to node workstation staffNodeLogin
@@ -159,9 +162,9 @@ router.put("/affiliate1/edit/oderProduction/nextnode", nsController.putAffiliate
 
 
 
-// // ## get node getRepCurrentProductQtyAllCFNode
-// router.get("/node/rep5/current/productqty/all/cfnode/:companyID/:factoryIDArr/:productStatus",
-//         reportController.getRepCurrentProductQtyAllCFNode);
+// ## get node getRepNodeStaffScannedByDate12
+router.get("/node/scan1/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:date12/:infoType", 
+        reportController.getRepNodeStaffScannedByDate12);
 // // ##
 
 
