@@ -4000,6 +4000,213 @@ exports.getCFNCurrentProductStyleZoneSizeColorQRCode = async (companyID, factory
   // console.log(currentProductStyleQRCodeCFN);
   // return orderProductRep.length>0?orderProduct[0]:null;
   return currentProductStyleQRCodeCFN;
+}
+
+// ShareFunc.getQRCodeCFTNszcsList(companyID, factoryID, toNode, style, zone, color, size, page, limit);
+exports.getQRCodeCFTNszcsList = async (companyID, factoryID, toNode, style, zone, color, size, page, limit) => {
+  // console.log('getRepCFNCurrentProductQty');
+  const qrCodeList = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":style},
+      // {"productStatus":{$in: productStatusArr}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        // bundleID: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productBarcodeNoReserve: 1,
+        productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        yarnLot: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      bundleNo: 1,
+      productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcodeNoReserve: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      yarnLot: 1,
+      factoryID: "$productionNode.factoryID",
+      fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      productProblemID: "$productionNode.productProblemID",
+      datetime: "$productionNode.datetime",
+      createBy: "$productionNode.createBy",
+    }},
+
+    { $match: { $and: [
+      {"factoryID":factoryID},
+      {"toNode":toNode},
+      {"targetPlace":zone},
+      {"color":color},
+      {"size":size},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      factoryID: 1,		
+      orderID: 1,	
+      bundleNo: 1,
+      productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcodeNoReserve: 1,
+      // targetPlace: 1,
+      // color: 1,
+      // size: 1,
+      productCount: 1,
+      yarnLot: 1,
+      fromNode: 1,
+      toNode: 1,
+      status: 1,
+      // toNode: 1,
+      productProblemID: 1,
+      datetime: 1,
+      createBy: 1,
+    }},
+
+    { $sort: { productBarcodeNoReal: 1 } },
+    { $skip: (page-1) *  limit},
+    { $limit: +limit }
+  ]);
+  // console.log(qrCodeList);
+  // return orderProductRep.length>0?orderProduct[0]:null;
+  return qrCodeList;
+}  
+
+// ShareFunc.getQRCodeCFTNszcsCount(companyID, factoryID, toNode, style, zone, color, size);
+exports.getQRCodeCFTNszcsCount = async (companyID, factoryID, toNode, style, zone, color, size) => {
+  // console.log('getQRCodeCFTNszcsCount');
+  const qrCodeCount = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":style},
+      // {"productStatus":{$in: productStatusArr}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // bundleID: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productBarcodeNoReserve: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        // yarnLot: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcodeNoReserve: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // yarnLot: 1,
+      factoryID: "$productionNode.factoryID",
+      fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      // productProblemID: "$productionNode.productProblemID",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+
+    { $match: { $and: [
+      {"factoryID":factoryID},
+      {"toNode":toNode},
+      {"targetPlace":zone},
+      {"color":color},
+      {"size":size},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      // bundleNo: 1,
+      productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcodeNoReserve: 1,
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // yarnLot: 1,
+      
+      factoryID: 1,
+      // fromNode: 1,
+      toNode: 1,
+      // status: 1,
+      // toNode: 1,
+      // productProblemID: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+        orderID: '$orderID',
+        nodeID: '$toNode',
+        // productID: '$productID',
+        // userID: '$userID',
+        // mode: '$mode',
+    },
+      countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ]);
+
+  // console.log(qrCodeCount);
+  const qrCodeCountF = await qrCodeCount.map(fw => ({
+    companyID: fw._id.companyID, 
+    factoryID: fw._id.factoryID,
+    orderID: fw._id.orderID,
+    nodeID: fw._id.nodeID,
+    countQty: fw.countQty,
+  }));
+  // console.log(qrCodeCountF);
+  // return orderProductRep.length>0?orderProduct[0]:null;
+  return qrCodeCountF.length>0?qrCodeCountF[0]:{};
 }  
 
 
@@ -6601,6 +6808,115 @@ exports.getCFStaffScannedByDate12StyleZoneColorSize = async (companyID, factoryI
   return staffScanF;
 }
 
+// ShareFunc.getCFFNStaffScannedByDate12StyleZone(companyID, factoryIDArr, orderIDs, zoneArr, dateStart, dateEnd, statusArr);
+exports.getCFFNStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, orderIDs, zoneArr, nodeID, dateStart, dateEnd, statusArr) => {
+  const staffScan = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: 1,  // ## 
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      datetime: "$productionNode.datetime",
+      factoryID: "$productionNode.factoryID",	
+      fromNode: "$productionNode.fromNode",
+      status: "$productionNode.status",
+      // toNode: "$productionNode.toNode",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+    { $match: { $and: [
+      {"factoryID":{$in: factoryIDArr}},
+      {"fromNode":nodeID},
+      {"targetPlace":{$in: zoneArr}},
+      {"status":{$in: statusArr}},
+      {"datetime": { $gte: dateStart}} , 
+      {"datetime": { $lte : dateEnd}} ,
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      style: 1,	
+      targetPlace: 1,
+      color: 1,
+      size: 1,
+      factoryID: 1,	
+      fromNode: 1,
+      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
+      // lottoMainTypeID: { $substr: [ "$lottoRoundID", 9, 3 ] },	
+      // item: { $toUpper: "$item" },
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // productProblem: 1,
+      // toNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+        orderID: '$orderID',
+        fromNode: '$fromNode',
+        // dayMonthUTC: '$dayMonthUTC',
+        style: '$style',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+
+      },
+      countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ]);
+
+  const staffScanF = await staffScan.map(fw => ({
+    companyID: fw._id.companyID, 
+    factoryID: fw._id.factoryID,
+    orderID: fw._id.orderID,
+    fromNode: fw._id.fromNode,
+    dayMonthUTC: fw._id.dayMonthUTC,
+    style: fw._id.style,
+    targetPlace: fw._id.targetPlace,
+    color: fw._id.color,
+    size: fw._id.size,
+    countQty: fw.countQty,
+  }));
+  return staffScanF;
+}
+
 // ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
 exports.getCurrentCompanyOrderSpec= async (companyID, orderStatusArr) => {
   // console.log(+process.env.stylePos, +process.env.styleDigit);
@@ -8198,6 +8514,59 @@ exports.updateOrderProduction2 = async () => {
 
 
 exports.updateColorSetOrderProductionMuji = async () => {
+  
+}
+
+
+exports.getBlankRows = async () => {
+
+  const companyID = 'c000001';
+  const blankValue = '';
+
+  const orderProductionList = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        productBarcodeNo: 1,	
+        productBarcodeNoReal: 1,	
+        productionNode: 1
+    }	},
+    { $unwind: "$productionNode"},
+    { $project: {		
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      productBarcodeNo: 1,	
+      productBarcodeNoReal: 1,	
+      toNode: "$productionNode.toNode",	
+      fromNode: "$productionNode.fromNode",	
+      isOutsource: "$productionNode.isOutsource",
+      outsourceData: "$productionNode.outsourceData",
+    }	},
+    { $match: { $and: [
+      // {"isOutsource":true},
+      {"toNode":blankValue},
+      {"fromNode":blankValue},
+    ] } },
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      productBarcodeNo: 1,	
+      productBarcodeNoReal: 1,
+
+      toNode: 1,	
+      fromNode: 1,
+
+    }	},
+ 
+  ]);
+  return orderProductionList;
 
 }
 // ## update manual data

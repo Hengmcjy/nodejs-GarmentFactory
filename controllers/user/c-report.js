@@ -710,25 +710,76 @@ exports.getRepNodeStaffScannedByDate12 = async (req, res, next) => {
       nodeScanProductStyleZone: nodeScanProductStyleZone,
       nodeScanProductStyleZoneColorSize: nodeScanProductStyleZoneColorSize,
 
-      // currentCompanyOrderZoneStyle: currentCompanyOrderZoneStyle,
-      // currentCompanyOrderCountryStyle: currentCompanyOrderCountryStyle,
 
-      // companyCurrentProductQtyAll: companyCurrentProductQtyAll,
-      // companyCurrentProductQtyCompleteAll: companyCurrentProductQtyCompleteAll,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp010', 
+        mode:'errRepStaffScanned', 
+        value: "error report staff scanned"
+      }
+    });
+  }
+}
 
-      // currentCompanyProductQtyZoneAll: currentCompanyProductQtyZoneAll,
-      // currentCompanyProductQtyZoneCompleteAll: currentCompanyProductQtyZoneCompleteAll,
+// // ## get node getRepNodeStaffScannedByStyleZoneDate12
+// router.get("/node/scan2/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:zoneArr/:nodeID/:date12/:infoType", 
+//         reportController.getRepNodeStaffScannedByStyleZoneDate12);
+// ##  infoType = call by who {staffOffice, 'staffProduction'}
+exports.getRepNodeStaffScannedByStyleZoneDate12 = async (req, res, next) => { 
+  // try {} catch (err) {}
+  // ## CF = /:companyID/:factoryID
+  // console.log('getRepNodeStaffScannedByStyleZoneDate12');
+  const companyID = req.params.companyID;
+  const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+  // const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const nodeID = req.params.nodeID;
+  const orderIDs = JSON.parse(req.params.orderIDsArr);
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const zoneArr = JSON.parse(req.params.zoneArr);
+  const date12Arr = JSON.parse(req.params.date12);  // have 2 date
+  const statusArr = ['normal', 'complete'];
+  // const orderStatusArr = JSON.parse(req.params.ordertatus);
 
-      // currentProductQtyAllC: currentProductQtyAllC,
-      // currentProductQtyAllCompleteC: currentProductQtyAllCompleteC,
+  let i = 0;
+  await this.asyncForEach(zoneArr, async (item1) => {
+    zoneArr[i] = await ShareFunc.setBackStrLen(4, item1, '-');
+    i++;
+  });
 
-      // currentCompanyProductQtyCountryAll: currentCompanyProductQtyCountryAll,
-      // currentCompanyProductQtyCountryCompleteAll: currentCompanyProductQtyCountryCompleteAll,
+  // console.log(companyID, factoryIDArr, orderIDs, zoneArr, nodeID, statusArr);
 
-      // currentCompanyProductQtyCountryCSAll: currentCompanyProductQtyCountryCSAll,
-      // currentCompanyProductQtyCountryCSCompleteAll: currentCompanyProductQtyCountryCSCompleteAll,
+  // const zone = await ShareFunc.setBackStrLen(4, req.params.zone, '-');
+  // const color = await ShareFunc.setBackStrLen(10, req.params.color, '-');
+  // const size = await ShareFunc.setBackStrLen(3, req.params.size, '-');
+  
+  try {
 
-      // orderStyleColorSize: orderStyleColorSize,
+    // ## report staff scanned by date1 - date2
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    // console.log(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
+
+    
+    
+    const nodeScanProductStyleZoneColorSize = 
+      await ShareFunc.getCFFNStaffScannedByDate12StyleZone(companyID, factoryIDArr, orderIDs, zoneArr, nodeID, dateStart, dateEnd, statusArr);
+    // console.log(nodeScanProductStyleZoneColorSize);
+    // const nodeScanProductStyleZoneColorSize = [];
+
+    
+    // ## const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+    let token = '';
+    if (infoType === 'staffOffice') {
+      token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    }
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+
+      nodeScanProductStyleZoneColorSize: nodeScanProductStyleZoneColorSize,
+
 
     });
   } catch (err) {

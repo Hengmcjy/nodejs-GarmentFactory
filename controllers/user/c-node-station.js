@@ -1962,6 +1962,69 @@ exports.getDatarecordProductBarcodeNo = async (req, res, next) => {
   }
 }
 
+// #############################################################################
+// ## view qrcode ###########################################################################
+
+// router.get("/node/qrlist/:companyID/:factoryID/:toNode/:style/:zone/:color/:size/:page/:limit", nsController.getQRListCFTNszcs);
+exports.getQRListCFTNszcs = async (req, res, next) => {
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const toNode = req.params.toNode;
+  const style = req.params.style.trim();
+  const zone = await ShareFunc.setBackStrLen(4, req.params.zone, '-');
+  const color = await ShareFunc.setBackStrLen(10, req.params.color, '-');
+  const size = await ShareFunc.setBackStrLen(3, req.params.size, '-');
+  // const color = req.params.color;
+  // const size = req.params.size;
+  const page = +req.params.page;
+  const limit = +req.params.limit; 
+  // setBackStrLen= async (len, str, strBack)
+  // console.log('getQRListCFTNszcs');
+
+  // console.log(companyID, factoryID,toNode, style,zone, color,size, page,limit);
+
+  try {
+
+    const qrCodeList = 
+      await ShareFunc.getQRCodeCFTNszcsList(companyID, factoryID, toNode, style, zone, color, size, page, limit);
+    // console.log(qrCodeList);
+    const qrCodeCount =  
+      await ShareFunc.getQRCodeCFTNszcsCount(companyID, factoryID, toNode, style, zone, color, size);
+    // console.log(qrCodeCount);
+
+    // console.log(companyID, factoryID,toNode, style,zone, color,size, page,limit);
+
+    // const qrCodeCFNListx = 
+    //   await ShareFunc.getCFNCurrentProductStyleZoneSizeColorQRCode(companyID, factoryID, nodeID, style, zone, size, color, productStatusArr, page, limit);
+    // //
+    // const qrCodeCFNCounxt = 
+    //   await ShareFunc.getCFNCurrentProductStyleZoneSizeColorCount(companyID, factoryID, nodeID, style, zone, size, color, productStatusArr);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      // userID: userID,
+      qrCodeList: qrCodeList,
+      qrCodeCount: qrCodeCount,
+    });
+
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp011', 
+        mode:'errRepQRCodeList', 
+        value: "error report QR code list"
+      }
+    });
+  }
+}
+
+
+
+
+
 // ## outsource  /////////////////////////////////////////////////////
 
 // // ## get scan order production for receive from outsource putScanOrderProductionBarcodeNoReceiveOutsource

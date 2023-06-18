@@ -92,6 +92,12 @@ router.get("/order7/getbundlenos/:companyID/:productBarcode/:startNO/:endNo", ch
 // ## for worker scan zone  for work station
 
 
+// #############################################################################
+// ## view qrcode ###########################################################################
+
+// ## 1. we have nodeID style zone color size
+
+
 
 
 

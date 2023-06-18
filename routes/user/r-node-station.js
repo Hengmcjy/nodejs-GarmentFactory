@@ -125,6 +125,18 @@ router.get("/node17/orderProductionZoneSizeColor/qrcodelist/:companyID/:factoryI
 nsController.getQRCodeListProductStyleZoneSizeColorCFN);
 
 
+// #############################################################################
+// ## view qrcode ###########################################################################
+// ## smd = show modal
+// ## CFTN = companyID factoryID (toNode) nodeID 
+// ## CFFN = companyID factoryID (fromNode) nodeID 
+// ## szcs  = style zone color size
+// ## tn = toNode
+// ## fn = fromNode
+
+// ## 1. we have factoryID nodeID(toNode) style zone color size
+router.get("/node/smd/qrlist1/tn/:companyID/:factoryID/:toNode/:style/:zone/:color/:size/:page/:limit", nsController.getQRListCFTNszcs);
+
 
 // ## outsource  /////////////////////////////////////////////////////
 
@@ -165,6 +177,11 @@ router.put("/affiliate1/edit/oderProduction/nextnode", nsController.putAffiliate
 // ## get node getRepNodeStaffScannedByDate12
 router.get("/node/scan1/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:date12/:infoType", 
         reportController.getRepNodeStaffScannedByDate12);
+// // ##
+
+// ## get node getRepNodeStaffScannedByStyleZoneDate12
+router.get("/node/scan2/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:zoneArr/:nodeID/:date12/:infoType", 
+        reportController.getRepNodeStaffScannedByStyleZoneDate12);
 // // ##
 
 

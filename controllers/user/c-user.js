@@ -51,6 +51,24 @@ exports.asyncForEach4= async (array, callback) => {
 
 // #######################################################################################################
 // ## general
+// // ## http://192.168.1.141:3968/api/user/test/test4
+exports.getTestTest4 = async (req, res, next) => {
+  const blankRows = await ShareFunc.getBlankRows();
+
+  return res.status(200).json({
+    blankRows: blankRows,
+    // targetPlaces: targetPlaces,
+    // colors: colors,
+    // sizes: sizes,
+    // langs: langs,
+    // langData: langData,
+    // userClass: userClass,
+    // controlApp: controlApp,
+    // sysInfo: sysInfo,
+    // outSourceLocationDepartment: outSourceLocationDepartment
+    // updateQrCodeRealOrderProduction: updateQrCodeRealOrderProduction
+  });
+}
 
 // // ## http://192.168.1.11:3968/api/user/test/test3
 exports.getTestTest3 = async (req, res, next) => {
