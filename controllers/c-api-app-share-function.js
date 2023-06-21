@@ -8578,6 +8578,45 @@ exports.getBlankRows = async () => {
 
 // ## import language master
 exports.readXLSXFileForLang = async () => {
+
+  // ## initial langs
+  let en = {
+    languageID: 'en',
+    languageName: 'english',
+    seq: 100,
+    show: true,
+    languageData: [],
+  };
+  let th = {
+    languageID: 'th',
+    languageName: 'thai',
+    seq: 200,
+    show: true,
+    languageData: [],
+  };
+  let cn = {
+    languageID: 'cn',
+    languageName: 'china',
+    seq: 300,
+    show: true,
+    languageData: [],
+  };
+  let mm = {
+    languageID: 'mm',
+    languageName: 'china',
+    seq: 400,
+    show: false,
+    languageData: [],
+  };
+  let jp = {
+    languageID: 'jp',
+    languageName: 'japan',
+    seq: 500,
+    show: false,
+    languageData: [],
+  };
+
+
   // const xlsx = require('xlsx'); // # add line at the top
   let workbook = XLSX.readFile('lang.xlsx'); // ## file location ==> app root path
   let worksheet = workbook.Sheets[workbook.SheetNames[0]];  // ## sheet #1
@@ -8592,38 +8631,58 @@ exports.readXLSXFileForLang = async () => {
     // console.log(cellAsString[1]);
 
     // if (cellAsString[1] !== 'r' && cellAsString[1] !== 'm' && cellAsString[1] > 1) {
-        if (cellAsString[0] === 'A') {
+        if (cellAsString[0] === 'B') {
             post.Idno = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'B') {
+        if (cellAsString[0] === 'C') {
             post.lType = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'C') {
+        if (cellAsString[0] === 'D') {
           post.lID = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'D') {
+        if (cellAsString[0] === 'E') {
           post.en = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'E') {
+        if (cellAsString[0] === 'F') {
           post.th = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'F') {
+        if (cellAsString[0] === 'G') {
           post.cn = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'G') {
+        if (cellAsString[0] === 'H') {
           post.mm = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'K') {         // ## this cell have to have value , not blank
+        if (cellAsString[0] === 'I') {
+          post.jp = worksheet[cell].v;
+        }
+        if (cellAsString[0] === 'A') {         // ## this cell have to have value , not blank
             post.endofcol = worksheet[cell].v;
             posts.push(post);
             post = {};
         }
       }
   // }
-  console.log(posts);
-  console.log('len = ',posts.length);
+  // console.log(posts);
+  // console.log('len = ',posts.length);
 
-  return true;
+  await this.asyncForEach(posts , async (item) => {
+    const Idno = +item.Idno?+item.Idno:0;
+    const lType = item.lType;
+    const lID = item.lID;
+    if (item.en) { en.languageData.push({Idno, lType, lID, lText: item.en}); }
+    if (item.th) { th.languageData.push({Idno, lType, lID, lText: item.th}); }
+    if (item.cn) { cn.languageData.push({Idno, lType, lID, lText: item.cn}); }
+    if (item.mm) { mm.languageData.push({Idno, lType, lID, lText: item.mm}); }
+    if (item.jp) { jp.languageData.push({Idno, lType, lID, lText: item.jp}); }
+  });
+
+  const langs = [en, th ,cn, mm, jp];
+
+  const delAll = await Language.deleteMany();  // ## delete all langs
+
+  const insertAll = await Language.insertMany(langs);
+
+  return langs;
 }
 
 // ## import yarn master data
@@ -8642,31 +8701,31 @@ exports.readXLSXFileForYarn = async () => {
     // console.log(cellAsString[1]);
 
     // if (cellAsString[1] !== 'r' && cellAsString[1] !== 'm' && cellAsString[1] > 1) {
-        if (cellAsString[0] === 'A') {   // ## Idno	lType	lID	en	th	cn	mm	jp
+        if (cellAsString[0] === 'B') {   // ## Idno	lType	lID	en	th	cn	mm	jp
             post.yarnID = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'B') { // ## 	lType	
-            post.yarnNmae = worksheet[cell].v;
+        if (cellAsString[0] === 'C') { // ## 	lType	
+            post.yarnName = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'C') { // ## lID	
+        if (cellAsString[0] === 'D') { // ## lID	
           post.yarn1 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'D') { // ## en
+        if (cellAsString[0] === 'E') { // ## en
           post.yarn2 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'E') { // ## th
+        if (cellAsString[0] === 'F') { // ## th
           post.yarn3 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'F') { // ## cn
+        if (cellAsString[0] === 'G') { // ## cn
           post.yarn4 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'G') { // ## mm
+        if (cellAsString[0] === 'H') { // ## mm
           post.yarn5 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'H') { // ## jp
+        if (cellAsString[0] === 'I') { // ## jp
           post.yarn5 = worksheet[cell].v;
         }
-        if (cellAsString[0] === 'K') {         // ## this cell have to have value , not blank / ===  'ok'
+        if (cellAsString[0] === 'A') {         // ## this cell have to have value , not blank / ===  'ok'
             post.endofcol = worksheet[cell].v;
             posts.push(post);
             post = {};

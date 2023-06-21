@@ -53,10 +53,10 @@ exports.asyncForEach4= async (array, callback) => {
 // ## general
 // // ## http://192.168.1.141:3968/api/user/test/test4
 exports.getTestTest4 = async (req, res, next) => {
-  const blankRows = await ShareFunc.getBlankRows();
+  // const blankRows = await ShareFunc.getBlankRows();
 
   return res.status(200).json({
-    blankRows: blankRows,
+    // blankRows: blankRows,
     // targetPlaces: targetPlaces,
     // colors: colors,
     // sizes: sizes,
@@ -70,17 +70,21 @@ exports.getTestTest4 = async (req, res, next) => {
   });
 }
 
-// // ## http://192.168.1.11:3968/api/user/test/test3
+// // ## http://192.168.1.63:3968/api/user/test/test3
+// ## update multi langs here
 exports.getTestTest3 = async (req, res, next) => {
 
   // // read xlsx file
   // // import xlsx file
   // // yarn and language
+
+  // // ## get lang from excel and update langs in database
   // const readXLSXFileForLang = await ShareFunc.readXLSXFileForLang();
-  const readXLSXFileForYarn = await ShareFunc.readXLSXFileForYarn();
+  // // const readXLSXFileForYarn = await ShareFunc.readXLSXFileForYarn();
 
   return res.status(200).json({
-    readXLSXFileForYarn: readXLSXFileForYarn,
+    // readXLSXFileForLang: readXLSXFileForLang,
+    // readXLSXFileForYarn: readXLSXFileForYarn,
     // targetPlaces: targetPlaces,
     // colors: colors,
     // sizes: sizes,
