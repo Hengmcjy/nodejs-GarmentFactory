@@ -3,6 +3,7 @@ const uniqueValidator = require("mongoose-unique-validator");
 
 const userSchema = mongoose.Schema({
   userID: { type: String, required: true, unique: true },
+  qrCode: {type: String},
   type: { type: String, required: true},
   uInfo: {
     userName: {type: String, required: true},

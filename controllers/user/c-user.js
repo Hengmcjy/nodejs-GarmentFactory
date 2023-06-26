@@ -70,7 +70,7 @@ exports.getTestTest4 = async (req, res, next) => {
   });
 }
 
-// // ## http://192.168.1.63:3968/api/user/test/test3
+// // ## http://192.168.1.35:3968/api/user/test/test3
 // ## update multi langs here
 exports.getTestTest3 = async (req, res, next) => {
 
@@ -78,12 +78,12 @@ exports.getTestTest3 = async (req, res, next) => {
   // // import xlsx file
   // // yarn and language
 
-  // // ## get lang from excel and update langs in database
-  // const readXLSXFileForLang = await ShareFunc.readXLSXFileForLang();
-  // // const readXLSXFileForYarn = await ShareFunc.readXLSXFileForYarn();
+  // ## get lang from excel and update langs in database
+  const readXLSXFileForLang = await ShareFunc.readXLSXFileForLang();
+  // const readXLSXFileForYarn = await ShareFunc.readXLSXFileForYarn();
 
   return res.status(200).json({
-    // readXLSXFileForLang: readXLSXFileForLang,
+    readXLSXFileForLang: readXLSXFileForLang,
     // readXLSXFileForYarn: readXLSXFileForYarn,
     // targetPlaces: targetPlaces,
     // colors: colors,
@@ -1556,6 +1556,152 @@ exports.getCheckExistCompanyFactoryUserID = async (req, res, next) => {
 // #######################################################################################################
 
 
+// #######################################################################################################
+// ## staff factory
+
+// router.post("/stf/create/companyID/factory/staff", checkAuth, checkUUID, userController.createStaffCompanyFactory);
+exports.createStaffCompanyFactory = async (req, res, next) => {
+  // try {  } catch (err) {}
+  // companyID userID page limit
+  // console.log(req.body);
+  // const factory = [];
+  // console.log('createStaffCompanyFactory');
+  const data = req.body;
+  const user = data.user;
+  const companyID = user.uFactory[0].companyID;
+  const factoryID = user.uFactory[0].factoryID;
+  const checkUserID = user.userID;
+  // const userClass = {userClassID: 'own', userClassName: 'owner'};
+  const createBy = data.createBy;
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const userID = req.userData.tokenSet.userID;
+  // console.log('companyID, factoryID, checkUserID')
+  // console.log(companyID, factoryID, checkUserID, userID)
+  // console.log(user)
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    // console.log(companyID, factoryID, checkUserID, userID)
+    // exports.checkUserIDExisted= async (userID)
+    const isExist = await ShareFunc.checkUserIDExisted(companyID, factoryID, checkUserID);
+    if (isExist) {
+      return res.status(422).json({
+        message: {
+          messageID: 'erru010-1', 
+          mode:'errCreateCompanyFactoryUserExisted', 
+          value: "error create company factory user existed"
+        },
+        success: false,
+        user: {}
+      });
+    } else {
+      // ## create user	
+      // console.log('1');
+      // ## start new user password
+      // let userPass = '';
+      // bcrypt.hash(process.env.NEWPASSWORD, 10).then(async (hash) => {
+        // userPass = hash;
+        // console.log('2');
+        const uInfo = {
+          userName : user.uInfo.userName,
+          userPass : '',
+          pic : '',
+          tel : '',
+          email : '',
+          registDate : current,
+          lastLogin : current
+        };
+        const type = user.type;  // u=user , s=staff/worker , us=userstaff
+        const qrCode = user.qrCode;
+        const status = user.status;
+        const state = user.state;  // ## staff = worker , user office
+        const uCompany = [];
+        const uFactory = user.uFactory;
+        // console.log(uFactory);
+  
+        const userUpsert = await User.updateOne({$and: [
+          {"userID":user.userID},
+        ]} , 
+        {
+          "type": type,
+          "qrCode": qrCode,
+          "uInfo": uInfo,
+          "uCompany": uCompany,
+          "uFactory": uFactory,
+          "status": status,
+          "state": state,
+          "createBy": createBy,
+        }, {upsert: true}); 
+  
+        // ## get  user info
+        let userf = await User.findOne({ userID: user.userID});
+        userf.uInfo.userPass = '';
+        // console.log(userf);
+
+        res.status(200).json({
+          token: token,
+          expiresIn: process.env.expiresIn,
+          userID: userID,
+          user: userf,
+          message: {
+            messageID: 'complete', 
+            mode:'complete', 
+            value: "create user/staff completed"
+          },
+          success: true
+        });
+      // });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: {
+        messageID: 'erru010', 
+        mode:'errCreateCompanyFactoryUser', 
+        value: "error create company factory user!"
+      },
+      success: false,
+      user: {}
+    });
+  }
+}
+
+
+// // ## get staff1 company 
+// router.get("/getstaff1/company/:userID", checkAuth, checkUUID, userController.getStaff1Company);
+exports.getStaff1Company = async (req, res, next) => {
+  // try {} catch (err) {}
+  const userID = req.params.userID;
+  try {
+    // // ## get user1 company info
+    // let userf = await User.findOne({ userID: userID});
+    let userf = await User.findOne({ $or: [ { userID: userID }, { qrCode: userID } ] });
+    
+    userf.uInfo.userPass = '';
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      user: userf,
+      // factory: factory
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'erru011', 
+        mode:'errGet1UserCompany', 
+        value: "error get 1 user company"
+      }
+    });
+  }
+}
+
+// ## staff factory
+// #######################################################################################################
 
 
 // #############################################################

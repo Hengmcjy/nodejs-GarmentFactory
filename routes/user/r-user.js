@@ -112,7 +112,13 @@ router.get("/getmembers/factory/:companyID/:factoryID/:state/:page/:limit", chec
 
 
 
+// ## staff / worker
 
+// ## create company factory staff  createStaffCompanyFactory
+router.post("/stf/create/companyID/factory/staff", checkAuth, checkUUID, userController.createStaffCompanyFactory);
+
+// ## get staff1 company 
+router.get("/getstaff1/company/:userID", checkAuth, checkUUID, userController.getStaff1Company);
 
 
 

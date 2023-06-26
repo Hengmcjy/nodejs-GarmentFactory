@@ -32,6 +32,7 @@ const Color = require("../models/m-color");
 const Size = require("../models/m-size");
 const TargetPlace = require("../models/m-targetPlace");
 const NodeFlow = require("../models/m-nodeFlow");
+const SubNodeFlow = require("../models/m-subNodeFlow");
 const NodeStation = require("../models/m-nodeStation");
 const NodeStationLoginRequest = require("../models/m-nodeStationLoginRequest");
 const UnitSize = require("../models/m-unitSize");
@@ -8603,9 +8604,9 @@ exports.readXLSXFileForLang = async () => {
   };
   let mm = {
     languageID: 'mm',
-    languageName: 'china',
+    languageName: 'myanmar',
     seq: 400,
-    show: false,
+    show: true,
     languageData: [],
   };
   let jp = {
