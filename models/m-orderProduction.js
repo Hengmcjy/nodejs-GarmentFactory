@@ -37,6 +37,12 @@ const orderProductionSchema = mongoose.Schema({
     fromFactoryID : {type: String},
     datetime : {type: Date},
   }],
+  subNodeFlow: [{   // ## 
+    nodeID : {type: String},
+    subNodeID : {type: String},
+    qrCode : {type: String}, // staffID , qrCode of staff
+    datetime : {type: Date},
+  }],
   productionNode: [{   // ## อยู่ในการผลิตขั้นตอนไหน
     factoryID : {type: String},  // that factory did / ฝีมือโรงงานไหน
     fromNode : {type: String},

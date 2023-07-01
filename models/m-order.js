@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+// const Double = require("@mongoosejs/double");
 const uniqueValidator = require("mongoose-unique-validator");
 
 const orderSchema = mongoose.Schema({
@@ -75,7 +76,14 @@ const orderSchema = mongoose.Schema({
       createBy: {
         userID: {type: String},
         userName: {type: String},
+        
       },
+    }],
+    subNodeFlowCost: [{   // ## 
+      seq : {type: Number},
+      nodeID : {type: String},
+      subNodeID : {type: String},
+      cost : {type: mongoose.Types.Decimal128},
     }],
   },
   createBy: {

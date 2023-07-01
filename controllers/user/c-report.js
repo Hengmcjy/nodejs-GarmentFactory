@@ -610,6 +610,8 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     const currentCompanyProductQtyZoneCompleteAll = await ShareFunc.getComCurrentProductQtyZoneAll(companyID, factoryIDArr, productStatusCompleteArr);
     
     // ## get Rep C Current company Production  all
+    // ## for check error    currentProductListAllC
+    const currentProductListAllC = await ShareFunc.getCCurrentProductQtyAllList(companyID, factoryIDArr, productStatusArr);
     const currentProductQtyAllC = await ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr);
     const currentProductQtyAllCompleteC = await ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr);
     
@@ -638,6 +640,7 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
       currentCompanyProductQtyZoneAll: currentCompanyProductQtyZoneAll,
       currentCompanyProductQtyZoneCompleteAll: currentCompanyProductQtyZoneCompleteAll,
 
+      currentProductListAllC: currentProductListAllC, // ## for check error
       currentProductQtyAllC: currentProductQtyAllC,
       currentProductQtyAllCompleteC: currentProductQtyAllCompleteC,
 

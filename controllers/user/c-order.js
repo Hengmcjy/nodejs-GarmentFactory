@@ -544,6 +544,52 @@ exports.putOrderProductionQrcodeReplacement = async (req, res, next) => {
   }
 }
 
+// // ## /api/order/update5/setSubNodeFlowCost
+// router.put("/update5/setSubNodeFlowCost", checkAuth, checkUUID, orderController.putOrderSubNodeFlowCostUpdate);
+exports.putOrderSubNodeFlowCostUpdate = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+
+  try {
+    // ##  create order 
+    const companyID = data.order.companyID;
+    const orderID = data.order.orderID;
+    const subNodeFlowCost = data.order.productOR.subNodeFlowCost;
+
+    const orderUpdate = await Order.updateOne({$and: [
+        {"companyID":companyID},
+        {"orderID":orderID}, 
+      ]} , 
+      {
+        "productOR.subNodeFlowCost": subNodeFlowCost,
+      }); 
+
+    // ## get 1 order
+    // exports.getOrder= async (companyID, orderID) 
+    const order = await ShareFunc.getOrder(companyID, orderID);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      order: order
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO019', 
+        mode:'errEditOrderSubNodeFlowCost', 
+        value: "error edit order subNodeFlowCost"
+      }
+    });
+  }
+}
+
+
 
 // // // ## /api/order/orderProduction/createnew
 // // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
@@ -1879,6 +1925,106 @@ exports.getLastProductionQueueBarcode = async (req, res, next) => {
     });
   }
 }
+
+// // ## get count productionqueue by bundleno
+// router.get("/get/orderProductionQueue1/getcount/:companyID/:orderID", 
+//       checkAuth, checkUUID, orderController.getProductionQueueCount);
+exports.getProductionQueueCount = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  // const factoryID = req.params.factoryID;
+  const orderID = req.params.orderID;
+  const startNo = +req.params.startNo;
+  const endNo = +req.params.endNo;
+  // const productID = req.params.productID;
+  // const productBarcode = req.params.productBarcode;
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;  // ## records we need to get
+  const userID = req.userData.tokenSet.userID;
+  // console.log('getProductionQueueCount');
+  // console.log(companyID, orderID, startNo, endNo);
+  try {
+
+    // ## get count production queues
+    const totalProductionQueueByBundleNo = await ShareFunc.getProductionQueueCountByBundleNo(companyID, orderID, startNo, endNo);
+    // console.log(totalProductionQueueByBundleNo);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      totalProductionQueueByBundleNo: totalProductionQueueByBundleNo,
+      orderProductionQueue: [],
+      // countProductionQueueByBarcode: countProductionQueueByBarcode,
+      // sumProductionQueueByBarcode: sumProductionQueueByBarcode,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO020', 
+        mode:'errGetCountOrderProductionQueueByBundleNo', 
+        value: "error get count Order Production Queue error by bundleNo"
+      }
+    });
+  }
+}
+
+// // ## get list productionqueue by bundleno
+// router.get("/get/orderProductionQueue2/getlists/:companyID/:orderID/:startNo/:endNo", 
+//       checkAuth, checkUUID, orderController.getProductionQueueList);
+exports.getProductionQueueList = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  // const factoryID = req.params.factoryID;
+  const orderID = req.params.orderID;
+  const startNo = +req.params.startNo;
+  const endNo = +req.params.endNo;
+  // const productID = req.params.productID;
+  // const productBarcode = req.params.productBarcode;
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;  // ## records we need to get
+  const userID = req.userData.tokenSet.userID;
+  // console.log('getProductionQueueList');
+  // console.log(companyID, orderID, startNo, endNo);
+  try {
+
+    // ## get count production queues
+    const totalProductionQueueByBundleNo = await ShareFunc.getProductionQueueCountByBundleNo(companyID, orderID, startNo, endNo);
+    // console.log(totalProductionQueueByBundleNo);
+    const orderProductionQueue = await ShareFunc.getProductionQueueListByBundleNo(companyID, orderID, startNo, endNo);
+    // console.log(orderProductionQueue);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      totalProductionQueueByBundleNo: totalProductionQueueByBundleNo,
+      orderProductionQueue: orderProductionQueue,
+      // sumProductionQueueByBarcode: sumProductionQueueByBarcode,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO020', 
+        mode:'errGetCountOrderProductionQueueByBundleNo', 
+        value: "error get count Order Production Queue error by bundleNo"
+      }
+    });
+  }
+}
+
 
 // // ## get last n record production queue 
 // router.get("/lastProduction/getlists/:companyID/:orderID/:productID/:page/:limit", 

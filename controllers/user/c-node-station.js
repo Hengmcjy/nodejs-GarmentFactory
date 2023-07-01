@@ -105,6 +105,8 @@ exports.stfGetNodeFlow = async (req, res, next) => {
     // ## get node flow 1 page
     const nodeFlow = await ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
 
+    const subNodeFlow = await ShareFunc.getSubNodeFlow(companyID);
+
     // getNodeStations= async (companyID, factoryID, status, page, limit)
     const nodeStations = await ShareFunc.getNodeStations(companyID, factoryID, status, 1, 10000);
     // console.log(nodeStations);
@@ -118,6 +120,7 @@ exports.stfGetNodeFlow = async (req, res, next) => {
       // expiresIn: process.env.expiresIn,
       // userID: userID,
       nodeFlow: nodeFlow,
+      subNodeFlow: subNodeFlow,
       nodeStations: nodeStations,
       success: true
       // factory: factory
@@ -452,6 +455,8 @@ exports.getNodeFlow = async (req, res, next) => {
     // ## get node flow 1 page
     const nodeFlow = await ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
 
+    const subNodeFlow = await ShareFunc.getSubNodeFlow(companyID);
+
     // getNodeStations= async (companyID, factoryID, status, page, limit)
     const nodeStations = await ShareFunc.getNodeStations(companyID, factoryID, status, 1, 10000);
     // console.log(nodeStations);
@@ -466,6 +471,7 @@ exports.getNodeFlow = async (req, res, next) => {
       userID: userID,
       nodeFlow: nodeFlow,
       nodeStations: nodeStations,
+      subNodeFlow: subNodeFlow,
       success: true
       // factory: factory
     });

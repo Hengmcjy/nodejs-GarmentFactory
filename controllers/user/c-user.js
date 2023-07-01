@@ -164,7 +164,7 @@ exports.getTestTest2 = async (req, res, next) => {
   return res.end();
 }
 
-// // ## http://192.168.1.10:3968/api/user/test/test
+// // ## http://192.168.1.141:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {
   // console.log('getTestTest');
@@ -183,6 +183,17 @@ exports.getTestTest = async (req, res, next) => {
 
   // // xxFindCountry2
   // const updateTargetPlaceCountryIDOrder = await ShareFunc.xxFindOrder();
+
+  // 1376989
+  // const result = await ShareFunc.getOrderProductionByBundleNo();
+  // console.log(result , result.length);
+
+  // getOrderProduction0001
+  // const result = await ShareFunc.getOrderProduction0001();
+  // console.log(result , result.length);
+
+  // // delManyOrderProduction
+  // const result = await ShareFunc.delManyOrderProduction();
 
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {

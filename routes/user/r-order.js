@@ -42,6 +42,9 @@ router.put("/update3/setcolor", checkAuth, checkUUID, orderController.putOrderCo
 // ## /api/order/update4/qrcode/replacement
 router.put("/update4/qrcode/replacement", checkAuth, checkUUID, orderController.putOrderProductionQrcodeReplacement);
 
+// ## /api/order/update5/setSubNodeFlowCost
+router.put("/update5/setSubNodeFlowCost", checkAuth, checkUUID, orderController.putOrderSubNodeFlowCostUpdate);
+
 // // ## /api/order/orderProduction/createnew
 // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
 
@@ -70,6 +73,14 @@ router.get("/order3/getsumqty/queue/:companyID/:orderID/:productID",
 // ## get last n record production queue by barcodeNo
 router.get("/lastProduction/getlists/:companyID/:orderID/:productID/:productBarcode/:page/:limit", 
       checkAuth, checkUUID, orderController.getLastProductionQueueBarcode);
+
+// ## get count productionqueue by bundleno
+router.get("/get/orderProductionQueue1/getcount/:companyID/:orderID/:startNo/:endNo", 
+      checkAuth, checkUUID, orderController.getProductionQueueCount);
+
+// ## get list productionqueue by bundleno
+router.get("/get/orderProductionQueue2/getlists/:companyID/:orderID/:startNo/:endNo", 
+      checkAuth, checkUUID, orderController.getProductionQueueList);
 
 // ## get last n record production queue 
 router.get("/lastProduction/getlists/:companyID/:orderID/:productID/:page/:limit", 

@@ -2019,6 +2019,115 @@ exports.getTotalProductionQueueByBarcode= async (companyID, orderID, productID, 
   return totalProductionQueueByBarcode.length>0?totalProductionQueueByBarcode:[];
 }
 
+exports.getProductionQueueCountByBundleNo= async (companyID, orderID, startNo, endNo) => {
+  // limit = +limit; // ## change to number
+  // productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
+  const totalProductionQueueByBundleNo = await OrderProductionQueue.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"datetime": { $gte: dateStart}} , 
+      // {"datetime": { $lte : dateEnd}} ,
+    ] } },
+    { $unwind: "$queueInfo" },
+    { $project: { 
+      companyID: 1,
+      orderID: 1,
+      // productBarcode: "$queueInfo.productBarcode",
+      // queueDate: "$queueInfo.queueDate",
+      // factoryID: "$queueInfo.factoryID",
+      bundleNo: "$queueInfo.bundleNo",
+      productCount: "$queueInfo.productCount",
+      // numberFrom: "$queueInfo.numberFrom",
+      // numberTo: "$queueInfo.numberTo",
+      // createBy: "$queueInfo.createBy",
+    } },
+
+    { $match: { $and: [
+      {"bundleNo": { $gte: startNo}} , 
+      {"bundleNo": { $lte : endNo}} ,
+    ] } },
+    { $project: { 
+      companyID: 1,
+      orderID: 1,
+      bundleNo: 1,
+      productCount: 1,
+      // queueDate: 1,
+      // factoryID: 1,
+      // toNode: 1,
+      // numberFrom: 1,
+      // numberTo: 1,
+      // createBy: 1,
+    } },
+    { $group: {			
+      _id: { 
+        companyID: "$companyID",
+        orderID: "$orderID",
+      },
+      countProductionQueueByBundleNo: {$sum: 1} ,
+      sumProductionQueueByBundleNo: {$sum:  '$productCount'} ,
+    }	},
+  ]);
+  // console.log(totalProductionQueueByBundleNo);
+
+  const totalProductionQueueByBundleNoF = await totalProductionQueueByBundleNo.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID, 
+    countProductionQueueByBundleNo: fw.countProductionQueueByBundleNo,
+    sumProductionQueueByBundleNo: fw.sumProductionQueueByBundleNo,
+  }));
+  // console.log(totalProductionQueueByBundleNo);
+  return totalProductionQueueByBundleNoF.length>0?totalProductionQueueByBundleNoF[0]:[];
+}
+
+// ShareFunc.getProductionQueueListByBundleNo(companyID, orderID, startNo, endNo)
+exports.getProductionQueueListByBundleNo= async (companyID, orderID, startNo, endNo) => {
+  // limit = +limit; // ## change to number
+  // productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
+  const orderProductionQueue = await OrderProductionQueue.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"datetime": { $gte: dateStart}} , 
+      // {"datetime": { $lte : dateEnd}} ,
+    ] } },
+    { $unwind: "$queueInfo" },
+    { $project: { 
+      companyID: 1,
+      orderID: 1,
+      productBarcode: "$queueInfo.productBarcode",
+      // queueDate: "$queueInfo.queueDate",
+      bundleNo: "$queueInfo.bundleNo",
+      productCount: "$queueInfo.productCount",
+      yarnLot: "$queueInfo.yarnLot",
+      numberFrom: "$queueInfo.numberFrom",
+      numberTo: "$queueInfo.numberTo",
+      // createBy: "$queueInfo.createBy",
+    } },
+
+    { $match: { $and: [
+      {"bundleNo": { $gte: startNo}} , 
+      {"bundleNo": { $lte : endNo}} ,
+    ] } },
+    { $project: { 
+      companyID: 1,
+      orderID: 1,
+      productBarcode: 1,
+      bundleNo: 1,
+      productCount: 1,
+      yarnLot: 1,
+      // toNode: 1,
+      numberFrom: 1,
+      numberTo: 1,
+      // createBy: 1,
+    } },
+
+  ]);
+
+  // console.log(orderProductionQueue);
+  return orderProductionQueue;
+}
+
 exports.getTotalProductionQueued= async (companyID, orderID, productID) => {
   // limit = +limit; // ## change to number
   productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
@@ -2607,6 +2716,34 @@ exports.getNodeFlows= async (companyID, factoryID, page, limit) => {
   // console.log(nodeFlow);
   return nodeFlows;
 }
+
+// getSubNodeFlow
+exports.getSubNodeFlow= async (companyID) => {
+  const subNodeFlow = await SubNodeFlow.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"nodeFlowID":nodeFlowID},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        seq: 1,	
+        companyID: 1,		
+        nodeID: 1,	
+        subNodeID: 1,
+        subNodeName: 1,
+
+    }	},
+  ]);
+  // console.log(subNodeFlow);
+  return subNodeFlow.length>0?subNodeFlow:[];
+}
+// seq
+// companyID
+// nodeID
+// subNodeID
+// subNodeName
+
 
 // ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
 exports.getNodeFlow= async (companyID, factoryID, nodeFlowID) => {
@@ -6029,6 +6166,89 @@ exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatus
   return orderProductRepF;
 }
 
+exports.getCCurrentProductQtyAllList = async (companyID, factoryIDArr, productStatusArr) => {
+  // ## CFN = /:companyID/:factoryID/:nodeID
+  // console.log('getRepCFNCurrentProductQtyByOrderID');
+  // console.log(companyID, factoryIDArr, productStatusArr);
+  const orderID = 'AA0Q1A3A';
+  const orderProductRep = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"factoryID":{$in: factoryIDArr}},
+      // {"productStatus":{$in: productStatusArr}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: 1,  // ## 
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    // { $unwind: "$productionNode" },
+    // { $project: { 
+    //   _id: 0, 
+    //   companyID: 1,
+    //   // factoryID: 1,		
+    //   // orderID: 1,	
+    //   // bundleNo: 1,
+    //   productID: 1,
+    //   productBarcodeNo: 1,
+    //   productBarcodeNoReal: 1,
+    //   style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+    //   targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+    //   color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+    //   size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+    //   // productCount: 1,
+    //   // productionDate: 1,
+    //   // productStatus: 1,
+
+    //   fromNode: "$productionNode.fromNode",
+    //   toNode: "$productionNode.toNode",
+    //   datetime: "$productionNode.datetime",
+    //   createBy: "$productionNode.createBy",
+    // }},
+
+    // { $group: {			
+    //   _id: { 
+    //     companyID: '$companyID',
+    //     // factoryID: '$factoryID',
+    //     productID: '$productID',
+    //     style: '$style',
+    //     targetPlace: '$targetPlace',
+    //     color: '$color',
+    //     size: '$size',
+    //     // productID: '$productID',
+    //     // bundleNo: '$bundleNo',
+    //     // mode: '$mode',
+    //   },
+    //   countQty: {$sum: 1} ,
+    //   // sumProductQty: {$sum:  '$amount'} ,
+    // }}  
+  ]);
+  // console.log(orderProductRep);
+
+  // const orderProductRepF = await orderProductRep.map(fw => ({
+  //   companyID: fw._id.companyID, 
+  //   productID: fw._id.productID,
+  //   style: fw._id.style,
+  //   size: fw._id.size,
+  //   targetPlace: fw._id.targetPlace,
+  //   color: fw._id.color,
+  //   countQty: fw.countQty,
+  // }));
+  // // console.log(orderProductRepF);
+  return orderProductRep;
+}
+
 exports.getCCurrentProductQtyAllByStyleC = async (companyID, style, productStatusArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
@@ -8518,11 +8738,79 @@ exports.updateColorSetOrderProductionMuji = async () => {
   
 }
 
+exports.getOrderProduction0001 = async () => {
+  const companyID = 'c000001';
+  const targetPlace = 'JAPN';
+  const factoryID3 = 'f000003';
+  const style = 'GL-115B     ';
+  const color = 'OW--------';
+  const toNode = '1.COMPUTER-KNITTING';
+  // const no20 = 1408;
+  // const no100 = 817;
+  // const no200 = 984;
+  // const productBarcode = 'GL-92B      JAPN-----23OW--------F---';
+  const orderProductionList = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        productBarcodeNo: 1,	
+        productBarcodeNoReal: 1,	
+        // productionNode: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    { $unwind: "$productionNode"},
+    { $project: {		
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      productBarcodeNo: 1,	
+      productBarcodeNoReal: 1,	
+      factoryID: "$productionNode.factoryID",	
+      toNode: "$productionNode.toNode",	
+
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // fromNode: "$productionNode.fromNode",	
+      // isOutsource: "$productionNode.isOutsource",
+      // outsourceData: "$productionNode.outsourceData",
+    }	},
+    { $match: { $and: [
+      // {"isOutsource":true},
+      {"factoryID":factoryID3},
+      {"targetPlace":targetPlace},
+      {"style":style},
+      {"color":color},
+      {"toNode":toNode},
+    ] } },
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      factoryID: 1,	
+      orderID: 1,	
+      productBarcodeNo: 1,	
+      productBarcodeNoReal: 1,
+
+      toNode: 1,	
+      fromNode: 1,
+
+    }	},
+ 
+  ]);
+  return orderProductionList;
+}
+
 
 exports.getBlankRows = async () => {
 
   const companyID = 'c000001';
-  const blankValue = '';
+  // const blankValue = '';
 
   const orderProductionList = await OrderProduction.aggregate([
     { $match: { $and: [
@@ -8570,6 +8858,130 @@ exports.getBlankRows = async () => {
   return orderProductionList;
 
 }
+
+exports.delManyOrderProduction = async () => {
+  const companyID = 'c000001';
+  const orderID = 'GL-115B';
+  const factoryID1 = 'f000001';
+  const factoryIDx = 'f000003';
+  const no1 = 1;
+  const no2 = 1959;
+  let productBarcodeNo1 = 'GL-115B     JAPN-----23OW--------F---';  // off white
+  let productBarcodeNo1Arr = [];
+  for (let i = no1; i <= no2; i++) {
+    // setBackStrLen= async (len, str, strBack)
+    // setStrLen= async (len, num)
+    const num1 = this.setStrLen(5, i);
+    productBarcodeNo1Arr.push(productBarcodeNo1 + num1);
+  }
+
+  result1 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    // {"productBarcodeNo":{$in: productBarcodeNo1Arr}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+  console.log('delete ok');
+}
+
+// await ShareFunc.getOrderProductionByBundleNo();
+exports.getOrderProductionByBundleNo = async () => {
+
+  const companyID = 'c000001';
+  const factoryID1 = 'f000001';
+  const factoryIDx = 'f000003';
+  const no1 = 1;
+  const no2 = 1959;
+  const no10 = 1225;
+  const no20 = 1408;
+  const no100 = 817;
+  const no200 = 984;
+  let productBarcodeNo1 = 'GL-92B      JAPN-----23OW--------F---';  // off white
+  let productBarcodeNo2 = 'GL-92B      JAPN-----23MG--------F---0';  // mid gray
+  let productBarcodeNo3 = 'GL-92B      JAPN-----23NV--------F---00';  // navy
+  // const blankValue = '';
+  let productBarcodeNo1Arr = [];
+  let productBarcodeNo2Arr = [];
+  let productBarcodeNo3Arr = [];
+  for (let i = no1; i <= no2; i++) {
+    // setBackStrLen= async (len, str, strBack)
+    // setStrLen= async (len, num)
+    const num1 = this.setStrLen(5, i);
+    productBarcodeNo1Arr.push(productBarcodeNo1 + num1);
+  }
+  // for (let i = no10; i <= no20; i++) {
+  //   productBarcodeNo2Arr.push(productBarcodeNo2 + i);
+  // }
+  // for (let i = no100; i <= no200; i++) {
+  //   productBarcodeNo3Arr.push(productBarcodeNo3 + i);
+  // }
+
+  const orderProductionList = await OrderProduction.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      // {"productBarcodeNo":factoryID},
+      {"productBarcodeNo":{$in: productBarcodeNo1Arr}}
+    ]},
+    {
+      "factoryID": factoryIDx,
+      $set: { "productionNode.$[elem].factoryID" : factoryIDx}
+    }, 
+    {
+      multi: true, 
+      arrayFilters: [  {"elem.factoryID": factoryID1 } ] 
+    });
+
+  // const orderProductionList = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     // {"bundleNo": { $gte: bundleNo1}} , 
+  //     // {"bundleNo": { $lte : bundleNo2}} ,
+  //     // {"bundleNo": bundleNo2} 
+  //     // {"productBarcodeNo": 'GL-92B      JAPN-----23NV--------F---00817'}
+  //   ] } },
+  //   { $project: {			
+  //       _id: 1,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       productBarcodeNo: 1,	
+  //       productBarcodeNoReal: 1,	
+  //       productionNode: 1
+  //   }	},
+  //   { $unwind: "$productionNode"},
+  //   { $project: {		
+  //     _id: 1,	
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     productBarcodeNo: 1,	
+  //     productBarcodeNoReal: 1,	
+  //     toNode: "$productionNode.toNode",	
+  //     fromNode: "$productionNode.fromNode",	
+  //     isOutsource: "$productionNode.isOutsource",
+  //     outsourceData: "$productionNode.outsourceData",
+  //   }	},
+  //   // { $match: { $and: [
+  //   //   // {"isOutsource":true},
+  //   //   // {"toNode":blankValue},
+  //   //   // {"fromNode":blankValue},
+  //   // ] } },
+  //   // { $project: {			
+  //   //   _id: 1,	
+  //   //   companyID: 1,	
+  //   //   orderID: 1,	
+  //   //   productBarcodeNo: 1,	
+  //   //   productBarcodeNoReal: 1,
+
+  //   //   toNode: 1,	
+  //   //   fromNode: 1,
+
+  //   // }	},
+ 
+  // ]);
+  return true;
+
+}
+
 // ## update manual data
 // #######################################################################################################
 
