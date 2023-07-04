@@ -99,7 +99,7 @@ exports.getTestTest3 = async (req, res, next) => {
 
 }
 
-// // ## http://192.168.1.249:3968/api/user/test/test2
+// // ## http://192.168.1.141:3968/api/user/test/test2
 // router.get("/test/test2", userController.getTestTest2);
 exports.getTestTest2 = async (req, res, next) => {
   
@@ -195,6 +195,14 @@ exports.getTestTest = async (req, res, next) => {
   // // delManyOrderProduction
   // const result = await ShareFunc.delManyOrderProduction();
 
+  // // getTestOrderProduction1
+  // const result = await ShareFunc.getTestOrderProduction1();
+  // // console.log(result , result.length);
+  // // console.log('result len = ' , result.length);
+
+  // const result = await ShareFunc.getTestOrderProduction2();
+  // console.log(result , result.length);
+
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {
     action: 'sent by socketIO',
@@ -250,6 +258,9 @@ exports.getGeneralInfo = async (req, res, next) => {
     // ## get client control
     const outSourceLocationDepartment = (await ShareFunc.getControlAppOutSourceLocationDepartment()).outSourceLocationDepartment;
     // console.log(outSourceLocationDepartment);
+
+    // // ## get subNodeflow
+    // const subNodeflow = await ShareFunc.getSubNodeFlow();
 
     // const updateQrCodeRealOrderProduction = await ShareFunc.updateQrCodeRealOrderProduction();
 
@@ -495,6 +506,9 @@ exports.userLogin = async (req, res, next) => {
                                         );
         //
 
+        // // ## get subNodeflow
+        // const subNodeflow = await ShareFunc.getSubNodeFlow(nodeStationUserF[0].companyID);
+
         const token = await ShareFunc.genTokenSet(tokenSet, process.env.expire7day);
         return res.status(200).json({
           token: token,
@@ -506,7 +520,8 @@ exports.userLogin = async (req, res, next) => {
           stationID: stationID,
           nodeStationLoginRequest: nodeStationLoginRequest,
           company: company,
-          factory: factory
+          factory: factory,
+          // subNodeflow: subNodeflow
         });
       } else {
         return res.status(401).json({
@@ -1339,6 +1354,9 @@ exports.getUserFactory = async (req, res, next) => {
     // ## getFactoryInfo= async (factoryIDArr, page, limit)
     const factory = await ShareFunc.getFactoryInfo(factoryArr, companyID, +page , +limit);
 
+    // ## get subNodeflow
+    const subNodeflow = await ShareFunc.getSubNodeFlow(companyID);
+
     await ShareFunc.upsertUserSession1hr(userID);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -1346,6 +1364,7 @@ exports.getUserFactory = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       factory: factory,
+      subNodeflow: subNodeflow
     });
   } catch (err) {
     return res.status(501).json({
@@ -1410,10 +1429,14 @@ exports.getGNFactoriesByCompanyID = async (req, res, next) => {
     const factories = await ShareFunc.getFactoryArrByCompanyID(companyID);
     // console.log(factories);
 
+    // // ## get subNodeflow
+    // const subNodeflow = await ShareFunc.getSubNodeFlow(companyID);
+
     // await ShareFunc.upsertUserSession1hr(userID);
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
       factories: factories,
+      // subNodeflow: subNodeflow
     });
   } catch (err) {
     return res.status(501).json({

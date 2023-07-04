@@ -42,6 +42,8 @@ const orderProductionSchema = mongoose.Schema({
     subNodeID : {type: String},
     qrCode : {type: String}, // staffID , qrCode of staff
     datetime : {type: Date},
+    monthlyID: {type: String},  // ## งวด ID  เอาไว้ใช้เวลาทำเกี่ยวกับ บัญชี
+    cost : {type: mongoose.Types.Decimal128},
   }],
   productionNode: [{   // ## อยู่ในการผลิตขั้นตอนไหน
     factoryID : {type: String},  // that factory did / ฝีมือโรงงานไหน

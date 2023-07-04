@@ -124,6 +124,15 @@ nsController.getQRCodeListProductStyleCFN);
 router.get("/node17/orderProductionZoneSizeColor/qrcodelist/:companyID/:factoryID/:nodeID/:style/:zone/:size/:color/:productStatus/:page/:limit", 
 nsController.getQRCodeListProductStyleZoneSizeColorCFN);
 
+// ## get staff worker for scan sub node / getWorkerInfoByQRCode1
+router.get("/node18/get1/staffinfo/:companyID/:factoryID/:qrCode/:mode", nsController.getWorkerInfoByQRCode1);
+
+// ## get subNodeFlowCost 1
+router.get("/node19/get1/subNodeFlowCost/:companyID/:orderID", nsController.getsubNodeFlowCost1);
+
+// ## get getOrderProductionQueueByBundleNo1
+router.get("/node20/get1/orderProductionQueue/:companyID/:orderID/:bundleNo", nsController.getOrderProductionQueueByBundleNo1);
+
 
 // #############################################################################
 // ## view qrcode ###########################################################################

@@ -26,7 +26,10 @@ const nodeStationSchema = mongoose.Schema({
     userNodeID: {type: String},
     userNodePass: {type: String},
     uuid: {type: String},
+    canScanNode: {type: Boolean},
+    canScanSubNode: {type: Boolean},
   }],
+
   nStation: {
     stationNo: {type: Number},
     loginList: [{

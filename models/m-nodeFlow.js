@@ -14,6 +14,7 @@ const nodeFlowSchema = mongoose.Schema({
   flowSeq: [{   // ## sequence of work flow
     seqNo : {type: String},
     nodeID : {type: String},
+    canScanSubNode: {type: Boolean},
   }],
   
 });

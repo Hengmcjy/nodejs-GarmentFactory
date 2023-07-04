@@ -1002,6 +1002,10 @@ exports.getDataNodeStationLogin = async (req, res, next) => {
     // console.log('-------------------------------nodeFlow-----------------------------------------------');
     // console.log(nodeFlow);
 
+    // ## get subNodeflow
+    const subNodeFlow = await ShareFunc.getSubNodeFlow(companyID);
+    // console.log(subNodeflow);
+
     // await ShareFunc.upsertUserSession1hr(userID);
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -1013,7 +1017,8 @@ exports.getDataNodeStationLogin = async (req, res, next) => {
       nodeStation: nodeStation,
       nodeStations: nodeStations,
       nodeFlows: nodeFlows,
-      nodeFlow: nodeFlow
+      nodeFlow: nodeFlow,
+      subNodeFlow: subNodeFlow
     });
   } catch (err) {
     return res.status(501).json({
@@ -1363,7 +1368,14 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
   try {
     await ShareFunc.upsertUserSession1hr(userID);
 
-    if (productionNode.toNode === 'completeNode') {
+    // ## get flowseq
+    // getNodeFlow1= async (companyID, factoryID, nodeFlowID)
+    const nodeFlowID = 'main';
+    const nodeflow = await ShareFunc.getNodeFlow1(companyID, factoryID, nodeFlowID);
+    let flowSeq = nodeflow.flowSeq;
+    flowSeq.sort((a,b)=>{ return a.seqNo >b.seqNo?1:a.seqNo <b.seqNo?-1:0 });
+
+    if (productionNode.toNode === 'completeNode' && productionNode.fromNode === flowSeq[flowSeq.length-1].nodeID) {
       productionNode.status = 'complete';
       result2 = await OrderProduction.updateMany(
         {$and: [
@@ -1837,6 +1849,154 @@ exports.getQRCodeListProductStyleZoneSizeColorCFN = async (req, res, next) => {
     });
   }
 }
+
+// // ## get staff worker for scan sub node / getWorkerInfo1
+// router.get("/node18/get1/staffinfo", checkAuth, checkUUID, nsController.getWorkerInfoByQRCode1);
+exports.getWorkerInfoByQRCode1 = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getRepairProductCFN');
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  // const userID = req.params.userID;
+  const qrCode = req.params.qrCode;
+  const mode = req.params.mode; // ## scan
+  const type = 's'; // ## staff
+  const status = 'a'; // ## active
+  // const size = req.params.size;
+  // const color = req.params.color;
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;  // ## records we need to get
+  // const productStatusArr = JSON.parse(req.params.productStatus);
+
+  // console.log(companyID, factoryID, qrCode, mode);
+  try {
+
+    // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
+    let userf = await ShareFunc.getWorkerInfoByQRCode1(companyID, factoryID, qrCode, type, status);
+    userf.uInfo.userPass = '';
+    // console.log(userf);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      // userID: userID,
+      staff: userf,
+      success: true,
+      message: {
+        messageID: 'ok', 
+        mode:'findStaffInfoOK', 
+        value: ""
+      }
+
+      // currentProductStyleCount: currentProductStyleCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      success: false,
+      message: {
+        messageID: 'erru013', 
+        mode:'errGet1UserWorker', 
+        value: "error get 1 user worker"
+      }
+    });
+  }
+}
+
+// // ## get subNodeFlowCost 1
+// router.get("/node19/get1/subNodeFlowCost/:companyID/:orderID", nsController.getsubNodeFlowCost1);
+exports.getsubNodeFlowCost1 = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getsubNodeFlowCost1');
+  const companyID = req.params.companyID;
+  const orderID = req.params.orderID;
+
+  // console.log(companyID, orderID);
+  try {
+
+    // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
+    let orderSubNodeFlowCost = await ShareFunc.getOrderProductionSubNodeFlowCost1(companyID, orderID);
+    // userf.uInfo.userPass = '';
+    // console.log(userf);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      // userID: userID,
+      orderSubNodeFlowCost: orderSubNodeFlowCost,
+      success: true,
+      message: {
+        messageID: 'ok', 
+        mode:'findSubNodeFlowCostOK', 
+        value: ""
+      }
+
+      // currentProductStyleCount: currentProductStyleCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      success: false,
+      message: {
+        messageID: 'errO021', 
+        mode:'errOrderProductionSubFlowCost', 
+        value: "error get Order production sub flow cost"
+      }
+    });
+  }
+}
+
+// // ## get getOrderProductionQueueByBundleNo1
+// router.get("/node20/get1/orderProductionQueue/:companyID/:orderID/:bundleNo", nsController.getOrderProductionQueueByBundleNo1);
+exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getsubNodeFlowCost1');
+  const companyID = req.params.companyID;
+  const orderID = req.params.orderID;
+  const bundleNo = +req.params.bundleNo;
+
+  console.log(companyID, orderID, bundleNo);
+  try {
+
+    // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
+    let orderProductionQueueBundleNo = await ShareFunc.getOrderProductionQueueByBundleNo(companyID, orderID, bundleNo);
+    console.log(orderProductionQueueBundleNo);
+    
+    let orderSubNodeFlowCost = await ShareFunc.getOrderProductionSubNodeFlowCost1(companyID, orderID);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      orderSubNodeFlowCost: orderSubNodeFlowCost,
+      orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      success: true,
+      message: {
+        messageID: 'ok', 
+        mode:'findOrderProductionQueueOK', 
+        value: ""
+      }
+
+      // currentProductStyleCount: currentProductStyleCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      success: false,
+      message: {
+        messageID: 'errO008-1', 
+        mode:'errGetOrderProductionQueue', 
+        value: "get Order Production Queue error"
+      }
+    });
+  }
+}
+
+
+
+
 
 // // ## get scan order production for send product to next department putScanNextDepCompleteOrderProductionBarcodeNo
 // router.put("/nextdep/scanroderProduction/productBarcodeNo", nsController.putScanNextDepCompleteOrderProductionBarcodeNo);

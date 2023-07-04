@@ -991,8 +991,10 @@ exports.createRangeProductBarcodeNoArr= async (productBarcode, qty, startNo, toN
     let i = 0;
     while (i < roundSet) {
       // const startNo = 
-      startNoRun = startNoRun + (createOrderQtyMaxPerRound * i);
-      startNo1 = startNoRun;
+      // startNoRun = startNoRun + (createOrderQtyMaxPerRound * i);
+      // startNo1 = startNoRun;
+
+      startNo1 = startNoRun + (createOrderQtyMaxPerRound * i);
       toNo1 = startNo1 + createOrderQtyMaxPerRound - 1;
 
       totalBundle = (toNo1 - startNo1 - 1) / bundleItems;
@@ -1111,8 +1113,8 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     const forLoss = data.forLoss;
     const productStatusArr = [''];
 
-    const startNo = data.startNo;
-    const toNo = data.toNo;
+    const startNo = +data.startNo;
+    const toNo = +data.toNo;
     // console.log(startNo , toNo);
     // console.log(productBarcode );
 
@@ -1130,6 +1132,10 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     outsourceData.datetime = current;
 
     const createBy = data.createBy;
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
     // console.log(queueInfo[0]);
     // console.log(isOutsource, bundleNoFrom,bundleNoTo,toNode1,numberFrom1,numberTo1);
     // console.log(qty);
@@ -1164,6 +1170,30 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       bundleNoFrom,
       bundleNoTo
     );
+    // console.log(productBarcodeNoRange);
+
+
+    // await session.abortTransaction(); 
+    // session.endSession();
+    // await session2.abortTransaction(); 
+    // session2.endSession();
+    // await session3.abortTransaction(); 
+    // session3.endSession();
+    // // console.log('productBarcodeNoRange');
+    // return res.status(422).json({
+    //   message: {
+    //     messageID: 'errO007-2', 
+    //     mode:'errCreateOrderProductionsListQueueByBarcodeNoExisted', 
+    //     value: "create Order Productions list Queue error by barcodeNo Existed",
+    //     productBarcodeNoRange: productBarcodeNoRange
+    //   },
+    //   token: token,
+    //   expiresIn: process.env.expiresIn,
+    //   userID: data.userID,
+    //   success: false
+    // });
+
+
 
     // ## find forLossQty
     let forLossQty = 0;
@@ -1571,8 +1601,8 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     //   });
     // }
 
-    await ShareFunc.upsertUserSession1hr(userID);
-    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     
     res.status(200).json({
       token: token,
