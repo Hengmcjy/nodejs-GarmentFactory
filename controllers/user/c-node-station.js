@@ -2072,6 +2072,8 @@ exports.putAddOrderProductionSubNodeFlow = async (req, res, next) => {
   const nodeID = data.nodeID;  // ## toNode
   const bundleNo = +data.bundleNo;
   let subNodeFlow = data.subNodeFlow;
+
+  let subNodeFlowAnywhereScan = true;  // ## can scan any time no need to exist at current nodeID station
   
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   // productionNode.datetime = current;
@@ -2096,12 +2098,14 @@ exports.putAddOrderProductionSubNodeFlow = async (req, res, next) => {
             checkedOK = false;
           }
 
-          // // ## 2. check current nodeID step in productionNode of this.orderProductions
-          // if (!item2.productionNode[0]) {
-          //   checkedOK = false;
-          // } else if (productionNode[0].toNode !== this.nodeID) {
-          //   checkedOK = false;
-          // }
+          // ## 2. check current nodeID step in productionNode of this.orderProductions
+          if (!subNodeFlowAnywhereScan) {
+            if (!item2.productionNode[0]) {
+              checkedOK = false;
+            } else if (productionNode[0].toNode !== this.nodeID) {
+              checkedOK = false;
+            }
+          }
         }
       });
     });
