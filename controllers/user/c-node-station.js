@@ -105,7 +105,8 @@ exports.stfGetNodeFlow = async (req, res, next) => {
     // ## get node flow 1 page
     const nodeFlow = await ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
 
-    const subNodeFlow = await ShareFunc.getSubNodeFlow(companyID);
+    // const subNodeFlow = await ShareFunc.getSubNodeFlow(companyID);
+    const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
 
     // getNodeStations= async (companyID, factoryID, status, page, limit)
     const nodeStations = await ShareFunc.getNodeStations(companyID, factoryID, status, 1, 10000);
@@ -120,7 +121,7 @@ exports.stfGetNodeFlow = async (req, res, next) => {
       // expiresIn: process.env.expiresIn,
       // userID: userID,
       nodeFlow: nodeFlow,
-      subNodeFlow: subNodeFlow,
+      subNodeflowC: subNodeflowC,
       nodeStations: nodeStations,
       success: true
       // factory: factory
