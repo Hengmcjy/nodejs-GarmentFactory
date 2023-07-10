@@ -51,6 +51,41 @@ exports.asyncForEach4= async (array, callback) => {
 
 // #######################################################################################################
 // ## general
+
+// // ## http://192.168.1.50:3968/api/user/test/test5
+// router.get("/test/test5", userController.getTestTest5);
+exports.getTestTest5 = async (req, res, next) => {
+
+  // ## for test
+  // ## add productionNode to orderProduction
+  const result = await ShareFunc.updateProductionNodeForTest();
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>add productionNode</title><head>');
+  res.write('<body>');
+  res.write('<h1>add productionNode to orderProduction</h1></br>');
+  res.write('<h1>add push to nodeID we need to</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
+  return res.status(200).json({
+    // blankRows: blankRows,
+    // targetPlaces: targetPlaces,
+    // colors: colors,
+    // sizes: sizes,
+    // langs: langs,
+    // langData: langData,
+    // userClass: userClass,
+    // controlApp: controlApp,
+    // sysInfo: sysInfo,
+    // outSourceLocationDepartment: outSourceLocationDepartment
+    // updateQrCodeRealOrderProduction: updateQrCodeRealOrderProduction
+  });
+}
+
 // // ## http://192.168.1.141:3968/api/user/test/test4
 exports.getTestTest4 = async (req, res, next) => {
   // const blankRows = await ShareFunc.getBlankRows();
@@ -164,7 +199,7 @@ exports.getTestTest2 = async (req, res, next) => {
   return res.end();
 }
 
-// // ## http://192.168.1.141:3968/api/user/test/test
+// // ## http://192.168.1.35:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {
   // console.log('getTestTest');
@@ -202,6 +237,11 @@ exports.getTestTest = async (req, res, next) => {
 
   // const result = await ShareFunc.getTestOrderProduction2();
   // console.log(result , result.length);
+
+  // const result = await ShareFunc.getviewGroupBundleNoOrderProductionQueue();
+  // // const resultF = result.filter(i=>(i.sumQty > 1));
+  // console.log(result , result.length);
+  // // hostURL = await hostURLf.filter(i=>(i.status == status));
 
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {
@@ -1355,7 +1395,7 @@ exports.getUserFactory = async (req, res, next) => {
     const factory = await ShareFunc.getFactoryInfo(factoryArr, companyID, +page , +limit);
 
     // ## get subNodeflow
-    const subNodeflow = await ShareFunc.getSubNodeFlow(companyID);
+    const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
 
     await ShareFunc.upsertUserSession1hr(userID);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -1364,7 +1404,7 @@ exports.getUserFactory = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       factory: factory,
-      subNodeflow: subNodeflow
+      subNodeflowC: subNodeflowC
     });
   } catch (err) {
     return res.status(501).json({

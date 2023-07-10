@@ -455,7 +455,7 @@ exports.getNodeFlow = async (req, res, next) => {
     // ## get node flow 1 page
     const nodeFlow = await ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
 
-    const subNodeFlow = await ShareFunc.getSubNodeFlow(companyID);
+    const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
 
     // getNodeStations= async (companyID, factoryID, status, page, limit)
     const nodeStations = await ShareFunc.getNodeStations(companyID, factoryID, status, 1, 10000);
@@ -471,7 +471,7 @@ exports.getNodeFlow = async (req, res, next) => {
       userID: userID,
       nodeFlow: nodeFlow,
       nodeStations: nodeStations,
-      subNodeFlow: subNodeFlow,
+      subNodeflowC: subNodeflowC,
       success: true
       // factory: factory
     });
@@ -1003,7 +1003,7 @@ exports.getDataNodeStationLogin = async (req, res, next) => {
     // console.log(nodeFlow);
 
     // ## get subNodeflow
-    const subNodeFlow = await ShareFunc.getSubNodeFlow(companyID);
+    const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
     // console.log(subNodeflow);
 
     // await ShareFunc.upsertUserSession1hr(userID);
@@ -1018,7 +1018,7 @@ exports.getDataNodeStationLogin = async (req, res, next) => {
       nodeStations: nodeStations,
       nodeFlows: nodeFlows,
       nodeFlow: nodeFlow,
-      subNodeFlow: subNodeFlow
+      subNodeflowC: subNodeflowC
     });
   } catch (err) {
     return res.status(501).json({
@@ -1957,12 +1957,12 @@ exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
   const orderID = req.params.orderID;
   const bundleNo = +req.params.bundleNo;
 
-  console.log(companyID, orderID, bundleNo);
+  // console.log(companyID, orderID, bundleNo);
   try {
 
     // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
     let orderProductionQueueBundleNo = await ShareFunc.getOrderProductionQueueByBundleNo(companyID, orderID, bundleNo);
-    console.log(orderProductionQueueBundleNo);
+    // console.log(orderProductionQueueBundleNo);
     
     let orderSubNodeFlowCost = await ShareFunc.getOrderProductionSubNodeFlowCost1(companyID, orderID);
 
@@ -1994,6 +1994,235 @@ exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
   }
 }
 
+// // getOrderProductionQueueByProductBarcodeNo
+// router.get("/node22/get1/orderProductionQueue/:companyID/:productBarcodeNo", 
+// nsController.getOrderProductionQueueByProductBarcodeNo);
+exports.getOrderProductionQueueByProductBarcodeNo = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getsubNodeFlowCost1');
+  const companyID = req.params.companyID;
+  const productBarcodeNo = req.params.productBarcodeNo;
+  // const bundleNo = +req.params.bundleNo;
+
+  // console.log(companyID, orderID, bundleNo);
+  try {
+
+    // ## get 1 OrderProduction
+    // getOrderProduct01= async (companyID, factoryID, productBarcodeNo)
+    const orderProduction = await ShareFunc.getOrderProduct01(companyID, '', productBarcodeNo);
+    if (!orderProduction) {
+      return res.status(422).json({
+        message: {
+          messageID: 'errO008-1', 
+          mode:'errGetOrderProductionQueue', 
+          value: "get Order Production Queue error"
+        },
+        success: false
+      });
+    }
+    const orderID = orderProduction.orderID;
+    const bundleNo = orderProduction.bundleNo;
+
+    // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
+    let orderProductionQueueBundleNo = await ShareFunc.getOrderProductionQueueByBundleNo(companyID, orderID, bundleNo);
+    // console.log(orderProductionQueueBundleNo);
+    
+    let orderSubNodeFlowCost = await ShareFunc.getOrderProductionSubNodeFlowCost1(companyID, orderID);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      orderSubNodeFlowCost: orderSubNodeFlowCost,
+      orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      success: true,
+      message: {
+        messageID: 'ok', 
+        mode:'findOrderProductionQueueOK', 
+        value: ""
+      }
+
+      // currentProductStyleCount: currentProductStyleCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      success: false,
+      message: {
+        messageID: 'errO008-1', 
+        mode:'errGetOrderProductionQueue', 
+        value: "get Order Production Queue error"
+      }
+    });
+  }
+}
+
+// // ## edit add order production  set putAddOrderProductionSubNodeFlow
+// router.put("/node23/editadd/oderProduction/subNodeFlow", nsController.putAddOrderProductionSubNodeFlow);
+exports.putAddOrderProductionSubNodeFlow = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  // console.log('putAddOrderProductionSubNodeFlow');
+  // console.log(data);
+  const userID = data.userID;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const orderID = data.orderID;
+  const productBarcodeNos = data.productBarcodeNos;
+  const nodeID = data.nodeID;  // ## toNode
+  const bundleNo = +data.bundleNo;
+  let subNodeFlow = data.subNodeFlow;
+  
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  // productionNode.datetime = current;
+
+  // const productStatusArr = JSON.parse(data.productStatusArr);
+  // const page = +data.page;
+  // const limit = +data.limit;
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    const orderProductions = await ShareFunc.getOrderProductListByByORIDBunNo(companyID, orderID, bundleNo);
+    // ## check err/ok for subNodeFlow
+    let checkedOK = true;
+    await this.asyncForEach(subNodeFlow, async (item1) => {
+      item1.datetime = current;
+      await this.asyncForEach2(orderProductions, async (item2) => {
+        if (item2.subNodeFlow) {
+          const subNodeFlowF = item2.subNodeFlow.filter(fi =>
+            fi.nodeID === nodeID
+            && fi.subNodeID === item1.subNodeID);
+          if (subNodeFlowF.length > 0) {
+            checkedOK = false;
+          }
+
+          // // ## 2. check current nodeID step in productionNode of this.orderProductions
+          // if (!item2.productionNode[0]) {
+          //   checkedOK = false;
+          // } else if (productionNode[0].toNode !== this.nodeID) {
+          //   checkedOK = false;
+          // }
+        }
+      });
+    });
+
+    if (!checkedOK) {
+      return res.status(501).json({
+        message: {
+          messageID: 'errO023', 
+          mode:'errEditAddOrderProductionSubNodeFlow', 
+          value: "error edit/add order production subNodeFlow"
+        },
+        success: false
+      });
+    }
+
+    result2 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        // {"factoryID":factoryID},
+        {"orderID":orderID},
+        {"bundleNo":bundleNo},
+        {"productBarcodeNoReal":{$in: productBarcodeNos}}
+      ]}, 
+      {
+        $push: {subNodeFlow: {$each: subNodeFlow}},
+      });
+
+    // productionNode.status = 'problem';
+    // result1 = await OrderProduction.updateOne(
+    //   {$and: [
+    //     {"companyID":companyID},
+    //     {"factoryID":factoryID},
+    //     {"orderID":orderID},
+    //     {"productID":productID},
+    //     {"productBarcodeNo":productBarcodeNo},
+    //     // {"productBarcodeNo":{$in: productBarcodeNos}}
+    //   ]}, 
+    //   {
+    //     // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+    //     $push: {productionNode: productionNode},
+    //     // $inc: {productCount: -1},
+    //     "productCount": 1,
+    //     "productStatus": 'problem',
+    //     "bundleID": uuid
+    //   });
+
+      
+
+    // const currentProductAllDetailCFN = 
+    //       await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
+  
+    return res.status(200).json({
+      // tokenNS: '',
+      // expiresIn: process.env.expiresIn,
+      success: true,
+      message: {
+        messageID: 'edit/add ok', 
+        mode:'EditAddOrderProductionSubNodeFlow', 
+        value: "edit/add order production subNodeFlow ok"
+      },
+      // currentProductAllDetailCFN: currentProductAllDetailCFN
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO023', 
+        mode:'errEditAddOrderProductionSubNodeFlow', 
+        value: "error edit/add order production subNodeFlow"
+      },
+      success: false
+    });
+  }
+}
+
+
+
+// // ## get product problem
+// router.get("/node21/orderProduction/lists/:companyID/:orderID/:bundleNo/:nodeID", 
+// nsController.getorderProductionCNByORIDBunNo);
+exports.getorderProductionCNByORIDBunNo = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getsubNodeFlowCost1');
+  const companyID = req.params.companyID;
+  const orderID = req.params.orderID;
+  const nodeID = req.params.nodeID;
+  const bundleNo = +req.params.bundleNo;
+
+  // console.log(companyID, orderID, nodeID, bundleNo);
+  try {
+
+    const orderProductions = await ShareFunc.getOrderProductListByByORIDBunNo(companyID, orderID, bundleNo);
+    // console.log(orderProductions);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      orderProductions: orderProductions,
+      // orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      success: true,
+      message: {
+        messageID: 'ok', 
+        mode:'findOrderProductionListByQueue', 
+        value: ""
+      }
+
+      // currentProductStyleCount: currentProductStyleCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      success: false,
+      message: {
+        messageID: 'errO022', 
+        mode:'errOrderProductionListBundleNo', 
+        value: "error get Order production list by bundle no"
+      }
+    });
+  }
+}
 
 
 

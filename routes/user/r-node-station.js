@@ -133,6 +133,15 @@ router.get("/node19/get1/subNodeFlowCost/:companyID/:orderID", nsController.gets
 // ## get getOrderProductionQueueByBundleNo1
 router.get("/node20/get1/orderProductionQueue/:companyID/:orderID/:bundleNo", nsController.getOrderProductionQueueByBundleNo1);
 
+// ## get orderProduction   getorderProductionCNByORIDBunNo
+router.get("/node21/orderProduction/lists/:companyID/:orderID/:bundleNo/:nodeID", 
+nsController.getorderProductionCNByORIDBunNo);
+
+// getOrderProductionQueueByProductBarcodeNo
+router.get("/node22/get1/orderProductionQueue/:companyID/:productBarcodeNo", nsController.getOrderProductionQueueByProductBarcodeNo);
+
+// ## edit add order production  set putAddOrderProductionSubNodeFlow
+router.put("/node23/editadd/oderProduction/subNodeFlow", nsController.putAddOrderProductionSubNodeFlow);
 
 // #############################################################################
 // ## view qrcode ###########################################################################
@@ -193,6 +202,18 @@ router.get("/node/scan2/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:zone
         reportController.getRepNodeStaffScannedByStyleZoneDate12);
 // // ##
 
+
+// ## scan subnode report
+
+// ## get node getRepSubNodeScanDate12Overall
+router.get("/node/scansub1/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:date12/:infoType", 
+        reportController.getRepSubNodeScanDate12Overall);
+// // ##
+
+// ## get node getRepSubNodeStaffScanDate12Overall
+router.get("/node/scansub2/staff/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:date12/:infoType", 
+        reportController.getRepSubNodeStaffScanDate12Overall);
+// // ##
 
 
 // // ## get node getRepCurrentProductQtyCFN

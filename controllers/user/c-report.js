@@ -796,6 +796,171 @@ exports.getRepNodeStaffScannedByStyleZoneDate12 = async (req, res, next) => {
   }
 }
 
+// // ## get node getRepSubNodeScanDate12Overall
+// router.get("/node/scansub1/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:date12/:infoType", 
+//         reportController.getRepSubNodeScanDate12Overall);
+exports.getRepSubNodeScanDate12Overall = async (req, res, next) => { 
+  // try {} catch (err) {}
+  // ## CF = /:companyID/:factoryID
+  // console.log('getRepSubNodeStaffScanDate12');
+  const companyID = req.params.companyID;
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const nodeIDs = JSON.parse(req.params.nodeIDs);
+  const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+  const date12Arr = JSON.parse(req.params.date12);  // have 2 date
+  // const statusArr = ['normal', 'complete'];
+
+  // const orderIDs = JSON.parse(req.params.orderIDsArr);
+  // const zoneArr = JSON.parse(req.params.zoneArr);
+  // const orderStatusArr = JSON.parse(req.params.ordertatus);
+
+  // let i = 0;
+  // await this.asyncForEach(zoneArr, async (item1) => {
+  //   zoneArr[i] = await ShareFunc.setBackStrLen(4, item1, '-');
+  //   i++;
+  // });
+
+  // console.log(companyID, factoryIDArr, infoType, nodeID);
+
+  // const zone = await ShareFunc.setBackStrLen(4, req.params.zone, '-');
+  // const color = await ShareFunc.setBackStrLen(10, req.params.color, '-');
+  // const size = await ShareFunc.setBackStrLen(3, req.params.size, '-');
+  
+  try {
+
+    // ## report staff scanned by date1 - date2
+    // console.log(date12Arr);
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    // console.log(dateStart, dateEnd);
+
+    // ## get orderIDs
+    let orderIDArr = [];
+    const status = ['open']
+    const page = 1;
+    const limit = 10000;
+    const orders = await ShareFunc.getOrders(companyID, status, page, limit);
+    await this.asyncForEach(orders, async (item1) => {
+      orderIDArr.push(item1.orderID);
+    });
+    // console.log(orderIDArr);
+    
+    // ## scan subnode
+    const subNodeStaffScan = 
+      await ShareFunc.getCFSubNodeScanDate12Overall(companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd);
+    // console.log(subNodeStaffScan);
+    // const nodeScanProductStyleZoneColorSize = [];
+
+    // ## get staff name , userID by qrCode
+    const qrCodes = Array.from(new Set(subNodeStaffScan.map((item) => item.qrCode)));
+    console.log(qrCodes);
+
+    
+    // ## const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+    let token = '';
+    if (infoType === 'staffOffice') {
+      token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    }
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+
+      subNodeStaffScan: subNodeStaffScan,
+
+
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp012', 
+        mode:'errRepSubNodeScan', 
+        value: "error report subnode scan"
+      }
+    });
+  }
+}
+
+// // ## get node getRepSubNodeStaffScanDate12Overall
+// router.get("/node/scansub2/staff/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:date12/:infoType", 
+//         reportController.getRepSubNodeStaffScanDate12Overall);
+// // // ##
+exports.getRepSubNodeStaffScanDate12Overall = async (req, res, next) => { 
+  // try {} catch (err) {}
+  // ## CF = /:companyID/:factoryID
+  // console.log('getRepSubNodeStaffScanDate12');
+  const companyID = req.params.companyID;
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const nodeIDs = JSON.parse(req.params.nodeIDs);
+  const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+  const date12Arr = JSON.parse(req.params.date12);  // have 2 date
+  // const statusArr = ['normal', 'complete'];
+
+  // const orderIDs = JSON.parse(req.params.orderIDsArr);
+  // const zoneArr = JSON.parse(req.params.zoneArr);
+  // const orderStatusArr = JSON.parse(req.params.ordertatus);
+
+  // let i = 0;
+  // await this.asyncForEach(zoneArr, async (item1) => {
+  //   zoneArr[i] = await ShareFunc.setBackStrLen(4, item1, '-');
+  //   i++;
+  // });
+
+  // console.log(companyID, factoryIDArr, infoType, nodeID);
+
+  // const zone = await ShareFunc.setBackStrLen(4, req.params.zone, '-');
+  // const color = await ShareFunc.setBackStrLen(10, req.params.color, '-');
+  // const size = await ShareFunc.setBackStrLen(3, req.params.size, '-');
+  
+  try {
+
+    // ## report staff scanned by date1 - date2
+    // console.log(date12Arr);
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    // console.log(dateStart, dateEnd);
+
+    // ## get orderIDs
+    let orderIDArr = [];
+    const status = ['open']
+    const page = 1;
+    const limit = 10000;
+    const orders = await ShareFunc.getOrders(companyID, status, page, limit);
+    await this.asyncForEach(orders, async (item1) => {
+      orderIDArr.push(item1.orderID);
+    });
+    // console.log(orderIDArr);
+    
+    
+    const subNodeStaffScan = 
+      await ShareFunc.getCFSubNodeStaffScanDate12Overall(companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd);
+    // console.log(subNodeStaffScan);
+    // const nodeScanProductStyleZoneColorSize = [];
+
+    
+    // ## const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+    let token = '';
+    if (infoType === 'staffOffice') {
+      token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    }
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+
+      subNodeStaffScan: subNodeStaffScan,
+
+
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp012', 
+        mode:'errRepSubNodeScan', 
+        value: "error report subnode scan"
+      }
+    });
+  }
+}
+
 
 // ## report
 // #############################################################
