@@ -1201,6 +1201,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       forLossQty = +toNo - +orderQty;
     }
 
+    let maxRecordRound = 0;  // ## for * createOrderQtyMaxPerRound (createOrderQtyMaxPerRound * maxRecordRound)
     await this.asyncForEach(productBarcodeNoRange, async (item1) => {
 
       // ## gen productBarcodeNoArr
@@ -1261,8 +1262,8 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
             const forLossX = runningNO > orderQty;
 
             // ## find bundle no
-            const bundleNoCount = Math.floor(x / +bundleItems)
-            const bundleNofraction = (x % +bundleItems) > 0 ? 1 : 0;
+            const bundleNoCount = Math.floor((x + (createOrderQtyMaxPerRound * maxRecordRound)) / +bundleItems)
+            const bundleNofraction = ((x + (createOrderQtyMaxPerRound * maxRecordRound)) % +bundleItems) > 0 ? 1 : 0;
             const bundleNoF = +bundleNoCount + +bundleNofraction;
 
             // console.log('bundleNoF ' , bundleNoF);
@@ -1333,6 +1334,8 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
             success: false
           });
       }
+
+      maxRecordRound++;
 
     });
 

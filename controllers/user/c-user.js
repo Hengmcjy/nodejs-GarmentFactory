@@ -52,13 +52,33 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
+
+// // ## http://192.168.1.50:3968/api/user/test/test6
+// router.get("/test/test5", userController.getTestTest6);
+exports.getTestTest6 = async (req, res, next) => {
+  // ## update orderProduction / edit bundleNo
+  // const result = await ShareFunc.updateOrderProductionForBundleNo();
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>edit orderProduction bundleNo</title><head>');
+  res.write('<body>');
+  res.write('<h1>update orderProduction / edit bundleNo</h1></br>');
+  res.write('<h1>update orderProduction / edit bundleNo</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
+}
+
 // // ## http://192.168.1.50:3968/api/user/test/test5
 // router.get("/test/test5", userController.getTestTest5);
 exports.getTestTest5 = async (req, res, next) => {
 
   // ## for test
   // ## add productionNode to orderProduction
-  const result = await ShareFunc.updateProductionNodeForTest();
+  // const result = await ShareFunc.updateProductionNodeForTest();
 
   res.setHeader('Content-Type', 'text/html');
   res.write('<html>');

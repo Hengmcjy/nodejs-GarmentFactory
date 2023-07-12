@@ -331,6 +331,24 @@ exports.getCompanyMembers= async (companyID, page, limit) => {
 }
 
 
+exports.getStaffsByQRCodes= async (qrCodes, type) => {
+  const staffs = await User.aggregate([
+    { $match: { $and: [
+      // {"companyID":companyID}, 
+      {"qrCode":{$in: qrCodes}},
+      {"type": type}, 
+    ] } },
+    { $project: { 
+      _id: 0, 
+      userID: 1, 
+      qrCode: 1, 
+      userName: "$uInfo.userName",
+      pic: "$uInfo.pic",
+    }},
+  ]);
+  return staffs;
+}
+
 
 // userInvestStatementLottoRoundf = await UserInvest.aggregate([
 //   { $match: { $and: [
@@ -7438,7 +7456,7 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
       nodeID: "$subNodeFlow.nodeID",
       subNodeID: "$subNodeFlow.subNodeID",	
       qrCode: "$subNodeFlow.qrCode",	
-      // status: "$subNodeFlow.status",
+      // createBy: "$subNodeFlow.createBy",
       // toNode: "$productionNode.toNode",
       // datetime: "$productionNode.datetime",
       // createBy: "$productionNode.createBy",
@@ -7460,6 +7478,7 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
       nodeID: 1,
       subNodeID: 1,	
       qrCode: 1,	
+      // createBy: 1,
       dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
 
       // targetPlace: 1,
@@ -7487,7 +7506,8 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
         orderID: '$orderID',
         nodeID: '$nodeID',
         subNodeID: '$subNodeID',
-        qrCode: '$subNodeID',
+        qrCode: '$qrCode',
+        // qrCode: '$subNodeID',
         dayMonthUTC: '$dayMonthUTC',
         // targetPlace: '$targetPlace',
         // color: '$color',
@@ -9212,6 +9232,156 @@ exports.testview2 = async () => {
 
   // console.log(orderProductRep);
   return orderProductRep;
+}
+
+exports.getOrderProductionQueueByOrderIDProductBarcode= async (companyID, orderID, productBarcode) => {
+  const queueInfo = await OrderProductionQueue.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":orderID},
+      // {"productID":productID},
+    ] } },
+    { $unwind: "$queueInfo" },
+    { $project: { 
+      companyID: 1,
+      orderID: 1,
+      productBarcode: "$queueInfo.productBarcode",
+      // isOutsource: "$queueInfo.isOutsource",
+      // queueDate: "$queueInfo.queueDate",
+      factoryID: "$queueInfo.factoryID",
+      bundleNo: "$queueInfo.bundleNo",
+      productCount: "$queueInfo.productCount",
+      numberFrom: "$queueInfo.numberFrom",
+      numberTo: "$queueInfo.numberTo",
+    } },
+    { $match: { $and: [
+      {"productBarcode":productBarcode},
+      // {"factoryID":factoryID},
+      // {"orderID":orderID},
+      // {"productID":productID},
+    ] } },
+    { $project: { 
+      companyID: 1,
+      orderID: 1,
+      productBarcode: 1,
+      isOutsource: 1,
+      // queueDate: 1,
+      factoryID: 1,
+      bundleNo: 1,
+      productCount: 1,
+      numberFrom: 1,
+      numberTo: 1,
+    } },
+  ]);
+
+  // console.log(queueInfo);
+  return queueInfo;
+}
+
+exports.getOrderProductionByProductBarcode= async (companyID, orderID, productBarcode) => {
+  const orderProductionList = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        productBarcodeNo: 1,	
+        productBarcodeNoReal: 1,	
+        bundleNo: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    // { $unwind: "$productionNode"},
+    { $project: {		
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      productBarcodeNo: 1,	
+      productBarcodeNoReal: 1,	
+      bundleNo: 1,	
+
+      productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+      // style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // fromNode: "$productionNode.fromNode",	
+      // isOutsource: "$productionNode.isOutsource",
+      // outsourceData: "$productionNode.outsourceData",
+    }	},
+    { $match: { $and: [
+      // {"isOutsource":true},
+      {"productBarcode":productBarcode},
+      // {"targetPlace":targetPlace},
+      // {"style":style},
+      // {"color":color},
+      // {"toNode":toNode},
+    ] } },
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      productBarcodeNo: 1,	
+      productBarcodeNoReal: 1,
+      productBarcode: 1,	
+      bundleNo: 1,	
+
+      // fromNode: 1,
+
+    }	},
+ 
+  ]);
+  return orderProductionList;
+
+}
+
+// updateOrderProductionForBundleNo() 
+// ## http://192.168.1.35:3968/api/user/test/test6
+// ## add productionNode to orderProduction
+exports.updateOrderProductionForBundleNo = async () => {
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const companyID = 'c000001';
+  const factoryID = 'f000001';
+  const orderID = 'JBAD9A3A';
+  const productBarcode1 = 'JBAD9A3A    JAPN-----23RW--------M---';  // JBAD9A3A    JAPN-----23RW--------M---03982
+
+  // ## get bundleNO all 
+  const bundleNOs = await this.getOrderProductionQueueByOrderIDProductBarcode(companyID, orderID, productBarcode1);
+  // console.log(bundleNOs, bundleNOs.length);
+
+  // ## get orderProduction
+  const orderProductions = await this.getOrderProductionByProductBarcode(companyID, orderID, productBarcode1);
+  // console.log(orderProductions, orderProductions.length);
+
+  console.log('starting update .... ');
+  await this.asyncForEach(orderProductions , async (item) => {
+    const num1 = +item.productBarcodeNoReal.substr(37, 5);
+    // console.log(num1);
+    const f1 = bundleNOs.filter(i=>(i.numberFrom <= num1 && i.numberTo >= num1));
+    if (f1.length > 0) {
+
+      // console.log(f1[0].bundleNo);
+      result1 = await OrderProduction.updateOne(
+        {$and: [
+          {"companyID":companyID},
+          {"orderID":orderID},
+          {"productBarcodeNoReal": item.productBarcodeNoReal}, 
+        ]},
+        {
+          "bundleNo": +f1[0].bundleNo,
+  
+        }); 
+        // console.log('updated ' + f1[0].bundleNo);
+    }
+  });
+
+
+  console.log('updated all complete' );
+  return true;
 }
 
 // ShareFunc.updateProductionNodeForTest();

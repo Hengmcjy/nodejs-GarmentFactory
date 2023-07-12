@@ -851,9 +851,9 @@ exports.getRepSubNodeScanDate12Overall = async (req, res, next) => {
     // console.log(subNodeStaffScan);
     // const nodeScanProductStyleZoneColorSize = [];
 
-    // ## get staff name , userID by qrCode
-    const qrCodes = Array.from(new Set(subNodeStaffScan.map((item) => item.qrCode)));
-    console.log(qrCodes);
+    // // ## get staff name , userID by qrCode
+    // const qrCodes = Array.from(new Set(subNodeStaffScan.map((item) => item.qrCode)));
+    // console.log(qrCodes);
 
     
     // ## const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
@@ -887,7 +887,7 @@ exports.getRepSubNodeScanDate12Overall = async (req, res, next) => {
 exports.getRepSubNodeStaffScanDate12Overall = async (req, res, next) => { 
   // try {} catch (err) {}
   // ## CF = /:companyID/:factoryID
-  // console.log('getRepSubNodeStaffScanDate12');
+  // console.log('getRepSubNodeStaffScanDate12Overall....');
   const companyID = req.params.companyID;
   const factoryIDArr = JSON.parse(req.params.factoryIDArr);
   const nodeIDs = JSON.parse(req.params.nodeIDs);
@@ -936,6 +936,14 @@ exports.getRepSubNodeStaffScanDate12Overall = async (req, res, next) => {
     // console.log(subNodeStaffScan);
     // const nodeScanProductStyleZoneColorSize = [];
 
+    // ## get staff name , userID by qrCode
+    const qrCodes = Array.from(new Set(subNodeStaffScan.map((item) => item.qrCode)));
+    // console.log(qrCodes);
+
+    // getStaffsByQRCodes
+    const type = 's';  // ## s = staff
+    const staffs = await ShareFunc.getStaffsByQRCodes(qrCodes, type);
+    // console.log(staffs);
     
     // ## const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
     let token = '';
@@ -947,7 +955,7 @@ exports.getRepSubNodeStaffScanDate12Overall = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
 
       subNodeStaffScan: subNodeStaffScan,
-
+      staffs: staffs,
 
     });
   } catch (err) {
