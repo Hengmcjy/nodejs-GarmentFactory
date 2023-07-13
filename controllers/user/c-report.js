@@ -851,6 +851,10 @@ exports.getRepSubNodeScanDate12Overall = async (req, res, next) => {
     // console.log(subNodeStaffScan);
     // const nodeScanProductStyleZoneColorSize = [];
 
+    // ## scan subnode Style Zone Color Size
+    const subNodeStaffScanStyleZoneColorSize = 
+      await ShareFunc.getCFSubNodeScanStyleZoneColorSizeDate12Overall(companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd);
+
     // // ## get staff name , userID by qrCode
     // const qrCodes = Array.from(new Set(subNodeStaffScan.map((item) => item.qrCode)));
     // console.log(qrCodes);
@@ -866,7 +870,7 @@ exports.getRepSubNodeScanDate12Overall = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
 
       subNodeStaffScan: subNodeStaffScan,
-
+      subNodeStaffScanStyleZoneColorSize: subNodeStaffScanStyleZoneColorSize,
 
     });
   } catch (err) {

@@ -2229,6 +2229,55 @@ exports.getorderProductionCNByORIDBunNo = async (req, res, next) => {
   }
 }
 
+// // ## get staff scanned list   getorderProductionStaffScannedNameListCNByORIDQRs
+// router.get("/node24/orderProduction/staffscanned/lists/:orderID/:bundleNo/:nodeID/:qrcodeArr", 
+// nsController.getorderProductionStaffScannedNameListCNByORIDQRs);
+exports.getorderProductionStaffScannedNameListCNByORIDQRs = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getorderProductionStaffScannedNameListCNByORIDQRs');
+  // const companyID = req.params.companyID;
+  const orderID = req.params.orderID;
+  const nodeID = req.params.nodeID;
+  const bundleNo = +req.params.bundleNo;
+  // const qrCodes = req.params.qrcodeArr; // ## qrCode array
+  const qrCodes = JSON.parse(req.params.qrcodeArr);
+
+  // console.log(companyID, orderID, nodeID, bundleNo);
+  try {
+
+    // getStaffsByQRCodes
+    const type = 's';  // ## s = staff
+    // console.log(qrCodes, type);
+    const staffs = await ShareFunc.getStaffsByQRCodes(qrCodes, type);
+    // console.log('staffs == ', staffs);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      staffs: staffs,
+      // orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      success: true,
+      message: {
+        messageID: 'ok', 
+        mode:'findStaffsByQRCodes', 
+        value: ""
+      }
+
+      // currentProductStyleCount: currentProductStyleCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      success: false,
+      message: {
+        messageID: 'errns026', 
+        mode:'errGetStaffListByQRCodes', 
+        value: "error get staff list by qrcodes"
+      }
+    });
+  }
+}
 
 
 

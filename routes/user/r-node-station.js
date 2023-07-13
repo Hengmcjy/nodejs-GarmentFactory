@@ -137,6 +137,10 @@ router.get("/node20/get1/orderProductionQueue/:companyID/:orderID/:bundleNo", ns
 router.get("/node21/orderProduction/lists/:companyID/:orderID/:bundleNo/:nodeID", 
 nsController.getorderProductionCNByORIDBunNo);
 
+// ## get staff scanned list   getorderProductionStaffScannedNameListCNByORIDQRs
+router.get("/node24/orderProduction/staffscanned/lists/:orderID/:bundleNo/:nodeID/:qrcodeArr", 
+nsController.getorderProductionStaffScannedNameListCNByORIDQRs);
+
 // getOrderProductionQueueByProductBarcodeNo
 router.get("/node22/get1/orderProductionQueue/:companyID/:productBarcodeNo", nsController.getOrderProductionQueueByProductBarcodeNo);
 
