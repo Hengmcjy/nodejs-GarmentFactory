@@ -70,6 +70,9 @@ router.put("/node6/allow/nodeStationLoginRequest", checkAuth, checkUUID, nsContr
 // ## get node nodeStationLoginRequest
 router.get("/node9/getdata/nodelogin/:companyID/:factoryID/:nodeID/:status", nsController.getDataNodeStationLogin);
 
+// ## get node getDataNodeStation
+router.get("/node9-1/getdata/nodelogin/:companyID/:factoryID/:status", nsController.getDataNodeStation);
+
 // ## put log out  node putLogoutNodeStation
 router.put("/node7/logout/nodeStation",checkNodeAuth , nsController.putLogoutNodeStation);
 
