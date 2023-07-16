@@ -217,6 +217,11 @@ router.get("/node/scansub1/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:dat
         reportController.getRepSubNodeScanDate12Overall);
 // // ##
 
+// ## get node getRepSubNodeScanDate12StaffOverall
+router.get("/node/scansub3/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:date12/:infoType/:qrCode", 
+        reportController.getRepSubNodeScanDate12StaffOverall);
+// // ##
+
 // ## get node getRepSubNodeStaffScanDate12Overall
 router.get("/node/scansub2/staff/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:date12/:infoType", 
         reportController.getRepSubNodeStaffScanDate12Overall);

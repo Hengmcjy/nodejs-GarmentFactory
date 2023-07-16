@@ -796,6 +796,99 @@ exports.getRepNodeStaffScannedByStyleZoneDate12 = async (req, res, next) => {
   }
 }
 
+// // ## get node getRepSubNodeScanDate12StaffOverall
+// router.get("/node/scansub3/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:date12/:infoType/:qrCode", 
+//         reportController.getRepSubNodeScanDate12StaffOverall);
+exports.getRepSubNodeScanDate12StaffOverall = async (req, res, next) => { 
+  // try {} catch (err) {}
+  // ## CF = /:companyID/:factoryID
+  // console.log('getRepSubNodeScanDate12StaffOverall');
+  const companyID = req.params.companyID;
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const nodeIDs = JSON.parse(req.params.nodeIDs);
+  const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+  const date12Arr = JSON.parse(req.params.date12);  // have 2 date
+  const qrCode = req.params.qrCode;
+  // const statusArr = ['normal', 'complete'];
+
+  // const orderIDs = JSON.parse(req.params.orderIDsArr);
+  // const zoneArr = JSON.parse(req.params.zoneArr);
+  // const orderStatusArr = JSON.parse(req.params.ordertatus);
+
+  // let i = 0;
+  // await this.asyncForEach(zoneArr, async (item1) => {
+  //   zoneArr[i] = await ShareFunc.setBackStrLen(4, item1, '-');
+  //   i++;
+  // });
+
+  // console.log(companyID, factoryIDArr, infoType, nodeIDs, qrCode);
+
+  // const zone = await ShareFunc.setBackStrLen(4, req.params.zone, '-');
+  // const color = await ShareFunc.setBackStrLen(10, req.params.color, '-');
+  // const size = await ShareFunc.setBackStrLen(3, req.params.size, '-');
+  
+  try {
+
+    // ## report staff scanned by date1 - date2
+    // console.log(date12Arr);
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    // console.log(dateStart, dateEnd);
+
+    // ## get orderIDs
+    let orderIDArr = [];
+    const status = ['open']
+    const page = 1;
+    const limit = 10000;
+    const orders = await ShareFunc.getOrders(companyID, status, page, limit);
+    await this.asyncForEach(orders, async (item1) => {
+      orderIDArr.push(item1.orderID);
+    });
+    // console.log(orderIDArr);
+    
+    // ## scan subnode staff/qrcode
+    const qrCodeArr = [qrCode];
+    // console.log(companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd, qrCodeArr);
+    const subNodeStaffScan = 
+      await ShareFunc.getCFSubNodeScanDate12StaffOverall(companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd, qrCodeArr);
+    // console.log(subNodeStaffScan);
+    // const nodeScanProductStyleZoneColorSize = [];
+
+    // ## scan subnode staff/qrcode Style Zone Color Size
+    const subNodeStaffScanStyleZoneColorSize = 
+      await ShareFunc.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall(companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd, qrCodeArr);
+    // console.log(subNodeStaffScanStyleZoneColorSize);
+
+    // // ## get staff name , userID by qrCode
+    // const qrCodes = Array.from(new Set(subNodeStaffScan.map((item) => item.qrCode)));
+    // console.log(qrCodes);
+
+    
+    // ## const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
+    let token = '';
+    if (infoType === 'staffOffice') {
+      token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    }
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+
+      subNodeStaffScan: subNodeStaffScan,
+      subNodeStaffScanStyleZoneColorSize: subNodeStaffScanStyleZoneColorSize,
+
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp012', 
+        mode:'errRepSubNodeScan', 
+        value: "error report subnode scan"
+      }
+    });
+  }
+}
+
+
 // // ## get node getRepSubNodeScanDate12Overall
 // router.get("/node/scansub1/rep/CF/overall/:companyID/:factoryIDArr/:nodeIDs/:date12/:infoType", 
 //         reportController.getRepSubNodeScanDate12Overall);
