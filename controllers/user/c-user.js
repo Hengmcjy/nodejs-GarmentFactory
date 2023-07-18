@@ -219,7 +219,7 @@ exports.getTestTest2 = async (req, res, next) => {
   return res.end();
 }
 
-// // ## http://192.168.1.35:3968/api/user/test/test
+// // ## http://192.168.1.28:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {
   // console.log('getTestTest');
@@ -262,6 +262,9 @@ exports.getTestTest = async (req, res, next) => {
   // // const resultF = result.filter(i=>(i.sumQty > 1));
   // console.log(result , result.length);
   // // hostURL = await hostURLf.filter(i=>(i.status == status));
+
+  // const result = await ShareFunc.setOpenOrderProduction();
+  // // console.log(result , result.length);
 
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {

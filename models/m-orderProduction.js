@@ -5,6 +5,7 @@ const orderProductionSchema = mongoose.Schema({
   companyID: { type: String, required: true },
   factoryID: { type: String, required: true },  // ## โรงงานไหน
   orderID: { type: String, required: true}, // ## from orderID
+  open : {type: Boolean},  
   bundleNo : {type: Number},  
   bundleID : {type: String},
   productID : {type: String, required: true},  

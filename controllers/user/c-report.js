@@ -150,7 +150,14 @@ exports.getRepCurrentProductionPeriod = async (req, res, next) => {
     // console.log(currentProductionPeriod);
 
     orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
+                                              //   getCurrentCompanyOrderZoneStyleSize
     currentCompanyOrderStyleSize = await ShareFunc.getCurrentCompanyOrderStyleSize(companyID, orderStatusArr);
+
+    const openArr = [true];
+    const forLossArr = [true];
+    // getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr)
+    currentProductionForLoss = await ShareFunc.getProductionForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr);
+    // console.log(currentProductionForLoss);
 
     // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
     // currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
@@ -160,8 +167,10 @@ exports.getRepCurrentProductionPeriod = async (req, res, next) => {
       token: '',
       expiresIn: process.env.expiresIn,
       currentProductionPeriod: currentProductionPeriod,
+      currentProductionForLoss: currentProductionForLoss,
       orderStyleColorSize: orderStyleColorSize,
       currentCompanyOrderStyleSize: currentCompanyOrderStyleSize,
+      
     });
   } catch (err) {
     
@@ -196,6 +205,12 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
 
     orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
     // currentCompanyOrderZoneStyleSize = await ShareFunc.getCurrentCompanyOrderZoneStyleSize(companyID, orderStatusArr);
+
+    const openArr = [true];
+    const forLossArr = [true];
+    // getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr)
+    currentProductionZoneForLoss = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr);
+    // console.log(currentProductionZoneForLoss);
     
     // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
     // currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
@@ -205,6 +220,7 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
       token: '',
       expiresIn: process.env.expiresIn,
       currentProductionZonePeriod: currentProductionZonePeriod,
+      currentProductionZoneForLoss: currentProductionZoneForLoss,
       orderStyleColorSize: orderStyleColorSize,
       // currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
     });
