@@ -209,6 +209,7 @@ exports.putEditProduct = async (req, res, next) => {
     const companyID = data.product.companyID;
     const productID = data.product.productID;
     const productName = data.product.productName;
+    const seasonYear = data.product.seasonYear;
     const productDetail = data.product.productDetail;
     const productGroupCode = data.product.productGroupCode;
     const productCustomerCode = data.product.productCustomerCode;
@@ -229,7 +230,7 @@ exports.putEditProduct = async (req, res, next) => {
         "productGroupCode": productGroupCode,
         "productCustomerCode": productCustomerCode,
         "productFeature": productFeature,
-        // "imageProfile": imageProfile,
+        "seasonYear": seasonYear,
         // "pdPic": pdPic,
         // "productsize": productsize,
         // "productcolorSet": productcolorSet

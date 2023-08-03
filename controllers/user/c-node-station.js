@@ -2208,29 +2208,6 @@ exports.putAddOrderProductionSubNodeFlow = async (req, res, next) => {
         $push: {subNodeFlow: {$each: subNodeFlow}},
       });
 
-    // productionNode.status = 'problem';
-    // result1 = await OrderProduction.updateOne(
-    //   {$and: [
-    //     {"companyID":companyID},
-    //     {"factoryID":factoryID},
-    //     {"orderID":orderID},
-    //     {"productID":productID},
-    //     {"productBarcodeNo":productBarcodeNo},
-    //     // {"productBarcodeNo":{$in: productBarcodeNos}}
-    //   ]}, 
-    //   {
-    //     // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
-    //     $push: {productionNode: productionNode},
-    //     // $inc: {productCount: -1},
-    //     "productCount": 1,
-    //     "productStatus": 'problem',
-    //     "bundleID": uuid
-    //   });
-
-      
-
-    // const currentProductAllDetailCFN = 
-    //       await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
   
     return res.status(200).json({
       // tokenNS: '',
@@ -2255,6 +2232,83 @@ exports.putAddOrderProductionSubNodeFlow = async (req, res, next) => {
     });
   }
 }
+
+// // ## edit add order production  set putEditOrderProductionSubNodeFlow
+// router.put("/node25/editadd/oderProduction/subNodeFlow", nsController.putEditOrderProductionSubNodeFlow);
+exports.putEditOrderProductionSubNodeFlow = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  // console.log('putEditOrderProductionSubNodeFlow');
+  // console.log(data);
+  const userID = data.userID;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const orderID = data.orderID;
+  const productBarcodeNos = data.productBarcodeNos;
+  const nodeID = data.nodeID;  // ## 
+  const subNodeID = data.subNodeID;  // ## 
+  const qrCode = data.qrCode;
+  const createBy = data.createBy;
+  // const bundleNo = +data.bundleNo;
+  // let subNodeFlow = data.subNodeFlow;
+
+  // let subNodeFlowAnywhereScan = true;  // ## can scan any time no need to exist at current nodeID station
+  
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  // productionNode.datetime = current;
+
+  // const productStatusArr = JSON.parse(data.productStatusArr);
+  // const page = +data.page;
+  // const limit = +data.limit;
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+
+    const result2 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        // {"factoryID":factoryID},
+        {"orderID":orderID},
+        // {"bundleNo":bundleNo},
+        {"productBarcodeNoReal":{$in: productBarcodeNos}}
+      ]},
+      {$set: { 
+        "subNodeFlow.$[elem].qrCode" : qrCode, 
+        "subNodeFlow.$[elem].datetime" : current, 
+        "subNodeFlow.$[elem].createBy" : createBy, 
+      }}, 
+      {
+        multi: true,
+        arrayFilters: [  {
+          "elem.nodeID": nodeID , 
+          "elem.subNodeID": subNodeID , 
+          // "elem.targetPlace.countryID": targetPlace.countryID,
+        } ]
+      });
+
+    return res.status(200).json({
+      // tokenNS: '',
+      // expiresIn: process.env.expiresIn,
+      success: true,
+      message: {
+        messageID: 'edit QRCode ok', 
+        mode:'EditQROrderProductionSubNodeFlow', 
+        value: "edit QRCode order production subNodeFlow ok"
+      },
+      // currentProductAllDetailCFN: currentProductAllDetailCFN
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO024', 
+        mode:'errEditQROrderProductionSubNodeFlow', 
+        value: "error edit qr order production subNodeFlow"
+      },
+      success: false
+    });
+  }
+}
+
 
 
 

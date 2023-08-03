@@ -150,6 +150,9 @@ router.get("/node22/get1/orderProductionQueue/:companyID/:productBarcodeNo", nsC
 // ## edit add order production  set putAddOrderProductionSubNodeFlow
 router.put("/node23/editadd/oderProduction/subNodeFlow", nsController.putAddOrderProductionSubNodeFlow);
 
+// ## edit add order production  set putEditOrderProductionSubNodeFlow
+router.put("/node25/editqr/oderProduction/subNodeFlow", nsController.putEditOrderProductionSubNodeFlow);
+
 // #############################################################################
 // ## view qrcode ###########################################################################
 // ## smd = show modal

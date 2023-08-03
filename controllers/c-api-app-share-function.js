@@ -2177,6 +2177,7 @@ exports.getProductionQueueCountByBundleNo= async (companyID, orderID, startNo, e
     { $project: { 
       companyID: 1,
       orderID: 1,
+      // productBarcode: 1,
       bundleNo: 1,
       productCount: 1,
       // queueDate: 1,
@@ -2230,6 +2231,7 @@ exports.getProductionQueueListByBundleNo= async (companyID, orderID, startNo, en
       numberFrom: "$queueInfo.numberFrom",
       numberTo: "$queueInfo.numberTo",
       // createBy: "$queueInfo.createBy",
+      forLossQty: "$queueInfo.forLossQty",
     } },
 
     { $match: { $and: [
@@ -2246,7 +2248,7 @@ exports.getProductionQueueListByBundleNo= async (companyID, orderID, startNo, en
       // toNode: 1,
       numberFrom: 1,
       numberTo: 1,
-      // createBy: 1,
+      forLossQty: 1,
     } },
 
   ]);
