@@ -1223,6 +1223,7 @@ exports.getProducts= async (companyID, page, limit) => {
     { $project: {			
         _id: 1,	
         productID: 1,
+        // seasonYear: 1,
         productName: 1,		
         productDetail: 1,	
         productCustomerCode: 1,
@@ -1267,6 +1268,7 @@ exports.getProductsByProductIDs= async (companyID, productIDArr, page, limit) =>
     { $project: {			
         _id: 1,	
         productID: 1,
+        // seasonYear: 1,
         productName: 1,		
         productDetail: 1,	
         productCustomerCode: 1,
@@ -1523,6 +1525,7 @@ exports.getOrder= async (companyID, orderID) => {
     { $project: {			
         _id: 1,	
         orderID: 1,
+        seasonYear: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -1553,6 +1556,7 @@ exports.getOrdersByOrderIDsAll= async (companyID, orderIDs) => {
     { $project: {			
         _id: 1,	
         orderID: 1,
+        seasonYear: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -1584,6 +1588,7 @@ exports.getOrderProductionSubNodeFlowCost1= async (companyID, orderID) => {
     { $project: { 
       companyID: 1,
       orderID: 1,
+      seasonYear: 1,
       orderTargetPlace: 1,
       orderColor: 1,
       subNodeFlowCost: "$productOR.subNodeFlowCost",
@@ -1622,18 +1627,87 @@ exports.getOrderStyleByStatus= async (companyID, statusArr) => {
   // console.log(orders);
   return orders;
 }
-		
-// ## get orders
-exports.getOrders= async (companyID, statusArr, page, limit) => {
-  // limit = +limit; // ## change to number
+
+exports.getOrderSeasonYears= async (companyID) => {
+  const orderSeasonYears = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"productStatus":{$in: productStatusArr}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        seasonYear: 1,
+    }	},
+    
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        seasonYear: '$seasonYear',
+    },
+      sumSeasonYearQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ]);
+
+  // console.log(orderProductRep);
+  const orderSeasonYearsF = await orderSeasonYears.map(fw => ({
+    companyID: fw._id.companyID, 
+    seasonYear: fw._id.seasonYear,
+    // productID: fw._id.productID,
+    sumSeasonYearQty: fw.sumSeasonYearQty,
+  }));
+  // console.log(orderSeasonYearsF);
+  return orderSeasonYearsF;
+}
+
+// getOrdersFromNode
+exports.getOrdersFromNode= async (companyID, statusArr, page, limit) => {
   const orders = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: statusArr}}
+      {"orderStatus":{$in: statusArr}},
+      // {"seasonYear":{$in: seasonYearArr}}
     ] } },
     { $project: {			
         _id: 1,	
         orderID: 1,
+        seasonYear: 1,
+        companyID: 1,
+        factoryID: 1,
+        bundleNo: 1,
+        orderStatus: 1,
+        orderDetail: 1,		
+        orderDate: 1,	
+        deliveryDate: 1,
+        customerOR: 1,		
+        orderTargetPlace: 1,
+        orderColor: 1,
+        productOR: 1,
+        createBy: 1,
+    }	},
+    { $sort: { _id: -1 } },
+    { $skip: (page-1) *  limit},
+    { $limit: limit }
+  ]);
+  // console.log(orders);
+  return orders;
+}
+		
+// ## get orders
+exports.getOrders= async (companyID, statusArr, page, limit, seasonYearArr) => {
+  // limit = +limit; // ## change to number
+  const orders = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderStatus":{$in: statusArr}},
+      {"seasonYear":{$in: seasonYearArr}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        orderID: 1,
+        seasonYear: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -1655,11 +1729,22 @@ exports.getOrders= async (companyID, statusArr, page, limit) => {
   return orders;
 }
 
-// ShareFunc.getOrdersCount(companyID);
-exports.getOrdersCount= async (companyID, statusArr) => {
+// getOrdersCountFromNode
+exports.getOrdersCountFromNode= async (companyID, statusArr) => {
   rows = await Order.countDocuments({$and: [
     {"companyID":companyID},
-    {"orderStatus":{$in: statusArr}}
+    {"orderStatus":{$in: statusArr}},
+    // {"seasonYear":{$in: seasonYearArr}}
+  ]});
+  return rows;
+}
+
+// ShareFunc.getOrdersCount(companyID);
+exports.getOrdersCount= async (companyID, statusArr, seasonYearArr) => {
+  rows = await Order.countDocuments({$and: [
+    {"companyID":companyID},
+    {"orderStatus":{$in: statusArr}},
+    {"seasonYear":{$in: seasonYearArr}}
   ]});
   return rows;
 }
@@ -1674,6 +1759,7 @@ exports.getOrdersByOrderIDs= async (companyID, orderIDArr, page, limit) => {
     { $project: {			
         _id: 1,	
         orderID: 1,
+        seasonYear: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -4699,7 +4785,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
 }
 
 // getProductionZoneForLossQTYC
-exports.getProductionZoneForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr) => {
+exports.getProductionZoneForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr) => {
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   // console.log(companyID, productStatusArr, productionNodeStatusArr);
   const productionPeriod = await OrderProduction.aggregate([
@@ -4709,6 +4795,7 @@ exports.getProductionZoneForLossQTYC = async (companyID, productStatusArr, produ
       {"productStatus":{$in: productStatusArr}},
       {"open":{$in: openArr}},
       {"forLoss":{$in: forLossArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -4759,7 +4846,7 @@ exports.getProductionZoneForLossQTYC = async (companyID, productStatusArr, produ
   return productionPeriodM;
 }
 
-exports.getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr) => {
+exports.getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr) => {
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   // console.log(companyID, productStatusArr, productionNodeStatusArr);
   const productionPeriod = await OrderProduction.aggregate([
@@ -4769,6 +4856,7 @@ exports.getProductionForLossQTYC = async (companyID, productStatusArr, productio
       {"productStatus":{$in: productStatusArr}},
       {"open":{$in: openArr}},
       {"forLoss":{$in: forLossArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -4817,14 +4905,15 @@ exports.getProductionForLossQTYC = async (companyID, productStatusArr, productio
 }
 
 // ShareFunc.getProductionPeriodC(companyID, productStatusArr, productionNodeStatusArr)
-exports.getProductionPeriodC = async (companyID, productStatusArr, productionNodeStatusArr) => {
+exports.getProductionPeriodC = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr) => {
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   // console.log(companyID, productStatusArr, productionNodeStatusArr);
   const productionPeriod = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -4917,20 +5006,22 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
   return productionPeriodM;
 }
 
-exports.getProductionZonePeriodC = async (companyID, productStatusArr, productionNodeStatusArr) => {
+exports.getProductionZonePeriodC = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr) => {
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   // console.log(companyID, productStatusArr, productionNodeStatusArr);
   const productionPeriod = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
         // factoryID: 1,		
         orderID: 1,	
+        // forLoss: 1,
         // bundleNo: 1,
         // productID: 1,
         productBarcodeNo: 1,
@@ -4951,6 +5042,7 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
       companyID: 1,
       // factoryID: 1,		
       orderID: 1,	
+      // forLoss: 1,
       // bundleNo: 1,
       // productID: 1,
       productBarcodeNo: 1,
@@ -4979,6 +5071,7 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
       companyID: 1,
       // factoryID: 1,		
       orderID: 1,	
+      // forLoss: 1,
       // bundleNo: 1,
       // productID: 1,
       productBarcodeNo: 1,
@@ -5000,6 +5093,7 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
       _id: { 
         companyID: '$companyID',
         orderID: '$orderID',
+        // forLoss: '$forLoss',
         targetPlaceID: '$targetPlaceID',
         targetPlaceName: '$targetPlaceName',
         style: '$style',
@@ -5015,6 +5109,7 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
   const productionPeriodM = await productionPeriod.map(fw => ({
     companyID: fw._id.companyID, 
     orderID: fw._id.orderID,
+    // forLoss: fw._id.forLoss,
     targetPlaceID: fw._id.targetPlaceID,
     targetPlaceName: fw._id.targetPlaceName,
     style: fw._id.style,
@@ -6292,7 +6387,7 @@ exports.getRepCFNProductStateStyleTargetPlaceColorSize = async (companyID, facto
 // #######################################################################################################
 // ## report..... company
 
-exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr) => {
+exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   const companyCurrentProductQtyAll = await OrderProduction.aggregate([
@@ -6300,7 +6395,8 @@ exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, product
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -6368,7 +6464,7 @@ exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, product
 }
 
 // ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr);
-exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr) => {
+exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   // console.log(companyID, factoryIDArr, productStatusArr);
@@ -6377,7 +6473,8 @@ exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatus
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -6447,16 +6544,16 @@ exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatus
   return orderProductRepF;
 }
 
-exports.getCCurrentProductQtyAllList = async (companyID, factoryIDArr, productStatusArr) => {
+exports.getCCurrentProductQtyAllList = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   // console.log(companyID, factoryIDArr, productStatusArr);
-  const orderID = 'AA0Q1A3A';
+  // const orderID = 'AA0Q1A3A';
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":orderID},
-      // {"factoryID":{$in: factoryIDArr}},
+      // {"orderID":orderID},
+      {"orderID":{$in: orderIDArr}},
       // {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
@@ -6608,7 +6705,7 @@ exports.getCCurrentProductQtyAllByStyleC = async (companyID, style, productStatu
   return orderProductRepF;
 }
 
-exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productStatusArr) => {
+exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   const orderProductCFNodeRep = await OrderProduction.aggregate([
@@ -6616,7 +6713,8 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}}
     ] } },
     { $project: {			
         _id: 0,	
@@ -6689,7 +6787,7 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
   return orderProductCFNodeRepF;
 }
 
-exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, productStatusArr) => {
+exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   const currentCompanyProductQtyAll = await OrderProduction.aggregate([
@@ -6697,7 +6795,8 @@ exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, product
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -6768,7 +6867,7 @@ exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, product
 }
 
 // getComCurrentProductQtyCountryCSAll
-exports.getComCurrentProductQtyCountryCSAll = async (companyID, factoryIDArr, productStatusArr) => {
+exports.getComCurrentProductQtyCountryCSAll = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   const currentCompanyProductQtyCountryAll = await OrderProduction.aggregate([
@@ -6776,7 +6875,8 @@ exports.getComCurrentProductQtyCountryCSAll = async (companyID, factoryIDArr, pr
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -6828,7 +6928,7 @@ exports.getComCurrentProductQtyCountryCSAll = async (companyID, factoryIDArr, pr
   return currentCompanyProductQtyCountryAllF;
 }
 
-exports.getComCurrentProductQtyCountryAll = async (companyID, factoryIDArr, productStatusArr) => {
+exports.getComCurrentProductQtyCountryAll = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   const currentCompanyProductQtyCountryAll = await OrderProduction.aggregate([
@@ -6836,7 +6936,8 @@ exports.getComCurrentProductQtyCountryAll = async (companyID, factoryIDArr, prod
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -6887,7 +6988,7 @@ exports.getComCurrentProductQtyCountryAll = async (companyID, factoryIDArr, prod
 }
 
 // ShareFunc.getCFCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr);
-exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr) => {
+exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   const orderProductRep = await OrderProduction.aggregate([
@@ -6895,7 +6996,8 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -8014,18 +8116,20 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
 }
 
 // ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
-exports.getCurrentCompanyOrderSpec= async (companyID, orderStatusArr) => {
+exports.getCurrentCompanyOrderSpec= async (companyID, orderStatusArr, orderIDArr) => {
   // console.log(+process.env.stylePos, +process.env.styleDigit);
   // ## get group style color size
   const orderStyleColorSizef = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: orderStatusArr}}
+      {"orderStatus":{$in: orderStatusArr}},
+      {"orderID":{$in: orderIDArr}}
     ] } },
     { $unwind: "$productOR.productORInfo" },
     { $project: {			
         _id: 0,	
         orderID: 1,
+        // seasonYear: 1,
         companyID: 1,
         // bundleNo: 1,
         orderStatus: 1,
@@ -8215,12 +8319,13 @@ exports.getCurrentCompanyOrderSpecByOrderID= async (companyID, orderStatusArr, o
 // }
 
 // ShareFunc.getCurrentCompanyOrderCountryStyle(companyID, orderStatusArr);
-exports.getCurrentCompanyOrderCountryStyle= async (companyID, orderStatusArr) => {
+exports.getCurrentCompanyOrderCountryStyle= async (companyID, orderStatusArr, orderIDArr) => {
   // ##
   const currentCompanyOrderCountryStylef = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: orderStatusArr}}
+      {"orderStatus":{$in: orderStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $unwind: "$productOR.productORInfo" },
     { $project: {			
@@ -8288,12 +8393,13 @@ exports.getCurrentCompanyOrderCountryStyle= async (companyID, orderStatusArr) =>
 }
 
 // ShareFunc.getCurrentCompanyOrderZoneStyle(companyID, orderStatusArr);
-exports.getCurrentCompanyOrderZoneStyle= async (companyID, orderStatusArr) => {
+exports.getCurrentCompanyOrderZoneStyle= async (companyID, orderStatusArr, orderIDArr) => {
   // ##
   const currentCompanyOrderZoneStylef = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: orderStatusArr}}
+      {"orderStatus":{$in: orderStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $unwind: "$productOR.productORInfo" },
     { $project: {			
@@ -8361,12 +8467,13 @@ exports.getCurrentCompanyOrderZoneStyle= async (companyID, orderStatusArr) => {
 }
 
 // await ShareFunc.getCurrentCompanyOrderZone(companyID, orderStatusArr);
-exports.getCurrentCompanyOrderZone= async (companyID, orderStatusArr) => {
+exports.getCurrentCompanyOrderZone= async (companyID, orderStatusArr, orderIDArr) => {
   // ##
   const currentCompanyOrderZonef = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: orderStatusArr}}
+      {"orderStatus":{$in: orderStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $unwind: "$productOR.productORInfo" },
     { $project: {			
@@ -8434,12 +8541,13 @@ exports.getCurrentCompanyOrderZone= async (companyID, orderStatusArr) => {
 }
 
 // ShareFunc.getCurrentCompanyOrderByStyle(companyID, style, orderStatusArr);
-exports.getCurrentCompanyOrderByStyle= async (companyID, style, orderStatusArr) => {
+exports.getCurrentCompanyOrderByStyle= async (companyID, style, orderStatusArr, orderIDArr) => {
   // ##
   const currentCompanyOrderf = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: orderStatusArr}}
+      {"orderStatus":{$in: orderStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $unwind: "$productOR.productORInfo" },
     { $project: {			
@@ -8532,12 +8640,13 @@ exports.getCurrentCompanyOrderByStyle= async (companyID, style, orderStatusArr) 
 }
 
 // ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr)
-exports.getCurrentCompanyOrder= async (companyID, orderStatusArr) => {
+exports.getCurrentCompanyOrder= async (companyID, orderStatusArr, orderIDArr) => {
   // ##
   const currentCompanyOrderf = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: orderStatusArr}}
+      {"orderStatus":{$in: orderStatusArr}},
+      {"orderID":{$in: orderIDArr}}
     ] } },
     { $unwind: "$productOR.productORInfo" },
     { $project: {			
@@ -8770,12 +8879,13 @@ exports.getCurrentCompanyOrderZoneStyleSize= async (companyID, orderStatusArr, o
   return currentCompanyOrderStyleSize;
 }
 
-exports.getCurrentCompanyOrderStyleSize= async (companyID, orderStatusArr) => {
+exports.getCurrentCompanyOrderStyleSize= async (companyID, orderStatusArr, orderIDArr) => {
   // ##
   const currentCompanyOrderStyleSizef = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: orderStatusArr}}
+      {"orderStatus":{$in: orderStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $unwind: "$productOR.productORInfo" },
     { $project: {			
@@ -8844,12 +8954,13 @@ exports.getCurrentCompanyOrderStyleSize= async (companyID, orderStatusArr) => {
 
 
 // ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr);
-exports.getCurrentCompanyOrderStyle= async (companyID, orderStatusArr) => {
+exports.getCurrentCompanyOrderStyle= async (companyID, orderStatusArr, orderIDArr) => {
   // ##
   const currentCompanyOrderf = await Order.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderStatus":{$in: orderStatusArr}}
+      {"orderStatus":{$in: orderStatusArr}},
+      {"orderID":{$in: orderIDArr}},
     ] } },
     { $unwind: "$productOR.productORInfo" },
     { $project: {			

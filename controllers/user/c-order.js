@@ -65,12 +65,13 @@ exports.asyncForEach4= async (array, callback) => {
 // ## order
 
 // // ## get order1
-// router.get("/order/getlist1/:companyID/:userID/:orderID", orderController.getOrder);
+// router.get("/order/getlist1/:companyID/:userID/:orderID/:seasonyear", orderController.getOrder);
 exports.getOrder = async (req, res, next) => {
   // try {} catch (err) {}
   const companyID = req.params.companyID;
   const userID = req.params.userID;
   const orderID = req.params.orderID;
+  // const seasonYear = req.params.seasonyear;
 
   try {
     // ## get 1 order
@@ -132,16 +133,14 @@ exports.getOrderStyles = async (req, res, next) => {
   }
 }
 
-
-// // ## get order list /api/order/getlist/:companyID/:userID/:page/:limit
-// router.get("/getlist/:companyID/:userID/:page/:limit", checkAuth, checkUUID, productController.getOrders);
-exports.getOrders = async (req, res, next) => {
+// router.get("/order/getlist4/seasonyearslist/:companyID/:userID", checkAuth, checkUUID, orderController.getOrderSeasonYears);
+exports.getOrderSeasonYears = async (req, res, next) => {
   // try {} catch (err) {}
   const companyID = req.params.companyID;
   const userID = req.params.userID;
-  const page = +req.params.page;
-  const limit = +req.params.limit;
-  const status = ['open'];
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;
+  // const status = ['open'];
 
   // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
 
@@ -151,9 +150,72 @@ exports.getOrders = async (req, res, next) => {
 
   try {
     // exports.getOrders= async (companyID, page, limit)
-    const orders = await ShareFunc.getOrders(companyID, status, page, limit);
+    const orderSeasonYears = await ShareFunc.getOrderSeasonYears(companyID);
     // console.log(orders);
-    const ordersCount = await ShareFunc.getOrdersCount(companyID, status);
+    // const ordersCount = await ShareFunc.getOrdersCount(companyID, status);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      orderSeasonYears: orderSeasonYears,
+      // ordersCount: ordersCount
+      // factory: factory
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO025', 
+        mode:'errOrderSeasonYearsList', 
+        value: "error get Order season years list"
+      }
+    });
+  }
+}
+
+
+// // ## get order list /api/order/getlist/:companyID/:userID/:page/:limit
+// router.get("/getlist/:companyID/:userID/:page/:limit/:seasonyear", checkAuth, checkUUID, productController.getOrders);
+exports.getOrders = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  const page = +req.params.page;
+  const limit = +req.params.limit;
+  const status = ['open'];
+  let seasonYear = req.params.seasonyear;
+
+  // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
+
+  // const test = uuidv5("Hello World", process.env.IOID); // ⇨ 'a572fa0f-9bfa-5103-9882-16394770ad11'
+  // console.log(test);
+  // console.log(uuidv4());
+
+  try {
+
+    // ## get season year
+    let orderSeasonYears = await ShareFunc.getOrderSeasonYears(companyID);
+    orderSeasonYears.sort((a,b)=>{return a.seasonYear <b.seasonYear?1:a.seasonYear >b.seasonYear?-1:0});  // ## desc
+    // orderSeasonYears.sort((a,b)=>{return a.seasonYear >b.seasonYear?1:a.seasonYear <b.seasonYear?-1:0});  // ## asc
+    // console.log(orderSeasonYears);
+    
+    if (seasonYear === 'last') {
+      seasonYear = orderSeasonYears[0].seasonYear;
+    }
+    // console.log(seasonYear);
+    const seasonYearArr = [seasonYear];
+
+    // exports.getOrders= async (companyID, page, limit)
+    const orders = await ShareFunc.getOrders(companyID, status, page, limit, seasonYearArr);
+    // console.log(orders);
+    const ordersCount = await ShareFunc.getOrdersCount(companyID, status, seasonYearArr);
+
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
@@ -164,8 +226,9 @@ exports.getOrders = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       orders: orders,
-      ordersCount: ordersCount
-      // factory: factory
+      ordersCount: ordersCount,
+      orderSeasonYears: orderSeasonYears,
+      seasonYear: seasonYear
     });
 
   } catch (err) {
@@ -291,6 +354,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
     const factoryID = data.order.factoryID;
     const bundleNo = data.order.bundleNo;
     const orderID = data.order.orderID;
+    const seasonYear = data.order.seasonYear;
     const orderDetail = data.order.orderDetail;
     const orderDate = new Date(moment(data.order.orderDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     const deliveryDate = new Date(moment(data.order.deliveryDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
@@ -303,6 +367,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
         {"orderID":orderID}, 
       ]} , 
       {
+        "seasonYear": seasonYear,
         "factoryID": factoryID,
         "bundleNo": bundleNo,
         "orderStatus": 'open',
@@ -2178,6 +2243,7 @@ exports.getCompanyOrderByStyle = async (req, res, next) => {
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
   const productStatusArr = JSON.parse(req.params.productStatus);
+  const orderIDArr = JSON.parse(req.params.orderIDArr);
   // const repListNameArr = JSON.parse(req.params.repListName);
   // console.log(companyID, orderStatusArr);
 
@@ -2185,9 +2251,9 @@ exports.getCompanyOrderByStyle = async (req, res, next) => {
 
     const currentProductQtyAllC = await ShareFunc.getCCurrentProductQtyAllByStyleC(companyID, style, productStatusArr);
     // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
-    orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
-    currentCompanyOrder = await ShareFunc.getCurrentCompanyOrderByStyle(companyID, style, orderStatusArr);
-    currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr);
+    orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
+    currentCompanyOrder = await ShareFunc.getCurrentCompanyOrderByStyle(companyID, style, orderStatusArr, orderIDArr);
+    currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr, orderIDArr);
     
     // console.log(orderStyleColorSize, currentCompanyOrder, currentOrderStyle);
 

@@ -3567,9 +3567,9 @@ exports.getOrders = async (req, res, next) => {
 
   try {
     // exports.getOrders= async (companyID, page, limit)
-    const orders = await ShareFunc.getOrders(companyID, status, page, limit);
+    const orders = await ShareFunc.getOrdersFromNode(companyID, status, page, limit);
     // console.log(orders);
-    const ordersCount = await ShareFunc.getOrdersCount(companyID, status);
+    const ordersCount = await ShareFunc.getOrdersCountFromNode(companyID, status);
 
     // await ShareFunc.upsertUserSession1hr(userID);
     // // console.log(req.userData.tokenSet);

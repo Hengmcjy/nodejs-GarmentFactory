@@ -12,6 +12,9 @@ const router = express.Router();
 
 // order2
 
+// ## get order / seasonYears
+router.get("/order/getlist4/seasonyearslist/:companyID/:userID", checkAuth, checkUUID, orderController.getOrderSeasonYears);
+
 // ## get order1
 router.get("/order/getlist1/:companyID/:userID/:orderID", checkAuth, checkUUID, orderController.getOrder);
 
@@ -19,7 +22,7 @@ router.get("/order/getlist1/:companyID/:userID/:orderID", checkAuth, checkUUID, 
 router.get("/order5/getlist/:companyID/:orderStatus/:userID", checkAuth, checkUUID, orderController.getOrderStyles);
 
 // ## get order list /api/order/getlist/:companyID/:userID/:page/:limit
-router.get("/getlist/:companyID/:userID/:page/:limit", checkAuth, checkUUID, orderController.getOrders);
+router.get("/getlist/:companyID/:userID/:page/:limit/:seasonyear", checkAuth, checkUUID, orderController.getOrders);
 
 // ## get order list /api/order/getlist2/:companyID/:userID/:orderids  getOrdersByOrderIDs
 router.get("/getlist2/:companyID/:userID/:orderids", checkAuth, checkUUID, orderController.getOrdersByOrderIDs);
@@ -91,7 +94,7 @@ router.get("/lastroderProduction/runningno/:companyID/:orderID/:productID/:produ
             checkAuth, checkUUID, orderController.getLastNoOrderProductionBarcode);
         
 //
-router.get("/order4/:companyID/:style/:ordertatus/:productStatus", checkAuth, checkUUID, orderController.getCompanyOrderByStyle);
+router.get("/order4/:companyID/:style/:ordertatus/:productStatus/:orderIDArr", checkAuth, checkUUID, orderController.getCompanyOrderByStyle);
 
 // productBarcode  startNO   endNo
 router.get("/order7/getbundlenos/:companyID/:productBarcode/:startNO/:endNo", checkAuth, checkUUID, orderController.getOrderProductBundleNos);
