@@ -279,6 +279,16 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     //   {"del":'n'}
     // ]});
 
+                // 'allTotalProduct',
+                // 'getRepCFNCurrentProductQtyByOrderID',
+                // 'getRepCFNCurrentProductQtyByOrderIDProductID',
+                // 'getRepCFNCurrentProductBundleList',
+                // 'getAllOrderAndProductFromOrderProduction',
+                // 'getRepCFNProductState',  // ## style-targetPlace-year-5color-size-sex-#####    /   8  4  2  10  3  1  99999
+                // 'getRepCFNCurrentProductAllDetail',
+                // 'getRepCFNCurrentProductAllRepairCount',
+                // 'getRepCFNCurrentProductAllProblemCount',
+
     // allTotalProduct
     // console.log(' 0 - allTotalProduct');
     if (repListNameArr.includes('allTotalProduct')) {

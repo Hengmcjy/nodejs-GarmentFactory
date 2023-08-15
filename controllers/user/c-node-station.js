@@ -1443,10 +1443,15 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
   try {
     await ShareFunc.upsertUserSession1hr(userID);
 
+    // console.log(productBarcodeNos);
+    // console.log(productionNode);
+    
     // ## get flowseq
     // getNodeFlow1= async (companyID, factoryID, nodeFlowID)
     const nodeFlowID = 'main';
+    // console.log(companyID, factoryID, nodeFlowID);
     const nodeflow = await ShareFunc.getNodeFlow1(companyID, factoryID, nodeFlowID);
+    // console.log(nodeflow);
     let flowSeq = nodeflow.flowSeq;
     flowSeq.sort((a,b)=>{ return a.seqNo >b.seqNo?1:a.seqNo <b.seqNo?-1:0 });
 
@@ -1455,7 +1460,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
       result2 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
-          {"factoryID":factoryID},
+          // {"factoryID":factoryID},
           {"orderID":orderID},
           {"productID":productID},
           {"productBarcodeNo":{$in: productBarcodeNos}}
@@ -1473,7 +1478,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
       result1 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
-          {"factoryID":factoryID},
+          // {"factoryID":factoryID},
           {"orderID":orderID},
           {"productID":productID},
           {"productBarcodeNo":{$in: productBarcodeNos}}
@@ -1488,7 +1493,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
       result2 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
-          {"factoryID":factoryID},
+          // {"factoryID":factoryID},
           {"orderID":orderID},
           {"productID":productID},
           {"productBarcodeNo":{$in: productBarcodeNos}}
@@ -1504,7 +1509,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
       result1 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
-          {"factoryID":factoryID},
+          // {"factoryID":factoryID},
           {"orderID":orderID},
           {"productID":productID},
           {"productBarcodeNo":{$in: productBarcodeNos}}

@@ -3317,7 +3317,7 @@ exports.getOrderProduct1= async (companyID, factoryID, productBarcodeNo) => {
   const orderProduct = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productBarcodeNoReal":productBarcodeNo},
     ] } },
     { $project: {			
@@ -4613,13 +4613,13 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         orderID: 1,	
         // bundleNo: 1,
         // productID: 1,
@@ -4636,7 +4636,7 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       orderID: 1,	
       // bundleNo: 1,
       // productID: 1,
@@ -4647,6 +4647,7 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
       // productionDate: 1,
       // productStatus: 1,
       yarnLot: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       status: "$productionNode.status",
@@ -4655,6 +4656,7 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -4690,16 +4692,17 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
 
 exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, productStatusArr) => {
   // console.log('getRepCFNCurrentProductQty');
+  // console.log(companyID, factoryID, nodeID, productStatusArr);
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         orderID: 1,	
         // bundleNo: 1,
         // productID: 1,
@@ -4716,7 +4719,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       orderID: 1,	
       // bundleNo: 1,
       // productID: 1,
@@ -4727,6 +4730,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
       // productionDate: 1,
       // productStatus: 1,
       yarnLot: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       status: "$productionNode.status",
@@ -4735,6 +4739,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -4779,7 +4784,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
   // }));
 
   // console.log(orderProductRep);
-  const allQTY = orderProductRep[0].sumProductQty;
+  const allQTY = orderProductRep[0]?orderProductRep[0].sumProductQty:0;
   // return orderProductRep.length>0?orderProduct[0]:null;
   return allQTY;
 }
@@ -5128,13 +5133,13 @@ exports.getRepCFNCurrentProductQtyByOrderID = async (companyID, factoryID, nodeI
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         orderID: 1,	
         // bundleNo: 1,
         // productID: 1,
@@ -5149,7 +5154,7 @@ exports.getRepCFNCurrentProductQtyByOrderID = async (companyID, factoryID, nodeI
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       orderID: 1,	
       // bundleNo: 1,
       // productID: 1,
@@ -5158,12 +5163,14 @@ exports.getRepCFNCurrentProductQtyByOrderID = async (companyID, factoryID, nodeI
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       datetime: "$productionNode.datetime",
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -5214,13 +5221,13 @@ exports.getRepCFNCurrentProductQtyByOrderIDProductID = async (companyID, factory
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         // orderID: 1,	
         // bundleNo: 1,
         productID: 1,
@@ -5235,7 +5242,7 @@ exports.getRepCFNCurrentProductQtyByOrderIDProductID = async (companyID, factory
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       // orderID: 1,	
       // bundleNo: 1,
       productID: 1,
@@ -5244,12 +5251,14 @@ exports.getRepCFNCurrentProductQtyByOrderIDProductID = async (companyID, factory
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       datetime: "$productionNode.datetime",
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -5301,13 +5310,13 @@ exports.getCFNCurrentProductAllRepairCount = async (companyID, factoryID, nodeID
   const currentProductAllRepairCount = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productProbelmStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         // orderID: 1,	
         // bundleNo: 1,
         // productID: 1,
@@ -5321,7 +5330,7 @@ exports.getCFNCurrentProductAllRepairCount = async (companyID, factoryID, nodeID
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       // orderID: 1,	
       // bundleNo: 1,
       // productID: 1,
@@ -5329,12 +5338,14 @@ exports.getCFNCurrentProductAllRepairCount = async (companyID, factoryID, nodeID
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       datetime: "$productionNode.datetime",
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -5571,13 +5582,13 @@ exports.getCFNCurrentProductAllProblemCount = async (companyID, factoryID, nodeI
   const currentProductAllProblemCount = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productProbelmStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         // orderID: 1,	
         // bundleNo: 1,
         // productID: 1,
@@ -5591,7 +5602,7 @@ exports.getCFNCurrentProductAllProblemCount = async (companyID, factoryID, nodeI
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       // orderID: 1,	
       // bundleNo: 1,
       // productID: 1,
@@ -5599,12 +5610,14 @@ exports.getCFNCurrentProductAllProblemCount = async (companyID, factoryID, nodeI
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       datetime: "$productionNode.datetime",
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"fromNode":nodeID},
     ] } },
     { $project: { 
@@ -5657,13 +5670,13 @@ exports.getRepCFNCurrentProductBundleList = async (companyID, factoryID, nodeID,
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         orderID: 1,	
         bundleNo: 1,
         bundleID: 1,
@@ -5678,7 +5691,7 @@ exports.getRepCFNCurrentProductBundleList = async (companyID, factoryID, nodeID,
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       orderID: 1,	
       bundleNo: 1,
       bundleID: 1,
@@ -5687,12 +5700,14 @@ exports.getRepCFNCurrentProductBundleList = async (companyID, factoryID, nodeID,
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       datetime: "$productionNode.datetime",
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -5830,13 +5845,13 @@ exports.getAllProductFromOrderProductionCFN = async (companyID, factoryID, nodeI
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         // orderID: 1,	
         // bundleNo: 1,
         productID: 1,
@@ -5850,7 +5865,7 @@ exports.getAllProductFromOrderProductionCFN = async (companyID, factoryID, nodeI
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       // orderID: 1,	
       // bundleNo: 1,
       productID: 1,
@@ -5858,12 +5873,14 @@ exports.getAllProductFromOrderProductionCFN = async (companyID, factoryID, nodeI
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       datetime: "$productionNode.datetime",
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -6282,13 +6299,13 @@ exports.getRepCFNProductStateStyleTargetPlaceColorSize = async (companyID, facto
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        factoryID: 1,		
+        // factoryID: 1,		
         // orderID: 1,	
         // bundleNo: 1,
         productID: 1,
@@ -6303,7 +6320,7 @@ exports.getRepCFNProductStateStyleTargetPlaceColorSize = async (companyID, facto
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,		
+      // factoryID: 1,		
       // orderID: 1,	
       // bundleNo: 1,
       productID: 1,
@@ -6315,12 +6332,14 @@ exports.getRepCFNProductStateStyleTargetPlaceColorSize = async (companyID, facto
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
+      factoryID: "$productionNode.factoryID",
       fromNode: "$productionNode.fromNode",
       toNode: "$productionNode.toNode",
       datetime: "$productionNode.datetime",
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
+      {"factoryID":factoryID},
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -10214,26 +10233,37 @@ exports.setOpenOrderProduction = async () => {
   console.log('updateMany Open OrderProduction ok finished');
 }
 
-exports.delManyOrderProduction = async () => {
-  const companyID = 'c000001';
-  const orderID = 'GL-115B';
-  const factoryID1 = 'f000001';
-  const factoryIDx = 'f000003';
-  const no1 = 1;
-  const no2 = 1959;
-  let productBarcodeNo1 = 'GL-115B     JAPN-----23OW--------F---';  // off white
+exports.createArrElementN= async (productBarcodeNo1, no1, no2) => {
   let productBarcodeNo1Arr = [];
   for (let i = no1; i <= no2; i++) {
     // setBackStrLen= async (len, str, strBack)
     // setStrLen= async (len, num)
-    const num1 = this.setStrLen(5, i);
+    const num1 = await this.setStrLen(5, i);
     productBarcodeNo1Arr.push(productBarcodeNo1 + num1);
   }
+  return productBarcodeNo1Arr;
+}
+
+
+exports.delManyOrderProduction = async () => {
+  const companyID = 'c000001';
+  const orderID = 'BA1ONA4S';
+  const factoryID1 = 'f000001';
+  const factoryIDx = 'f000003';
+  const no1 = 144;
+  const no2 = 167;
+  let productBarcodeNo1 = 'BA1ONA4S    UK-------23BB--------XL--';  // off white
+  let productBarcodeNo1Arr = [];
+  const rounds = [''];
+
+  
+  productBarcodeNo1Arr = await this.createArrElementN(productBarcodeNo1, no1, no2);
+  console.log(productBarcodeNo1Arr);
 
   result1 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    // {"productBarcodeNo":{$in: productBarcodeNo1Arr}},
+    {"productBarcodeNo":{$in: productBarcodeNo1Arr}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
