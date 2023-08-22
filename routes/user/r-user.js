@@ -22,6 +22,7 @@ router.get("/test/test3", userController.getTestTest3);
 router.get("/test/test4", userController.getTestTest4);
 router.get("/test/test5", userController.getTestTest5); // ## add productionNode to orderProduction
 router.get("/test/test6", userController.getTestTest6); // ## ## update orderProduction / edit bundleNo
+router.get("/test/test7", userController.getTestTest7); // ## cancel queue order all
 
 // ## general info / starting data
 router.get("/generalinfo/:languageID/:classLimit", userController.getGeneralInfo);

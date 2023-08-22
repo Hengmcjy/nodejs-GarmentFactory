@@ -12,6 +12,8 @@ const router = express.Router();
 
 // order2
 
+
+
 // ## get order / seasonYears
 router.get("/order/getlist4/seasonyearslist/:companyID/:userID", checkAuth, checkUUID, orderController.getOrderSeasonYears);
 
@@ -33,6 +35,8 @@ router.get("/getlist3/:companyID/:userID/:orderids/:orderStatus", checkAuth, che
 // ## /api/order/creataenew
 router.post("/createnew", checkAuth, checkUUID, orderController.postOrderCreateNew);
 
+
+
 // ## /api/order/update
 router.put("/update", checkAuth, checkUUID, orderController.putOrderUpdate);
 
@@ -47,6 +51,7 @@ router.put("/update4/qrcode/replacement", checkAuth, checkUUID, orderController.
 
 // ## /api/order/update5/setSubNodeFlowCost
 router.put("/update5/setSubNodeFlowCost", checkAuth, checkUUID, orderController.putOrderSubNodeFlowCostUpdate);
+// router.put("/update5/setsubnodeflowcost", checkAuth, checkUUID, orderController.putOrderSubNodeFlowCostUpdate);
 
 // // ## /api/order/orderProduction/createnew
 // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
@@ -100,6 +105,14 @@ router.get("/order4/:companyID/:style/:ordertatus/:productStatus/:orderIDArr", c
 router.get("/order7/getbundlenos/:companyID/:productBarcode/:startNO/:endNo", checkAuth, checkUUID, orderController.getOrderProductBundleNos);
 
 
+
+
+// ## outsource tracking zone
+
+// ## get bundle no by style , zone , color , size
+router.get("/orderoutsourcetracking1/getlists/:companyID/:factoryID/:orderIDs/:productionNodeStatusArr", 
+      checkAuth, checkUUID, orderController.getOrderOursourceTracking);
+//
 
 // router.get("/order8/getqrcodelist/:companyID/:factoryID/:page/:limit", checkAuth, checkUUID, orderController.getOrderProductQRCodeList);
 

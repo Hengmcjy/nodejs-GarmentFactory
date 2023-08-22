@@ -2958,7 +2958,7 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
       result0 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
-          {"factoryID":factoryID},
+          // {"factoryID":factoryID},
           {"orderID":orderID},
           {"productID":productID},
           {"productBarcodeNo":{$in: productBarcodeNos}}
@@ -2975,7 +2975,7 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
       result0 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
-          {"factoryID":factoryID},
+          // {"factoryID":factoryID},
           {"orderID":orderID},
           {"productID":productID},
           {"productBarcodeNo":{$in: productBarcodeNos}}

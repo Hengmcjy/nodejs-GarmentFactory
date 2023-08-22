@@ -27,6 +27,11 @@ mongoose.set('strictQuery', false);
 
 moment.tz.setDefault('Asia/Bangkok');
 const app = express();
+
+const maxRequestBodySize = '25mb';
+app.use(express.json({limit: maxRequestBodySize}));
+// app.use(express.urlencoded({limit: maxRequestBodySize}));
+
 // app.use(ddos.express)
 app.use(cors());
 
@@ -37,6 +42,12 @@ app.use(cors());
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+
+
+// app.use(express.json({limit: '50mb'}));
+// app.use(express.urlencoded({limit: '50mb'}));
+
 // app.use("/images", express.static(path.join("backend/images"))); //## allow access images in here
 app.use(express.static(path.join(__dirname, 'public'))); // set folder to use  -->  rootDir/public
 
@@ -104,6 +115,7 @@ app.get('/500', errorController.get500);
 app.use(errorController.get404);
 
 app.use((error, req, res, next) => {
+  // console.log('err 500-1');
   // console.log(error);
   res.status(500).json({
     errMessage: "Error Occurred! 500....."

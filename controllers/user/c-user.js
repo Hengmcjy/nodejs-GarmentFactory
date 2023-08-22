@@ -52,6 +52,24 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
+// // ## http://192.168.1.23:3968/api/user/test/test7
+// ## cancel queue order all by product barcode
+exports.getTestTest7 = async (req, res, next) => {
+
+  // // ## cancel queue order all by product barcode
+  // const result = await ShareFunc.cancelOrderQueueAllByProductBarcode();
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>cancel queue order all by product barcode</title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel queue order all </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
 
 // // ## http://192.168.1.50:3968/api/user/test/test6
 // router.get("/test/test5", userController.getTestTest6);
@@ -219,7 +237,7 @@ exports.getTestTest2 = async (req, res, next) => {
   return res.end();
 }
 
-// // ## http://192.168.1.25:3968/api/user/test/test
+// // ## http://192.168.1.55:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {
   // console.log('getTestTest');
@@ -265,6 +283,10 @@ exports.getTestTest = async (req, res, next) => {
 
   // const result = await ShareFunc.setOpenOrderProduction();
   // // console.log(result , result.length);
+
+  // // edit to factory when lock/pay job to knitting
+  // // EditOrderProductionFactory 
+  // const result = await ShareFunc.editOrderProductionFactory();
 
   // ## test socket IO
   io.getIO().emit(process.env.IOID+'/iomessage/user', {
@@ -1411,9 +1433,12 @@ exports.getUserFactory = async (req, res, next) => {
   try {
     // ## get user factory info
     let userf = await User.findOne({ userID: userID });
-    const factoryArr = await ShareFunc.getFactoryArr(userf.uFactory);
+    // const factoryArr = await ShareFunc.getFactoryArr(userf.uFactory);
+    // getFactoryArr2
+    const factoryArr = await ShareFunc.getFactoryArr2(companyID);
     // console.log(factoryArr);
 
+    // console.log(req.params);
     // ## getFactoryInfo= async (factoryIDArr, page, limit)
     const factory = await ShareFunc.getFactoryInfo(factoryArr, companyID, +page , +limit);
 

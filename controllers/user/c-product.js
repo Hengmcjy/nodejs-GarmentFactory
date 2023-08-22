@@ -201,7 +201,7 @@ exports.putEditProduct = async (req, res, next) => {
   const data = req.body;
   // try {} catch (err) {}
   // companyID userID page limit
-  // console.log('postProductCreateNew');
+  // console.log('putEditProduct');
   
   try {
     const userID = req.userData.tokenSet.userID;
