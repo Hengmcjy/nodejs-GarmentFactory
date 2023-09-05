@@ -2496,9 +2496,78 @@ exports.getCOrderProductionBundleNos= async (companyID, productBarcodeNoArr) => 
   ]);
   // console.log(orderProductionBundleNos);
   return orderProductionBundleNos;
+}
 
-  
+// getProductBarcodeNosOrderProductionbyBundleNo
+exports.getProductBarcodeNosOrderProductionbyBundleNo= async (companyID, orderID, bundleNos, productCount) => {
+  const orderProduction = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"bundleNo":bundleNo},
+      // {"open":open},
+      // {"productCount":productCount},
+      // {"isOutsourceTracking":isOutsourceTracking},
+      // {"productStatus":{$in: productStatusArr}},
+      {"bundleNo":{$in: bundleNos}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        orderID: 1,	
+        bundleNo: 1,
+        productCount: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
 
+        // open: 1,		
+        // isOutsourceTracking:1,
+        // productStatus: 1,
+        // productBarcodeNoReal: 1,
+    }	}
+  ]);
+  // console.log(orderProduction);
+
+  // let ProductBarcodeNos = [];
+  const ProductBarcodeNos = await orderProduction.map(fw => ({
+    productBarcodeNoReal: fw.productBarcodeNoReal, 
+    bundleNo: fw.bundleNo,
+  }));
+
+  return ProductBarcodeNos;
+
+}
+
+// checkExistOrderProductionbyBundleNo
+exports.checkExistOrderProductionbyBundleNo= async (companyID, orderID, bundleNos, productCount, 
+                                                    open, productStatusArr, isOutsourceTracking) => {
+  // productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
+  // limit = +limit; // ## change to number
+  const orderProductionBundleNo = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"bundleNo":bundleNo},
+      {"open":open},
+      // {"productCount":productCount},
+      {"isOutsourceTracking":isOutsourceTracking},
+      {"productStatus":{$in: productStatusArr}},
+      {"bundleNo":{$in: bundleNos}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        orderID: 1,	
+        bundleNo: 1,
+        open: 1,		
+        productCount: 1,
+        isOutsourceTracking:1,
+        productStatus: 1,
+        // productBarcodeNoReal: 1,
+    }	}
+  ]);
+  // console.log(orderProductionBundleNo);
+  return orderProductionBundleNo;
 }
 
 // getCSZCSOrderProductionBundleNos(companyID, orderIDs, zoneArr, colorArr, sizeArr)
@@ -2627,12 +2696,12 @@ exports.getCSZCSOrderProductionBundleNos= async (companyID, orderIDs, isOutsourc
 }
 
 // getCSZCSOrderProductOutsourceTrackingFlowseqs
-exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderIDs, bundleNos, nodeIDs) => {
+exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderIDs, isOutsourceTracking, bundleNos, nodeIDs) => {
   const orderProduction1 = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      // {"isOutsourceTracking":isOutsourceTracking1},
+      {"isOutsourceTracking":isOutsourceTracking},
       {"orderID":{$in: orderIDs}},
       {"bundleNo":{$in: bundleNos}},
     ] } },
@@ -10629,7 +10698,7 @@ exports.setOpenOrderProduction = async () => {
       // {"factoryID":fromFactoryID}  ,
     ]},
     {$set: { 
-      "open": true
+      "isOutsourceTracking": false
     }}, 
   );
   console.log('updateMany Open OrderProduction ok finished');

@@ -1350,6 +1350,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               productionDate: current,
               productStatus: 'normal',
               forLoss: forLossX,
+              isOutsourceTracking: false,
               yarnLot: yarnLot2,
               outsourceData: outsourceData1,
               productionNode: [productionNode1]
@@ -2378,6 +2379,10 @@ exports.getOrderOursourceTracking = async (req, res, next) => {
     //   i++;
     // }
 
+    // ## get stations
+    const status = ['a', 'c'];
+    const nodeStations = await ShareFunc.getNodeStations(companyID, factoryID, status, 1, 10000);
+
     // ## get nodeflow , flowseq
     // getNodeFlow= async (companyID, factoryID, nodeFlowID)
     const nodeFlowID = 'main';
@@ -2388,6 +2393,9 @@ exports.getOrderOursourceTracking = async (req, res, next) => {
       nodeIDs.push(item1.nodeID);
     });
     // console.log(nodeIDs);
+
+    // ## list nodeiD for forbidden / cannot tracking /  no outsource / do ourself
+    const forbiddenNodeIDs = ['5.WASHING', '6.PRESSING', '7.QC'];
 
     
     // ## get only bundleNo which isOutsource status
@@ -2403,9 +2411,16 @@ exports.getOrderOursourceTracking = async (req, res, next) => {
       bundleNos.push(item1.bundleNo);
     });
 
-    const orderProductOutsourceTrackingFlowseq = 
+    
+    const orderProductOutsourceTrackingFlowseqNormal = 
       await ShareFunc.getCSZCSOrderProductOutsourceTrackingFlowseqs(
-        companyID, orderIDs, bundleNos, nodeIDs
+        companyID, orderIDs, isOutsourceTracking1, bundleNos, nodeIDs
+      );
+
+    const isOutsourceTracking2 = false; // ## outsourceTracking case
+    const orderProductOutsourceTrackingFlowseqTracking =
+      await ShareFunc.getCSZCSOrderProductOutsourceTrackingFlowseqs(
+        companyID, orderIDs, isOutsourceTracking2, bundleNos, nodeIDs
       );
 
     // // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
@@ -2419,9 +2434,14 @@ exports.getOrderOursourceTracking = async (req, res, next) => {
     res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
+      bundleNos: bundleNos,
+      nodeIDs: nodeIDs,
+      forbiddenNodeIDs: forbiddenNodeIDs,
+      nodeStations: nodeStations,
       flowSeq: flowSeq,
       orderProductBundleNosOutsourceTracking: orderProductBundleNosOutsourceTracking,
-      orderProductOutsourceTrackingFlowseq: orderProductOutsourceTrackingFlowseq,
+      orderProductOutsourceTrackingFlowseqNormal: orderProductOutsourceTrackingFlowseqNormal,
+      orderProductOutsourceTrackingFlowseqTracking: orderProductOutsourceTrackingFlowseqTracking,
       // currentOrderStyle: currentOrderStyle,
       // currentProductQtyAllC: currentProductQtyAllC,
       // orders: orders,
@@ -2430,7 +2450,6 @@ exports.getOrderOursourceTracking = async (req, res, next) => {
       // factory: factory,
       // nodeStation: nodeStation,
       // nodeFlows: nodeFlows,
-      // nodeFlow: nodeFlow
     });
   } catch (err) {
     console.log(err);
@@ -2443,6 +2462,124 @@ exports.getOrderOursourceTracking = async (req, res, next) => {
     });
   }
 }
+
+
+// router.put("/orderoutsourcetracking2/productionNode", checkAuth, checkUUID, orderController.upsertOrderProducctionNodeFlow);
+exports.upsertOrderProducctionNodeFlow = async (req, res, next) => {
+  console.log('upsertOrderProducctionNodeFlow');
+  // try {} catch (err) {}
+  const data = req.body;
+
+  try {
+    // ##  create order 
+    const companyID = data.companyID;
+    const orderID = data.orderID;
+    const bundleNos = data.bundleNos;
+    const bundleNosArr = data.bundleNosArr;
+    const nodeIDs = data.nodeIDs;
+    const productCount = data.productCount;
+    const open = data.open;
+    const productStatusArr = data.productStatus;
+    const isOutsourceTracking = data.isOutsourceTracking;
+    let productionNode = data.productionNode; // ## arr
+    // const subNodeFlowCost = data.order.productOR.subNodeFlowCost;
+
+    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+
+    await this.asyncForEach(productionNode, async (item1) => {
+      item1.datetime = current;
+    });
+
+    // ## get productBarcodeNos for bundleNo
+    const productBarcodeNos = await ShareFunc.getProductBarcodeNosOrderProductionbyBundleNo(companyID, orderID, bundleNos, productCount);
+    // console.log(productBarcodeNos);
+
+    // ## gen orderProductions for tracking / prepare for append all orderProductions
+    let orderProductions = [];
+    let productBarcodeNosArr = [];
+    await this.asyncForEach(productBarcodeNos, async (item1) => {
+
+      productBarcodeNosArr.push(item1.productBarcodeNoReal);
+
+      const orderProduction1 = {
+        companyID: companyID,
+        orderID: orderID,
+        productCount: productCount,
+        open: open,
+        isOutsourceTracking: isOutsourceTracking,
+        productStatus: 'normal',
+        bundleNo: item1.bundleNo,
+        productBarcodeNo: item1.productBarcodeNoReal,
+        productBarcodeNoReal: item1.productBarcodeNoReal,
+        productionNode: productionNode,
+      };
+      orderProductions.push(orderProduction1);
+    });
+    // console.log(orderProductions);
+
+    // ## check existing orderProduction by bundleNo && isOutsourceTracking = true
+    const orderProductionExist = await ShareFunc.checkExistOrderProductionbyBundleNo(companyID, orderID, bundleNos, productCount, open, productStatusArr, isOutsourceTracking);
+
+    if (orderProductionExist.length > 0) {
+      // edit orderProduction --> productionNode
+      result2 = await OrderProduction.updateMany(
+        {$and: [
+          {"companyID":companyID},
+          // {"factoryID":factoryID},
+          {"orderID":orderID},
+          {"bundleNo":{$in: bundleNos}},
+          {"productBarcodeNoReal":{$in: productBarcodeNosArr}}
+        ]}, 
+        {
+          $push: {productionNode: {$each: productionNode}},
+        });
+
+    } else {
+      // new record for orderProduction outsourceTracking
+      results = await OrderProduction.insertMany(orderProductions);
+    }
+
+    const orderIDs = [orderID];
+    const isOutsourceTracking2 = false; // ## outsourceTracking case
+    const orderProductOutsourceTrackingFlowseqTracking =
+      await ShareFunc.getCSZCSOrderProductOutsourceTrackingFlowseqs(
+        companyID, orderIDs, isOutsourceTracking2, bundleNosArr, nodeIDs
+      );
+
+    // const orderUpdate = await Order.updateOne({$and: [
+    //     {"companyID":companyID},
+    //     {"orderID":orderID}, 
+    //   ]} , 
+    //   {
+    //     "productOR.subNodeFlowCost": subNodeFlowCost,
+    //   }); 
+
+    // // ## get 1 order
+    // // exports.getOrder= async (companyID, orderID) 
+    // const order = await ShareFunc.getOrder(companyID, orderID);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      orderProductOutsourceTrackingFlowseqTracking: orderProductOutsourceTrackingFlowseqTracking
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO027', 
+        mode:'errEditOrderOutsourceTracking', 
+        value: "error edit order outsource tracking"
+      }
+    });
+  }
+}
+
+
 
 
 // ## order

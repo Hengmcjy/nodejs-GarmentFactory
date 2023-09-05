@@ -114,6 +114,9 @@ router.get("/orderoutsourcetracking1/getlists/:companyID/:factoryID/:orderIDs/:p
       checkAuth, checkUUID, orderController.getOrderOursourceTracking);
 //
 
+// ## /api/order/orderoutsourcetracking2/productionNode  upsertOrderProducctionNodeFlow
+router.put("/orderoutsourcetracking2/productionNode", checkAuth, checkUUID, orderController.upsertOrderProducctionNodeFlow);
+
 // router.get("/order8/getqrcodelist/:companyID/:factoryID/:page/:limit", checkAuth, checkUUID, orderController.getOrderProductQRCodeList);
 
 // ## for worker scan zone  for work station

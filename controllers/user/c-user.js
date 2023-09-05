@@ -237,7 +237,7 @@ exports.getTestTest2 = async (req, res, next) => {
   return res.end();
 }
 
-// // ## http://192.168.1.55:3968/api/user/test/test
+// // ## http://192.168.1.84:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {
   // console.log('getTestTest');

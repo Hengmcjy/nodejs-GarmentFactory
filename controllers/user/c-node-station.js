@@ -2666,6 +2666,7 @@ exports.putScanOrderProductionBarcodeNoReceiveOutsource = async (req, res, next)
           });
         } else if (orderProduction.productionNode[orderProduction.productionNode.length - 1].isOutsource &&
                   orderProduction.productionNode[orderProduction.productionNode.length - 1].toNode === 'outsource') { // product is outsource product 
+          // console.log('ok');
           return res.status(200).json({
             tokenNS: '',
             expiresIn: process.env.expiresIn,
@@ -2816,13 +2817,15 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
   try {
     await ShareFunc.upsertUserSession1hr(userID);
 
-    // console.log('productionNodeArr  ===' ,productionNodeArr);
     const uuid = uuidv4();
+    
+    // console.log('productionNodeArr  ===' ,productionNodeArr);
     // ## update datetime
     await this.asyncForEach2(productionNodeArr , async (productionNode) => {
       productionNode.datetime = current;
       productionNode.outsourceData[0].datetime = current;
     });
+    // console.log('productionNodeArr  ===' ,productionNodeArr);
 
     // ## old last record (toNode) have to the same  first element of new record (fromNode)
     // ## or old last record (toNode) is outsource and has 1 element  / first element of new record
@@ -2838,6 +2841,9 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
         if (productionNode.length === 1 && productionNodeArr[0].fromNode === 'starterNode') {
           canUpdate = true;
         } else if (productionNode.length > 1) {  // ## productionNode.length  > 1  ///
+          // console.log('here');
+          // console.log(productionNode[productionNode.length - 2].toNode);
+          // console.log(productionNodeArr[0].fromNode);
           if (productionNode[productionNode.length - 2].toNode === productionNodeArr[0].fromNode) {
             canUpdate = true;
           }
@@ -2849,6 +2855,7 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
     }
 
 
+    // console.log('canUpdate  ===' ,canUpdate);
     if (canUpdate) {
       result1 = await OrderProduction.updateOne(
         {$and: [
@@ -2863,8 +2870,8 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
           // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
           $push: {productionNode: {$each: productionNodeArr}},
           // $inc: {productCount: -1},
-          "productCount": 1,
-          "bundleID": uuid
+          // "productCount": 1,
+          // "bundleID": uuid
         });
     } else {
       return res.status(501).json({
