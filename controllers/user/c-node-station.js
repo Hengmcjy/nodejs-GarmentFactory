@@ -2857,7 +2857,7 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
 
     // console.log('canUpdate  ===' ,canUpdate);
     if (canUpdate) {
-      result1 = await OrderProduction.updateOne(
+      result1 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
           {"factoryID":factoryID},
