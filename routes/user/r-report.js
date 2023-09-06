@@ -77,6 +77,11 @@ router.get("/node/scan1/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:date
 
 router.get("/cpn/rep10/current/order/:companyID/:ordertatus/:orderIDArr", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsource);
 
+// // ## get node getRepNodeStaffScannedByDate12
+// router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", 
+//         reportController.getRepCompanyOrderOutsource2);
+// // // ##
+router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", reportController.getRepCompanyOrderOutsource2);
 
 // ## report outsource ############################################################################s
 // ###################################################################################################

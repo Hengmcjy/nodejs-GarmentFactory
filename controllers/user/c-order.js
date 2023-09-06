@@ -268,10 +268,10 @@ exports.getOrdersByOrderIDs = async (req, res, next) => {
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
-    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
 
     res.status(200).json({
-      token: token,
+      token: '',
       expiresIn: process.env.expiresIn,
       userID: userID,
       orders: orders,
@@ -290,6 +290,7 @@ exports.getOrdersByOrderIDs = async (req, res, next) => {
     });
   }
 }
+
 
 // // ## get order list /api/order/getlist2/:companyID/:userID/:orderids  getOrdersByOrderIDs
 // router.get("/getlist3/:companyID/:userID/:orderids/:orderStatus", checkAuth, checkUUID, orderController.getOrdersZoneStyleSizeByOrderIDs);

@@ -27,7 +27,7 @@ router.get("/order5/getlist/:companyID/:orderStatus/:userID", checkAuth, checkUU
 router.get("/getlist/:companyID/:userID/:page/:limit/:seasonyear", checkAuth, checkUUID, orderController.getOrders);
 
 // ## get order list /api/order/getlist2/:companyID/:userID/:orderids  getOrdersByOrderIDs
-router.get("/getlist2/:companyID/:userID/:orderids", checkAuth, checkUUID, orderController.getOrdersByOrderIDs);
+router.get("/getlist2/:companyID/:userID/:orderids", orderController.getOrdersByOrderIDs);
 
 // ## get order list /api/order/getlist3/:companyID/:userID/:orderids  getOrdersZoneStyleSizeByOrderIDs
 router.get("/getlist3/:companyID/:userID/:orderids/:orderStatus", checkAuth, checkUUID, orderController.getOrdersZoneStyleSizeByOrderIDs);

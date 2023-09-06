@@ -235,7 +235,13 @@ router.get("/node/scansub2/staff/rep/CF/overall/:companyID/:factoryIDArr/:nodeID
 // router.get("/noder/rep1/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName"
 //         , nsController.getRepCurrentProductQtyCFN);
 
+// ## outsource
+// router.get("/cpn/rep10/current/order/:companyID/:ordertatus/:orderIDArr", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsource);
 
+// // ## get node getRepNodeStaffScannedByDate12
+// router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", 
+//         reportController.getRepCompanyOrderOutsource2);
+// // // ##
 
 // ## report..... 
 // #######################################################################################################
