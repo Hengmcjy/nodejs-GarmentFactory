@@ -24,7 +24,18 @@ const factorySchema = mongoose.Schema({
     }],
 
   },
+  nodeStationSetting: {
+    scanNode: [{   // ## for special setting for temp time (computer not ready to use in every node department)
+      nodeID : {type: String},
+      lastNodeID : {type: String},
+      active : {type: Boolean},
+      nodeIDSetting: [{type: String}]
+    }],
+  },
 });
+
+	
+
 
 
 factorySchema.plugin(uniqueValidator);

@@ -52,6 +52,25 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
+// // ## http://192.168.0.181:3968/api/user/test/test8
+// ## cancel queue order  by product barcode
+exports.getTestTest8 = async (req, res, next) => {
+
+  // // ## cancel queue order all by product barcode
+  // const result = await ShareFunc.getDelOrderProduction1();
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>cancel queue order  by product barcode</title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel queue order  </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 // // ## http://192.168.1.23:3968/api/user/test/test7
 // ## cancel queue order all by product barcode
 exports.getTestTest7 = async (req, res, next) => {
@@ -74,7 +93,7 @@ exports.getTestTest7 = async (req, res, next) => {
 // // ## http://192.168.1.50:3968/api/user/test/test6
 // router.get("/test/test5", userController.getTestTest6);
 exports.getTestTest6 = async (req, res, next) => {
-  // ## update orderProduction / edit bundleNo
+  // // ## update orderProduction / edit bundleNo
   // const result = await ShareFunc.updateOrderProductionForBundleNo();
 
   res.setHeader('Content-Type', 'text/html');

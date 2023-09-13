@@ -1203,6 +1203,7 @@ exports.getFactory1Info= async (companyID, factoryID) => {
         factoryID: 1,	
         fDescription: 1,	
         fInfo: 1,
+        nodeStationSetting: 1,
     }	}
   ]);
   // console.log(company);
@@ -10291,15 +10292,122 @@ exports.getOrderProductionByProductBarcode= async (companyID, orderID, productBa
 
 }
 
+exports.createBundleNoArr= async (bundleNo1, bundleNo2) => {
+  let bundleNoArr = [];
+  for (let i = +bundleNo1; i <= +bundleNo2; i++) {
+    // setBackStrLen= async (len, str, strBack)
+    // setStrLen= async (len, num)
+    // const num1 = await this.setStrLen(5, i);
+    bundleNoArr.push(i);
+  }
+  return bundleNoArr;
+}
+
+exports.getDelOrderProduction1 = async () => {
+  const companyID = 'c000001';
+  const orderID = 'BA1OPA4S';
+  const productBarcodes = [ 'BA1OPA4S    ASIA-----24WH--------S---', 'BA1OPA4S    ASIA-----24WH--------M---',
+                            'BA1OPA4S    ASIA-----24WH--------L---', 'BA1OPA4S    ASIA-----24WH--------XL--'];
+  const productBarcode1 = 'BA1OPA4S    ASIA-----24WH--------S---';
+  const productBarcode2 = 'BA1OPA4S    ASIA-----24WH--------M---';
+  const productBarcode3 = 'BA1OPA4S    ASIA-----24WH--------L---';
+  const productBarcode4 = 'BA1OPA4S    ASIA-----24WH--------XL--';
+
+  const bundleNo1 = 1435951;
+  const bundleNo2 = 1436098;
+  let bundleNos = [];
+  bundleNos = await this.createBundleNoArr(bundleNo1, bundleNo2);
+
+  // xl  1436071  -  1436098    777 - 1112
+  // l   1436034  -  1436070   1023 - 1466
+  // m   1435987   -   1436033    1251 - 1814
+  // s    1435951  -  1435986    911  -  1342
+  const bundleNoFrom = 1435951;
+  const bundleNoTo = 1435986;
+  
+  // ## delete from orderProductionQueueList
+  result001 = await OrderProductionQueueList.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    {"productBarcode":{$in: productBarcodes}},
+    {"bundleNoFrom":bundleNoFrom} ,
+    {"bundleNoTo":bundleNoTo} ,
+  ]});
+
+
+  
+  // ## delete from orderProductionQueue
+  result2 = await OrderProductionQueue.updateOne({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+  ]} , 
+  {
+    $pull: {queueInfo: {"bundleNo":{$in: bundleNos}}}
+  });
+
+
+  // ## delete from orderProduction
+  // 911  -  1342
+  const no1 = 911;  // ##   <<---- input number here
+  const no2 = 1342; // ##   <<---- input number here
+  const productBarcodeNo1Arr1 = await this.createArrElementN(productBarcode1, no1, no2);
+  result01 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+
+  // 1251 - 1814
+  const no3 = 1251; // ##   <<---- input number here
+  const no4 = 1814; // ##   <<---- input number here
+  const productBarcodeNo1Arr2 = await this.createArrElementN(productBarcode2, no3, no4);
+  result02 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    {"productBarcodeNo":{$in: productBarcodeNo1Arr2}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+
+  // 1023 - 1466
+  const no5 = 1023; // ##   <<---- input number here
+  const no6 = 1466; // ##   <<---- input number here
+  const productBarcodeNo1Arr3 = await this.createArrElementN(productBarcode3, no5, no6);
+  result03 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    {"productBarcodeNo":{$in: productBarcodeNo1Arr3}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+
+  // 777 - 1112
+  const no7 = 777; // ##   <<---- input number here
+  const no8 = 1112; // ##   <<---- input number here
+  const productBarcodeNo1Arr4 = await this.createArrElementN(productBarcode4, no7, no8);
+  result04 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    {"productBarcodeNo":{$in: productBarcodeNo1Arr4}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+
+  console.log('delete ok');
+  return true;
+}
+
 exports.cancelOrderQueueAllByProductBarcode = async () => {
   const companyID = 'c000001';
-  const orderID = 'BA1OOA4S';
-  const productBarcodes = [ 'BA1OOA4S    ASIA-----24WB--------S---', 'BA1OOA4S    ASIA-----24WB--------M---',
-                            'BA1OOA4S    ASIA-----24WB--------L---', 'BA1OOA4S    ASIA-----24WB--------XL--'];
-  const productBarcode1 = 'BA1OOA4S    ASIA-----24WB--------S---';
-  const productBarcode2 = 'BA1OOA4S    ASIA-----24WB--------M---';
-  const productBarcode3 = 'BA1OOA4S    ASIA-----24WB--------L---';
-  const productBarcode4 = 'BA1OOA4S    ASIA-----24WB--------XL--';
+  const orderID = 'BA1OPA4S';
+  const productBarcodes = [ 'BA1OPA4S    ASIA-----24WH--------S---', 'BA1OPA4S    ASIA-----24WH--------M---',
+                            'BA1OPA4S    ASIA-----24WH--------L---', 'BA1OPA4S    ASIA-----24WH--------XL--'];
+  const productBarcode1 = 'BA1OPA4S    ASIA-----24WH--------S---';
+  const productBarcode2 = 'BA1OPA4S    ASIA-----24WH--------M---';
+  const productBarcode3 = 'BA1OPA4S    ASIA-----24WH--------L---';
+  const productBarcode4 = 'BA1OPA4S    ASIA-----24WH--------XL--';
 
 
   // ## delete from orderProductionQueueList
@@ -11045,6 +11153,8 @@ exports.getTestOrderProduction1 = async () => {
   return true;
 
 }
+
+
 
 // ## update manual data
 // #######################################################################################################

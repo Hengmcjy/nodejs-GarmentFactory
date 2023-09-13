@@ -1335,6 +1335,47 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
           success: false
         });
       } else {  // orderProduction.productionNode.length === 1
+
+        // console.log(mode,   '   scan + special');
+
+        // special and temp case / wait for comtuter setting all node
+        // ## get nodeStationFactory from factory
+        const factory = await ShareFunc.getFactory1Info(companyID, factoryID);
+        let nodeStationSetting = undefined;
+        let scanNode = undefined;
+        let isNodeIDScanListSetting = false;
+        // console.log(factory);
+        if (factory && mode === 'scan') {
+          // console.log(mode,   '   scan + special');
+          if (factory.nodeStationSetting) {
+            // console.log(factory.nodeStationSetting,   '   factory.nodeStationFactory **********');
+            nodeStationSetting = factory.nodeStationSetting;
+            if (nodeStationSetting.scanNode && nodeStationSetting.scanNode.length > 0) {
+              scanNode = nodeStationSetting.scanNode;
+              const scanNodeF = await scanNode.filter(i=>(i.nodeID == nodeID && i.active == true));
+              if (scanNodeF.length > 0) {
+                isNodeIDScanListSetting = true;
+                const nodeIDSetting = scanNodeF[0].nodeIDSetting;
+                const toNode = orderProduction.productionNode[0].toNode;
+                if (nodeIDSetting.includes(toNode)) {
+                  return res.status(200).json({
+                    tokenNS: '',
+                    expiresIn: process.env.expiresIn,
+                    userID: userID,
+                    companyID: companyID,
+                    factoryID: factoryID,
+                    nodeID: nodeID,
+                    stationID: stationID,
+                    orderProduction: orderProduction,
+                    success: true,
+                    mode: 'scan'
+                  });
+                }
+              }
+            }
+          }
+        }
+
         // console.log(nodeID ,'--' , orderProduction.productionNode[0]);
         if (orderProduction.productionNode[0].fromNode === nodeID && mode === 'backfromrepair') { // ## back from repaired
         // if (orderProduction.productionNode[orderProduction.productionNode.length-1].fromNode === nodeID) { // ## back from repaired
@@ -1423,6 +1464,47 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
   }
 }
 
+// ## for special setting for temp time (computer not ready to use in every node department)
+exports.checkNodeStationSettingList= async (companyID, factoryID, flowSeq, productionNode, productBarcodeNo) => {
+
+  let lastToNodeID = '';
+
+  // ## get OrderProduct 1
+  const orderProduction = await ShareFunc.getOrderProduct1(companyID, factoryID, productBarcodeNo);
+  if (orderProduction) {
+    lastToNodeID = orderProduction.productionNode[0].toNode;
+    if (lastToNodeID === productionNode.fromNode) { // ## this is special case or not
+      return [];
+    } else {
+      const factory = await ShareFunc.getFactory1Info(companyID, factoryID);
+      const scanNodeF = await factory.nodeStationSetting.scanNode.filter(i=>(i.nodeID == productionNode.fromNode && i.active == true));
+      const nodeIDSetting = scanNodeF[0].nodeIDSetting;
+
+      // console.log(flowSeq);
+      // console.log(nodeIDSetting);
+
+      let productionNodeArr = [];
+      await this.asyncForEach(nodeIDSetting, async (item1) => {
+        // console.log(item1 + '............');
+        let productionNode1 = {...productionNode};
+        const idx = flowSeq.findIndex( fi =>(fi.nodeID === item1));
+        const toNode = +idx+1 === flowSeq.length? 'completeNode': flowSeq[+idx+1].nodeID;
+        productionNode1.status = +idx+1 === flowSeq.length? 'complete': productionNode.status;
+        productionNode1.fromNode = item1;
+        productionNode1.toNode = toNode;
+        // console.log(toNode);
+        // console.log(productionNode1);
+        productionNodeArr.push(productionNode1);
+      });
+      // console.log(productionNodeArr);
+      return productionNodeArr;
+    }
+  }
+
+  return [];
+}
+
+
 // // ## edit order production  send product to next department 
 // router.put("/node11/edit/oderProduction/nextnode", nsController.putOrderProductionNextNodeID);
 exports.putOrderProductionNextNodeID = async (req, res, next) => {
@@ -1455,7 +1537,50 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
     let flowSeq = nodeflow.flowSeq;
     flowSeq.sort((a,b)=>{ return a.seqNo >b.seqNo?1:a.seqNo <b.seqNo?-1:0 });
 
-    if (productionNode.toNode === 'completeNode' && productionNode.fromNode === flowSeq[flowSeq.length-1].nodeID) {
+    // ## check special case / for special setting for temp time (computer not ready to use in every node department)
+    const productionNodeArr = 
+      await this.checkNodeStationSettingList(companyID, factoryID, flowSeq, productionNode, productBarcodeNos[0]);
+
+    // ## special case 
+    if (productionNodeArr.length > 0) {
+
+      // $push: {productionNode: {$each: productionNodeArr}},
+
+      // ## complete case
+      if (productionNode.fromNode === flowSeq[flowSeq.length-1].nodeID) {
+        // productionNode.status = 'complete';
+        result002 = await OrderProduction.updateMany(
+          {$and: [
+            {"companyID":companyID},
+            // {"factoryID":factoryID},
+            {"orderID":orderID},
+            {"productID":productID},
+            {"productBarcodeNo":{$in: productBarcodeNos}}
+          ]}, 
+          {
+            // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+            // $push: {productionNode: productionNode},
+            $push: {productionNode: {$each: productionNodeArr}},
+            "productStatus": 'complete'
+          },);
+
+      } else {  // ## not complete case
+        result001 = await OrderProduction.updateMany(
+          {$and: [
+            {"companyID":companyID},
+            // {"factoryID":factoryID},
+            {"orderID":orderID},
+            {"productID":productID},
+            {"productBarcodeNo":{$in: productBarcodeNos}}
+          ]}, 
+          // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+          {
+            // $push: {productionNode: productionNode}
+            $push: {productionNode: {$each: productionNodeArr}},
+          },);
+      }
+
+    } else if (productionNode.toNode === 'completeNode' && productionNode.fromNode === flowSeq[flowSeq.length-1].nodeID) {
       productionNode.status = 'complete';
       result2 = await OrderProduction.updateMany(
         {$and: [
@@ -1469,8 +1594,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
           // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
           $push: {productionNode: productionNode},
           "productStatus": 'complete'
-        },
-        );
+        },);
 
 
     // ## this for a moment for cross some department "6.pressing"
@@ -1486,8 +1610,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
           $push: {productionNode: productionNode}
-        },
-      );
+        },);
       productionNode.fromNode = '6.PRESSING';
       productionNode.toNode = '7.QC';
       result2 = await OrderProduction.updateMany(
@@ -1501,8 +1624,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
           $push: {productionNode: productionNode}
-        },
-      );
+        },);
 
     } else {
       // ##  edit next node productionNode
@@ -1517,8 +1639,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
           $push: {productionNode: productionNode}
-        },
-      );
+        },);
     }
     return res.status(200).json({
       tokenNS: '',
