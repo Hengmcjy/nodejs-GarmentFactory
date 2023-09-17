@@ -52,6 +52,136 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
+// // ## http://192.168.0.181:3968/api/user/test/test10
+// ## cancel queue order  by product barcode
+exports.getTestTest10 = async (req, res, next) => {
+  const bundleData = [
+    {
+      companyID: 'c000001',
+      orderID: 'AA0QEA4S',
+      productBarcode: 'AA0QEA4S    UK-------24BK--------L---',
+      bundleNo1: 1441954,
+      bundleNo2: 1441954,
+      no1: 565,
+      no2: 566,
+      productCount: 2,
+    },
+  ];
+
+  await this.asyncForEach(bundleData, async (item1) => {
+    const result = await ShareFunc.getDelOrderProductionV3(
+      item1.companyID, 
+      item1.orderID, 
+      item1.productBarcode, 
+      item1.bundleNo1, 
+      item1.bundleNo2, 
+      item1.no1, 
+      item1.no2,
+      item1.productCount
+      );
+  });
+
+  const result1 = 'OK';
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>cancel queue order  by product barcode</title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel queue order V2  </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result1+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
+}
+
+// // ## http://192.168.53.42:3968/api/user/test/test9
+// ## cancel queue order  by product barcode
+exports.getTestTest9 = async (req, res, next) => {
+  // ## cancel queue order all by product barcode
+
+  const bundleData = [
+    {
+      companyID: 'c000001',
+      orderID: 'BA1OPA4S',
+      productBarcode: 'BA1OPA4S    UK-------24BK--------XS--',
+      bundleNo: 1418125,
+      no1: 356,
+      no2: 367,
+      productCount: 12,
+    },
+    {
+      companyID: 'c000001',
+      orderID: 'BA1OPA4S',
+      productBarcode: 'BA1OPA4S    UK-------24BK--------S---',
+      bundleNo: 1418126,
+      no1: 502,
+      no2: 513,
+      productCount: 12,
+    },
+    {
+      productBarcode: 'BA1OPA4S    UK-------24BK--------M---',
+      bundleNo: 1418127,
+      no1: 562,
+      no2: 573,
+      productCount: 12,
+    },
+    {
+      companyID: 'c000001',
+      orderID: 'BA1OPA4S',
+      productBarcode: 'BA1OPA4S    UK-------24BK--------M---',
+      bundleNo: 1418128,
+      no1: 574,
+      no2: 585,
+      productCount: 12,
+    },
+    {
+      companyID: 'c000001',
+      orderID: 'BA1OPA4S',
+      productBarcode: 'BA1OPA4S    UK-------24BK--------L---',
+      bundleNo: 1418129,
+      no1: 364,
+      no2: 375,
+      productCount: 12,
+    },
+    {
+      companyID: 'c000001',
+      orderID: 'BA1OPA4S',
+      productBarcode: 'BA1OPA4S    UK-------24BK--------XL--',
+      bundleNo: 1418130,
+      no1: 135,
+      no2: 146,
+      productCount: 12,
+    },
+  ];
+
+  await this.asyncForEach(bundleData, async (item1) => {
+    const result = await ShareFunc.getDelOrderProductionV2(
+      item1.companyID, 
+      item1.orderID, 
+      item1.productBarcode, 
+      item1.bundleNo, 
+      item1.no1, 
+      item1.no2,
+      item1.productCount
+      );
+  });
+
+  const result1 = 'OK';
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>cancel queue order  by product barcode</title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel queue order V2  </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result1+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 // // ## http://192.168.0.181:3968/api/user/test/test8
 // ## cancel queue order  by product barcode
 exports.getTestTest8 = async (req, res, next) => {

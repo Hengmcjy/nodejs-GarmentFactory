@@ -10303,6 +10303,116 @@ exports.createBundleNoArr= async (bundleNo1, bundleNo2) => {
   return bundleNoArr;
 }
 
+exports.getDelOrderProductionV3 = async (companyID, orderID, productBarcode, bundleNo1, bundleNo2, no1, no2, productCount) => {
+  const productBarcodes = [productBarcode];
+  let bundleNos = [];
+  bundleNos = await this.createBundleNoArr(bundleNo1, bundleNo2);
+  const bundleNoFrom = bundleNo1;
+  const bundleNoTo = bundleNo2;
+
+  if (bundleNo1 > -1) {  // ## -1 = no need use bundleNo
+    
+    // ## delete from orderProductionQueueList
+    result001 = await OrderProductionQueueList.deleteMany({$and: [
+      {"companyID":companyID} , 
+      {"orderID":orderID} ,
+      {"productBarcode":{$in: productBarcodes}},
+      {"bundleNoFrom":bundleNoFrom} ,
+      {"bundleNoTo":bundleNoTo} ,
+      {"numberFrom":no1} ,
+      {"numberTo":no2} ,
+    ]});
+
+    // ## delete from orderProductionQueue
+    result2 = await OrderProductionQueue.updateOne({$and: [
+      {"companyID":companyID} , 
+      {"orderID":orderID} ,
+    ]} , 
+    {
+      $pull: {
+        queueInfo: {
+          "productBarcode":{$in: productBarcodes}, 
+          "bundleNo":{$in: bundleNos}, 
+          "numberFrom": { $gte: no1 } , 
+          "numberTo": { $lte: no2 }
+        }
+      }
+      // $pull: {queueInfo: {"bundleNo":{$in: bundleNos}, "numberFrom": no1, "numberTo": no2, "productCount": productCount}}
+      // $pull: { fruits: { $in: [ "apples", "oranges" ] }, vegetables: "carrots" }
+    });
+  }
+  // queueInfo: {"productBarcode":{$in: productBarcodes}}, 
+  // db.profiles.updateOne( { _id: 1 }, { $pull:    { votes: { $gte: 6 } }     } )
+
+
+  // ## delete from orderProduction
+  const productBarcodeNo1Arr1 = await this.createArrElementN(productBarcode, no1, no2);
+  result01 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+
+  console.log('delete ok');
+  return true;
+}
+
+// getDelOrderProductionV2
+exports.getDelOrderProductionV2 = async (companyID, orderID, productBarcode, bundleNo, no1, no2, productCount) => {
+  // {
+  //   productBarcode: 'BA1OPA4S    UK-------24BK--------2XL-',
+  //   bundleNo: 1418131,
+  //   no1: 35,
+  //   no2: 46,
+  //   productCount: 12,
+  // },
+  const productBarcodes = [productBarcode];
+
+  let bundleNos = [];
+  bundleNos = await this.createBundleNoArr(bundleNo, bundleNo);
+
+  if (bundleNo > -1) {  // ## -1 = no need use bundleNo
+    const bundleNoFrom = bundleNo;
+    const bundleNoTo = bundleNo;
+    
+    // ## delete from orderProductionQueueList
+    result001 = await OrderProductionQueueList.deleteMany({$and: [
+      {"companyID":companyID} , 
+      {"orderID":orderID} ,
+      {"productBarcode":{$in: productBarcodes}},
+      {"bundleNoFrom":bundleNoFrom} ,
+      {"bundleNoTo":bundleNoTo} ,
+      {"numberFrom":no1} ,
+      {"numberTo":no2} ,
+    ]});
+
+    // ## delete from orderProductionQueue
+    result2 = await OrderProductionQueue.updateOne({$and: [
+      {"companyID":companyID} , 
+      {"orderID":orderID} ,
+    ]} , 
+    {
+      $pull: {queueInfo: {"bundleNo":{$in: bundleNos}, "numberFrom": no1, "numberTo": no2, "productCount": productCount}}
+    });
+  }
+  // { $pull: { fruits: { $in: [ "apples", "oranges" ] }, vegetables: "carrots" } }
+
+  // ## delete from orderProduction
+  const productBarcodeNo1Arr1 = await this.createArrElementN(productBarcode, no1, no2);
+  result01 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+
+  console.log('delete ok');
+  return true;
+}
+
 exports.getDelOrderProduction1 = async () => {
   const companyID = 'c000001';
   const orderID = 'BA1OPA4S';
