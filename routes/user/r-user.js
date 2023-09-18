@@ -43,6 +43,9 @@ router.post("/signup", userController.createUser);
 
 router.post("/login", userController.userLogin);
 
+router.post("/staffConfirm", userController.staffCheckConfirm);  // ## for confirmation for important case
+
+
 router.get("/uinfo/:userID", checkAuth, checkUUID, userController.getuserInfo);
 
 router.post("/logout", userController.userLogout);

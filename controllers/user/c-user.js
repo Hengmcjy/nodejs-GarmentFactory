@@ -52,34 +52,38 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
-// // ## http://192.168.0.181:3968/api/user/test/test10
+// // ## http://192.168.1.7:3968/api/user/test/test10
 // ## cancel queue order  by product barcode
 exports.getTestTest10 = async (req, res, next) => {
+//   BA1OPA4S      JAPN-----24OM--------XS--
+// xs
+// 1441399
+// 49 - 54
   const bundleData = [
     {
       companyID: 'c000001',
-      orderID: 'AA0QEA4S',
-      productBarcode: 'AA0QEA4S    UK-------24BK--------L---',
-      bundleNo1: 1441954,
-      bundleNo2: 1441954,
-      no1: 565,
-      no2: 566,
-      productCount: 2,
+      orderID: 'BA1OPA4S',
+      productBarcode: 'BA1OPA4S    JAPN-----24OM--------XS--',
+      bundleNo1: 1441399,
+      bundleNo2: 1441399,
+      no1: 49,
+      no2: 54,
+      productCount: 6,
     },
   ];
 
-  await this.asyncForEach(bundleData, async (item1) => {
-    const result = await ShareFunc.getDelOrderProductionV3(
-      item1.companyID, 
-      item1.orderID, 
-      item1.productBarcode, 
-      item1.bundleNo1, 
-      item1.bundleNo2, 
-      item1.no1, 
-      item1.no2,
-      item1.productCount
-      );
-  });
+  // await this.asyncForEach(bundleData, async (item1) => {
+  //   const result = await ShareFunc.getDelOrderProductionV3(
+  //     item1.companyID, 
+  //     item1.orderID, 
+  //     item1.productBarcode, 
+  //     +item1.bundleNo1, 
+  //     +item1.bundleNo2, 
+  //     +item1.no1, 
+  //     +item1.no2,
+  //     +item1.productCount
+  //     );
+  // });
 
   const result1 = 'OK';
 
@@ -805,6 +809,80 @@ exports.userLogin = async (req, res, next) => {
         mode:'errLogin2', 
         value: "Invalid authentication credentials!"
       }
+    });
+  }
+}
+
+
+// ## check userID , userPass
+exports.staffCheckConfirm = async (req, res, next) => {
+  // console.log('staffCheckConfirm');
+  const data = req.body;
+  // console.log(data);
+  const userID = data.userID;
+  const userPass = data.userPass;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const mode = data.mode;
+
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+
+  try {
+    // ## get user
+    // let userf = await User.findOne({ userID: userID });
+    const statusArr = ['a'];
+    const state = 'joined';
+    const userfS = await ShareFunc.staffLogin(userID, userPass, companyID, factoryID, statusArr, state);
+    // console.log(userfS);
+    if (!userfS) {
+      return res.status(401).json({
+        message: {
+          messageID: 'erru003-2', 
+          mode:'errStaffLoginPassForConfirm', 
+          value: "Auth failed,  staff password incorrect for confirm"
+        },
+        success: false
+      });
+    } 
+
+    let userf = await User.findOne({ userID: userID });
+    // console.log(userf);
+    const doMatch = await bcrypt.compare(userPass, userf.uInfo.userPass);
+    // console.log('doMatch');
+    if (!doMatch) { 
+      return res.status(200).json({
+        tokenNS: '',
+        expiresIn: process.env.expiresIn,
+        userID: userID,
+        mode: mode,
+        success: false
+      });
+    }
+
+    // console.log('userf');
+    // ## update user last login
+    // const userLastLogin = await User.updateOne({userID: userID} , {"uInfo.lastLogin": current});
+    
+    // userf.uInfo.userPass = '';  // ## clear user password before send data to web
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      tokenNS: '',
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      mode: mode,
+      success: true
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      message: {
+        messageID: 'erru003-2', 
+        mode:'errStaffLoginPassForConfirm', 
+        value: "Auth failed,  staff password incorrect for confirm"
+      },
+      success: false
     });
   }
 }

@@ -28,7 +28,7 @@ mongoose.set('strictQuery', false);
 moment.tz.setDefault('Asia/Bangkok');
 const app = express();
 
-const maxRequestBodySize = '100mb';
+const maxRequestBodySize = '50mb';
 app.use(express.json({limit: maxRequestBodySize}));
 // app.use(express.urlencoded({limit: maxRequestBodySize}));
 

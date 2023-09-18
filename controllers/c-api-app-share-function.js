@@ -10306,9 +10306,13 @@ exports.createBundleNoArr= async (bundleNo1, bundleNo2) => {
 exports.getDelOrderProductionV3 = async (companyID, orderID, productBarcode, bundleNo1, bundleNo2, no1, no2, productCount) => {
   const productBarcodes = [productBarcode];
   let bundleNos = [];
-  bundleNos = await this.createBundleNoArr(bundleNo1, bundleNo2);
-  const bundleNoFrom = bundleNo1;
-  const bundleNoTo = bundleNo2;
+  bundleNos = await this.createBundleNoArr(+bundleNo1, +bundleNo2);
+  const bundleNoFrom = +bundleNo1;
+  const bundleNoTo = +bundleNo2;
+
+  console.log(productBarcodes , ' ==>  productBarcodes');
+  console.log(bundleNos , ' ==>  bundleNos');
+  console.log(bundleNo1, bundleNo2, no1, no2, productCount);
 
   if (bundleNo1 > -1) {  // ## -1 = no need use bundleNo
     
@@ -10319,8 +10323,8 @@ exports.getDelOrderProductionV3 = async (companyID, orderID, productBarcode, bun
       {"productBarcode":{$in: productBarcodes}},
       {"bundleNoFrom":bundleNoFrom} ,
       {"bundleNoTo":bundleNoTo} ,
-      {"numberFrom":no1} ,
-      {"numberTo":no2} ,
+      {"numberFrom": +no1} ,
+      {"numberTo": +no2} ,
     ]});
 
     // ## delete from orderProductionQueue
