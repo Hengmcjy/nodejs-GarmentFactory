@@ -2205,12 +2205,13 @@ exports.getOrderProductionQueueByProductBarcodeNo = async (req, res, next) => {
   const productBarcodeNo = req.params.productBarcodeNo;
   // const bundleNo = +req.params.bundleNo;
 
-  // console.log(companyID, orderID, bundleNo);
+  // console.log(companyID, productBarcodeNo);
   try {
 
     // ## get 1 OrderProduction
     // getOrderProduct01= async (companyID, factoryID, productBarcodeNo)
     const orderProduction = await ShareFunc.getOrderProduct01(companyID, '', productBarcodeNo);
+    // console.log(orderProduction);
     if (!orderProduction) {
       return res.status(422).json({
         message: {
@@ -2221,9 +2222,11 @@ exports.getOrderProductionQueueByProductBarcodeNo = async (req, res, next) => {
         success: false
       });
     }
+    // console.log(orderProduction.orderID, orderProduction.bundleNo);
     const orderID = orderProduction.orderID;
     const bundleNo = orderProduction.bundleNo;
 
+    // console.log(orderID, bundleNo);
     // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
     let orderProductionQueueBundleNo = await ShareFunc.getOrderProductionQueueByBundleNo(companyID, orderID, bundleNo);
     // console.log(orderProductionQueueBundleNo);

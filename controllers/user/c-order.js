@@ -2249,7 +2249,7 @@ exports.getCompanyOrderByStyle = async (req, res, next) => {
   const orderIDArr = JSON.parse(req.params.orderIDArr);
   // const repListNameArr = JSON.parse(req.params.repListName);
   // console.log(companyID, orderStatusArr);
-
+  // console.log(companyID, style , '.');
   try {
 
     const currentProductQtyAllC = await ShareFunc.getCCurrentProductQtyAllByStyleC(companyID, style, productStatusArr);

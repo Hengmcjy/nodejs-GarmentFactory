@@ -160,17 +160,17 @@ exports.getTestTest9 = async (req, res, next) => {
     },
   ];
 
-  await this.asyncForEach(bundleData, async (item1) => {
-    const result = await ShareFunc.getDelOrderProductionV2(
-      item1.companyID, 
-      item1.orderID, 
-      item1.productBarcode, 
-      item1.bundleNo, 
-      item1.no1, 
-      item1.no2,
-      item1.productCount
-      );
-  });
+  // await this.asyncForEach(bundleData, async (item1) => {
+  //   const result = await ShareFunc.getDelOrderProductionV2(
+  //     item1.companyID, 
+  //     item1.orderID, 
+  //     item1.productBarcode, 
+  //     item1.bundleNo, 
+  //     item1.no1, 
+  //     item1.no2,
+  //     item1.productCount
+  //     );
+  // });
 
   const result1 = 'OK';
 
@@ -186,12 +186,35 @@ exports.getTestTest9 = async (req, res, next) => {
   return res.end();
 }
 
+// // ## http://192.168.1.60:3968/api/user/test/test11
+// ## cancel orderProduction (some)
+exports.getTestTest11 = async (req, res, next) => {
+  // // ## cancel queue order all by product barcode  (companyID, orderID, productBarcode, no1, no2)
+  // const companyID = 'c000001';
+  // const orderID = 'AA0QFA4S';
+  // const productBarcode = 'AA0QFA4S    UK-------24BK--------M---';
+  // const no1 = 0;
+  // const no2 = 467;
+  // const result = await ShareFunc.getDelOrderProduction2(companyID, orderID, productBarcode, no1, no2);
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>cancel  order production  by product barcode</title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel  order production  </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 // // ## http://192.168.0.181:3968/api/user/test/test8
 // ## cancel queue order  by product barcode
 exports.getTestTest8 = async (req, res, next) => {
 
-  // // ## cancel queue order all by product barcode
-  // const result = await ShareFunc.getDelOrderProduction1();
+  // ## cancel queue order all by product barcode
+  const result = await ShareFunc.getDelOrderProduction1();
 
   res.setHeader('Content-Type', 'text/html');
   res.write('<html>');
@@ -455,6 +478,53 @@ exports.getTestTest = async (req, res, next) => {
   res.write('<body>');
   res.write('<h1>1.) general test</h1></br>');
   res.write('<h1>Hello from my Node.js Server!</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
+// getOrderQueueTest1
+// // ## http://192.168.0.181:3968/api/user/test/orderqueue/test1
+exports.getOrderQueueTest1 = async (req, res, next) => {
+  // // ## cancel queue order all by product barcode  (companyID, factoryID, orderID, productBarcode, no1, no2)
+  const companyID = 'c000001';
+  const factoryID = 'f000001';
+  const orderID = 'BA1OOA4S';
+  const productBarcode = 'BA1OOA4S    ASIA-----24BK--------L---';
+  const bundleNoFrom = 1438419;
+  const bundleNoTo = 1438438;
+  const no1 = 1;
+  const no2 = 240;
+  const productCount = 12;
+  const createBy = {userID: '1x1', userName: 'xxxx'};
+  const yarnLot = [{yarnLotID: '35292'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
+  // const yarnLot = [{yarnLotID: '35292'}, {yarnLotID: '35292'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
+  const isOutsource = false;
+  const forLoss = false;
+  const forLossQty = 0;
+  const toNode = '1.COMPUTER-KNITTING';
+  
+  const result =
+    await ShareFunc.test1_addnewArrOrderQueue(
+      companyID, factoryID, orderID, productBarcode, 
+      productCount, 
+      bundleNoFrom, bundleNoTo, 
+      no1, no2,
+      isOutsource,
+      forLoss,
+      forLossQty,
+      toNode,
+      yarnLot,
+      createBy
+    );
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title> add new array order queue  </title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel  order production  </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result+'</h1>');
   res.write('</body>');
   res.write('</html>');
   return res.end();

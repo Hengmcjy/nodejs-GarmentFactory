@@ -8,6 +8,8 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require('nodemailer');
 const bcrypt = require("bcryptjs");
 const XLSX = require("xlsx");
+const { v5: uuidv5 } = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 const Session1hr = require('../models/m-session1hrs');  // check this for current login
 const Session1ys = require('../models/m-session1ys');
@@ -10417,6 +10419,133 @@ exports.getDelOrderProductionV2 = async (companyID, orderID, productBarcode, bun
   return true;
 }
 
+exports.adjustGroupProductNo = async (productCount, bundleNoFrom, bundleNoTo , no1, no2) => {
+  // console.log(productCount, bundleNoFrom, bundleNoTo , no1, no2);
+  let numGroup = [];
+  const round1 = (+no2 - +no1 + 1) / +productCount;
+  let num1 = +no1;
+  let num2 = +no1 + +productCount - 1;
+  let bundleNoFrom1 = bundleNoFrom;
+  for (let i = 1; i <= round1; i++) {
+    // const uuid = uuidv4();
+    numGroup.push({
+      bundleNo: bundleNoFrom1,
+      numberFrom: num1,
+      numberTo: num2,
+      bundleID: uuidv4()
+    });
+    num1 = num1 + 12;
+    num2 = num2 + 12;
+    bundleNoFrom1 = bundleNoFrom1 + 1;
+  }
+  return numGroup;
+}
+
+// test1_addnewArrOrderQueue
+exports.test1_addnewArrOrderQueue = async (companyID, factoryID, orderID, productBarcode, productCount, bundleNoFrom, bundleNoTo, no1, no2,
+  isOutsource, forLoss, forLossQty, toNode, yarnLot, createBy) => {
+  // const companyID = 'c000001';
+  // const factoryID = 'f000001';
+  // const orderID = 'BA1OOA4S';
+  // const productBarcode = 'BA1OOA4S    UK-------24BL--------L---';
+  // const bundleNoFrom = 1421435;
+  // const bundleNoTo = 1421455;
+  // const no1 = 1;
+  // const no2 = 252;
+  // const productCount = 12;
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+
+  // ## adjust group of number 1-12 , 13- 24, ...
+  const numGroup = await this.adjustGroupProductNo(productCount, bundleNoFrom, bundleNoTo, no1, no2);
+  // console.log(numGroup);
+
+  let queueInfo = [];
+  await this.asyncForEach(numGroup , async (item) => {
+    const data1 = {
+      productBarcode: productBarcode,
+      queueDate: current,
+      factoryID: factoryID,
+      isOutsource: isOutsource,
+      forLoss: forLoss,
+      forLossQty: forLossQty,
+      bundleNo: item.bundleNo,
+      bundleID: item.bundleID,
+      toNode: toNode,
+      productCount: productCount,
+      numberFrom: item.numberFrom,
+      numberTo: item.numberTo,
+      yarnLot: yarnLot,
+      createBy: createBy,
+    };
+    queueInfo.push(data1);
+  });
+  // console.log(queueInfo);
+
+  result1 = await OrderProductionQueue.updateOne(
+    {$and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"productID":productID},
+    ]}, 
+    {$push: {queueInfo: {$each:queueInfo,  $position: 0}}},  // ## add new element at the first
+    );
+
+  /**  
+   {
+      "productBarcode": "BA1OOA4S    UK-------24BL--------M---",
+      "queueDate": {
+        "$date": "2023-08-24T11:23:05.000Z"
+      },
+      "factoryID": "f000001",
+      "isOutsource": false,
+      "forLoss": false,
+      "forLossQty": 0,
+      "bundleNo": 1421403,
+      "bundleID": "abeb7d27-eec9-49f6-b89c-45ab6e76dfe6",
+      "toNode": "1.COMPUTER-KNITTING",
+      "productCount": 12,
+      "numberFrom": 1,
+      "numberTo": 12,
+      "yarnLot": [
+        {
+          "yarnLotID": "35292",
+          "_id": {
+            "$oid": "64e73d9b049b62e26936eb7d"
+          }
+        }
+      ],
+      "createBy": {
+        "userID": "1x1",
+        "userName": "xxxx"
+      },
+      "_id": {
+        "$oid": "64e73d9b049b62e26936eb7c"
+      }
+    },
+   */
+
+    console.log('add to arrary for order queue ok');
+  return true;
+}
+
+exports.getDelOrderProduction2 = async (companyID, orderID, productBarcode, no1, no2) => {
+  // ## delete from orderProduction
+  // 911  -  1342
+  // const no1 = 911;  // ##   <<---- input number here
+  // const no2 = 1342; // ##   <<---- input number here
+  const productBarcodeNo1Arr1 = await this.createArrElementN(productBarcode, no1, no2);
+  // console.log(productBarcodeNo1Arr1);
+  result01 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+  console.log('delete ok');
+  return true;
+}
+
 exports.getDelOrderProduction1 = async () => {
   const companyID = 'c000001';
   const orderID = 'BA1OPA4S';
@@ -10927,6 +11056,7 @@ exports.setOpenOrderProduction = async () => {
 }
 
 exports.createArrElementN= async (productBarcodeNo1, no1, no2) => {
+  // console.log(productBarcodeNo1, no1, no2);
   let productBarcodeNo1Arr = [];
   for (let i = no1; i <= no2; i++) {
     // setBackStrLen= async (len, str, strBack)

@@ -632,11 +632,11 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     }));
 
     // console.log(companyCurrentProductQtyAll);
-    const currentCompanyOrderCountry = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr, orderIDArr);
+    // const currentCompanyOrderCountry = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr, orderIDArr);
     const currentCompanyOrderZone = await ShareFunc.getCurrentCompanyOrderZone(companyID, orderStatusArr, orderIDArr);
 
     const currentCompanyOrderZoneStyle = await ShareFunc.getCurrentCompanyOrderZoneStyle(companyID, orderStatusArr, orderIDArr);
-    const currentCompanyOrderCountryStyle = await ShareFunc.getCurrentCompanyOrderCountryStyle(companyID, orderStatusArr, orderIDArr);
+    // const currentCompanyOrderCountryStyle = await ShareFunc.getCurrentCompanyOrderCountryStyle(companyID, orderStatusArr, orderIDArr);
     
     // getComFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr)
     const currentCompanyProductQtyZoneAll = await ShareFunc.getComCurrentProductQtyZoneAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
@@ -648,12 +648,14 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     const currentProductQtyAllC = await ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
     const currentProductQtyAllCompleteC = await ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
     
-    const currentCompanyProductQtyCountryAll = await ShareFunc.getComCurrentProductQtyCountryAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
-    const currentCompanyProductQtyCountryCompleteAll = await ShareFunc.getComCurrentProductQtyCountryAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
+
+    // // ##  for country
+    // const currentCompanyProductQtyCountryAll = await ShareFunc.getComCurrentProductQtyCountryAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    // const currentCompanyProductQtyCountryCompleteAll = await ShareFunc.getComCurrentProductQtyCountryAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
     
-    //## cs = color size
-    const currentCompanyProductQtyCountryCSAll = await ShareFunc.getComCurrentProductQtyCountryCSAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
-    const currentCompanyProductQtyCountryCSCompleteAll = await ShareFunc.getComCurrentProductQtyCountryCSAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
+    // //## cs = color size
+    // const currentCompanyProductQtyCountryCSAll = await ShareFunc.getComCurrentProductQtyCountryCSAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    // const currentCompanyProductQtyCountryCSCompleteAll = await ShareFunc.getComCurrentProductQtyCountryCSAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
     
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -661,11 +663,11 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       currentOrderStyle: currentOrderStyle,
 
-      currentCompanyOrderCountry: currentCompanyOrderCountry,
+      currentCompanyOrderCountry: [], // currentCompanyOrderCountry,
       currentCompanyOrderZone: currentCompanyOrderZone,
 
       currentCompanyOrderZoneStyle: currentCompanyOrderZoneStyle,
-      currentCompanyOrderCountryStyle: currentCompanyOrderCountryStyle,
+      currentCompanyOrderCountryStyle: [], // currentCompanyOrderCountryStyle,
 
       companyCurrentProductQtyAll: companyCurrentProductQtyAll,
       companyCurrentProductQtyCompleteAll: companyCurrentProductQtyCompleteAll,
@@ -677,11 +679,17 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
       currentProductQtyAllC: currentProductQtyAllC,
       currentProductQtyAllCompleteC: currentProductQtyAllCompleteC,
 
-      currentCompanyProductQtyCountryAll: currentCompanyProductQtyCountryAll,
-      currentCompanyProductQtyCountryCompleteAll: currentCompanyProductQtyCountryCompleteAll,
+      // currentCompanyProductQtyCountryAll: currentCompanyProductQtyCountryAll,
+      // currentCompanyProductQtyCountryCompleteAll: currentCompanyProductQtyCountryCompleteAll,
 
-      currentCompanyProductQtyCountryCSAll: currentCompanyProductQtyCountryCSAll,
-      currentCompanyProductQtyCountryCSCompleteAll: currentCompanyProductQtyCountryCSCompleteAll,
+      // currentCompanyProductQtyCountryCSAll: currentCompanyProductQtyCountryCSAll,
+      // currentCompanyProductQtyCountryCSCompleteAll: currentCompanyProductQtyCountryCSCompleteAll,
+
+      currentCompanyProductQtyCountryAll: [],
+      currentCompanyProductQtyCountryCompleteAll: [],
+
+      currentCompanyProductQtyCountryCSAll: [],
+      currentCompanyProductQtyCountryCSCompleteAll: [],
 
       // orderStyleColorSize: orderStyleColorSize,
 
