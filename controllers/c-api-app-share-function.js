@@ -1366,14 +1366,17 @@ exports.getProductImageProfile= async (companyID, productID) => {
 // ## get image profiles    /  productIDs []
 exports.getProductImageProfiles= async (companyID, productIDs) => {
   let i = 0;
+  let productIDs1 = [];
   await this.asyncForEach(productIDs, async (item1) => {
     item1 = await this.setBackStrLen(process.env.productIDLen, item1, ' ');
+    productIDs1.push(await this.setBackStrLen(process.env.productIDLen, item1, ' '));
     i++;
   });
+  // console.log(productIDs1);
   const productImageProfiles  = await Product.aggregate([
     { $match: { $and: [
       {"companyID":companyID} , 
-      {"productID":{$in: productIDs}},
+      {"productID":{$in: productIDs1}},
     ] } },
     { $project: { 
       _id: 0,	
@@ -1381,7 +1384,7 @@ exports.getProductImageProfiles= async (companyID, productIDs) => {
       imageProfile: 1, 
     } },
   ]);
-
+  // console.log(productImageProfiles);
   return productImageProfiles ? productImageProfiles : [];
 }
 
@@ -10305,6 +10308,87 @@ exports.createBundleNoArr= async (bundleNo1, bundleNo2) => {
   return bundleNoArr;
 }
 
+// item1.companyID, 
+//       item1.factoryID,
+//       item1.orderID, 
+//       item1.productBarcode, 
+//       +item1.bundleNo1, 
+//       +item1.bundleNo2, 
+//       +item1.no1, 
+//       +item1.no2,
+//       +item1.productCount,
+//       item1.forLoss
+
+exports.editOrderProductionForloss = async (companyID, factoryID, orderID, productBarcode, bundleNo1, bundleNo2, no1, no2, productCount, forLoss) => {
+
+  let bundleNos = [];
+  bundleNos = await this.createBundleNoArr(+bundleNo1, +bundleNo2);
+  // console.log(bundleNos);
+  const bundleNoFrom = +bundleNo1;
+  const bundleNoTo = +bundleNo2;
+  const productBarcodeNo1Arr1 = await this.createArrElementN(productBarcode, no1, no2);
+  // console.log(productBarcodeNo1Arr1);
+
+  // ## edit order production
+  const result1 = await OrderProduction.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":{$in: [orderID]}},
+      {"productBarcodeNoReal":{$in: productBarcodeNo1Arr1}}
+    ]}, 
+    {
+      "forLoss": forLoss
+    });
+    // console.log('edit order production --------------------------------');
+
+    // ## edit orderProductionQueue
+    const result2 = await OrderProductionQueue.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        {"orderID":{$in: [orderID]}},
+      ]},
+      {
+        // "factoryID": toFactoryID,
+        $set: { 
+          "queueInfo.$[elem].forLossQty" : 0,
+          "queueInfo.$[elem].forLoss" : forLoss,
+        }
+      }, 
+      {
+        multi: true, 
+        arrayFilters: [  {
+          "elem.factoryID": factoryID,
+          "elem.bundleNo":{$in: bundleNos}, 
+          // "elem.numberFrom": { $gte: no1 } , 
+          // "elem.numberTo": { $lte: no2 },
+          "elem.productBarcode": productBarcode
+        } ] 
+      });  
+
+
+  // ## edit orderProductionQueueList
+  const result3 = await OrderProductionQueueList.updateMany(
+    {$and: [
+      {"orderID":orderID},
+      {"companyID":companyID},
+
+      {"bundleNoFrom":bundleNo1},
+      {"bundleNoTo":bundleNo2},
+      {"numberFrom":no1},
+      {"numberTo":no2},
+    ]},
+    {
+      "forLossQty": 0,
+      "forLoss": forLoss,
+    }); 
+
+  console.log('edit ok');
+  return true;
+}
+
+
+
 exports.getDelOrderProductionV3 = async (companyID, orderID, productBarcode, bundleNo1, bundleNo2, no1, no2, productCount) => {
   const productBarcodes = [productBarcode];
   let bundleNos = [];
@@ -10312,9 +10396,9 @@ exports.getDelOrderProductionV3 = async (companyID, orderID, productBarcode, bun
   const bundleNoFrom = +bundleNo1;
   const bundleNoTo = +bundleNo2;
 
-  console.log(productBarcodes , ' ==>  productBarcodes');
-  console.log(bundleNos , ' ==>  bundleNos');
-  console.log(bundleNo1, bundleNo2, no1, no2, productCount);
+  // console.log(productBarcodes , ' ==>  productBarcodes');
+  // console.log(bundleNos , ' ==>  bundleNos');
+  // console.log(bundleNo1, bundleNo2, no1, no2, productCount);
 
   if (bundleNo1 > -1) {  // ## -1 = no need use bundleNo
     
@@ -10641,6 +10725,42 @@ exports.getDelOrderProduction1 = async () => {
   console.log('delete ok');
   return true;
 }
+
+// delAllOrderProduction
+exports.delAllOrderProduction = async (companyID, orderID) => {
+
+  // ## del all order production
+  result01 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    // {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+
+  // ## delete all order queue
+  result2 = await OrderProductionQueue.updateOne({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+  ]} , 
+  {
+    "queueInfo": [],
+    // $pull: {queueInfo: {"productBarcode":{$in: productBarcodes}}}
+  });
+
+  // ## delete al order queue list
+  result3 = await OrderProductionQueueList.deleteMany({$and: [
+    {"companyID":companyID} , 
+    {"orderID":orderID} ,
+    // {"productBarcode":{$in: productBarcodes}},
+    // {"factoryID":factoryID} ,
+    // {"orderID":orderID} ,
+  ]}); 
+
+  console.log('delete ok');
+  return true;
+}
+
 
 exports.cancelOrderQueueAllByProductBarcode = async () => {
   const companyID = 'c000001';

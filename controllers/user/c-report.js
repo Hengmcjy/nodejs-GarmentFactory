@@ -585,6 +585,79 @@ exports.findCompleteQty =  (companyCurrentProductQtyCompleteAll, companyID, orde
   return 0;
 }
 
+// ## get node getRepCurrentProductionOverview
+exports.getRepCurrentProductionOverview = async (req, res, next) => {
+  // try {} catch (err) {}
+  // ## CF = /:companyID/:factoryID
+  // console.log('getRepCurrentProductionOverview');
+  const companyID = req.params.companyID;
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const productStatusArr = JSON.parse(req.params.productStatus);
+  const orderStatusArr = JSON.parse(req.params.ordertatus);
+  const productStatusCompleteArr = ['complete'];
+  const orderIDArr = JSON.parse(req.params.orderIDArr);
+
+  try {
+    // console.log('0');
+    // const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
+    // ## all in production
+    const currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr, orderIDArr);
+    // console.log('1');
+
+    
+    // console.log('console.log(companyCurrentProductQtyAll');
+
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      currentOrderStyle: currentOrderStyle,
+
+      // currentCompanyOrderCountry: [], // currentCompanyOrderCountry,
+      // currentCompanyOrderZone: currentCompanyOrderZone,
+
+      // currentCompanyOrderZoneStyle: currentCompanyOrderZoneStyle,
+      // currentCompanyOrderCountryStyle: [], // currentCompanyOrderCountryStyle,
+
+      // companyCurrentProductQtyAll: companyCurrentProductQtyAll,
+      // companyCurrentProductQtyCompleteAll: companyCurrentProductQtyCompleteAll,
+
+      // currentCompanyProductQtyZoneAll: currentCompanyProductQtyZoneAll,
+      // currentCompanyProductQtyZoneCompleteAll: currentCompanyProductQtyZoneCompleteAll,
+
+      // currentProductListAllC: currentProductListAllC, // ## for check error
+      // currentProductQtyAllC: currentProductQtyAllC,
+      // currentProductQtyAllCompleteC: currentProductQtyAllCompleteC,
+
+      // currentCompanyProductQtyCountryAll: currentCompanyProductQtyCountryAll,
+      // currentCompanyProductQtyCountryCompleteAll: currentCompanyProductQtyCountryCompleteAll,
+
+      // currentCompanyProductQtyCountryCSAll: currentCompanyProductQtyCountryCSAll,
+      // currentCompanyProductQtyCountryCSCompleteAll: currentCompanyProductQtyCountryCSCompleteAll,
+
+      currentCompanyProductQtyCountryAll: [],
+      currentCompanyProductQtyCountryCompleteAll: [],
+
+      currentCompanyProductQtyCountryCSAll: [],
+      currentCompanyProductQtyCountryCSCompleteAll: [],
+
+      // orderStyleColorSize: orderStyleColorSize,
+
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp005', 
+        mode:'errRepCurrentCompanyProductionAll', 
+        value: "error report current company production all"
+      }
+    });
+  }
+}
+
+
+
+
 // // ## get node getRepCurrentProductQtyCom
 // router.get("/node/rep3/current/productqty/com/:companyID/:factoryIDArr/:ordertatus/:productStatus", checkAuth, checkUUID, 
 //         reportController.getRepCurrentProductQtyCom);
@@ -604,13 +677,16 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
   // console.log(companyID, factoryIDArr, productStatusArr, orderStatusArr);
   // console.log(orderIDArr);
   try {
+    // console.log('0');
     // const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
     // ## all in production
     const currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr, orderIDArr);
+    // console.log('1');
 
     // exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr)
     let companyCurrentProductQtyAllF = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
     const companyCurrentProductQtyCompleteAll = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
+    // console.log('2');
 
     const companyCurrentProductQtyAllFF = await companyCurrentProductQtyAllF.map(  (fw) => ({
       companyID: fw.companyID, 
@@ -620,6 +696,7 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
       countQty: fw.countQty,
       completeQty:  this.findCompleteQty(companyCurrentProductQtyCompleteAll, fw.companyID, fw.orderID, fw.productID, fw.style),
     }));
+    // console.log('3');
     const companyCurrentProductQtyAll = await companyCurrentProductQtyAllFF.map(  (fw) => ({
       companyID: fw.companyID, 
       orderID: fw.orderID,
@@ -630,24 +707,32 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
       remainQty: 0
       // remainQty: fw.countQty - fw.completeQty
     }));
+    // console.log('4');
 
     // console.log(companyCurrentProductQtyAll);
     // const currentCompanyOrderCountry = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr, orderIDArr);
     const currentCompanyOrderZone = await ShareFunc.getCurrentCompanyOrderZone(companyID, orderStatusArr, orderIDArr);
+    // console.log('5');
 
     const currentCompanyOrderZoneStyle = await ShareFunc.getCurrentCompanyOrderZoneStyle(companyID, orderStatusArr, orderIDArr);
     // const currentCompanyOrderCountryStyle = await ShareFunc.getCurrentCompanyOrderCountryStyle(companyID, orderStatusArr, orderIDArr);
+    // console.log('6');
     
     // getComFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr)
     const currentCompanyProductQtyZoneAll = await ShareFunc.getComCurrentProductQtyZoneAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    // console.log('7');
     const currentCompanyProductQtyZoneCompleteAll = await ShareFunc.getComCurrentProductQtyZoneAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
-    
+    // console.log('8');
+
     // ## get Rep C Current company Production  all
     // ## for check error    currentProductListAllC
-    const currentProductListAllC = await ShareFunc.getCCurrentProductQtyAllList(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    // const currentProductListAllC = await ShareFunc.getCCurrentProductQtyAllList(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    const currentProductListAllC = []
+    // console.log('9');
     const currentProductQtyAllC = await ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    // console.log('10');
     const currentProductQtyAllCompleteC = await ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
-    
+    // console.log('11');
 
     // // ##  for country
     // const currentCompanyProductQtyCountryAll = await ShareFunc.getComCurrentProductQtyCountryAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
@@ -657,6 +742,8 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     // const currentCompanyProductQtyCountryCSAll = await ShareFunc.getComCurrentProductQtyCountryCSAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
     // const currentCompanyProductQtyCountryCSCompleteAll = await ShareFunc.getComCurrentProductQtyCountryCSAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
     
+    // console.log('console.log(companyCurrentProductQtyAll');
+
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
       token: token,

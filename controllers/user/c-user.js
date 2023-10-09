@@ -52,13 +52,86 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
+// // ## http://172.31.193.5:3968/api/user/test/test12
+// router.get("/test/test12", userController.getTestTest12); 
+// ## edit orderProduction forloss --> normal
+exports.getTestTest12 = async (req, res, next) => {
+  const bundleData = [
+    {
+      companyID: 'c000001',
+      factoryID: 'f000001',
+      orderID: 'DDE60A4S',
+      productBarcode: 'DDE60A4S    UK-------24WH--------F---',
+      bundleNo1: 1448199,
+      bundleNo2: 1448205,
+      no1: 1749,
+      no2: 1832,
+      productCount: 12,
+      forLoss: false
+    },
+    {
+      companyID: 'c000001',
+      factoryID: 'f000001',
+      orderID: 'DDE60A4S',
+      productBarcode: 'DDE60A4S    UK-------24GL--------F---',
+      bundleNo1: 1448206,
+      bundleNo2: 1448211,
+      no1: 1423,
+      no2: 1494,
+      productCount: 12,
+      forLoss: false
+    },
+    {
+      companyID: 'c000001',
+      factoryID: 'f000001',
+      orderID: 'DDE60A4S',
+      productBarcode: 'DDE60A4S    UK-------24LY--------F---',
+      bundleNo1: 1448212,
+      bundleNo2: 1448213,
+      no1: 315,
+      no2: 338,
+      productCount: 12,
+      forLoss: false
+    },
+  ];
+
+  await this.asyncForEach(bundleData, async (item1) => {
+    const result = await ShareFunc.editOrderProductionForloss(
+      item1.companyID, 
+      item1.factoryID,
+      item1.orderID, 
+      item1.productBarcode, 
+      +item1.bundleNo1, 
+      +item1.bundleNo2, 
+      +item1.no1, 
+      +item1.no2,
+      +item1.productCount,
+      item1.forLoss
+      );
+  });
+
+  const result1 = 'OK';
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>cancel queue order  by product barcode</title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel queue order V2  </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result1+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
+
 // // ## http://192.168.1.7:3968/api/user/test/test10
 // ## cancel queue order  by product barcode
 exports.getTestTest10 = async (req, res, next) => {
-//   BA1OPA4S      JAPN-----24OM--------XS--
-// xs
-// 1441399
-// 49 - 54
+  // BA1OPA4S      JAPN-----24OM--------XS--
+  // xs
+  // 1441399
+  // 49 - 54
   const bundleData = [
     {
       companyID: 'c000001',
@@ -181,6 +254,37 @@ exports.getTestTest9 = async (req, res, next) => {
   res.write('<h1>cancel queue order V2  </h1></br>');
   res.write('<h1>by product barcode</h1>');
   res.write('<h1>'+result1+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
+// // ## http://192.168.1.35:3968/api/user/test/test14
+// ## ## cancel orderProduction , queue (all) 100%
+exports.getTestTest14 = async (req, res, next) => {
+
+  const bundleData = [
+    {
+      companyID: 'c000001',
+      orderID: 'DCB07A4S',
+    },
+  ];
+
+  // await this.asyncForEach(bundleData, async (item1) => {
+  //   const result = await ShareFunc.delAllOrderProduction(
+  //     item1.companyID, 
+  //     item1.orderID
+  //     );
+  // });
+
+ const result = true;
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>cancel  order production  by product orderID</title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel  order production , queue </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result+'</h1>');
   res.write('</body>');
   res.write('</html>');
   return res.end();
