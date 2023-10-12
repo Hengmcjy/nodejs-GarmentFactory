@@ -792,6 +792,85 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
   }
 }
 
+// // ## get node getRepNodeNoScanDatail
+// router.get("/node/noscan2/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderID/:targetPlaceID/:color/:size/:infoTypeArr", 
+//         reportController.getRepNodeNoScanDatail);
+exports.getRepNodeNoScanDatail = async (req, res, next) => {
+  // try {} catch (err) {}
+  // ## CFN = /:companyID/:factoryID/:nodeID
+  const companyID = req.params.companyID;
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const nodeID = req.params.nodeID;
+  const orderID = req.params.orderID;
+  const targetPlaceID = req.params.targetPlaceID;
+  const color = req.params.color;
+  const size = req.params.size;
+  const infoTypeArr = JSON.parse(req.params.infoTypeArr); // ## ['mainData', 'detailData']
+  // const date12Arr = JSON.parse(req.params.date12);  // have 2 date
+  const statusArr = ['normal', 'complete'];
+
+  console.log('getRepNodeNoScanDatail');
+  console.log(factoryIDArr, nodeID, orderIDs, infoTypeArr, targetPlaceID, color, size);
+
+}
+
+// // ## get node getRepNodeNoScan
+// router.get("/node/noscan1/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderIDsArr/:infoTypeArr", 
+//         reportController.getRepNodeNoScan);
+exports.getRepNodeNoScan = async (req, res, next) => {
+  // try {} catch (err) {}
+  // ## CFN = /:companyID/:factoryID/:nodeID
+  const companyID = req.params.companyID;
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const nodeID = req.params.nodeID;
+  const orderIDs = JSON.parse(req.params.orderIDsArr);
+  const orderIDArr = JSON.parse(req.params.orderIDsArr);
+  const infoTypeArr = JSON.parse(req.params.infoTypeArr); // ## ['mainData', 'detailData']
+  // const date12Arr = JSON.parse(req.params.date12);  // have 2 date
+  const statusArr = ['normal', 'complete'];
+
+  // console.log('getRepNodeNoScan');
+  // console.log(factoryIDArr, nodeID, orderIDs, infoTypeArr);
+
+  try {
+    let mainDataBundleNoScan = [];
+
+    // ## main for show on tab selector
+    if (infoTypeArr.includes('mainData')) {
+      const mainDataBundleNoScanF = await ShareFunc.getRepCFNCurrentMainDataBundleNoscan(companyID, factoryIDArr, nodeID, orderIDArr, statusArr);
+      mainDataBundleNoScan = mainDataBundleNoScanF;  // ## current bundle no scan
+    }
+
+    // if (repListNameArr.includes('allTotalProduct')) {
+    //   const mainDataBundleNoScanF = await ShareFunc.getRepCFNCurrentMainDataBundleNoscan(companyID, factoryID, nodeID, productStatusArr);
+    //   mainDataBundleNoScan = mainDataBundleNoScanF;  // ## current all product qty in nodeID 
+    //   // console.log(' 0 - allTotalProduct -->             allProductQty  ===' , allProductQty);
+    // }
+
+
+    // ## menu was selected
+    if (infoTypeArr.includes('detailData')) {
+
+    }
+
+
+    res.status(200).json({
+      token: '',
+      expiresIn: process.env.expiresIn,
+      mainDataBundleNoScan: mainDataBundleNoScan,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp014', 
+        mode:'errRepNodeIDNoScan', 
+        value: "error report nodeID no scan"
+      }
+    });
+  }
+}
+
+
 // // ## get node getRepNodeStaffScannedByDate12
 // router.get("/node/scan1/rep/current/productqty/com/:companyID/:factoryIDArr/:orderIDsArr/:date12/:infoType", checkAuth, checkUUID, 
 //         reportController.getRepNodeStaffScannedByDate12);

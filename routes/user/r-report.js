@@ -120,9 +120,8 @@ router.get("/cpn/rep9/current/order/:companyID/:ordertatus/:orderID", checkAuth,
 // ###################################################################################################
 // ## report worker report ############################################################################
 
-// // ## get node getRepCurrentProductQtyAllCFNode
-// router.get("/node/wk/rep5/current/productqty/all/cfnode/:companyID/:factoryIDArr/:productStatus",
-//         reportController.getRepCurrentProductQtyAllCFNode);
+// // ## get 
+
 // // ##
 
 // ## report worker report ############################################################################

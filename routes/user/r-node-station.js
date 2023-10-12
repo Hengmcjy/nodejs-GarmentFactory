@@ -200,6 +200,17 @@ router.put("/affiliate1/edit/oderProduction/nextnode", nsController.putAffiliate
 
 // cfn = /:companyID/:factoryID/:nodeID
 
+// ## qrcode no scan on nodeID
+
+// ## get node getRepNodeNoScan
+router.get("/node/noscan1/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderIDsArr/:infoTypeArr", 
+        reportController.getRepNodeNoScan);
+// // ##
+
+// ## get node getRepNodeNoScanDatail
+router.get("/node/noscan2/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderID/:targetPlaceID/:color/:size/:infoTypeArr", 
+        reportController.getRepNodeNoScanDatail);
+// // ##
 
 
 // ## get node getRepNodeStaffScannedByDate12

@@ -2,6 +2,7 @@ const express = require("express");
 const Multer = require("multer");
 const { Storage } = require("@google-cloud/storage");
 
+const reportController = require("../../controllers/user/c-report");
 const userController = require("../../controllers/user/c-user");
 const checkAuth = require('../../middleware/check-auth');
 const checkUUID = require('../../middleware/check-uuid');
@@ -126,7 +127,12 @@ router.post("/create/companyID/factory/user", checkAuth, checkUUID, userControll
 // ## get  user member  factory by userID companyID
 router.get("/getmembers/factory/:companyID/:factoryID/:state/:page/:limit", checkAuth, checkUUID, userController.getUserMemberFactory);
 
+// ## report 
 
+// ## get node getRepNodeNoScan
+router.get("/node/noscan1/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderIDsArr/:infoTypeArr", checkAuth, checkUUID,
+        reportController.getRepNodeNoScan);
+// // ##
 
 
 // ## staff / worker
