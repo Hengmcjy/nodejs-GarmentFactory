@@ -208,7 +208,7 @@ router.get("/node/noscan1/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderIDsArr/
 // // ##
 
 // ## get node getRepNodeNoScanDatail
-router.get("/node/noscan2/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderID/:targetPlaceID/:color/:size/:infoTypeArr", 
+router.get("/node/noscan2/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderIDArr/:targetPlaceID/:color/:size/:infoTypeArr/:page/:limit", 
         reportController.getRepNodeNoScanDatail);
 // // ##
 

@@ -793,7 +793,7 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
 }
 
 // // ## get node getRepNodeNoScanDatail
-// router.get("/node/noscan2/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderID/:targetPlaceID/:color/:size/:infoTypeArr", 
+// router.get("/node/noscan2/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderIDArr/:targetPlaceID/:color/:size/:infoTypeArr/:page/:limit", 
 //         reportController.getRepNodeNoScanDatail);
 exports.getRepNodeNoScanDatail = async (req, res, next) => {
   // try {} catch (err) {}
@@ -801,16 +801,68 @@ exports.getRepNodeNoScanDatail = async (req, res, next) => {
   const companyID = req.params.companyID;
   const factoryIDArr = JSON.parse(req.params.factoryIDArr);
   const nodeID = req.params.nodeID;
-  const orderID = req.params.orderID;
+  // const orderID = req.params.orderID;
+  const orderIDArr = JSON.parse(req.params.orderIDArr);
   const targetPlaceID = req.params.targetPlaceID;
   const color = req.params.color;
   const size = req.params.size;
-  const infoTypeArr = JSON.parse(req.params.infoTypeArr); // ## ['mainData', 'detailData']
+  const infoTypeArr = JSON.parse(req.params.infoTypeArr); // ## ['mainData', 'detailData'] / no 'mainData'
   // const date12Arr = JSON.parse(req.params.date12);  // have 2 date
+  const page = +req.params.page;
+  const limit = +req.params.limit;
   const statusArr = ['normal', 'complete'];
 
-  console.log('getRepNodeNoScanDatail');
-  console.log(factoryIDArr, nodeID, orderIDs, infoTypeArr, targetPlaceID, color, size);
+  // console.log('getRepNodeNoScanDatail');
+  // console.log(factoryIDArr, nodeID, orderIDArr, infoTypeArr, targetPlaceID, color, size, page, limit);
+
+  try {
+    // ## menu was selected
+    let mainDataBundleNoScanDetail = [];
+    let mainDataBundleNoScanNo = [];
+
+    let productBarcodeArr = [];
+    let bundleNoArr = [];
+    let bundleIDArr = [];
+    if (infoTypeArr.includes('detailData')) {
+      const mainDataBundleNoScanDetailF = 
+        await ShareFunc.getRepCFNCurrentMainDataBundleNoscanDetail(
+          companyID, factoryIDArr, nodeID, orderIDArr, statusArr, 
+          targetPlaceID, color, size, page, limit
+        );
+        mainDataBundleNoScanDetail = mainDataBundleNoScanDetailF;  // ## current bundle no scan
+
+        // ## get productBarcode, bundleNo, bundleID
+        await this.asyncForEach(mainDataBundleNoScanDetail, async (item1) => {
+          if (!productBarcodeArr.includes(item1.productBarcode)) {productBarcodeArr.push(item1.productBarcode);}
+          if (!bundleNoArr.includes(item1.bundleNo)) {bundleNoArr.push(item1.bundleNo);}
+          if (!bundleIDArr.includes(item1.bundleID)) {bundleIDArr.push(item1.bundleID);}
+        });
+        // console.log(productBarcodeArr, bundleNoArr, bundleIDArr);
+
+        const mainDataBundleNoScanDetailFF = 
+          await ShareFunc.getRepCFNCurrentMainDataBundleNoscanProductBarcode(
+            companyID, factoryIDArr, nodeID, orderIDArr, statusArr,
+            productBarcodeArr, bundleNoArr, bundleIDArr
+          );
+          mainDataBundleNoScanNo = mainDataBundleNoScanDetailFF;  // ## current bundle no scan , barcodeNo
+    }
+    // console.log(mainDataBundleNoScanDetail);
+
+    res.status(200).json({
+      token: '',
+      expiresIn: process.env.expiresIn,
+      mainDataBundleNoScanDetail: [],
+      mainDataBundleNoScanNo: mainDataBundleNoScanNo,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp014-1', 
+        mode:'errRepNodeIDNoScanDetail', 
+        value: "error report nodeID no scan detail"
+      }
+    });
+  }
 
 }
 
@@ -833,9 +885,9 @@ exports.getRepNodeNoScan = async (req, res, next) => {
   // console.log(factoryIDArr, nodeID, orderIDs, infoTypeArr);
 
   try {
-    let mainDataBundleNoScan = [];
-
+    
     // ## main for show on tab selector
+    let mainDataBundleNoScan = [];
     if (infoTypeArr.includes('mainData')) {
       const mainDataBundleNoScanF = await ShareFunc.getRepCFNCurrentMainDataBundleNoscan(companyID, factoryIDArr, nodeID, orderIDArr, statusArr);
       mainDataBundleNoScan = mainDataBundleNoScanF;  // ## current bundle no scan
