@@ -370,6 +370,88 @@ exports.getTestTest6 = async (req, res, next) => {
 
 }
 
+
+
+// // ## http://192.168.1.35:3968/api/user/test/test5_1
+// router.get("/test/test5_1", userController.getTestTest5_1);
+// ## add productionNode to orderProduction @ position nodeID
+exports.getTestTest5_1 = async (req, res, next) => {
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const companyID = 'c000001';
+  const factoryID = 'f000002';
+  const toNode = '5.WASHING';
+  const productStatus = ['normal'];
+  // 1.COMPUTER-KNITTING
+  // 2.PANAL-INSPECTION
+  // 3.LINKING
+  // 4.MENDING
+  // 5.WASHING
+  // 6.PRESSING
+  // 7.QC
+
+  
+
+  const productionNodeArr = [
+    {
+      factoryID: factoryID,
+      fromNode: '5.WASHING',
+      toNode: '6.PRESSING',
+      datetime: current,
+      status: 'normal',
+      isOutsource: false,
+      outsourceData: [],
+      problemID: '',
+      problemName: '',
+      createBy: {userID: '1xx1', userName: '1xx1'}
+    },
+    {
+      factoryID: factoryID,
+      fromNode: '6.PRESSING',
+      toNode: '7.QC',
+      datetime: current,
+      status: 'normal',
+      isOutsource: false,
+      outsourceData: [],
+      problemID: '',
+      problemName: '',
+      createBy: {userID: '1xx1', userName: '1xx1'}
+    }
+  ];
+
+  const bundleData = [
+    {
+      companyID: companyID,
+      factoryID: factoryID,
+      toNode: toNode,
+      productStatus: productStatus,
+      productionNodeArr: productionNodeArr,
+    },
+  ];
+
+  // await this.asyncForEach(bundleData, async (item1) => {
+  //   const result = await ShareFunc.updateProductionNodeCrossStebPosition(
+  //     item1.companyID, 
+  //     item1.factoryID,
+  //     item1.toNode,
+  //     item1.productStatus,
+  //     item1.productionNodeArr,
+  //     );
+  // });
+
+  const result = 'OK';
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>add productionNode @ position nodeID</title><head>');
+  res.write('<body>');
+  res.write('<h1>add productionNode to orderProduction @ position nodeID</h1></br>');
+  res.write('<h1>add push to nodeID we need to</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 // // ## http://192.168.1.50:3968/api/user/test/test5
 // router.get("/test/test5", userController.getTestTest5);
 exports.getTestTest5 = async (req, res, next) => {
@@ -588,20 +670,20 @@ exports.getTestTest = async (req, res, next) => {
 }
 
 // getOrderQueueTest1
-// // ## http://192.168.0.181:3968/api/user/test/orderqueue/test1
+// // ## http://192.168.1.35:3968/api/user/test/orderqueue/test1
 exports.getOrderQueueTest1 = async (req, res, next) => {
   // // ## cancel queue order all by product barcode  (companyID, factoryID, orderID, productBarcode, no1, no2)
   const companyID = 'c000001';
   const factoryID = 'f000001';
-  const orderID = 'BA1OOA4S';
-  const productBarcode = 'BA1OOA4S    ASIA-----24BK--------L---';
-  const bundleNoFrom = 1438419;
-  const bundleNoTo = 1438438;
-  const no1 = 1;
-  const no2 = 240;
+  const orderID = 'BA1OPA4S';
+  const productBarcode = 'BA1OPA4S    JAPN-----24LY--------XL--';
+  const bundleNoFrom = 1447926;
+  const bundleNoTo = 1447952;
+  const no1 = 325;
+  const no2 = 648;
   const productCount = 12;
   const createBy = {userID: '1x1', userName: 'xxxx'};
-  const yarnLot = [{yarnLotID: '35292'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
+  const yarnLot = [{yarnLotID: '36054A'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
   // const yarnLot = [{yarnLotID: '35292'}, {yarnLotID: '35292'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
   const isOutsource = false;
   const forLoss = false;

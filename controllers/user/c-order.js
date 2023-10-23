@@ -2249,7 +2249,7 @@ exports.getCompanyOrderByStyle = async (req, res, next) => {
   const orderIDArr = JSON.parse(req.params.orderIDArr);
   // const repListNameArr = JSON.parse(req.params.repListName);
   // console.log(companyID, orderStatusArr);
-  // console.log(companyID, style , '.');
+  // console.log(companyID, style , '.', orderIDArr);
   try {
 
     const currentProductQtyAllC = await ShareFunc.getCCurrentProductQtyAllByStyleC(companyID, style, productStatusArr);
@@ -2259,6 +2259,7 @@ exports.getCompanyOrderByStyle = async (req, res, next) => {
     currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr, orderIDArr);
     
     // console.log(orderStyleColorSize, currentCompanyOrder, currentOrderStyle);
+    // console.log( currentCompanyOrder);
 
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({

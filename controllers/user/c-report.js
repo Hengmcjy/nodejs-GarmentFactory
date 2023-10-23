@@ -600,9 +600,38 @@ exports.getRepCurrentProductionOverview = async (req, res, next) => {
   try {
     // console.log('0');
     // const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
+
     // ## all in production
     const currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr, orderIDArr);
     // console.log('1');
+
+    // ## get factory relate to
+    const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDArr);
+    // console.log('1');
+
+    let companyCurrentProductQtyAllF = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    const companyCurrentProductQtyCompleteAll = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
+    // console.log('2');
+
+    const companyCurrentProductQtyAllFF = await companyCurrentProductQtyAllF.map(  (fw) => ({
+      companyID: fw.companyID, 
+      orderID: fw.orderID,
+      productID: fw.productID,
+      style: fw.style,
+      countQty: fw.countQty,
+      completeQty:  this.findCompleteQty(companyCurrentProductQtyCompleteAll, fw.companyID, fw.orderID, fw.productID, fw.style),
+    }));
+    // console.log('3');
+    const companyCurrentProductQtyAll = await companyCurrentProductQtyAllFF.map(  (fw) => ({
+      companyID: fw.companyID, 
+      orderID: fw.orderID,
+      productID: fw.productID,
+      style: fw.style,
+      countQty: fw.countQty,
+      completeQty:  fw.completeQty,
+      remainQty: 0
+      // remainQty: fw.countQty - fw.completeQty
+    }));
 
     
     // console.log('console.log(companyCurrentProductQtyAll');
@@ -612,6 +641,7 @@ exports.getRepCurrentProductionOverview = async (req, res, next) => {
       token: token,
       expiresIn: process.env.expiresIn,
       currentOrderStyle: currentOrderStyle,
+      currentFactoryOrder: currentFactoryOrder,
 
       // currentCompanyOrderCountry: [], // currentCompanyOrderCountry,
       // currentCompanyOrderZone: currentCompanyOrderZone,
@@ -619,7 +649,7 @@ exports.getRepCurrentProductionOverview = async (req, res, next) => {
       // currentCompanyOrderZoneStyle: currentCompanyOrderZoneStyle,
       // currentCompanyOrderCountryStyle: [], // currentCompanyOrderCountryStyle,
 
-      // companyCurrentProductQtyAll: companyCurrentProductQtyAll,
+      companyCurrentProductQtyAll: companyCurrentProductQtyAll,
       // companyCurrentProductQtyCompleteAll: companyCurrentProductQtyCompleteAll,
 
       // currentCompanyProductQtyZoneAll: currentCompanyProductQtyZoneAll,
@@ -710,12 +740,12 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     // console.log('4');
 
     // console.log(companyCurrentProductQtyAll);
-    // const currentCompanyOrderCountry = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr, orderIDArr);
+    const currentCompanyOrderCountry = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr, orderIDArr);
     const currentCompanyOrderZone = await ShareFunc.getCurrentCompanyOrderZone(companyID, orderStatusArr, orderIDArr);
     // console.log('5');
 
     const currentCompanyOrderZoneStyle = await ShareFunc.getCurrentCompanyOrderZoneStyle(companyID, orderStatusArr, orderIDArr);
-    // const currentCompanyOrderCountryStyle = await ShareFunc.getCurrentCompanyOrderCountryStyle(companyID, orderStatusArr, orderIDArr);
+    const currentCompanyOrderCountryStyle = await ShareFunc.getCurrentCompanyOrderCountryStyle(companyID, orderStatusArr, orderIDArr);
     // console.log('6');
     
     // getComFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr)
@@ -750,11 +780,11 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       currentOrderStyle: currentOrderStyle,
 
-      currentCompanyOrderCountry: [], // currentCompanyOrderCountry,
+      currentCompanyOrderCountry: currentCompanyOrderCountry, // currentCompanyOrderCountry,
       currentCompanyOrderZone: currentCompanyOrderZone,
 
       currentCompanyOrderZoneStyle: currentCompanyOrderZoneStyle,
-      currentCompanyOrderCountryStyle: [], // currentCompanyOrderCountryStyle,
+      currentCompanyOrderCountryStyle: currentCompanyOrderCountryStyle, // currentCompanyOrderCountryStyle,
 
       companyCurrentProductQtyAll: companyCurrentProductQtyAll,
       companyCurrentProductQtyCompleteAll: companyCurrentProductQtyCompleteAll,

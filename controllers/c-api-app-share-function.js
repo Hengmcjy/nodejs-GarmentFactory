@@ -7932,6 +7932,83 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
   return orderProductRepF;
 }
 
+// getCurrentCFactoryOrder
+exports.getCurrentCFactoryOrder = async (companyID, orderIDs) => {
+  const factoryOrder = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        // productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: 1,  // ## 
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      // style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // datetime: "$productionNode.datetime",
+      factoryID: "$productionNode.factoryID",	
+      // fromNode: "$productionNode.fromNode",
+      // status: "$productionNode.status",
+      // toNode: "$productionNode.toNode",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+    
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        factoryID: '$factoryID',
+        // fromNode: '$fromNode',
+        // dayMonthUTC: '$dayMonthUTC',
+        // style: '$style',
+        // targetPlace: '$targetPlace',
+        // color: '$color',
+        // size: '$size',
+
+      },
+      // countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ]);
+
+  const factoryOrderF = await factoryOrder.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID,
+    factoryID: fw._id.factoryID,
+    // fromNode: fw._id.fromNode,
+    // dayMonthUTC: fw._id.dayMonthUTC,
+    // style: fw._id.style,
+    // targetPlace: fw._id.targetPlace,
+    // color: fw._id.color,
+    // size: fw._id.size,
+    // countQty: fw.countQty,
+  }));
+  return factoryOrderF;
+}
+
 exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
   const staffScan = await OrderProduction.aggregate([
     { $match: { $and: [
@@ -11363,6 +11440,127 @@ exports.updateOrderProductionForBundleNo = async () => {
 
 
   console.log('updated all complete' );
+  return true;
+}
+
+// await ShareFunc.updateProductionNodeCrossStebPosition
+// http://192.168.1.35:3968/api/user/test/test5_1
+exports.updateProductionNodeCrossStebPosition = async (companyID, factoryID, toNode, productStatus, productionNodeArr ) => {
+  console.log('updateProductionNodeCrossStebPosition');
+
+  const orderProductRep = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"factoryID":{$in: factoryIDArr}},
+      {"productStatus":{$in: productStatus}},
+      // {"orderID":{$in: orderIDArr}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        // orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      // orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      productBarcodeNoReal: 1,
+      // style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+      factoryID: "$productionNode.factoryID",
+    }},
+
+    { $match: { $and: [
+      {"factoryID":factoryID},
+      {"toNode":toNode},
+      // {"factoryID":{$in: factoryIDArr}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      productBarcodeNoReal: 1,
+      // productID: 1,
+      // style: 1,
+      // targetPlace: 1,
+      // color: 1,
+      // size: 1,
+      // factoryID: 1,
+    }},
+
+    { $group: {			
+      _id: { 
+        productBarcodeNoReal: '$productBarcodeNoReal',
+        // factoryID: '$factoryID',
+        // productID: '$productID',
+        // style: '$style',
+        // targetPlace: '$targetPlace',
+        // color: '$color',
+        // size: '$size',
+        // productID: '$productID',
+        // bundleNo: '$bundleNo',
+        // mode: '$mode',
+      },
+      // countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ]);
+
+  // console.log(orderProductRep, 'next ----------------------------------------------------------');
+
+  const orderProductRepF = await orderProductRep.map(fw => ({
+    productBarcodeNoReal: fw._id.productBarcodeNoReal, 
+    // factoryID: fw._id.factoryID,
+    // productID: fw._id.productID,
+    // style: fw._id.style,
+    // size: fw._id.size,
+    // targetPlace: fw._id.targetPlace,
+    // color: fw._id.color,
+    // countQty: fw.countQty,
+  }));
+
+  const orderProductRepFF = Array.from(new Set(orderProductRepF.map((item) => item.productBarcodeNoReal)))
+
+  // console.log(orderProductRepFF, 'next ........................................................');
+
+  result1 = await OrderProduction.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"productStatus":{$in: productStatus}},
+      {"productBarcodeNoReal":{$in: orderProductRepFF}}
+      // {"productBarcodeNoReal":{$in: productBarcodeNos}}
+      // {"productBarcodeNo":{$in: productBarcodeNos}}
+    ]}, 
+    {
+      // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+      $push: {productionNode: {$each: productionNodeArr}},
+      // $push: {productionNode: productionNode},
+      // $push: {productionNode: {$each: productionNodeArr}},
+    });
+    console.log('updateProductionNode @ position nodeID update complete');
+
   return true;
 }
 

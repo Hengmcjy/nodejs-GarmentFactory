@@ -2205,7 +2205,7 @@ exports.getOrderProductionQueueByProductBarcodeNo = async (req, res, next) => {
   const productBarcodeNo = req.params.productBarcodeNo;
   // const bundleNo = +req.params.bundleNo;
 
-  // console.log(companyID, productBarcodeNo);
+  console.log(companyID, productBarcodeNo);
   try {
 
     // ## get 1 OrderProduction
