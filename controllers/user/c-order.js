@@ -1375,7 +1375,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
             {$and: [
               {"companyID":companyID},
               {"orderID":orderID},
-              {"productID":productID},
+              // {"productID":productID},
             ]}, 
             {
               // "forLossQty": forLossQty,

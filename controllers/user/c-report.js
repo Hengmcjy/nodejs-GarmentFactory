@@ -685,8 +685,75 @@ exports.getRepCurrentProductionOverview = async (req, res, next) => {
   }
 }
 
+// ## get node getRepCNCurrentProductQtyNode
+// router.get("/node/rep11/cn/current/productqty/:companyID/:factoryIDArr/:ordertatus/:productStatus/:orderIDArr/:toNodeArr", checkAuth, checkUUID, 
+//         reportController.getRepCNCurrentProductQtyNode);
+exports.getRepCNCurrentProductQtyNode = async (req, res, next) => {
+  // ## CN = /:companyID/:nodeID
+  // console.log('getRepCNCurrentProductQtyNode');
+  const companyID = req.params.companyID;
+  // const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  // const nodeID = req.params.nodeID;
+  const factoryIDArr = JSON.parse(req.params.factoryIDArr);
+  const productStatusArr = JSON.parse(req.params.productStatus);
+  const orderStatusArr = JSON.parse(req.params.ordertatus);
+  // const productStatusCompleteArr = ['complete'];
+  const orderIDArr = JSON.parse(req.params.orderIDArr);
+  const toNodeArr = JSON.parse(req.params.toNodeArr);
+  // console.log(companyID, factoryIDArr, productStatusArr, orderStatusArr, orderIDArr, toNodeArr);
+  try {
 
+    // ## get production each node + outsource
+    const currentProductionNodeQty = 
+      await ShareFunc.getCNCurrentProductionNodeQty(companyID, orderStatusArr, productStatusArr, orderIDArr, toNodeArr);
 
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      currentProductionNodeQty: currentProductionNodeQty,
+
+      // currentCompanyOrderCountry: currentCompanyOrderCountry, // currentCompanyOrderCountry,
+      // currentCompanyOrderZone: currentCompanyOrderZone,
+
+      // currentCompanyOrderZoneStyle: currentCompanyOrderZoneStyle,
+      // currentCompanyOrderCountryStyle: currentCompanyOrderCountryStyle, // currentCompanyOrderCountryStyle,
+
+      // companyCurrentProductQtyAll: companyCurrentProductQtyAll,
+      // companyCurrentProductQtyCompleteAll: companyCurrentProductQtyCompleteAll,
+
+      // currentCompanyProductQtyZoneAll: currentCompanyProductQtyZoneAll,
+      // currentCompanyProductQtyZoneCompleteAll: currentCompanyProductQtyZoneCompleteAll,
+
+      // currentProductListAllC: currentProductListAllC, // ## for check error
+      // currentProductQtyAllC: currentProductQtyAllC,
+      // currentProductQtyAllCompleteC: currentProductQtyAllCompleteC,
+
+      // currentCompanyProductQtyCountryAll: currentCompanyProductQtyCountryAll,
+      // currentCompanyProductQtyCountryCompleteAll: currentCompanyProductQtyCountryCompleteAll,
+
+      // currentCompanyProductQtyCountryCSAll: currentCompanyProductQtyCountryCSAll,
+      // currentCompanyProductQtyCountryCSCompleteAll: currentCompanyProductQtyCountryCSCompleteAll,
+
+      // currentCompanyProductQtyCountryAll: [],
+      // currentCompanyProductQtyCountryCompleteAll: [],
+
+      // currentCompanyProductQtyCountryCSAll: [],
+      // currentCompanyProductQtyCountryCSCompleteAll: [],
+
+      // orderStyleColorSize: orderStyleColorSize,
+
+    });
+  } catch (err) {
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp015', 
+        mode:'errRepProgressNode', 
+        value: "error report progress node"
+      }
+    });
+  }
+}
 
 // // ## get node getRepCurrentProductQtyCom
 // router.get("/node/rep3/current/productqty/com/:companyID/:factoryIDArr/:ordertatus/:productStatus", checkAuth, checkUUID, 

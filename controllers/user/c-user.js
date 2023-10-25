@@ -669,40 +669,46 @@ exports.getTestTest = async (req, res, next) => {
   return res.end();
 }
 
+// BA1OFA4S
+// BA1OFA4S    ASIA-----24BK--------M---
+// 1  -  312
+// 1466041
+// 1466066
+
 // getOrderQueueTest1
-// // ## http://192.168.1.35:3968/api/user/test/orderqueue/test1
+// // ## http://172.31.204.194:3968/api/user/test/orderqueue/test1
 exports.getOrderQueueTest1 = async (req, res, next) => {
   // // ## cancel queue order all by product barcode  (companyID, factoryID, orderID, productBarcode, no1, no2)
   const companyID = 'c000001';
   const factoryID = 'f000001';
-  const orderID = 'BA1OPA4S';
-  const productBarcode = 'BA1OPA4S    JAPN-----24LY--------XL--';
-  const bundleNoFrom = 1447926;
-  const bundleNoTo = 1447952;
-  const no1 = 325;
-  const no2 = 648;
+  const orderID = 'BA1OFA4S';
+  const productBarcode = 'BA1OFA4S    ASIA-----24BK--------M---';
+  const bundleNoFrom = 1466041;
+  const bundleNoTo = 1466066;
+  const no1 = 1;
+  const no2 = 312;
   const productCount = 12;
   const createBy = {userID: '1x1', userName: 'xxxx'};
-  const yarnLot = [{yarnLotID: '36054A'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
+  const yarnLot = [{yarnLotID: '35252A'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
   // const yarnLot = [{yarnLotID: '35292'}, {yarnLotID: '35292'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
   const isOutsource = false;
   const forLoss = false;
   const forLossQty = 0;
   const toNode = '1.COMPUTER-KNITTING';
   
-  const result =
-    await ShareFunc.test1_addnewArrOrderQueue(
-      companyID, factoryID, orderID, productBarcode, 
-      productCount, 
-      bundleNoFrom, bundleNoTo, 
-      no1, no2,
-      isOutsource,
-      forLoss,
-      forLossQty,
-      toNode,
-      yarnLot,
-      createBy
-    );
+  // const result =
+  //   await ShareFunc.test1_addnewArrOrderQueue(
+  //     companyID, factoryID, orderID, productBarcode, 
+  //     productCount, 
+  //     bundleNoFrom, bundleNoTo, 
+  //     no1, no2,
+  //     isOutsource,
+  //     forLoss,
+  //     forLossQty,
+  //     toNode,
+  //     yarnLot,
+  //     createBy
+  //   );
 
   res.setHeader('Content-Type', 'text/html');
   res.write('<html>');

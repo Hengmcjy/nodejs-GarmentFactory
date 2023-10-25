@@ -62,6 +62,11 @@ router.get("/node/rep3/current/productqty/com/:companyID/:factoryIDArr/:ordertat
         reportController.getRepCurrentProductQtyCom);
 // // ##
 
+// ## get node getRepCNCurrentProductQtyNode
+router.get("/node/rep11/cn/current/productqty/:companyID/:factoryIDArr/:ordertatus/:productStatus/:orderIDArr/:toNodeArr", checkAuth, checkUUID, 
+        reportController.getRepCNCurrentProductQtyNode);
+// // ##
+
 // ## get node getRepCurrentProductionOverview
 router.get("/node/rep9/current/productqty/com/:companyID/:factoryIDArr/:ordertatus/:productStatus/:orderIDArr", checkAuth, checkUUID, 
         reportController.getRepCurrentProductionOverview);
