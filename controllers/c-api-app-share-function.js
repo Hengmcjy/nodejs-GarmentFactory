@@ -2825,6 +2825,47 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
   return orderProduction1F;
 }
 
+// checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos)
+exports.checkBundleNoExisted= async (companyID, orderID, productBarcode, bundleNos) => {
+  const orderIDs = [orderID];
+  // console.log(bundleNos);
+  const OrderProductionQueueRow = await OrderProductionQueue.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"orderID":{$in: orderIDs}},
+    ] } },
+    { $unwind: "$queueInfo"},
+    { $project: {		
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      // productBarcodeNo: 1,	
+      // productBarcode: "$queueInfo.productBarcode",	
+      bundleNo: "$queueInfo.bundleNo",	
+      // toNode: "$queueInfo.toNode",	
+    }	},
+    { $match: { $and: [
+      // {"productBarcode":productBarcode},
+      {"bundleNo":{$in: bundleNos}},
+    ] } },
+    { $project: {		
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      // productBarcodeNo: 1,	
+      // productBarcode: 1,	
+      bundleNo: 1,	
+      // toNode: "$queueInfo.toNode",	
+    }	},
+  ]);
+  // console.log(OrderProductionQueueRow);
+  if (OrderProductionQueueRow.length > 0) {
+    return true; // ## existed
+  } else {
+    return false; // ## not existed
+  }
+}
+
 // checkExistOrderProductionByBarcodeNo
 // checkExistOrderProductionByBarcodeNo(companyID, factoryID, orderID, productID, productBarcodeNo);
 exports.checkExistOrderProductionByBarcodeNo= async (companyID, factoryID, orderID, productID, productBarcodeNo) => {
@@ -3600,6 +3641,41 @@ exports.getOrderProductListByByORIDBunNo= async (companyID, orderID, bundleNo) =
       {"companyID":companyID},
       {"orderID":orderID},
       {"bundleNo":bundleNo},
+      // {"productBarcodeNo":productBarcodeNo},
+      // {"productBarcodeNoReal":{$in: productBarcodeNos}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        bundleID: 1,
+        productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productBarcodeNoReserve: 1,
+        productCount: 1,
+        productionDate: 1,
+        productStatus: 1,
+        yarnLot: 1,
+        // outsourceData: 1,
+        subNodeFlow: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	}
+  ]);
+  // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
+  // console.log(orderProduct);
+  return orderProduct.length>0?orderProduct:[];
+}
+
+exports.getOrderProductListByByORIDBunNo2= async (companyID, orderID, bundleNo, bundleID) => {
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      {"bundleNo":bundleNo},
+      {"bundleID":bundleID},
       // {"productBarcodeNo":productBarcodeNo},
       // {"productBarcodeNoReal":{$in: productBarcodeNos}}
     ] } },

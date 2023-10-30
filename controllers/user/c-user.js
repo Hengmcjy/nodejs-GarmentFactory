@@ -669,27 +669,28 @@ exports.getTestTest = async (req, res, next) => {
   return res.end();
 }
 
-// BA1OFA4S
-// BA1OFA4S    ASIA-----24BK--------M---
-// 1  -  312
-// 1466041
-// 1466066
+// BA1OPA4S
+// BA1OPA4S    JAPN-----24LY--------L---
+// 36054A
+// 529  -  1056
+// 1447882
+// 1447925
 
 // getOrderQueueTest1
-// // ## http://172.31.204.194:3968/api/user/test/orderqueue/test1
+// // ## http://192.168.1.35:3968/api/user/test/orderqueue/test1
 exports.getOrderQueueTest1 = async (req, res, next) => {
   // // ## cancel queue order all by product barcode  (companyID, factoryID, orderID, productBarcode, no1, no2)
   const companyID = 'c000001';
   const factoryID = 'f000001';
-  const orderID = 'BA1OFA4S';
-  const productBarcode = 'BA1OFA4S    ASIA-----24BK--------M---';
-  const bundleNoFrom = 1466041;
-  const bundleNoTo = 1466066;
-  const no1 = 1;
-  const no2 = 312;
+  const orderID = 'BA1OPA4S';
+  const productBarcode = 'BA1OPA4S    JAPN-----24LY--------L---';
+  const bundleNoFrom = 1451188;
+  const bundleNoTo = 1451233;
+  const no1 = 1057;
+  const no2 = 1608;
   const productCount = 12;
   const createBy = {userID: '1x1', userName: 'xxxx'};
-  const yarnLot = [{yarnLotID: '35252A'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
+  const yarnLot = [{yarnLotID: '36055A'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
   // const yarnLot = [{yarnLotID: '35292'}, {yarnLotID: '35292'}];  // [{yarnLotID: '35292'}, {yarnLotID: '35292'}]; 
   const isOutsource = false;
   const forLoss = false;

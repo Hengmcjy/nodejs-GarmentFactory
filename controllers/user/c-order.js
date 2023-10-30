@@ -1148,7 +1148,6 @@ exports.createQueueInfo= async (productBarcodeNoRange, productBarcodeNoUUID, cur
   return queueInfo;
 }
 
-
 // // ## /api/order2/orderProductionQueues/lists/createnew   postOrderProductionQueuesCreateNew
 // router.post("/order2/orderProductionQueues/lists/createnew", checkAuth, checkUUID, orderController.postOrderProductionQueuesCreateNew);
 exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
@@ -1210,6 +1209,33 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     // queueInfo.queueDate = current;
     // console.log(targetPlace);
     // console.log(queueInfo);
+
+    // ## check T.orderProductionQueue  for bundleNo exist 
+    let bundleNos = [];
+    for (let i = +bundleNoFrom; i <= +bundleNoTo; i++) {
+      bundleNos.push(i);
+    }
+    const bundleNoExisted = await ShareFunc.checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos);
+    // console.log('bundleNoExisted = ', bundleNoExisted);
+    if (bundleNoExisted) {
+      await session.abortTransaction(); 
+          session.endSession();
+          await session2.abortTransaction(); 
+          session2.endSession();
+          await session3.abortTransaction(); 
+          session3.endSession();
+          return res.status(422).json({
+            message: {
+              messageID: 'errO007-2-1', 
+              mode:'errCreateOrderProductionsListQueueBybundleNoExisted', 
+              value: "create Order Productions list Queue error by bundleNo Existed"
+            },
+            token: token,
+            expiresIn: process.env.expiresIn,
+            userID: data.userID,
+            success: false
+          });
+    }
 
     // console.log(yarnLot);
     let yarnLot2 = [];

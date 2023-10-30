@@ -2160,12 +2160,34 @@ exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
 
   // console.log(companyID, orderID, bundleNo);
   try {
-
+    
     // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
     let orderProductionQueueBundleNo = await ShareFunc.getOrderProductionQueueByBundleNo(companyID, orderID, bundleNo);
     // console.log(orderProductionQueueBundleNo);
     
     let orderSubNodeFlowCost = await ShareFunc.getOrderProductionSubNodeFlowCost1(companyID, orderID);
+
+    // const bundleID = orderProduction.bundleID;
+    // const productCount = orderProduction.productCount;
+    // const productBarcode = productBarcodeNo.substr(+process.env.productBarcodePos, +process.env.productBarcodeDigit);
+
+    // ## get number from bundleNo , bundleID
+    let bundleID = '';
+    let productCount = 0;
+    let productBarcode = '';
+    let numberFrom = 0;
+    let numberTo = 0;
+    const orderProductionNo = await ShareFunc.getOrderProductListByByORIDBunNo(companyID, orderID, bundleNo);
+    // console.log(orderID, orderProductionNo);
+    if (orderProductionNo.length > 0) {
+      orderProductionNo.sort((a,b)=>{ return a.productBarcodeNoReal >b.productBarcodeNoReal?1:a.productBarcodeNoReal <b.productBarcodeNoReal?-1:0 });
+      bundleID = orderProductionNo[0].bundleID;
+      productCount = +orderProductionNo[0].productCount;
+      productBarcode = orderProductionNo[0].productBarcodeNo.substr(+process.env.productBarcodePos, +process.env.productBarcodeDigit);
+      numberFrom = +orderProductionNo[0].productBarcodeNoReal.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+      numberTo = +orderProductionNo[orderProductionNo.length - 1].productBarcodeNoReal.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+      // console.log(numberFrom, numberTo);
+    }
 
     // await ShareFunc.upsertUserSession1hr(userID);
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -2174,6 +2196,13 @@ exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
       // expiresIn: process.env.expiresIn,
       orderSubNodeFlowCost: orderSubNodeFlowCost,
       orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      orderID: orderID,
+      bundleNo: bundleNo,
+      bundleID: bundleID,
+      productBarcode: productBarcode,
+      productCount: productCount,
+      numberFrom: numberFrom,
+      numberTo: numberTo,
       success: true,
       message: {
         messageID: 'ok', 
@@ -2225,6 +2254,21 @@ exports.getOrderProductionQueueByProductBarcodeNo = async (req, res, next) => {
     // console.log(orderProduction.orderID, orderProduction.bundleNo);
     const orderID = orderProduction.orderID;
     const bundleNo = orderProduction.bundleNo;
+    const bundleID = orderProduction.bundleID;
+    const productCount = orderProduction.productCount;
+    const productBarcode = productBarcodeNo.substr(+process.env.productBarcodePos, +process.env.productBarcodeDigit);
+
+    // ## get number from bundleNo , bundleID
+    let numberFrom = 0;
+    let numberTo = 0;
+    const orderProductionNo = await ShareFunc.getOrderProductListByByORIDBunNo2(companyID, orderID, bundleNo, bundleID);
+    // console.log(orderID, orderProductionNo);
+    if (orderProductionNo.length > 0) {
+      orderProductionNo.sort((a,b)=>{ return a.productBarcodeNoReal >b.productBarcodeNoReal?1:a.productBarcodeNoReal <b.productBarcodeNoReal?-1:0 });
+      numberFrom = +orderProductionNo[0].productBarcodeNoReal.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+      numberTo = +orderProductionNo[orderProductionNo.length - 1].productBarcodeNoReal.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+      // console.log(numberFrom, numberTo);
+    }
 
     // console.log(orderID, bundleNo);
     // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
@@ -2240,6 +2284,13 @@ exports.getOrderProductionQueueByProductBarcodeNo = async (req, res, next) => {
       // expiresIn: process.env.expiresIn,
       orderSubNodeFlowCost: orderSubNodeFlowCost,
       orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      orderID: orderID,
+      bundleNo: bundleNo,
+      bundleID: bundleID,
+      productBarcode: productBarcode,
+      productCount: productCount,
+      numberFrom: numberFrom,
+      numberTo: numberTo,
       success: true,
       message: {
         messageID: 'ok', 
