@@ -9,6 +9,9 @@ const io = require('../../socket');
 const ShareFunc = require("../c-api-app-share-function");
 
 const Yarn = require("../../models/m-yarn");
+const YarnSeason = require("../../models/m-yarnSeason");
+const YarnColor = require("../../models/m-yarnColor");
+const YarnSupplier = require("../../models/m-yarnSupplier");
 // const Company = require("../../models/m-company");
 // const Factory = require("../../models/m-factory");
 // const Product = require("../../models/m-product");
@@ -75,6 +78,12 @@ exports.getYarnsList = async (req, res, next) => {
     const yarns = await ShareFunc.getYarns(companyID);
     const yarnsCount = await ShareFunc.getYarnsCount(companyID);
 
+    const showArr = [true]; 
+    // ## get yarn season
+    const yarnSeasons = await ShareFunc.getYarnSeasons(companyID, showArr);
+    const yarnSuppliers = await ShareFunc.getYarnSuppliers(companyID, showArr);
+    const yarnColors = await ShareFunc.getYarnColors(companyID, showArr);
+    
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -84,7 +93,10 @@ exports.getYarnsList = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       yarns: yarns,
-      yarnsCount: yarnsCount
+      yarnsCount: yarnsCount,
+      yarnSeasons: yarnSeasons,
+      yarnSuppliers: yarnSuppliers,
+      yarnColors: yarnColors,
     });
   } catch (err) {
     console.log(err);

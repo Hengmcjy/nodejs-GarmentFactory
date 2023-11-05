@@ -3,6 +3,8 @@ const uniqueValidator = require("mongoose-unique-validator");
 
 const yarnSchema = mongoose.Schema({
   companyID: {type: String},
+  yarnSupplierID: {type: String},
+  customerID: {type: String},
   seq: {type: Number},
   yarnID: {type: String},
   yarnName: {type: String},

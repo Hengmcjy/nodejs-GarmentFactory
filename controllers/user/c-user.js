@@ -379,7 +379,7 @@ exports.getTestTest5_1 = async (req, res, next) => {
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const companyID = 'c000001';
   const factoryID = 'f000002';
-  const toNode = '5.WASHING';
+  const toNode = '2.PANAL-INSPECTION'; // 2.PANAL-INSPECTION
   const productStatus = ['normal'];
   // 1.COMPUTER-KNITTING
   // 2.PANAL-INSPECTION
@@ -391,11 +391,30 @@ exports.getTestTest5_1 = async (req, res, next) => {
 
   
 
+  // // 5.WASHING
+  // const productionNodeArr = [
+  //   {
+  //     factoryID: factoryID,
+  //     fromNode: '5.WASHING',
+  //     toNode: '6.PRESSING',
+  //     datetime: current,
+  //     status: 'normal',
+  //     isOutsource: false,
+  //     outsourceData: [],
+  //     problemID: '',
+  //     problemName: '',
+  //     createBy: {userID: '1xx1', userName: '1xx1'}
+  //   },
+    
+  // ];
+
+
+  // 2.PANAL-INSPECTION
   const productionNodeArr = [
     {
       factoryID: factoryID,
-      fromNode: '5.WASHING',
-      toNode: '6.PRESSING',
+      fromNode: '2.PANAL-INSPECTION',
+      toNode: '3.LINKING',
       datetime: current,
       status: 'normal',
       isOutsource: false,
@@ -406,8 +425,8 @@ exports.getTestTest5_1 = async (req, res, next) => {
     },
     {
       factoryID: factoryID,
-      fromNode: '6.PRESSING',
-      toNode: '7.QC',
+      fromNode: '3.LINKING',
+      toNode: '4.MENDING',
       datetime: current,
       status: 'normal',
       isOutsource: false,

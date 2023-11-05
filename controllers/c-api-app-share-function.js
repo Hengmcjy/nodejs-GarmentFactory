@@ -28,6 +28,9 @@ const OrderProduction = require("../models/m-orderProduction");
 const OrderProductionQueue = require("../models/m-orderProductionQueue");
 const OrderProductionQueueList = require("../models/m-orderProductionQueueList");
 const Yarn = require("../models/m-yarn");
+const YarnSeason = require("../models/m-yarnSeason");
+const YarnColor = require("../models/m-yarnColor");
+const YarnSupplier = require("../models/m-yarnSupplier");
 const Customer = require("../models/m-customer");
 const ControlApp = require("../models/m-controlApp");
 const Color = require("../models/m-color");
@@ -2922,6 +2925,8 @@ exports.getYarns= async (companyID) => {
         yarnFullName: 1,	
         detail: 1,
         companyID: 1,
+        yarnSupplierID: 1,
+        customerID: 1,
         seq: 1,		
     }	},
     { $sort: { seq: 1 } }
@@ -2929,6 +2934,66 @@ exports.getYarns= async (companyID) => {
   // console.log(yarns);
   return yarns;
 }
+
+exports.getYarnSeasons= async (companyID, showArr) => {
+  // limit = +limit; // ## change to number
+  const yarn = await YarnSeason.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        yarnSeasonID: 1,
+        yarnSeasonName: 1,			
+    }	},
+    { $sort: { yarnSeasonID: 1 } }
+  ]);
+  // console.log(yarn);
+  return yarn;
+}
+
+exports.getYarnSuppliers= async (companyID, showArr) => {
+  // limit = +limit; // ## change to number
+  const yarn = await YarnSupplier.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        yarnSupplierID: 1,
+        yarnSupplierName: 1,			
+        customerID: 1,	
+    }	},
+    { $sort: { yarnSupplierID: 1 } }
+  ]);
+  // console.log(yarns);
+  return yarn;
+}
+
+exports.getYarnColors= async (companyID, showArr) => {
+  // limit = +limit; // ## change to number
+  const yarn = await YarnColor.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        yarnColorID: 1,
+        yarnColorName: 1,			
+        customerID: 1,		
+    }	},
+    { $sort: { customerID: 1, yarnColorID: 1 } }
+  ]);
+  // console.log(yarns);
+  return yarn;
+}
+
 
 
 // ## yarn zone ####################################################################
