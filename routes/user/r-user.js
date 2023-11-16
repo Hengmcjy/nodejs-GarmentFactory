@@ -36,6 +36,9 @@ router.get("/test/test14", userController.getTestTest14); // ## cancel orderProd
 // ## test order queue
 router.get("/test/orderqueue/test1", userController.getOrderQueueTest1);
 
+// ## test get mongodb version
+router.get("/test/get/monogdbver/getver", userController.getMonogoDbver1);
+
 
 // ## general info / starting data
 router.get("/generalinfo/:languageID/:classLimit", userController.getGeneralInfo);

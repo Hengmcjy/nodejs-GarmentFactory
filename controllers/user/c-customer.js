@@ -168,6 +168,7 @@ exports.postCustomerCreateNew = async (req, res, next) => {
       ]} , 
       {
         "customerName": customerName,
+        "setName": customerName,
         "registDate": registDate,
         "imageProfile": imageProfile,
         "cusInfo": cusInfo,

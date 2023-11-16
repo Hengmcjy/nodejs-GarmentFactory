@@ -9,7 +9,7 @@ const nodemailer = require('nodemailer');
 const bcrypt = require("bcryptjs");
 const XLSX = require("xlsx");
 const { v5: uuidv5 } = require('uuid');
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4, fromString  } = require('uuid');
 
 const Session1hr = require('../models/m-session1hrs');  // check this for current login
 const Session1ys = require('../models/m-session1ys');
@@ -28,6 +28,7 @@ const OrderProduction = require("../models/m-orderProduction");
 const OrderProductionQueue = require("../models/m-orderProductionQueue");
 const OrderProductionQueueList = require("../models/m-orderProductionQueueList");
 const Yarn = require("../models/m-yarn");
+const YarnData = require("../models/m-yarnData");
 const YarnSeason = require("../models/m-yarnSeason");
 const YarnColor = require("../models/m-yarnColor");
 const YarnSupplier = require("../models/m-yarnSupplier");
@@ -70,6 +71,33 @@ exports.test1= async () => {
     ]},
     {$unset: {sendtime: ""} });
 
+}
+
+exports.showMongoDBDateDetail= async (companyID) => {
+  const showDateDetailf = await YarnData.aggregate([
+    // 2019-06-15T04:18:28.000+00:00
+    { $match: { $and: [
+      {"companyID": companyID} , 
+      // {"betCancel":false} ,
+    ] } },
+    { $project: {
+      yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+      year: { $year: "$datetime" },
+      month: { $month: "$datetime" },
+      day: { $dayOfMonth: "$datetime" },
+      hour: { $hour: "$datetime" },
+      minutes: { $minute: "$datetime" },
+      seconds: { $second: "$datetime" },
+      milliseconds: { $millisecond: "$datetime" },
+      dayOfYear: { $dayOfYear: "$datetime" },
+      dayOfWeek: { $dayOfWeek: "$datetime" },
+      week: { $week: "$datetime" }
+    } }
+  ]);
+  console.log(showDateDetailf);
+  return showDateDetailf;
 }
 
 
@@ -196,6 +224,16 @@ exports.genTokenSet= async (tokenSet, expiresIn) => {
   return token;
 }
 
+// getMongoDBVer1
+exports.getMongoDBVer1= async () => {
+  // const mongoDBVer1 = await User.runCommand( { serverStatus: 1, mirroredReads: 1 } );
+  // const mongoDBVer1 = await User.se
+  return mongoDBVer1;
+}
+
+// db.runCommand( { serverStatus: 1, mirroredReads: 1 } )
+
+
 // ## get general info
 exports.generalInfo= async () => {
   const generalInfo = {
@@ -229,8 +267,29 @@ exports.getUserClass= async (classLimit) => {
 // ## get color info
 exports.colorInfo= async () => {
   const color = await Color.aggregate([
+
     { $project: {			
         _id: 0,	
+        companyID: 1,	
+        seq: 1,		
+        setName: 1,
+        color: 1
+    }	},
+    { $sort: { seq: 1 } }
+  ]);	
+
+  return color;
+}
+
+exports.colorComSetName= async (companyID, setName) => {
+  const color = await Color.aggregate([
+    { $match: { $and: [
+      {"companyID": companyID}, 
+      {"setName": setName},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,	
         seq: 1,		
         setName: 1,
         color: 1
@@ -1407,6 +1466,23 @@ exports.genProductBarcodeNoArr= async (productBarcode, numberFrom, numberTo) => 
     productBarcodeNoArr.push(productBarcode+num5);
   }
   return productBarcodeNoArr;
+}
+
+// ShareFunc.getYarnCusOrderIDs(companyID, customerID, season);
+exports.getYarnCusOrderIDs= async (companyID, customerID, season) => {
+  const orders = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":season},
+      {"customerOR.customerID":customerID},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        orderID: 1,
+        companyID: 1,
+    }	},
+  ]);
+  return orders;
 }
 
 
@@ -2904,6 +2980,409 @@ exports.checkExistOrderProductionByBarcodeNo= async (companyID, factoryID, order
 // #################################################################################
 // ## yarn zone ####################################################################
 
+exports.getYarnPlanDateGroup= async (companyID, factoryID, customerID, yarnSeasonID, uuidArr, type) => {
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
+      // {"uuid":uuid},
+      // {"yarnID":yarnID},
+      {"uuid":{$in: uuidArr}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        // companyID: 1,
+        // factoryID: 1,		
+        // customerID: 1,	
+        // yarnSeasonID: 1,
+        uuid: 1,
+        // yarnID: 1,		
+        yarnDataInfo: 1,
+    }	},
+    { $unwind: "$yarnDataInfo" },
+    { $project: { _id: 0, 
+      // companyID: 1,
+      // factoryID: 1,		
+      // customerID: 1,	
+      // yarnSeasonID: 1,
+      uuid: 1,
+      // yarnID: 1,
+      datetime: "$yarnDataInfo.datetime",
+      // yarnColorID: "$yarnDataInfo.yarnColorID",
+      type: "$yarnDataInfo.type",
+      // toFactoryID: "$yarnDataInfo.toFactoryID",
+    }},
+    { $match: { $and: [
+      // {"datetime":datetime},
+      // {"yarnColorID":yarnColorID},
+      // {"type":type},
+      {"type":{$in: type}},
+      // {"toFactoryID":toFactoryID},
+      // {"uuid":uuid},
+      // {"yarnID":yarnID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      // companyID: 1,
+      // factoryID: 1,		
+      // customerID: 1,	
+      // yarnSeasonID: 1,
+      uuid: 1,
+      // yarnID: 1,		
+      // yarnDataInfo: 1,
+      // datetime: 1,
+      // yarnColorID: 1,
+      type: 1,		
+      // toFactoryID: 1,
+      yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+    }	},
+    { $group: {			
+      _id: { 
+        mmdd: '$mmdd',
+        yyyymmdd: '$yyyymmdd',
+        type: '$type',
+    },
+      // sumProductQty: {$sum: 1} ,
+    }},
+    { $sort: { "_id.yyyymmdd": 1 } },
+  ]);
+  const yarnDataF = await yarnData.map(fw => ({
+    type: fw._id.type, 
+    mmdd: fw._id.mmdd, 
+    yyyymmdd: fw._id.yyyymmdd,
+    // productID: fw._id.productID,
+    // style: fw._id.style,
+    // countQty: fw.countQty,
+  }));
+  // console.log(yarnDataF);
+  return yarnDataF;
+}
+
+// getYarnPlanDataInfo2
+exports.getYarnPlanDataInfo2= async (companyID, factoryID, customerID, yarnSeasonID, uuid, yarnID, 
+  yarnDataUUID, yarnColorID, type, toFactoryID) => {
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"uuid":uuid},
+      {"yarnID":yarnID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        uuid: 1,
+        yarnID: 1,		
+        yarnDataInfo: 1,
+    }	},
+    { $unwind: "$yarnDataInfo" },
+    { $project: { _id: 0, 
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,
+      yarnDataUUID: "$yarnDataInfo.yarnDataUUID",
+      datetime: "$yarnDataInfo.datetime",
+      yarnColorID: "$yarnDataInfo.yarnColorID",
+      type: "$yarnDataInfo.type",
+      toFactoryID: "$yarnDataInfo.toFactoryID",
+      packageInfo: "$yarnDataInfo.packageInfo",
+    }},
+    { $match: { $and: [
+      // {"yarnDataUUID":yarnDataUUID},
+      {"yarnDataUUID":yarnDataUUID},
+      {"yarnColorID":yarnColorID},
+      {"type":type},
+      {"toFactoryID":toFactoryID},
+      // {"uuid":uuid},
+      // {"yarnID":yarnID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      yarnDataInfo: 1,
+      datetime: 1,
+      yarnColorID: 1,
+      type: 1,		
+      toFactoryID: 1,
+      packageInfo:1,
+      yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+  }	},
+  ]);
+  // console.log(yarns);
+  return yarnData;
+}
+
+// getYarnPlanDataInfoExist(
+//   companyID, factoryID, customerID, yarnSeasonID, uuid, yarnID, datetime, yarnColorID, type, toFactoryID
+// )
+exports.getYarnPlanDataInfo1= async (companyID, factoryID, customerID, yarnSeasonID, uuid, yarnID, 
+  datetime, yarnColorID, type, toFactoryID) => {
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"uuid":uuid},
+      {"yarnID":yarnID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        uuid: 1,
+        yarnID: 1,		
+        yarnDataInfo: 1,
+    }	},
+    { $unwind: "$yarnDataInfo" },
+    { $project: { _id: 0, 
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,
+      yarnDataUUID: "$yarnDataInfo.yarnDataUUID",
+      datetime: "$yarnDataInfo.datetime",
+      yarnColorID: "$yarnDataInfo.yarnColorID",
+      type: "$yarnDataInfo.type",
+      toFactoryID: "$yarnDataInfo.toFactoryID",
+    }},
+    { $match: { $and: [
+      // {"yarnDataUUID":yarnDataUUID},
+      {"datetime":datetime},
+      {"yarnColorID":yarnColorID},
+      {"type":type},
+      {"toFactoryID":toFactoryID},
+      // {"uuid":uuid},
+      // {"yarnID":yarnID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      yarnDataInfo: 1,
+      datetime: 1,
+      yarnColorID: 1,
+      type: 1,		
+      toFactoryID: 1,
+      yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+  }	},
+  ]);
+  // console.log(yarns);
+  return yarnData;
+}
+
+exports.getYarnPlanMainCount= async (companyID, factoryID, customerID, yarnSeasonID, status) => {
+  rows = await YarnData.countDocuments({$and: [
+    {"companyID":companyID},
+    {"factoryID":factoryID},
+    {"customerID":customerID},
+    {"yarnSeasonID":yarnSeasonID},
+    {"status":{$in: status}},
+  ]});
+  return rows;
+}
+
+exports.getYarnPlanMainList= async (companyID, factoryID, customerID, yarnSeasonID, uuid, yarnID, status) => {
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"uuid":uuid},
+      {"yarnID":yarnID},
+      {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        status: 1,
+        uuid: 1,
+        datetime: 1,
+        editDate: 1,
+        yarnID: 1,		
+        orderID: 1,
+        colorS: 1,
+        yarnDataInfo: 1,
+        yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+        mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+    }	},
+    // { $sort: { datetime: 1 } }
+  ]);
+  // console.log(yarns);
+
+  // const yarnDataF = await yarnData.map(fw => ({
+  //   companyID: fw._id.companyID, 
+  //   productID: fw._id.productID,
+  //   style: fw._id.style,
+  //   size: fw._id.size,
+  //   targetPlace: fw._id.targetPlace,
+  //   color: fw._id.color,
+  //   countQty: fw.countQty,
+  // }));
+  const yarnDataInfo = yarnData.length>0 ? yarnData[0].yarnDataInfo : [];
+
+  await this.asyncForEach(yarnDataInfo, async (item1) => {
+    item1.yarnWeight = parseFloat(item1.yarnWeight);
+    await this.asyncForEach2(item1.packageInfo, async (item2) => {
+      await this.asyncForEach2(item2.yarnBoxInfo, async (item3) => {
+        item3.yarnPlanWeight = parseFloat(item3.yarnPlanWeight);
+        item3.yarnWeight = parseFloat(item3.yarnWeight);
+      });
+    });
+  });
+
+  return yarnData;
+}
+
+
+
+// getYarnPlanMainLists
+exports.getYarnPlanMainLists= async (companyID, factoryID, customerID, yarnSeasonID, status) => {
+  // limit = +limit; // ## change to number
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        status: 1,
+        uuid: 1,
+        datetime: 1,
+        editDate: 1,
+        yarnID: 1,		
+        orderID: 1,
+        colorS: 1,
+        yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+        mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+        // yarnDataInfo: 1
+    }	},
+    { $sort: { datetime: 1 } }
+  ]);
+  // console.log(yarns);
+  return yarnData;
+}
+
+// ShareFunc.getYarnCussCount(companyID, customerID);
+exports.getYarnCussCount= async (companyID, customerID) => {
+  rows = await Yarn.countDocuments({$and: [
+    {"companyID":companyID},
+    {"customerID":customerID},
+  ]});
+  return rows;
+}
+
+// getYarnCuss(companyID, customerID);
+exports.getYarnCuss= async (companyID, customerID) => {
+  // limit = +limit; // ## change to number
+  const yarns = await Yarn.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"customerID":customerID},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        yarnID: 1,
+        yarnName: 1,		
+        yarnFullName: 1,	
+        detail: 1,
+        companyID: 1,
+        yarnSupplierID: 1,
+        customerID: 1,
+        seq: 1,		
+    }	},
+    { $sort: { seq: 1 } }
+  ]);
+  // console.log(yarns);
+  return yarns;
+}
+
+// ShareFunc.getYarnCusSuppliers(companyID, customerID, showArr);
+exports.getYarnCusSuppliers= async (companyID, customerID, showArr) => {
+  // limit = +limit; // ## change to number
+  const yarn = await YarnSupplier.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"customerID":customerID},
+      {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        yarnSupplierID: 1,
+        yarnSupplierName: 1,			
+        customerID: 1,	
+    }	},
+    { $sort: { yarnSupplierID: 1 } }
+  ]);
+  // console.log(yarns);
+  return yarn;
+}
+
+// ShareFunc.getYarnCusColors(companyID, customerID, showArr);
+exports.getYarnCusColors= async (companyID, customerID, showArr) => {
+  // limit = +limit; // ## change to number
+  const yarn = await YarnColor.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        yarnColorID: 1,
+        yarnColorName: 1,			
+        customerID: 1,		
+    }	},
+    { $sort: { customerID: 1, yarnColorID: 1 } }
+  ]);
+  // console.log(yarns);
+  return yarn;
+}
+
+
 exports.getYarnsCount= async (companyID) => {
   rows = await Yarn.countDocuments({$and: [
     {"companyID":companyID}
@@ -3014,6 +3493,7 @@ exports.getCustomers= async (companyID, page, limit) => {
         _id: 1,	
         customerID: 1,
         customerName: 1,		
+        setName: 1,	
         companyID: 1,	
         registDate: 1,
         imageProfile: 1,
@@ -3038,7 +3518,8 @@ exports.getCustomer= async (companyID, customerID) => {
     { $project: {			
       _id: 1,	
       customerID: 1,
-      customerName: 1,		
+      customerName: 1,	
+      setName: 1,	
       companyID: 1,	
       registDate: 1,
       imageProfile: 1,

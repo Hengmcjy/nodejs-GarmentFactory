@@ -91,8 +91,11 @@ mongoose
     + `${process.env.MGSVR1}/${process.env.MGDB}`
     + `?retryWrites=true`
   )
-  .then(() => {
+  .then((data) => {
     console.log("Connected to database!");
+    console.log('mongoDB ver. = ??');
+    console.log('mongoose ver. = '+data.version);
+    console.log('nodeJs version =  '+process.version+'----------------------------------------------');
   })
   .catch(() => {
     console.log("Connection failed!");

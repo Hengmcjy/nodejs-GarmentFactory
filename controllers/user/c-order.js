@@ -206,7 +206,7 @@ exports.getOrders = async (req, res, next) => {
     // console.log(orderSeasonYears);
     
     if (seasonYear === 'last') {
-      seasonYear = orderSeasonYears[0].seasonYear;
+      seasonYear = orderSeasonYears.length>0? orderSeasonYears[0].seasonYear:seasonYear;
     }
     // console.log(seasonYear);
     const seasonYearArr = [seasonYear];

@@ -742,6 +742,22 @@ exports.getOrderQueueTest1 = async (req, res, next) => {
   return res.end();
 }
 
+// ## http://172.31.194.255:3968/api/user/test/get/monogdbver/getver
+// router.get("/test/get/monogdbver/getver", userController.getMonogoDbver1);
+exports.getMonogoDbver1 = async (req, res, next) => {
+
+  const result = await ShareFunc.getMongoDBVer1();
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title> MongoDB version </title><head>');
+  res.write('<body>');
+  res.write('<h1>get version  </h1></br>');
+  res.write('<h1>.....................</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
 
 // ## general info
 // router.get("/generalinfo", UserController.getGeneralInfo);

@@ -16,13 +16,38 @@ const router = express.Router();
 // ## get yarn list /api/yarn/getlists/:companyID/:userID
 router.get("/getlists/:companyID/:userID", checkAuth, checkUUID, yarnController.getYarnsList);
 
-// // ## /api/product/creataenew
-// router.post("/createnew", checkAuth, checkUUID, yarnController.postProductCreateNew);
+// ## get yart info for create new
+router.get("/getinfo1/:companyID/:factoryID/:customerID/:setName/:yarnSeason", checkAuth, checkUUID, yarnController.getYarnInfo1);
 
-// // ## /api/product/get/image/profiles  postGetProductImageProfiles
-// router.post("/get/image/profiles", checkAuth, checkUUID, yarnController.postGetProductImageProfiles);
 
-// // ## /api/product/edit
-// router.put("/edit", checkAuth, checkUUID, yarnController.putEditProduct);
+
+// #############################################################################
+// ## yarn plan ###########################################################################
+
+// ## get yarn plan list /api/yarn/yarnplan/list/:companyID/:factoryID/:customerID/:setName/:yarnSeason getYarPlansList
+router.get("/yarnplan/list/main/:companyID/:factoryID/:customerID/:setName/:yarnSeason/:orderIDs", 
+  checkAuth, checkUUID, yarnController.getYarPlansList);
+
+// ## get yarn plan list /api/yarn/yarnplan/get/list1 getYarnPlansList1
+router.post("/yarnplan/get/list1", 
+  checkAuth, checkUUID, yarnController.getYarnPlansList1);
+
+// ## /api/yarn/yarnplan/createnew   postYarnPlanCreateNew
+router.post("/yarnplan/createnew", checkAuth, checkUUID, yarnController.postYarnPlanCreateNew);
+
+// ## /api/yarn/yarnplan/yarnDataInfo    putYarnPlanDataInfo
+router.put("/yarnplan/yarnDataInfo", checkAuth, checkUUID, yarnController.putYarnPlanDataInfo);
+
+// ## /api/yarn/yarnpackinglist1/add   putAddYarnPackingList1
+router.put("/yarnpackinglist1/add", checkAuth, checkUUID, yarnController.putAddYarnPackingList1);
+
+// ## /api/yarn/yarnpackinglist1/cancel   putCancelYarnPackingList1
+router.put("/yarnpackinglist1/cancel", checkAuth, checkUUID, yarnController.putCancelYarnPackingList1);
+
+// ## /api/yarn/yarnlotID/add putAddYarnLotID1
+router.put("/yarnlotID/add", checkAuth, checkUUID, yarnController.putAddYarnLotID1);
+
+// ## /api/yarn/yarnlotID/edit putEditYarnLotID1
+router.put("/yarnlotID/edit", checkAuth, checkUUID, yarnController.putEditYarnLotID1);
 
 module.exports = router;

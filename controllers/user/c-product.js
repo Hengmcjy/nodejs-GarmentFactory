@@ -101,7 +101,7 @@ exports.getProducts = async (req, res, next) => {
   const userID = req.params.userID;
   const page = +req.params.page;
   const limit = +req.params.limit;
-  // console.log('getProducts');
+  // console.log('getProducts', page, limit);
 
   
   try {

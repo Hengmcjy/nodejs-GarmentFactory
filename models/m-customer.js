@@ -4,6 +4,7 @@ const uniqueValidator = require("mongoose-unique-validator");
 const customerSchema = mongoose.Schema({
   customerID: { type: String, required: true },
   customerName: {type: String},
+  setName: {type: String},
   companyID: {type: String},
   registDate: {type: Date, required: true},
   imageProfile: {type: String},
