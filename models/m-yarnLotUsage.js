@@ -1,0 +1,39 @@
+const mongoose = require("mongoose");
+const uniqueValidator = require("mongoose-unique-validator");
+
+const yarnLotUsageSchema = mongoose.Schema({
+  companyID: {type: String},
+  factoryID: {type: String},
+  customerID: {type: String},
+  yarnSeasonID: {type: String},
+  yarnID: {type: String},
+  yarnDataUUID: {type: String},
+  yarnColorID: {type: String},
+  // receiveDate: {type: Date},
+  status: {type: String},
+  yarnUsage: [{
+    datetimeIssue: {type: Date},
+    datetime: {type: Date},
+    yuUUID: {type: String},
+    yarnLotID: {type: String},
+    yarnLotUUID: {type: String},
+    invoiceID: {type: String},
+    usageMode: {type: String}, // ## ct= fromCustomer , t=transfer , p=produce , 
+    yarnWeight: {type: mongoose.Types.Decimal128},
+    useWeight: {type: mongoose.Types.Decimal128},
+    usageInfo: {
+      factoryID : {type: String},
+      fromFactoryID: {type: String},
+      toFactoryID: {type: String},
+      orderID: {type: String},
+      yarnPlanWeight : {type: mongoose.Types.Decimal128},
+      yarnInvoiceWeight : {type: mongoose.Types.Decimal128},
+    },
+  }],
+});
+
+yarnLotUsageSchema.plugin(uniqueValidator);
+
+module.exports = mongoose.model("YarnLotUsage", yarnLotUsageSchema);
+
+

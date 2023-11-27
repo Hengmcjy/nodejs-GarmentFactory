@@ -14,6 +14,9 @@ const Company = require("../../models/m-company");
 const Factory = require("../../models/m-factory");
 const NodeStation = require("../../models/m-nodeStation");
 
+const OrderProduction = require("../../models/m-orderProduction");
+
+
 const UnitSize = require("../../models/m-unitSize");
 const UnitWeight = require("../../models/m-unitWeight");
 
@@ -257,6 +260,53 @@ exports.getTestTest9 = async (req, res, next) => {
   res.write('</body>');
   res.write('</html>');
   return res.end();
+}
+
+// ## http://172.31.195.31:3968/api/user/test/test15
+// ## view group qty orderProduction / productBarcode   
+// router.get("/test/test15", userController.getTestTest15);  
+exports.getTestTest15 = async (req, res, next) => {
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const companyID = 'c000001';
+  const orderID = 'AA0QFA4S';
+  const productBarcode = 'AA0QFA4S    JAPN-----24GR--------M---';
+
+  let result = [];
+  // result = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     // {"factoryID":factoryID},
+  //     {"orderID":orderID},
+  //     // {"productID":productID},
+  //     // {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,
+  //       // factoryID: 1,		
+  //       // orderID: 1,	
+  //       // productID: 1,
+  //       productBarcodeNo: 1,
+  //       productBarcodeNoReal: 1,
+  //       productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+  //       // bundleNo: 1,
+  //   }	},
+  //   { $match: { $and: [
+  //     {"productBarcode":productBarcode},
+  //     // {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
+  //   ] } },
+  //   { $project: {			
+  //     _id: 0,	
+  //     companyID: 1,
+  //     // factoryID: 1,		
+  //     // orderID: 1,	
+  //     // productID: 1,
+  //     // productBarcodeNo: 1,
+  //     productBarcodeNoReal: 1,
+  //   }	},
+  // ]);
+  console.log(result.length);
+  return res.send(result);
 }
 
 // // ## http://192.168.1.35:3968/api/user/test/test14

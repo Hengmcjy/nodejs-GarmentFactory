@@ -50,6 +50,7 @@ const yarnDataSchema = mongoose.Schema({
       type: mongoose.Types.Decimal128
     },
     packageInfo: [{
+      invoiceID: {type: String},
       yarnLotID: {type: String},
       yarnLotUUID: {type: String},
       state: {type: String},
@@ -58,8 +59,10 @@ const yarnDataSchema = mongoose.Schema({
         boxUUID: {type: String},
         factoryID: {type: String},
         yarnPlanWeight: {type: mongoose.Types.Decimal128},
-        yarnWeight: {type: mongoose.Types.Decimal128},
+        yarnWeight: {type: mongoose.Types.Decimal128},   // ## cannot change value
+        useWeight: {type: mongoose.Types.Decimal128},
         weightVerified: {type: Boolean},
+        used: {type: Boolean},  // ## y = used / n = not use yet
       }],
     }],
     yarnInfo: {

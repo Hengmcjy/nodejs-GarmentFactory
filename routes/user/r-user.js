@@ -17,6 +17,8 @@ const router = express.Router();
 // ## http://localhost:3022/api/user/test/test
 // ## http://192.168.1.39:3022/api/user/test/test
 // ## test
+
+
 router.get("/test/test", userController.getTestTest);
 router.get("/test/test2", userController.getTestTest2);
 router.get("/test/test3", userController.getTestTest3);
@@ -32,6 +34,8 @@ router.get("/test/test10", userController.getTestTest10); // ## cancel queue ord
 router.get("/test/test12", userController.getTestTest12); // ## edit orderProduction forloss --> normal
 
 router.get("/test/test14", userController.getTestTest14); // ## cancel orderProduction , queue (all) 100%
+
+router.get("/test/test15", userController.getTestTest15);  // ## view group qty orderProduction / productBarcode
 
 // ## test order queue
 router.get("/test/orderqueue/test1", userController.getOrderQueueTest1);

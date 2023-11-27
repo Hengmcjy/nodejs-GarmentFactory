@@ -44,10 +44,28 @@ router.put("/yarnpackinglist1/add", checkAuth, checkUUID, yarnController.putAddY
 // ## /api/yarn/yarnpackinglist1/cancel   putCancelYarnPackingList1
 router.put("/yarnpackinglist1/cancel", checkAuth, checkUUID, yarnController.putCancelYarnPackingList1);
 
+// ## /api/yarn/yarnpackageInfo/del   putDelYarnPackingList1
+router.put("/yarnpackageInfo/del", checkAuth, checkUUID, yarnController.putDelYarnPackingList1);
+
 // ## /api/yarn/yarnlotID/add putAddYarnLotID1
 router.put("/yarnlotID/add", checkAuth, checkUUID, yarnController.putAddYarnLotID1);
 
 // ## /api/yarn/yarnlotID/edit putEditYarnLotID1
 router.put("/yarnlotID/edit", checkAuth, checkUUID, yarnController.putEditYarnLotID1);
 
+// ## /api/yarn/yarnlotID2/edit/state putEditYarnLotIDState2
+router.put("/yarnlotID2/edit/state", checkAuth, checkUUID, yarnController.putEditYarnLotIDState2);
+
+// ## get yarn plan list /api/yarn/usage/list
+// ## getYarnUsage
+router.put("/usage/list", checkAuth, checkUUID, yarnController.getYarnUsage);
+
+// ## getYarnLotInfo
+router.put("/yarnlotID/getinfo", checkAuth, checkUUID, yarnController.getYarnLotInfo);
+
+// ## getYarnLotBoxLastStr
+router.put("/yarnlotbox/get/box/last/str", checkAuth, checkUUID, yarnController.getYarnLotBoxLastStr);
+
 module.exports = router;
+
+

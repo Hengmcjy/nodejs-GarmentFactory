@@ -194,7 +194,7 @@ exports.getOrders = async (req, res, next) => {
   // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
 
   // const test = uuidv5("Hello World", process.env.IOID); // ⇨ 'a572fa0f-9bfa-5103-9882-16394770ad11'
-  // console.log(test);
+  // console.log(seasonYear);
   // console.log(uuidv4());
 
   try {
