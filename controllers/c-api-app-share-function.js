@@ -3134,6 +3134,171 @@ exports.getYarnPlanDataInfo2= async (companyID, factoryID, customerID, yarnSeaso
   return yarnData;
 }
 
+// getYarnLotBoxExisted(companyID, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, boxIDNew);
+exports.getYarnLotBoxExisted= async (companyID, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, boxIDNew) => {
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"yarnID":yarnID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        uuid: 1,
+        yarnID: 1,		
+        orderID: 1,
+        colorS: 1,
+        yarnDataInfo: 1,
+    }	},
+    { $unwind: "$yarnDataInfo" },
+    { $project: { _id: 0, 
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      orderID: 1,
+      colorS: 1,
+      datetime: "$yarnDataInfo.datetime",
+      yarnDataUUID: "$yarnDataInfo.yarnDataUUID",
+      yarnColorID: "$yarnDataInfo.yarnColorID",
+      type: "$yarnDataInfo.type",
+      fromFactoryID: "$yarnDataInfo.fromFactoryID",
+      toFactoryID: "$yarnDataInfo.toFactoryID",
+      packageInfo: "$yarnDataInfo.packageInfo",
+    }},
+
+    { $match: { $and: [
+      // {"yarnDataUUID":yarnDataUUID},
+      // {"datetime":datetime},
+      {"yarnColorID":yarnColorID},
+      // {"type":type},
+      // {"toFactoryID":toFactoryID},
+      // {"uuid":uuid},
+      // {"yarnID":yarnID},
+      {"type":{$in: type}},
+    ] } },
+    { $unwind: "$packageInfo" },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      orderID: 1,
+      colorS: 1,
+
+      yarnDataUUID: 1,
+      yarnColorID: 1,
+      type: 1,		
+      fromFactoryID: 1,
+      toFactoryID: 1,
+
+      invoiceID: "$packageInfo.invoiceID",
+      yarnLotID: "$packageInfo.yarnLotID",
+      yarnLotUUID: "$packageInfo.yarnLotUUID",
+      yarnBoxInfo: "$packageInfo.yarnBoxInfo",
+
+      datetime: 1,
+      yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+    }	},
+
+    { $match: { $and: [
+      {"yarnLotID":yarnLotID},
+      {"yarnLotUUID":yarnLotUUID},
+      // {"status":{$in: status}},
+    ] } },
+    { $unwind: "$yarnBoxInfo" },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      orderID: 1,
+      colorS: 1,
+
+      yarnDataUUID: 1,
+      yarnColorID: 1,
+      type: 1,		
+      fromFactoryID: 1,
+      toFactoryID: 1,
+
+      invoiceID: 1,
+      yarnLotID: 1,
+      yarnLotUUID: 1,
+
+      datetime: 1,
+      yyyymmdd: 1,
+      mmdd: 1,
+
+      boxID: "$yarnBoxInfo.boxID",
+      boxUUID: "$yarnBoxInfo.boxUUID",
+      factoryIDBox: "$yarnBoxInfo.factoryID",
+      yarnPlanWeight: "$yarnBoxInfo.yarnPlanWeight",
+      yarnWeight: "$yarnBoxInfo.yarnWeight",
+      useWeight: "$yarnBoxInfo.useWeight",
+      weightVerified: "$yarnBoxInfo.weightVerified",
+      used: "$yarnBoxInfo.used",
+    }	},
+
+    { $match: { $and: [
+      {"boxID":boxIDNew},
+      // {"yarnLotUUID":yarnLotUUID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      orderID: 1,
+      colorS: 1,
+
+      yarnDataUUID: 1,
+      yarnColorID: 1,
+      type: 1,		
+      fromFactoryID: 1,
+      toFactoryID: 1,
+
+      invoiceID: 1,
+      yarnLotID: 1,
+      yarnLotUUID: 1,
+
+      datetime: 1,
+      yyyymmdd: 1,
+      mmdd: 1,
+
+      boxID: 1,
+      boxUUID: 1,
+      factoryIDBox: 1,
+      yarnPlanWeight: 1,
+      yarnWeight: 1,
+      useWeight: 1,
+      weightVerified: 1,
+      used: 1,
+    }	},
+
+  ]);
+  // console.log(yarns);  yarnLotUUID, yarnLotID
+  return yarnData;
+  // return yarnData.length > 0 ? true : false;
+}
+
 exports.getYarnPlanDataInfo3= async (companyID, factoryID, customerID, yarnSeasonID, uuid, yarnID, 
   yarnDataUUID, yarnColorID, type, toFactoryID, yarnLotUUID, yarnLotID) => {
   const yarnData = await YarnData.aggregate([

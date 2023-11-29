@@ -66,6 +66,9 @@ router.put("/yarnlotID/getinfo", checkAuth, checkUUID, yarnController.getYarnLot
 // ## getYarnLotBoxLastStr
 router.put("/yarnlotbox/get/box/last/str", checkAuth, checkUUID, yarnController.getYarnLotBoxLastStr);
 
+// ## /api/yarn/yarnlotID2/edit/devide putEditYarnLotIDDevide
+router.put("/yarnlotbox/edit/devide", checkAuth, checkUUID, yarnController.putEditYarnLotIDDevide);
+
 module.exports = router;
 
 
