@@ -60,14 +60,25 @@ router.put("/yarnlotID2/edit/state", checkAuth, checkUUID, yarnController.putEdi
 // ## getYarnUsage
 router.put("/usage/list", checkAuth, checkUUID, yarnController.getYarnUsage);
 
+// ## getYarnUsageCF
+router.put("/usage/list2", checkAuth, checkUUID, yarnController.getYarnUsageCF);
+
 // ## getYarnLotInfo
 router.put("/yarnlotID/getinfo", checkAuth, checkUUID, yarnController.getYarnLotInfo);
+
+// ## getYarnLotCFInfo
+router.put("/yarnlot/CF/getinfo", checkAuth, checkUUID, yarnController.getYarnLotCFInfo);
 
 // ## getYarnLotBoxLastStr
 router.put("/yarnlotbox/get/box/last/str", checkAuth, checkUUID, yarnController.getYarnLotBoxLastStr);
 
 // ## /api/yarn/yarnlotID2/edit/devide putEditYarnLotIDDevide
 router.put("/yarnlotbox/edit/devide", checkAuth, checkUUID, yarnController.putEditYarnLotIDDevide);
+
+// ## putYarnLotTransferCF
+router.put("/yarnlot/CF/transfer", checkAuth, checkUUID, yarnController.putYarnLotTransferCF);
+
+
 
 module.exports = router;
 

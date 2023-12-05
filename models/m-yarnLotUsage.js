@@ -22,7 +22,7 @@ const yarnLotUsageSchema = mongoose.Schema({
     yarnWeight: {type: mongoose.Types.Decimal128},
     useWeight: {type: mongoose.Types.Decimal128},
     usageInfo: {
-      factoryID : {type: String},
+      setFactoryID : [{type: String}], // ## array = transfer case that have 2 factory relate
       fromFactoryID: {type: String},
       toFactoryID: {type: String},
       orderID: {type: String},

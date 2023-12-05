@@ -1064,8 +1064,8 @@ exports.putEditYarnLotID1 = async (req, res, next) => {
           item1.boxID = item1.boxID.toUpperCase();
           item1.boxUUID = uuidv4();
           item1.used = false;
-          item1.useWeight = item1.yarnWeight;
         }
+        item1.useWeight = item1.yarnWeight;
       });
       // const state = 'wait';
       // let packageInfo = {
@@ -1313,6 +1313,8 @@ exports.putEditYarnLotIDState2 = async (req, res, next) => {
               useWeight: yarnWeight,
               usageInfo: {
                 yarnInvoiceWeight: yarnInvoiceWeight,
+                setFactoryID: [toFactoryID],
+                toFactoryID: toFactoryID,
               },
             };
 
@@ -1446,7 +1448,7 @@ exports.getYarnUsage = async (req, res, next) => {
   const userID = req.userData.tokenSet.userID;
   const data = req.body;
   const companyID = data.companyID;
-  const factoryID = data.factoryID;
+  const factoryID = data.factoryID;   // ## main factory 
   const customerID = data.customerID;
   const yarnSeasonID = data.yarnSeasonID;// 2024SS
   const season = yarnSeasonID.substr(0, 4);  // 2024
@@ -1494,6 +1496,62 @@ exports.getYarnUsage = async (req, res, next) => {
   }
 }
 
+// // ## getYarnUsageCF
+// router.put("/usage/list2", checkAuth, checkUUID, yarnController.getYarnUsageCF);
+exports.getYarnUsageCF = async (req, res, next) => {
+  // try {} catch (err) {}
+  const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const companyID = data.companyID;
+  const setfactoryID = data.setfactoryID;  // ## sub factory 
+  const customerID = data.customerID;
+  const yarnSeasonID = data.yarnSeasonID;// 2024SS
+  const season = yarnSeasonID.substr(0, 4);  // 2024
+  const yarnID = data.yarnID;
+  const yarnColorID = data.yarnColorID;
+  const yarnDataUUID = data.yarnDataUUID;
+  const status = data.status;
+  
+
+  // console.log('getYarnUsageCF');
+  // console.log(yarnColorID);
+  // console.log(companyID, setfactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+  try {
+    // ## get yarn usage
+    const yarnLotUsageList = await ShareFunc.getYarnUsageCF(companyID, [setfactoryID], customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    // console.log(yarnLotUsageList);
+
+    // let productIDs = [];
+    // await this.asyncForEach(orderIDs, async (item1) => {
+    //   productIDs.push(await ShareFunc.setBackStrLen(process.env.productIDLen, item1, ' '));
+    // });
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      yarnLotUsageList: yarnLotUsageList,
+      // yarnsCount: yarnsCount,
+      // yarnPlans: yarnPlans,
+      // yarnPlansCount: yarnPlansCount,
+      // productImageProfiles: productImageProfiles,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'erry008', 
+        mode:'errYarnUsage', 
+        value: "error get yarn usage"
+      }
+    });
+  }
+}
+
 // // ## getYarnLotInfo
 // router.put("/yarnlotID/getinfo", checkAuth, checkUUID, yarnController.getYarnLotInfo);
 exports.getYarnLotInfo = async (req, res, next) => {
@@ -1501,6 +1559,7 @@ exports.getYarnLotInfo = async (req, res, next) => {
   const userID = req.userData.tokenSet.userID;
   const data = req.body;
   const companyID = data.companyID;
+  const factoryIDBox = data.factoryIDBox;
   // const factoryID = data.factoryID;
   // const customerID = data.customerID;
   const yarnSeasonID = data.yarnSeasonID;// 2024SS
@@ -1511,12 +1570,14 @@ exports.getYarnLotInfo = async (req, res, next) => {
   const yarnLotUUID = data.yarnLotUUID;
   const type = data.type;  // ## ['receive'] 
 
+  // factoryIDBox
+
   // console.log('getYarnLotInfo');
   // console.log(yarnColorID);
   // console.log(companyID, factoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
   try {
     // ## get yarn usage
-    const yarnLotInfo = await ShareFunc.getYarnLotInfoByYarnLotID(companyID, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type);
+    const yarnLotInfo = await ShareFunc.getYarnLotInfoByYarnLotID(companyID, factoryIDBox, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type);
     // yarnLotInfo: yarnLotInfo,
 
     // let productIDs = [];
@@ -1533,6 +1594,62 @@ exports.getYarnLotInfo = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       yarnLotInfo: yarnLotInfo,
+      // yarnsCount: yarnsCount,
+      // yarnPlans: yarnPlans,
+      // yarnPlansCount: yarnPlansCount,
+      // productImageProfiles: productImageProfiles,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'erry009', 
+        mode:'errYarnLotInfo', 
+        value: "error get yarn lot info"
+      }
+    });
+  }
+}
+
+// // ## getYarnLotCFInfo
+// router.put("/yarnlot/CF/getinfo", checkAuth, checkUUID, yarnController.getYarnLotCFInfo);
+exports.getYarnLotCFInfo = async (req, res, next) => {
+  // try {} catch (err) {}
+  const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;  // ## from setFactory
+  // const customerID = data.customerID;
+  const yarnSeasonID = data.yarnSeasonID;// 2024SS
+  const season = yarnSeasonID.substr(0, 4);  // 2024
+  const yarnID = data.yarnID;
+  const type = data.type;  // ## ['receive'] 
+  const state = data.state;  // ## verified
+  const weightVerified = data.weightVerified;  // ## true
+
+  // console.log('getYarnLotCFInfo');
+  // console.log(yarnColorID);
+  // console.log(companyID, factoryID, yarnSeasonID, yarnID, type, state);
+  // console.log('weightVerified = ' + weightVerified);
+  try {
+    // ## get yarn usage
+    const yarnData = await ShareFunc.getYarnLotInfoCF(companyID, factoryID, yarnSeasonID, yarnID, type, state, weightVerified);
+    // yarnLotInfo: yarnLotInfo,
+
+    // let productIDs = [];
+    // await this.asyncForEach(orderIDs, async (item1) => {
+    //   productIDs.push(await ShareFunc.setBackStrLen(process.env.productIDLen, item1, ' '));
+    // });
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      yarnData: yarnData,
       // yarnsCount: yarnsCount,
       // yarnPlans: yarnPlans,
       // yarnPlansCount: yarnPlansCount,
@@ -1635,8 +1752,10 @@ exports.putEditYarnLotIDDevide = async (req, res, next) => {
   const yarnWeightNew = boxNew.yarnWeightNew;  // ## old weight remain  
   const factoryIDBox = data.factoryIDBox;
 
+
+  // console.log(type);
   // console.log(yarnDataUUID, uuid);
-  // console.log(yarnID, yarnColorID, yarnLotID, yarnLotUUID, type);
+  // console.log(yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, factoryIDBox);
   // console.log(boxID, boxSign, boxNew);
 
   let session = await mongoose.startSession();
@@ -1673,6 +1792,7 @@ exports.putEditYarnLotIDDevide = async (req, res, next) => {
         weightVerified: true,
         used: false,
       };
+      // console.log(yarnBoxInfo);
 
       const yarnLotIDUpdate1 = await YarnData.updateOne(
         {$and: [
@@ -1708,6 +1828,8 @@ exports.putEditYarnLotIDDevide = async (req, res, next) => {
         ).session(session);
       await session.commitTransaction();
       session.endSession();
+
+      // console.log('1');
 
       // ## add new box
       // const yarnBoxInfo = {
@@ -1746,19 +1868,25 @@ exports.putEditYarnLotIDDevide = async (req, res, next) => {
             }
           ]
         }).session(session2);
-
+        await session2.commitTransaction();
+        session2.endSession();
+        // console.log('2');
     }
+
+
+    // await session.commitTransaction();
+    // await session2.commitTransaction();
+    // session.endSession();
+    // session2.endSession();
+
+    // console.log('2', type);
+                                                             //  (companyID, factoryIDBox, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type)
+    const yarnLotInfo = await ShareFunc.getYarnLotInfoByYarnLotID(companyID, factoryIDBox, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type);
+    // console.log('3');
 
     await ShareFunc.upsertUserSession1hr(userID);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-
-    // await session.commitTransaction();
-    await session2.commitTransaction();
-    // session.endSession();
-    session2.endSession();
-
-    const yarnLotInfo = await ShareFunc.getYarnLotInfoByYarnLotID(companyID, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type);
-    
+    // console.log('4');
 
     res.status(200).json({
       token: token,
@@ -1789,6 +1917,212 @@ exports.putEditYarnLotIDDevide = async (req, res, next) => {
     session2.endSession();
   }
 }
+
+// // ## putYarnLotTransferCF
+// router.put("/yarnlot/CF/transfer", checkAuth, checkUUID, yarnController.putYarnLotTransferCF);
+exports.putYarnLotTransferCF = async (req, res, next) => {
+  // console.log('putEditYarnLotIDDevide');
+  const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const yarnDataDraft = data.yarnDataDraft;
+  const yarnLotUsage1 = data.yarnLotUsage1;
+  const yarnUsage1 = data.yarnUsage1;
+
+  const companyID = yarnDataDraft.companyID;
+  const factoryID = yarnDataDraft.factoryID;
+  const customerID = yarnDataDraft.customerID;
+  const uuid = yarnDataDraft.uuid;
+  const yarnSeasonID = yarnDataDraft.yarnSeasonID;// 2024SS
+  const season = yarnSeasonID.substr(0, 4);  // 2024 
+  const yarnID = yarnDataDraft.yarnID;
+  const orderID = yarnDataDraft.orderID;  // ## array orderID
+  const colorS = yarnDataDraft.colorS;
+  // console.log(companyID, factoryID, customerID ,yarnID, orderID, colorS);
+
+  const yarnDataUUID = yarnDataDraft.yarnDataInfo.yarnDataUUID;
+  const yarnColorID = yarnDataDraft.yarnDataInfo.yarnColorID;
+  const type = yarnDataDraft.yarnDataInfo.type;  // ## 'receive' 
+  const fromFactoryID = yarnDataDraft.yarnDataInfo.fromFactoryID;
+  const toFactoryID = yarnDataDraft.yarnDataInfo.toFactoryID;
+  const invoiceID = yarnDataDraft.yarnDataInfo.packageInfo.invoiceID;
+  const yarnLotID = yarnDataDraft.yarnDataInfo.packageInfo.yarnLotID;
+  const yarnLotUUID = yarnDataDraft.yarnDataInfo.packageInfo.yarnLotUUID;
+  const state = yarnDataDraft.yarnDataInfo.packageInfo.state;
+  // console.log(yarnDataUUID, yarnColorID, type ,fromFactoryID, toFactoryID, invoiceID, yarnLotID, yarnLotUUID, state);
+
+  const yarnBoxInfo = yarnDataDraft.yarnDataInfo.packageInfo.yarnBoxInfo;
+  let boxUUIDArr = [];
+  await this.asyncForEach(yarnBoxInfo, async (item1) => {
+    boxUUIDArr.push(item1.boxUUID);
+  });
+  // console.log('++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
+  // console.log(yarnBoxInfo, boxUUIDArr);
+
+  const datetime = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD 08:00:ss+07:00'));
+
+  // console.log('------------------------------------------------------------------------------------------');
+  // console.log(yarnDataDraft);
+  // console.log( yarnLotUsage1);
+  // console.log('..................................................................................');
+  // console.log( yarnUsage1);
+
+  // console.log(yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, factoryIDBox);
+  // console.log(boxID, boxSign, boxNew);
+
+  let session = await mongoose.startSession();
+  let session2 = await mongoose.startSession();
+  session.startTransaction();
+  session2.startTransaction();
+  try {
+
+    // ## check exist and weight correct all box
+    const yarnDataBox = await ShareFunc.getYarnLotBoxLists(companyID, yarnSeasonID, yarnID, uuid, yarnColorID, invoiceID, yarnLotID, yarnLotUUID, type, boxUUIDArr);
+    // console.log('------------------------------------------------------------------------------------------');
+    // console.log(yarnDataBox);
+    let boxDataErr = false;
+    let useWeight = 0.00;
+    await this.asyncForEach(yarnBoxInfo, async (item1) => {
+      const yarnDataBoxF = yarnDataBox.filter(i=> i.boxUUID === item1.boxUUID);
+      if (yarnDataBoxF.length === 1) {
+        const useWeight1 = yarnDataBoxF[0].useWeight;
+        if (useWeight1 !== item1.useWeight) {
+          boxDataErr = true;
+        } else {
+          useWeight = useWeight + item1.useWeight;
+        }
+      } else  {
+        boxDataErr = true;
+      }
+    });
+    // console.log('boxDataErr == ' , boxDataErr);
+
+    // ## no have any err , can edit
+    if (!boxDataErr) {  // ## no have any err , can edit
+      // console.log('boxDataErr == ' , boxDataErr);
+      // ## edit box all to (new) toFactoryID
+      const yarnLotIDUpdate1 = await YarnData.updateOne(
+        {$and: [
+          {"companyID":companyID},
+          // {"factoryID":factoryID},
+          // {"customerID":customerID},
+          {"yarnSeasonID":yarnSeasonID},
+          {"uuid":uuid},
+          {"yarnID":yarnID},
+        ]},
+        { 
+          // $push: {"yarnDataInfo.$[elem].packageInfo.$[elem2].yarnBoxInfo" : yarnBoxInfo},
+          $set: { "yarnDataInfo.$[elem].packageInfo.$[elem2].yarnBoxInfo.$[elem3].factoryID" : toFactoryID },
+        },
+        {
+          multi: true,
+          arrayFilters: [  
+            {
+              "elem.yarnDataUUID": yarnDataUUID ,
+              "elem.yarnColorID": yarnColorID , 
+              "elem.type": type , 
+              // "elem.toFactoryID": toFactoryID , 
+            },
+            {
+              "elem2.yarnLotUUID": yarnLotUUID,
+              "elem2.yarnLotID": yarnLotID,
+            },
+            {
+              "elem3.factoryID": fromFactoryID,
+              "elem3.boxUUID": {$in: boxUUIDArr}
+            }
+        ]}
+        ).session(session);
+
+
+      // ## push new element for yarnLotUsage.yarnUsage
+      const yarnUsage01 = {
+        datetime: datetime,
+        datetimeIssue: current2,
+        yuUUID: uuidv4(),
+        
+        yarnLotID: yarnLotID,
+        yarnLotUUID: yarnLotUUID,
+        invoiceID: invoiceID,
+        usageMode: 't',  // ## transfer
+        yarnWeight: useWeight,
+        useWeight: useWeight,
+        usageInfo: {
+          fromFactoryID: fromFactoryID,
+          toFactoryID: toFactoryID,
+          setFactoryID: [fromFactoryID, toFactoryID],
+        },
+      };
+      const result1 = await YarnLotUsage.updateOne(
+        {$and: [
+          {"companyID":companyID},
+          {"factoryID":factoryID},
+          {"customerID":customerID},
+          {"yarnSeasonID":yarnSeasonID},
+          {"yarnID":yarnID},
+          {"yarnColorID":yarnColorID},
+          // {"status":status1},
+        ]}, 
+        {
+          // $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
+          $push: {"yarnUsage": yarnUsage01},
+        },
+        {upsert: true}).session(session2);
+
+    } else {  // ## have any err , cannot edit
+      await session.abortTransaction(); 
+      await session2.abortTransaction(); 
+      session.endSession();
+      session2.endSession();
+      return res.status(501).json({
+        message: {
+          messageID: 'erry011', 
+          mode:'errYarnLotTransfer', 
+          value: "error yarn lotID edit transfer"
+        },
+      });
+    }
+
+    await session.commitTransaction();
+    await session2.commitTransaction();
+    session.endSession();
+    session2.endSession();
+
+    // const yarnLotInfo = await ShareFunc.getYarnLotInfoByYarnLotID(companyID, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type);
+    
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      success: true,
+      message: {},
+      // yarnLotInfo: yarnLotInfo,
+      // yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
+      // yarnPlanDateGroup: yarnPlanDateGroup
+      
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    await session2.abortTransaction(); 
+    session.endSession();
+    session2.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'erry011', 
+        mode:'errYarnLotTransfer', 
+        value: "error yarn lotID edit transfer"
+      },
+    });
+  }  finally {
+    session.endSession();
+    session2.endSession();
+  }
+}
+
 
 
 // // // ## get product list /api/product/getlist1/:companyID/:userID/:productID
