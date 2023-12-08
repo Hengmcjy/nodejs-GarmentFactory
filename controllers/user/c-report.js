@@ -301,7 +301,8 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     // console.log(' 1 - getRepCFNCurrentProductQty');
     if (repListNameArr.includes('getRepCFNCurrentProductQty')) {
       const orderProductAllQtyRep = await ShareFunc.getRepCFNCurrentProductQty(companyID, factoryID, nodeID, productStatusArr);
-      allProductQty = orderProductAllQtyRep.length;  // ## current all product qty in nodeID 
+      // allProductQty = orderProductAllQtyRep.length;  // ## current all product qty in nodeID 
+      allProductQty = 0
       // console.log(orderProductAllQtyRep);
     }
 
@@ -309,6 +310,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     if (repListNameArr.includes('getRepCFNCurrentProductQtyByOrderID')) {
       // ## get Rep CFN Current Product Qty by orderID
       orderProductQtyByOrderIDRep = await ShareFunc.getRepCFNCurrentProductQtyByOrderID(companyID, factoryID, nodeID, productStatusArr);
+      // console.log(orderProductQtyByOrderIDRep);
     }
 
     //  getRepCFNCurrentProductQtyByOrderIDProductID
@@ -316,12 +318,14 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     if (repListNameArr.includes('getRepCFNCurrentProductQtyByOrderIDProductID')) {
       // ## get Rep CFN Current Product Qty by orderID productID
       orderProductQtyByOrderIDProductIDRep = await ShareFunc.getRepCFNCurrentProductQtyByOrderIDProductID(companyID, factoryID, nodeID, productStatusArr);
+      // console.log(orderProductQtyByOrderIDProductIDRep);
     }
 
     // console.log(' 4 - getRepCFNCurrentProductBundleList');
     if (repListNameArr.includes('getRepCFNCurrentProductBundleList')) {
       // ## get Rep CFN Current Product bundle list
       orderProductQtyBundleListRep = await ShareFunc.getRepCFNCurrentProductBundleList(companyID, factoryID, nodeID, productStatusArr);
+      // console.log(orderProductQtyBundleListRep);    
     }
 
     // console.log(' 5 - getAllOrderAndProductFromOrderProduction');
@@ -331,8 +335,8 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       const allProduct = await ShareFunc.getAllProductFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
       // console.log(allOrder, allProduct);
       // getOrders= async (companyID, statusArr, page, limit)
-      orders = await ShareFunc.getOrdersFromNode(companyID, ['open'], 1, 1000);
-      products = await ShareFunc.getProductsByProductIDs(companyID, allProduct, 1, 1000);
+      orders = await ShareFunc.getOrdersFromNode(companyID, ['open'], 1, 100);
+      products = await ShareFunc.getProductsByProductIDs(companyID, allProduct, 1, 100);
       // console.log(orders, products);
     }
 
@@ -357,6 +361,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       // ## get Rep CFN Current Production Queue
       // exports.getProductionQueueCFN= async (companyID, factoryID, page, limit)
       queueInfoRep = await ShareFunc.getProductionQueueCFN(companyID, factoryID, 1, 20);
+      // console.log(queueInfoRep);
     }
 
     // console.log(' 8 - getRepCFNCurrentProductAllDetail');
@@ -403,10 +408,14 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       productStateSize: productStateSize,
       productStateStyleTargetPlaceColorSize: productStateStyleTargetPlaceColorSize,
       queueInfoRep: queueInfoRep,
-      currentProductAllDetailCFN: currentProductAllDetailCFN,
-      productionRepairCount: productionRepairCount,
-      productionProblemCount: productionProblemCount,
+      // currentProductAllDetailCFN: currentProductAllDetailCFN,
+      // productionRepairCount: productionRepairCount,
+      // productionProblemCount: productionProblemCount,
+      currentProductAllDetailCFN: undefined,
+      productionRepairCount: undefined,
+      productionProblemCount: undefined,
     };
+    console.log(' ---------- end  query ------------------');
     const token = '';
     res.status(200).json({
       token: token,
