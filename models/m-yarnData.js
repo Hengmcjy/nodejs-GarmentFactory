@@ -53,14 +53,19 @@ const yarnDataSchema = mongoose.Schema({
       invoiceID: {type: String},
       yarnLotID: {type: String},
       yarnLotUUID: {type: String},
+      coneWeight: {type: mongoose.Types.Decimal128},
+      boxWeight: {type: mongoose.Types.Decimal128},
       state: {type: String},
       yarnBoxInfo: [{
         boxID: {type: String},
         boxUUID: {type: String},
+        coneQty: {type: Number},
         factoryID: {type: String},
         yarnPlanWeight: {type: mongoose.Types.Decimal128},
         yarnWeight: {type: mongoose.Types.Decimal128},   // ## cannot change value
+        yarnWeightNet: {type: mongoose.Types.Decimal128},  // ## cannot change value
         useWeight: {type: mongoose.Types.Decimal128},
+        yarnTransferWeight: {type: mongoose.Types.Decimal128},
         weightVerified: {type: Boolean},
         used: {type: Boolean},  // ## y = used / n = not use yet
       }],

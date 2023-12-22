@@ -15,6 +15,9 @@ const Factory = require("../../models/m-factory");
 const NodeStation = require("../../models/m-nodeStation");
 
 const OrderProduction = require("../../models/m-orderProduction");
+const OrderProductionQueueList = require("../../models/m-orderProductionQueueList");
+const OrderProductionQueue = require("../../models/m-orderProductionQueue");
+
 
 
 const UnitSize = require("../../models/m-unitSize");
@@ -128,6 +131,7 @@ exports.getTestTest12 = async (req, res, next) => {
 }
 
 
+
 // // ## http://192.168.1.7:3968/api/user/test/test10
 // ## cancel queue order  by product barcode
 exports.getTestTest10 = async (req, res, next) => {
@@ -174,6 +178,60 @@ exports.getTestTest10 = async (req, res, next) => {
   res.write('</html>');
   return res.end();
 
+}
+
+// // ## http://172.31.194.9:3968/api/user/test/test16
+// router.get("/test/test16", userController.getTestTest16);  // delete all orderProduction , orderProductionQueueList , orderProductionQueue
+exports.getTestTest16 = async (req, res, next) => {
+  const companyID = 'c000001';
+  const orderIDs = 
+  [
+    '23FRAW-006', 'UR391',
+    'JBAD9A3A',   'GL-115B',
+    'GL-116B',    '23F-YM505',
+    '23F-BP1508', 'GL-92B',
+    'AA0Q4A3A',   'BA1OEA3A',
+    'DD0ISA3A',   'AA0Q1A3A',
+    'BA1O0A3A',   'AA0Q6A3A',
+    'BAI13A3A',   'BA1ODA3A',
+    'BA1NIA3A',   'AA0PKA3A',
+    'AA0PJA3A',   'BA1NWA3A',
+    'AA0PVA3A',   'BA1NUA3A'
+  ];
+
+  // // ## delete many orderProduction
+  // const result01 = await OrderProduction.deleteMany({$and: [
+  //   {"companyID":companyID}, 
+  //   {"orderID":{$in: orderIDs}},
+  // ]});
+
+  // // ## delete many orderProductionQueueList
+  // const result02 = await OrderProductionQueueList.deleteMany({$and: [
+  //   {"companyID":companyID}, 
+  //   {"orderID":{$in: orderIDs}},
+  // ]});
+
+  // // ## delete many orderProductionQueue
+  // const result03 = await OrderProductionQueue.deleteMany({$and: [
+  //   {"companyID":companyID}, 
+  //   {"orderID":{$in: orderIDs}},
+  // ]});
+
+
+  const result1 = 'OK';
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>delete many    by orderIDs </title><head>');
+  res.write('<body>');
+  res.write('<h1>delete  orderProduction  </h1></br>');
+  res.write('<h1>delete  orderProductionQueueList  </h1></br>');
+  res.write('<h1>delete  orderProductionQueue  </h1></br>');
+  res.write('<h1>by orderIDs</h1>');
+  res.write('<h1>'+result1+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
 }
 
 // // ## http://192.168.53.42:3968/api/user/test/test9

@@ -29,8 +29,10 @@ router.get("/yarnplan/list/main/:companyID/:factoryID/:customerID/:setName/:yarn
   checkAuth, checkUUID, yarnController.getYarPlansList);
 
 // ## get yarn plan list /api/yarn/yarnplan/get/list1 getYarnPlansList1
-router.post("/yarnplan/get/list1", 
-  checkAuth, checkUUID, yarnController.getYarnPlansList1);
+router.post("/yarnplan/get/list1", checkAuth, checkUUID, yarnController.getYarnPlansList1);
+
+// ## get yarn plan list /api/yarn/yarnplan/get/invoice/list2 getYarnPlansInvoiceList2
+router.put("/yarnplan/get/invoice/list2", checkAuth, checkUUID, yarnController.getYarnPlansInvoiceList2);
 
 // ## /api/yarn/yarnplan/createnew   postYarnPlanCreateNew
 router.post("/yarnplan/createnew", checkAuth, checkUUID, yarnController.postYarnPlanCreateNew);
@@ -78,6 +80,11 @@ router.put("/yarnlotbox/edit/devide", checkAuth, checkUUID, yarnController.putEd
 // ## putYarnLotTransferCF
 router.put("/yarnlot/CF/transfer", checkAuth, checkUUID, yarnController.putYarnLotTransferCF);
 
+// ## get yarn plan list /api/yarn/yarnlot/CF/rep/transfer1/yarn1 getYarnTransferUsageList
+router.put("/yarnlot/CF/rep/transfer1/yarn1", checkAuth, checkUUID, yarnController.getYarnTransferUsageList);
+
+// ## get yarn current stock /api/yarn/yarnlot/CF/rep/fac/remain getYarnRemainCF
+router.put("/yarnlot/CF/rep/fac/remain", checkAuth, checkUUID, yarnController.getYarnRemainCF);
 
 
 module.exports = router;

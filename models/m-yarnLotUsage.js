@@ -20,7 +20,19 @@ const yarnLotUsageSchema = mongoose.Schema({
     invoiceID: {type: String},
     usageMode: {type: String}, // ## ct= fromCustomer , t=transfer , p=produce , 
     yarnWeight: {type: mongoose.Types.Decimal128},
+    yarnWeightNet: {type: mongoose.Types.Decimal128},
     useWeight: {type: mongoose.Types.Decimal128},
+    yarnBoxInfo: [{
+      boxID: {type: String},
+      boxUUID: {type: String},
+      coneQty: {type: Number},
+      factoryID: {type: String},
+      yarnPlanWeight: {type: mongoose.Types.Decimal128},
+      yarnWeight: {type: mongoose.Types.Decimal128},   // ## cannot change value
+      yarnWeightNet: {type: mongoose.Types.Decimal128},  // ## cannot change value
+      useWeight: {type: mongoose.Types.Decimal128},
+      yarnTransferWeight: {type: mongoose.Types.Decimal128},
+    }],
     usageInfo: {
       setFactoryID : [{type: String}], // ## array = transfer case that have 2 factory relate
       fromFactoryID: {type: String},

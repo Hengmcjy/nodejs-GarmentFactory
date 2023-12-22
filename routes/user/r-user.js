@@ -32,6 +32,7 @@ router.get("/test/test11", userController.getTestTest11); // ## cancel orderProd
 router.get("/test/test9", userController.getTestTest9); // ## cancel queue order (some) 2 , 1 by 1
 router.get("/test/test10", userController.getTestTest10); // ## cancel queue order (some) 3 ******************************
 router.get("/test/test12", userController.getTestTest12); // ## edit orderProduction forloss --> normal
+router.get("/test/test16", userController.getTestTest16);  // delete all orderProduction , orderProductionQueueList , orderProductionQueue
 
 router.get("/test/test14", userController.getTestTest14); // ## cancel orderProduction , queue (all) 100%
 

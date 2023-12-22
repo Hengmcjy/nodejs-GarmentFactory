@@ -415,7 +415,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       productionRepairCount: undefined,
       productionProblemCount: undefined,
     };
-    console.log(' ---------- end  query ------------------');
+    // console.log(' ---------- end  query ------------------');
     const token = '';
     res.status(200).json({
       token: token,
@@ -605,6 +605,7 @@ exports.getRepCurrentProductionOverview = async (req, res, next) => {
   const orderStatusArr = JSON.parse(req.params.ordertatus);
   const productStatusCompleteArr = ['complete'];
   const orderIDArr = JSON.parse(req.params.orderIDArr);
+  // console.log(orderIDArr);
 
   try {
     // console.log('0');
@@ -1047,7 +1048,7 @@ exports.getRepNodeStaffScannedByDate12 = async (req, res, next) => {
   const statusArr = ['normal', 'complete'];
   // const orderStatusArr = JSON.parse(req.params.ordertatus);
   // console.log(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
-  
+  // console.log(orderIDs);
   try {
 
     // ## report staff scanned by date1 - date2
@@ -1749,4 +1750,68 @@ exports.getRepCompanyOrderByOrderID = async (req, res, next) => {
 
 
 // ## report company ############################################################################
+// ###################################################################################################
+
+
+// ###################################################################################################
+// ## report heng test ############################################################################
+
+// // ## getHengtestRep1
+// router.get("/hengtest/rep1", checkAuth, checkUUID, reportController.getHengtestRep1);
+exports.getHengtestRep1 = async (req, res, next) => {
+  // try {} catch (err) {}
+
+  // console.log('getHengtestRep1');
+
+  const companyID = 'c000001';
+  const factoryID = 'f000001';
+  const orderID = 'BA1OFA4S';
+  // const productBarcodeNo = 'AA0PKA3A    SGHI-----23RW--------S--F00039';
+
+  // 1.COMPUTER-KNITTING 2.PANAL-INSPECTION 3.LINKING  4.MENDING  5.WASHING    6.PRESSING
+  const toNode = '1.COMPUTER-KNITTING';
+  const problemName = 'pb';
+  const status = 'normal';
+
+
+  try {
+
+    const data01 = await ShareFunc.getOrderProductionfilter01(companyID, factoryID, orderID, toNode);
+    // orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpecByOrderID(companyID, orderStatusArr, orderID);
+    // currentCompanyOrder = await ShareFunc.getCurrentCompanyOrderByOrderID(companyID, orderStatusArr, orderID);
+    // currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyleByOrderID(companyID, orderStatusArr, orderID);
+    
+    // console.log(orderStyleColorSize, currentCompanyOrder, currentOrderStyle);
+
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      success: true,
+      data01: data01,
+      // expiresIn: process.env.expiresIn,
+      // orderStyleColorSize: orderStyleColorSize,
+      // currentCompanyOrder: currentCompanyOrder,
+      // currentOrderStyle: currentOrderStyle,
+      // repDataFormat1: repDataFormat1,
+      // orders: orders,
+      // products: products,
+      // orderProductAllQtyRep: orderProductAllQtyRep,
+      // factory: factory,
+      // nodeStation: nodeStation,
+      // nodeFlows: nodeFlows,
+      // nodeFlow: nodeFlow
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'rep-errHeng01', 
+        mode:'rep-errheng01', 
+        value: "rep-error test heng01"
+      }
+    });
+  }
+}
+
+
+// ## report heng test ############################################################################
 // ###################################################################################################
