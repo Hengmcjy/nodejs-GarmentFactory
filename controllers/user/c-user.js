@@ -726,6 +726,230 @@ exports.getTestTest2 = async (req, res, next) => {
   return res.end();
 }
 
+// gettestexplain1
+// ## http://172.31.197.31:3968/api/user/test/explain1/testexplain1
+// router.get("/test/explain1/testexplain1", userController.gettestexplain1);
+exports.gettestexplain1 = async (req, res, next) => {
+  console.log('gettestexplain1');
+  const companyID = 'c000001';
+  const factoryID = 'f000001';
+  const explain = await Factory.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,		
+        factoryID: 1,	
+        fDescription: 1,	
+        fInfo: 1,
+        nodeStationSetting: 1,
+    }	}
+  ]).explain("executionStats");
+  // console.log(explain);
+  return res.send(explain);
+}
+
+// ## http://192.168.1.25:3968/api/user/test/explain1/testexplain2
+// router.get("/test/explain1/testexplain2", userController.gettestexplain2);
+exports.gettestexplain2 = async (req, res, next) => {
+  console.log('gettestexplain2');
+  const companyID = 'c000001';
+  const factoryID = 'f000001';
+  const orderID = 'AA0QFA4S';
+  const productBarcodeNoReal = ['AA0QFA4S    JAPN-----24GR--------M---00476'];
+  
+  const open = true;
+  const productStatusArr = ['complete'];
+
+  const explain = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"productStatus":{$in: productStatusArr}},
+      {"companyID":companyID},
+      {"open":open},
+      // {"factoryID":factoryID},
+      // {"orderID":orderID},
+      // {"productBarcodeNoReal":{$in: productBarcodeNoReal}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        factoryID: 1,		
+        orderID: 1,	
+        productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+    }	},
+  ]).explain("executionStats");
+
+  
+  // console.log(explain);
+  return res.send(explain);
+}
+
+// ## http://192.168.1.25:3968/api/user/test/explain1/testexplain3
+// router.get("/test/explain1/testexplain3", userController.gettestexplain3);
+exports.gettestexplain3 = async (req, res, next) => {
+  console.log('gettestexplain3');
+  const companyID = 'c000001';
+  const factoryID = 'f000001';
+  const orderID = 'AA0QFA4S';
+  const orderIDArr = ['AA0QFA4S'];
+  const productBarcodeNoReal = ['AA0QFA4S    JAPN-----24GR--------M---00476'];
+  
+  const open = true;
+  const openArr = [true];
+  const productStatusArr = ['complete'];
+  const forLossArr = [true];
+
+  const explain = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
+      {"open":{$in: openArr}},
+      {"forLoss":{$in: forLossArr}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+        // productionNode: 1,
+        style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+        targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+        // countryID: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.countryIDPos, +process.env.countryIDDigit ] }},
+        // year: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.yearPos, +process.env.yearDigit ] }},
+        color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+        size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+    }	},
+
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        style: '$style',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+        // fromNode: '$fromNode',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ]).explain("executionStats");
+
+  // console.log(explain);
+  return res.send(explain);
+}
+
+// ## http://192.168.1.25:3968/api/user/test/explain1/testexplain4
+// router.get("/test/explain1/testexplain4", userController.gettestexplain4);
+exports.gettestexplain4 = async (req, res, next) => {
+  console.log('gettestexplain4');
+  const companyID = 'c000001';
+  const factoryID = 'f000001';
+  const orderID = 'AA0QFA4S';
+  const orderIDArr = ['AA0QFA4S'];
+  const productBarcodeNoReal = ['AA0QFA4S    JAPN-----24GR--------M---00476'];
+  
+  const open = true;
+  const openArr = [true];
+  const productStatusArr = ['complete'];
+  const forLossArr = [true];
+  const productionNodeStatusArr = ['normal'];
+
+  const explain = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,		
+        orderID: 1,	
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productionNode: 1,
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      // productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      // isOutsourceTracking: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", process.env.targetIDPos, process.env.targetIDDigit ] }},
+      // countryID: { $toUpper:{ $substr: [ "$productBarcodeNoReal", process.env.countryIDPos, process.env.countryIDDigit ] }},
+      // year: { $toUpper:{ $substr: [ "$productBarcodeNoReal", process.env.yearPos, process.env.yearDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      fromNode: "$productionNode.fromNode",
+      // toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+
+    { $match: { $and: [
+      {"status":{$in: productionNodeStatusArr}}
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // productBarcodeNoReal: 1,
+      // isOutsourceTracking: 1,
+      style: 1,
+      color: 1,
+      size: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      fromNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        style: '$style',
+        color: '$color',
+        size: '$size',
+        fromNode: '$fromNode',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ]).explain("executionStats");
+  
+  // console.log(explain);
+  return res.send(explain);
+}
+
+
 // // ## http://192.168.1.84:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {

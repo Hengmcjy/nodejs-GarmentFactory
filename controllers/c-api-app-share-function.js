@@ -2074,7 +2074,7 @@ exports.getLastRunningNoOrderProduction= async (companyID, orderID, productID, p
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":orderID},
-      {"productID":productID},
+      // {"productID":productID},
     ] } },
     { $project: { 
       productBarcode: { $substr: [ "$productBarcodeNoReal", 0, 37 ] },	
@@ -2635,11 +2635,11 @@ exports.checkExistOrderProductionbyBundleNo= async (companyID, orderID, bundleNo
       {"companyID":companyID},
       {"orderID":orderID},
       // {"bundleNo":bundleNo},
-      {"open":open},
       // {"productCount":productCount},
-      {"isOutsourceTracking":isOutsourceTracking},
-      {"productStatus":{$in: productStatusArr}},
       {"bundleNo":{$in: bundleNos}},
+      {"productStatus":{$in: productStatusArr}},
+      {"isOutsourceTracking":isOutsourceTracking},
+      {"open":open},
     ] } },
     { $project: {			
         _id: 0,	
@@ -2788,9 +2788,9 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"isOutsourceTracking":isOutsourceTracking},
       {"orderID":{$in: orderIDs}},
       {"bundleNo":{$in: bundleNos}},
+      {"isOutsourceTracking":isOutsourceTracking},
     ] } },
     { $project: {			
         _id: 0,	
@@ -2957,7 +2957,7 @@ exports.checkExistOrderProductionByBarcodeNo= async (companyID, factoryID, order
       {"companyID":companyID},
       {"factoryID":factoryID},
       {"orderID":orderID},
-      {"productID":productID},
+      // {"productID":productID},
       {"productBarcodeNoReal":{$in: productBarcodeNo}},
     ] } },
     { $project: {			
@@ -3789,6 +3789,367 @@ exports.getYarnLotBoxLastStr= async (companyID, yarnSeasonID, yarnID, yarnColorI
     }	},
   ]);
   return yarnData;
+}
+
+// getCFYarnStock(companyID, factoryID, customerID, yarnSeasonID, yarnID, state, used);
+exports.getCFYarnStock= async (companyID, factoryIDs, customerID, yarnSeasonID, yarnIDs, uuids, status, type, state, used, weightVerified) => {
+  //  console.log(companyID, factoryID, yarnSeasonID, yarnID, type, state);
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+      // {"yarnID":yarnID},
+      {"yarnID":{$in: yarnIDs}},
+      {"uuid":{$in: uuids}},
+      {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        uuid: 1,
+        yarnID: 1,		
+        orderID: 1,
+        colorS: 1,
+        yarnDataInfo: 1,
+    }	},
+    { $unwind: "$yarnDataInfo" },
+    { $project: { _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      orderID: 1,
+      colorS: 1,
+      datetime: "$yarnDataInfo.datetime",
+      yarnDataUUID: "$yarnDataInfo.yarnDataUUID",
+      yarnColorID: "$yarnDataInfo.yarnColorID",
+      type: "$yarnDataInfo.type",
+      fromFactoryID: "$yarnDataInfo.fromFactoryID",
+      toFactoryID: "$yarnDataInfo.toFactoryID",
+      packageInfo: "$yarnDataInfo.packageInfo",
+    }},
+    { $match: { $and: [
+      // {"yarnDataUUID":yarnDataUUID},
+      // {"datetime":datetime},
+      // {"yarnColorID":yarnColorID},
+      // {"type":type},
+      // {"toFactoryID":toFactoryID},
+      // {"uuid":uuid},
+      // {"yarnID":yarnID},
+      {"type":{$in: type}},
+    ] } },
+    { $unwind: "$packageInfo" },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      // factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      orderID: 1,
+      colorS: 1,
+
+      yarnDataUUID: 1,
+      yarnColorID: 1,
+      type: 1,		
+      fromFactoryID: 1,
+      toFactoryID: 1,
+
+      invoiceID: "$packageInfo.invoiceID",
+      yarnLotID: "$packageInfo.yarnLotID",
+      yarnLotUUID: "$packageInfo.yarnLotUUID",
+      coneWeight: "$packageInfo.coneWeight",
+      boxWeight: "$packageInfo.boxWeight",
+      state: "$packageInfo.state",
+      yarnBoxInfo: "$packageInfo.yarnBoxInfo",
+
+      datetime: 1,
+      yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+    }	},
+
+    { $match: { $and: [
+      // {"yarnLotID":yarnLotID},
+      // {"yarnLotUUID":yarnLotUUID},
+      // {"status":{$in: status}},
+      // {"state": state},
+      {"state":{$in: state}},
+    ] } },
+    { $unwind: "$yarnBoxInfo" },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      // factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      orderID: 1,
+      colorS: 1,
+
+      yarnDataUUID: 1,
+      yarnColorID: 1,
+      type: 1,		
+      fromFactoryID: 1,
+      toFactoryID: 1,
+
+      invoiceID: 1,
+      yarnLotID: 1,
+      yarnLotUUID: 1,
+      coneWeight: 1,
+      boxWeight: 1,
+      state: 1,
+
+      datetime: 1,
+      yyyymmdd: 1,
+      mmdd: 1,
+
+      boxID: "$yarnBoxInfo.boxID",
+      boxUUID: "$yarnBoxInfo.boxUUID",
+      factoryIDBox: "$yarnBoxInfo.factoryID",
+      yarnPlanWeight: "$yarnBoxInfo.yarnPlanWeight",
+      yarnWeight: "$yarnBoxInfo.yarnWeight",
+      useWeight: "$yarnBoxInfo.useWeight",
+      weightVerified: "$yarnBoxInfo.weightVerified",
+      used: "$yarnBoxInfo.used",
+      coneQty: "$yarnBoxInfo.coneQty",
+      yarnWeightNet: "$yarnBoxInfo.yarnWeightNet",
+      yarnTransferWeight: "$yarnBoxInfo.yarnTransferWeight",
+      yarnBoxInfo: 1,
+    }	},
+
+    { $match: { $and: [
+      // {"factoryIDBox":factoryID},
+      {"factoryIDBox":{$in: factoryIDs}},
+      {"weightVerified":weightVerified},
+      {"used":used},
+      // {"status":{$in: status}},
+      // {"type":{$in: type}},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      // factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      uuid: 1,
+      yarnID: 1,		
+      orderID: 1,
+      colorS: 1,
+
+      yarnDataUUID: 1,
+      yarnColorID: 1,
+      type: 1,		
+      fromFactoryID: 1,
+      toFactoryID: 1,
+
+      invoiceID: 1,
+      yarnLotID: 1,
+      yarnLotUUID: 1,
+      coneWeight: 1,
+      boxWeight: 1,
+
+
+      datetime: 1,
+      yyyymmdd: 1,
+      mmdd: 1,
+
+      boxID: 1,
+      boxUUID: 1,
+      factoryIDBox: 1,
+      yarnPlanWeight: 1,
+      yarnWeight: 1,
+      useWeight: 1,
+      weightVerified: 1,
+      used: 1,
+      coneQty: 1,
+      yarnWeightNet: 1,
+      yarnTransferWeight: 1,
+      // yarnBoxInfo: 1,
+    }	},
+  ]);
+  // console.log(yarnData);
+
+  await this.asyncForEach(yarnData, async (item1) => {
+    if (item1.boxWeight) { item1.boxWeight = parseFloat(item1.boxWeight); }
+    if (item1.coneWeight) { item1.coneWeight = parseFloat(item1.coneWeight); }
+
+    if (item1.yarnPlanWeight) { item1.yarnPlanWeight = parseFloat(item1.yarnPlanWeight); }
+    if (item1.yarnWeight) { item1.yarnWeight = parseFloat(item1.yarnWeight); }
+    if (item1.useWeight) { item1.useWeight = parseFloat(item1.useWeight); }
+    if (item1.useWeight) { item1.useWeight = parseFloat(item1.useWeight); }
+    if (item1.yarnWeightNet) { item1.yarnWeightNet = parseFloat(item1.yarnWeightNet); }
+    if (item1.yarnTransferWeight) { item1.yarnTransferWeight = parseFloat(item1.yarnTransferWeight); }
+  });
+  
+  let yarnLotInfo = [];
+  if (yarnData.length > 0) {
+    // console.log(yarnData.length);
+
+    // yarnLotInfo = {
+    //   companyID: yarnData[0].companyID,
+    //   // factoryID: yarnData[0].factoryID,		
+    //   customerID: yarnData[0].customerID,	
+    //   yarnSeasonID: yarnData[0].yarnSeasonID,
+    //   uuid: yarnData[0].uuid,
+    //   yarnID: yarnData[0].yarnID,		
+    //   orderID: yarnData[0].orderID,
+    //   colorS: yarnData[0].colorS,
+    // };
+
+    await this.asyncForEach(yarnData, async (item1) => {
+      const yarnLotInfo1 = {
+        companyID: item1.companyID,
+        // factoryID: item1.factoryID,		
+        customerID: item1.customerID,	
+        yarnSeasonID: item1.yarnSeasonID,
+        uuid: item1.uuid,
+        yarnID: item1.yarnID,		
+        orderID: item1.orderID,
+        colorS: item1.colorS,
+      }
+      const yarnLotInfoF = yarnLotInfo.filter(i=>i.uuid === yarnLotInfo1.uuid);
+      if (yarnLotInfoF.length <= 0) {
+        yarnLotInfo.push(yarnLotInfo1);
+      }
+    });
+    // console.log(yarnLotInfo);
+
+    await this.asyncForEach(yarnLotInfo, async (item1) => {
+      let yarnDataInfo = [];
+      await this.asyncForEach2(yarnData, async (item2) => {
+        const yarnDataInfoF = yarnDataInfo.filter(i => i.yarnDataUUID === item2.yarnDataUUID);
+        if (yarnDataInfoF.length <= 0) {
+          yarnDataInfo.push({
+            yarnDataUUID: item2.yarnDataUUID,
+            yarnColorID: item2.yarnColorID,
+            type: item2.type,		
+            fromFactoryID: item2.fromFactoryID,
+            toFactoryID: item2.toFactoryID,
+            packageInfo: []
+          });
+        }
+      });
+      item1.yarnDataInfo = yarnDataInfo;
+    });
+    // console.log(yarnLotInfo[0].yarnDataInfo);
+
+    await this.asyncForEach(yarnLotInfo, async (item1) => {
+      await this.asyncForEach2(item1.yarnDataInfo, async (item2) => {
+        const yarnDataInfoF = yarnData.filter(i => i.yarnDataUUID === item2.yarnDataUUID);
+        let packageInfo = [];
+        await this.asyncForEach3(yarnDataInfoF, async (item3) => {
+          const packageInfoF = packageInfo.filter(i => i.yarnLotUUID === item3.yarnLotUUID);
+          if (packageInfoF.length <= 0) {
+            packageInfo.push({
+              invoiceID: item3.invoiceID,
+              yarnLotID: item3.yarnLotID,
+              yarnLotUUID: item3.yarnLotUUID,
+              coneWeight: item3.coneWeight,
+              boxWeight: item3.boxWeight,
+              yarnBoxInfo: []
+            });
+          }
+        });
+        item2.packageInfo = packageInfo;
+      });
+    });
+    // console.log(yarnLotInfo[0]);
+    // console.log(yarnLotInfo[0].yarnDataInfo[0]);
+
+    await this.asyncForEach(yarnLotInfo, async (item1) => {
+      await this.asyncForEach2(item1.yarnDataInfo, async (item2) => {
+        await this.asyncForEach3(item2.packageInfo, async (item3) => {
+          let yarnBoxInfoF = yarnData.filter(i => i.yarnDataUUID === item2.yarnDataUUID && i.yarnLotUUID === item3.yarnLotUUID);
+          yarnBoxInfoF.sort((a,b)=>{ return a.boxID >b.boxID?1:a.boxID <b.boxID?-1:0 });  // ## sort asc
+          let yarnBoxInfo = [];
+          await this.asyncForEach4(yarnBoxInfoF, async (item4) => {
+            yarnBoxInfo.push({
+              boxID: item4.boxID,
+              boxUUID: item4.boxUUID,
+              factoryID: item4.factoryIDBox,
+              yarnPlanWeight: item4.yarnPlanWeight,
+              yarnWeight: item4.yarnWeight,
+              useWeight: item4.useWeight,
+              weightVerified: item4.weightVerified,
+              used: item4.used,
+              coneQty: item4.coneQty,
+              yarnWeightNet: item4.yarnWeightNet,
+              yarnTransferWeight: item4.yarnTransferWeight,
+            });
+          });
+          item3.yarnBoxInfo = yarnBoxInfo;
+        });
+      });
+    });
+    // console.log(yarnLotInfo[0].yarnDataInfo[0]);
+
+    // let yarnDataInfo = [];
+    // await this.asyncForEach(yarnData, async (item1) => {
+    //   const yarnDataInfoF = yarnDataInfo.filter(i => i.yarnDataUUID === item1.yarnDataUUID);
+    //   if (yarnDataInfoF.length <= 0) {
+    //     yarnDataInfo.push({
+    //       yarnDataUUID: item1.yarnDataUUID,
+    //       yarnColorID: item1.yarnColorID,
+    //       type: item1.type,		
+    //       fromFactoryID: item1.fromFactoryID,
+    //       toFactoryID: item1.toFactoryID,
+    //       packageInfo: []
+    //     });
+    //   }
+    // });
+    // yarnLotInfo.yarnDataInfo = yarnDataInfo;
+
+    // await this.asyncForEach(yarnLotInfo.yarnDataInfo, async (item2) => {
+    //   const yarnDataInfoF = yarnData.filter(i => i.yarnDataUUID === item2.yarnDataUUID);
+    //   let packageInfo = [];
+    //   await this.asyncForEach2(yarnDataInfoF, async (item3) => {
+    //     const packageInfoF = packageInfo.filter(i => i.yarnLotUUID === item3.yarnLotUUID);
+    //     if (packageInfoF.length <= 0) {
+    //       packageInfo.push({
+    //         yarnLotID: item3.yarnLotID,
+    //         yarnLotUUID: item3.yarnLotUUID,
+    //         coneWeight: item3.coneWeight,
+    //         boxWeight: item3.boxWeight,
+    //         yarnBoxInfo: []
+    //       });
+    //     }
+    //   });
+    //   item2.packageInfo = packageInfo;
+    // });
+
+    // await this.asyncForEach2(yarnLotInfo.yarnDataInfo, async (item2) => {
+    //   await this.asyncForEach3(item2.packageInfo, async (item3) => {
+    //     let yarnBoxInfoF = yarnData.filter(i => i.yarnDataUUID === item2.yarnDataUUID && i.yarnLotUUID === item3.yarnLotUUID);
+    //     yarnBoxInfoF.sort((a,b)=>{ return a.boxID >b.boxID?1:a.boxID <b.boxID?-1:0 });  // ## sort asc
+    //     let yarnBoxInfo = [];
+    //     await this.asyncForEach4(yarnBoxInfoF, async (item4) => {
+    //       yarnBoxInfo.push({
+    //         boxID: item4.boxID,
+    //         boxUUID: item4.boxUUID,
+    //         factoryID: item4.factoryIDBox,
+    //         yarnPlanWeight: item4.yarnPlanWeight,
+    //         yarnWeight: item4.yarnWeight,
+    //         useWeight: item4.useWeight,
+    //         weightVerified: item4.weightVerified,
+    //         used: item4.used,
+    //         coneQty: item4.coneQty,
+    //         yarnWeightNet: item4.yarnWeightNet,
+    //         yarnTransferWeight: item4.yarnTransferWeight,
+    //       });
+    //     });
+    //     item2.yarnBoxInfo = yarnBoxInfo;
+    //   });
+    // });
+
+  }
+  return yarnLotInfo;
 }
 
 // getYarnLotInfoCF(companyID, factoryID, yarnSeasonID, yarnID, type);
@@ -5038,30 +5399,6 @@ exports.getYarnPlanInvoiceList= async (companyID, factoryID, customerID, yarnSea
     });
   });
 
-  // const yarnDataF = await yarnData.map(fw => ({
-  //   companyID: fw._id.companyID, 
-  //   productID: fw._id.productID,
-  //   style: fw._id.style,
-  //   size: fw._id.size,
-  //   targetPlace: fw._id.targetPlace,
-  //   color: fw._id.color,
-  //   countQty: fw.countQty,
-  // }));
-
-  // const yarnDataInfo = yarnData.length>0 ? yarnData[0].yarnDataInfo : [];
-
-
-  // await this.asyncForEach(yarnData, async (item1) => {
-  //   await this.asyncForEach2(item1.yarnDataInfo.packageInfo, async (item2) => {
-  //     await this.asyncForEach3(item2.yarnBoxInfo, async (item3) => {
-        // item3.yarnPlanWeight = parseFloat(item3.yarnPlanWeight);
-        // item3.yarnWeight = parseFloat(item3.yarnWeight);
-        // item3.useWeight = parseFloat(item3.useWeight);
-  //     });
-  //   });
-  // });
-
-
   return yarnData;
 }
 
@@ -6300,8 +6637,8 @@ exports.getCurrentCompanyOrderOutsourceRemianQTY= async (companyID, orderIDs) =>
       outsourceData: "$productionNode.outsourceData",
     }	},
     { $match: { $and: [
-      {"isOutsource":true},
       {"status":status},
+      {"isOutsource":true},
     ] } },
     { $unwind: "$outsourceData"},
     { $project: {			
@@ -6428,8 +6765,8 @@ exports.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY= async (companyID
       outsourceData: "$productionNode.outsourceData",
     }	},
     { $match: { $and: [
-      {"isOutsource":true},
       {"status":status},
+      {"isOutsource":true},
     ] } },
     { $unwind: "$outsourceData"},
     { $project: {			
@@ -6483,7 +6820,7 @@ exports.getOrderProductByOrderID1= async (companyID, factoryID, orderID, product
       {"companyID":companyID},
       {"factoryID":factoryID},
       {"orderID":orderID},
-      {"productID":productID},
+      // {"productID":productID},
       {"productBarcodeNoReal":productBarcodeNo},
     ] } },
     { $project: {			
@@ -6681,8 +7018,8 @@ exports.getCFNCurrentProductAllDetail = async (companyID, factoryID, nodeID, pro
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -6768,8 +7105,8 @@ exports.getCFNCurrentProductAllDetailPL = async (companyID, factoryID, nodeID, p
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"fromNode":nodeID},
       {"factoryID":factoryID},
+      {"fromNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -6854,8 +7191,8 @@ exports.getCountCFNCurrentProductAllDetailPL = async (companyID, factoryID, node
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"fromNode":nodeID},
       {"factoryID":factoryID},
+      {"fromNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -6945,8 +7282,8 @@ exports.getCFNCurrentProductAllDetailToNodePL = async (companyID, factoryID, nod
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -6984,11 +7321,13 @@ exports.getCFNCurrentProductAllDetailToNodePL = async (companyID, factoryID, nod
 // getCFNCurrentProductStyleQRCode(companyID, factoryID, nodeID, style, productStatusArr, page, limit);
 exports.getCFNCurrentProductStyleQRCode = async (companyID, factoryID, nodeID, style, productStatusArr, page, limit) => {
   // console.log('getRepCFNCurrentProductQty');
+  const style1 = (style+'').trim();
   const currentProductStyleQRCodeCFN = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productID":style},
+      // {"productID":style},
+      {"orderID":style1},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
@@ -7033,8 +7372,8 @@ exports.getCFNCurrentProductStyleQRCode = async (companyID, factoryID, nodeID, s
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -7072,11 +7411,12 @@ exports.getCFNCurrentProductStyleQRCode = async (companyID, factoryID, nodeID, s
 // await ShareFunc.getCFNCurrentProductStyleZoneSizeColorQRCode(companyID, factoryID, nodeID, style, zone, size, color, productStatusArr, page, limit);
 exports.getCFNCurrentProductStyleZoneSizeColorQRCode = async (companyID, factoryID, nodeID, style, zone, size, color, productStatusArr, page, limit) => {
   // console.log('getRepCFNCurrentProductQty');
+  const style1 = (style+'').trim();
   const currentProductStyleQRCodeCFN = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productID":style},
+      {"orderID":style1},
       {"productStatus":{$in: productStatusArr}}
     ] } },
     { $project: {			
@@ -7481,7 +7821,13 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
 exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, productStatusArr) => {
   // console.log('getRepCFNCurrentProductQty');
   // console.log(companyID, factoryID, nodeID, productStatusArr);
-  const orderProductRep = await OrderProduction.aggregate([
+
+  // rows = await Product.countDocuments({$and: [
+  //   {"companyID":companyID}
+  // ]});
+  // return rows;
+
+  const orderProductRep = await OrderProduction.countDocuments([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
@@ -7559,7 +7905,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
       sumProductQty: {$sum: 1} ,
     }} 
   ]);
-
+  // console.log(orderProductRep);
 
   // const productionPeriodM = await productionPeriod.map(fw => ({
   //   companyID: fw._id.companyID, 
@@ -7572,9 +7918,10 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
   // }));
 
   // console.log(orderProductRep);
-  const allQTY = orderProductRep[0]?orderProductRep[0].sumProductQty:0;
-  // return orderProductRep.length>0?orderProduct[0]:null;
-  return allQTY;
+
+  // const allQTY = orderProductRep[0]?orderProductRep[0].sumProductQty:0;
+
+  return orderProductRep;
 }
 
 // getProductionZoneForLossQTYC
@@ -7585,10 +7932,10 @@ exports.getProductionZoneForLossQTYC = async (companyID, productStatusArr, produ
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: productStatusArr}},
       {"open":{$in: openArr}},
       {"forLoss":{$in: forLossArr}},
-      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -7646,10 +7993,10 @@ exports.getProductionForLossQTYC = async (companyID, productStatusArr, productio
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: productStatusArr}},
       {"open":{$in: openArr}},
       {"forLoss":{$in: forLossArr}},
-      {"orderID":{$in: orderIDArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -7705,8 +8052,8 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -7809,8 +8156,8 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -8185,11 +8532,12 @@ exports.getCFNCurrentProductAllRepairCount = async (companyID, factoryID, nodeID
 // ShareFunc.getCFNCurrentProductStyleCount(companyID, factoryID, nodeID, style, productStatusArr)
 exports.getCFNCurrentProductStyleCount = async (companyID, factoryID, nodeID, style, productProbelmStatusArr) => {
   // console.log('getRepCFNCurrentProductQtyByOrderID');
+  const style1 = (style+'').trim();
   const currentProductStyleCount = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productID":style},
+      {"orderID":style1},
       {"productStatus":{$in: productProbelmStatusArr}}
     ] } },
     { $project: {			
@@ -8226,8 +8574,8 @@ exports.getCFNCurrentProductStyleCount = async (companyID, factoryID, nodeID, st
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -8276,11 +8624,12 @@ exports.getCFNCurrentProductStyleCount = async (companyID, factoryID, nodeID, st
 // getCFNCurrentProductStyleZoneSizeColorCount(companyID, factoryID, nodeID, style, zone, size, color, productStatusArr);
 exports.getCFNCurrentProductStyleZoneSizeColorCount = async (companyID, factoryID, nodeID, style, zone, size, color, productProbelmStatusArr) => {
   // console.log('getRepCFNCurrentProductQtyByOrderID');
+  const style1 = (style+'').trim();
   const currentProductStyleCount = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productID":style},
+      {"orderID":style1},
       {"productStatus":{$in: productProbelmStatusArr}}
     ] } },
     { $project: {			
@@ -8592,8 +8941,8 @@ exports.getAllOrderFromOrderProductionCFN = async (companyID, factoryID, nodeID,
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -8764,8 +9113,8 @@ exports.getRepCFNProductStateStyle = async (companyID, factoryID, nodeID, produc
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -8857,8 +9206,8 @@ exports.getRepCFNProductStateTargetPlace = async (companyID, factoryID, nodeID, 
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -8952,8 +9301,8 @@ exports.getRepCFNProductStateColor = async (companyID, factoryID, nodeID, produc
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -9047,8 +9396,8 @@ exports.getRepCFNProductStateSize = async (companyID, factoryID, nodeID, product
       createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":factoryID},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -9261,8 +9610,8 @@ exports.getCNCurrentProductionNodeQty = async (companyID, orderStatusArr, produc
     }},
 
     { $match: { $and: [
-      {"status":{$in: productStatusArr}},
       {"toNode":{$in: toNodeArr}},
+      {"status":{$in: productStatusArr}},
       // {"factoryID":{$in: factoryIDArr}},
       // {"companyID":companyID},
     ] } },
@@ -9324,8 +9673,8 @@ exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, product
       {"companyID":companyID},
       // {"factoryID":factoryID},
       // {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -9402,8 +9751,8 @@ exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatus
       {"companyID":companyID},
       // {"factoryID":factoryID},
       // {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -9442,27 +9791,27 @@ exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatus
       factoryID: "$productionNode.factoryID",
     }},
 
-    { $match: { $and: [
-      // {"factoryID":{$in: factoryIDArr}},
-      {"companyID":companyID},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      productID: 1,
-      style: 1,
-      targetPlace: 1,
-      color: 1,
-      size: 1,
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      // toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-      factoryID: 1,
-    }},
+    // { $match: { $and: [
+    //   // {"factoryID":{$in: factoryIDArr}},
+    //   {"companyID":companyID},
+    // ] } },
+    // { $project: { 
+    //   _id: 0, 
+    //   companyID: 1,
+    //   productID: 1,
+    //   style: 1,
+    //   targetPlace: 1,
+    //   color: 1,
+    //   size: 1,
+    //   // productCount: 1,
+    //   // productionDate: 1,
+    //   // productStatus: 1,
+    //   // fromNode: "$productionNode.fromNode",
+    //   // toNode: "$productionNode.toNode",
+    //   // datetime: "$productionNode.datetime",
+    //   // createBy: "$productionNode.createBy",
+    //   factoryID: 1,
+    // }},
 
     { $group: {			
       _id: { 
@@ -9582,10 +9931,11 @@ exports.getCCurrentProductQtyAllList = async (companyID, factoryIDArr, productSt
 exports.getCCurrentProductQtyAllByStyleC = async (companyID, style, productStatusArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
+  const style1 = (style+'').trim();
   const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"productID":style},
+      {"orderID":style1},
       // {"factoryID":{$in: factoryIDArr}},
       // {"productStatus":{$in: productStatusArr}}
     ] } },
@@ -9665,10 +10015,10 @@ exports.getRepCFNCurrentMainDataBundleNoscanProductBarcode = async (companyID, f
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
       {"bundleNo":{$in: bundleNoArr}},
       {"bundleID":{$in: bundleIDArr}},
       {"productStatus":{$in: statusArr}},
-      {"orderID":{$in: orderIDArr}}
     ] } },
     { $project: {			
         _id: 0,	
@@ -9805,8 +10155,8 @@ exports.getRepCFNCurrentMainDataBundleNoscanDetail = async (companyID, factoryID
       {"companyID":companyID},
       // {"factoryID":factoryID},
       // {"factoryID":{$in: factoryIDArr}},
+      {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: statusArr}},
-      {"orderID":{$in: orderIDArr}}
     ] } },
     { $project: {			
         _id: 0,	
@@ -9852,8 +10202,8 @@ exports.getRepCFNCurrentMainDataBundleNoscanDetail = async (companyID, factoryID
     }},
 
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":{$in: factoryIDArr}},
+      {"toNode":nodeID},
       {"targetPlace":targetPlaceID},
       {"color":color},
       {"size":size},
@@ -9935,8 +10285,8 @@ exports.getRepCFNCurrentMainDataBundleNoscan = async (companyID, factoryIDArr, n
       {"companyID":companyID},
       // {"factoryID":factoryID},
       // {"factoryID":{$in: factoryIDArr}},
+      {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: statusArr}},
-      {"orderID":{$in: orderIDArr}}
     ] } },
     { $project: {			
         _id: 0,	
@@ -9980,8 +10330,8 @@ exports.getRepCFNCurrentMainDataBundleNoscan = async (companyID, factoryIDArr, n
     }},
 
     { $match: { $and: [
-      {"toNode":nodeID},
       {"factoryID":{$in: factoryIDArr}},
+      {"toNode":nodeID},
     ] } },
     { $project: { 
       _id: 0, 
@@ -10055,8 +10405,8 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
       {"companyID":companyID},
       // {"factoryID":factoryID},
       // {"factoryID":{$in: factoryIDArr}},
+      {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: productStatusArr}},
-      {"orderID":{$in: orderIDArr}}
     ] } },
     { $project: {			
         _id: 0,	
@@ -10163,8 +10513,8 @@ exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, product
       {"companyID":companyID},
       // {"factoryID":factoryID},
       // {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -10203,18 +10553,18 @@ exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, product
       factoryID: "$productionNode.factoryID",
     }},
 
-    { $match: { $and: [
-      // {"factoryID":{$in: factoryIDArr}},
-      {"companyID":companyID},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      productID: 1,
-      style: 1,
-      targetPlace: 1,		
-      factoryID: 1,
-    }},
+    // { $match: { $and: [
+    //   // {"factoryID":{$in: factoryIDArr}},
+    //   {"companyID":companyID},
+    // ] } },
+    // { $project: { 
+    //   _id: 0, 
+    //   companyID: 1,
+    //   productID: 1,
+    //   style: 1,
+    //   targetPlace: 1,		
+    //   factoryID: 1,
+    // }},
 
     { $group: {			
       _id: { 
@@ -10258,8 +10608,8 @@ exports.getComCurrentProductQtyCountryCSAll = async (companyID, factoryIDArr, pr
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
     ] } },
 
     { $project: {			
@@ -10321,8 +10671,8 @@ exports.getComCurrentProductQtyCountryAll = async (companyID, factoryIDArr, prod
       {"companyID":companyID},
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -10381,8 +10731,8 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
       {"companyID":companyID},
       // {"factoryID":factoryID},
       // {"factoryID":{$in: factoryIDArr}},
-      {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -10589,9 +10939,9 @@ exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderID
     }},
     { $match: { $and: [
       {"factoryID":{$in: factoryIDArr}},
-      {"status":{$in: statusArr}},
       {"datetime": { $gte: dateStart}} , 
       {"datetime": { $lte : dateEnd}} ,
+      {"status":{$in: statusArr}},
     ] } },
     { $project: { 
       _id: 0, 
@@ -10634,7 +10984,9 @@ exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderID
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
+  // ]).explain("executionStats");
   ]);
+  // console.log(staffScan);
 
   const staffScanF = await staffScan.map(fw => ({
     companyID: fw._id.companyID, 
@@ -10695,9 +11047,9 @@ exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, ord
     }},
     { $match: { $and: [
       {"factoryID":{$in: factoryIDArr}},
-      {"status":{$in: statusArr}},
       {"datetime": { $gte: dateStart}} , 
       {"datetime": { $lte : dateEnd}} ,
+      {"status":{$in: statusArr}},
     ] } },
     { $project: { 
       _id: 0, 
@@ -10802,9 +11154,9 @@ exports.getCFStaffScannedByDate12StyleZoneColorSize = async (companyID, factoryI
     }},
     { $match: { $and: [
       {"factoryID":{$in: factoryIDArr}},
-      {"status":{$in: statusArr}},
       {"datetime": { $gte: dateStart}} , 
       {"datetime": { $lte : dateEnd}} ,
+      {"status":{$in: statusArr}},
     ] } },
     { $project: { 
       _id: 0, 
@@ -10910,10 +11262,10 @@ exports.getCFFNStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, o
     { $match: { $and: [
       {"factoryID":{$in: factoryIDArr}},
       {"fromNode":nodeID},
-      {"targetPlace":{$in: zoneArr}},
-      {"status":{$in: statusArr}},
       {"datetime": { $gte: dateStart}} , 
       {"datetime": { $lte : dateEnd}} ,
+      {"status":{$in: statusArr}},
+      {"targetPlace":{$in: zoneArr}},
     ] } },
     { $project: { 
       _id: 0, 
@@ -11482,10 +11834,10 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
       // productionDate: 1,
       // productStatus: 1,
       factoryID: "$subNodeFlow.factoryID",
-      datetime: "$subNodeFlow.datetime",
       nodeID: "$subNodeFlow.nodeID",
       subNodeID: "$subNodeFlow.subNodeID",	
       qrCode: "$subNodeFlow.qrCode",	
+      datetime: "$subNodeFlow.datetime",
       // createBy: "$subNodeFlow.createBy",
       // toNode: "$productionNode.toNode",
       // datetime: "$productionNode.datetime",

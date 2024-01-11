@@ -892,7 +892,7 @@ exports.deleteOrderProductionQueuesCancel = async (req, res, next) => {
       { $match: { $and: [
         {"companyID":companyID}, 
         {"orderID":orderID}, 
-        {"productID":productID}, 
+        // {"productID":productID}, 
         {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
         { $expr:{$gte: [{$size: "$productionNode"}, 2]}}
       ] } },

@@ -300,7 +300,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     // const isRunNumberUp = runNumberUpType.includes(lottoBetTypeX);
     // console.log(' 1 - getRepCFNCurrentProductQty');
     if (repListNameArr.includes('getRepCFNCurrentProductQty')) {
-      const orderProductAllQtyRep = await ShareFunc.getRepCFNCurrentProductQty(companyID, factoryID, nodeID, productStatusArr);
+      // const orderProductAllQtyRep = await ShareFunc.getRepCFNCurrentProductQty(companyID, factoryID, nodeID, productStatusArr);
       // allProductQty = orderProductAllQtyRep.length;  // ## current all product qty in nodeID 
       allProductQty = 0
       // console.log(orderProductAllQtyRep);
@@ -333,10 +333,13 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       // ## get all order product from orderProduction
       // const allOrder = await ShareFunc.getAllOrderFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
       const allProduct = await ShareFunc.getAllProductFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
+      // console.log(' 5.1');
       // console.log(allOrder, allProduct);
       // getOrders= async (companyID, statusArr, page, limit)
       orders = await ShareFunc.getOrdersFromNode(companyID, ['open'], 1, 100);
+      // console.log(' 5.2');
       products = await ShareFunc.getProductsByProductIDs(companyID, allProduct, 1, 100);
+      // console.log(' 5.3');
       // console.log(orders, products);
     }
 
@@ -1052,14 +1055,16 @@ exports.getRepNodeStaffScannedByDate12 = async (req, res, next) => {
   try {
 
     // ## report staff scanned by date1 - date2
+    // console.log(date12Arr[0], date12Arr[1]);
     const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
     const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
     // console.log(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
     
+    // console.log('1111');
     const nodeScanProductStyle = await ShareFunc.getCFStaffScannedByDate12Style(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
-    
+    // console.log('222');
     const nodeScanProductStyleZone = await ShareFunc.getCFStaffScannedByDate12StyleZone(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
-    
+    // console.log('333');
 
     // const nodeScanProductStyleZoneColorSize = await ShareFunc.getCFStaffScannedByDate12StyleZoneColorSize(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
     // console.log(nodeScanProductStyleZoneColorSize);

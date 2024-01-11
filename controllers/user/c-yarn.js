@@ -390,7 +390,7 @@ exports.getYarnTransferUsageList = async (req, res, next) => {
   const setName = data.setName;
   const yarnSeasonID = data.yarnSeasonID;  // 2024SS
   const season = yarnSeasonID.substr(0, 4);  // 2024
-  const yarnID = data.yarnID;
+  const yarnID = data.yarnID; 
   const usageMode = data.usageMode;
   const status = ['open'];
   // const orderIDs = JSON.parse(req.params.orderIDs);
@@ -443,26 +443,30 @@ exports.getYarnTransferUsageList = async (req, res, next) => {
 // router.put("/yarnlot/CF/rep/fac/remain", checkAuth, checkUUID, yarnController.getYarnRemainCF);
 exports.getYarnRemainCF = async (req, res, next) => {
   // try {} catch (err) {}
-  console.log('getYarnRemainCF');
+  // console.log('getYarnRemainCF');
   const userID = req.userData.tokenSet.userID;
   const data = req.body;
   const companyID = data.companyID;
-  const toFactoryID = data.toFactoryID;  // ## toFactory
+  const factoryIDs = data.factoryIDBoxArr;  // ## toFactory
   const customerID = data.customerID;
 
   const setName = data.setName;
   const yarnSeasonID = data.yarnSeasonID;  // 2024SS
   const season = yarnSeasonID.substr(0, 4);  // 2024
-  const yarnID = data.yarnID;
-  const usageMode = data.usageMode;
-  const status = ['open'];
+  const yarnIDs = data.yarnIDArr;  // ## array of Yarn  uuidArr
+  const uuids = data.uuidArr;  // ## 
+  const type = data.type;  // ## ['receive']
+  const used = data.used;  // ## false
+  const state = data.state;  // ## ['verified']
+  const status = data.status;  // ## ['open'];
+  const weightVerified = data.weightVerified;  // ## false
   // const orderIDs = JSON.parse(req.params.orderIDs);
   // const limit = +req.params.limit;
-  // console.log(yarnID, companyID, toFactoryID, customerID, yarnSeasonID, usageMode);
+  // console.log(factoryIDs, yarnIDs, uuids, type, state, status, used, weightVerified);
   try {
 
-    // const yarnTransferUsage = await ShareFunc.getCFYarnUsageTransfer(companyID, toFactoryID, customerID, yarnSeasonID, yarnID, usageMode);
-
+    const yarnData= await ShareFunc.getCFYarnStock(companyID, factoryIDs, customerID, yarnSeasonID, yarnIDs, uuids, status, type, state, used, weightVerified);
+    // console.log(yarnData);
 
     // const yarns = await ShareFunc.getYarnCuss(companyID, customerID);
     // const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID);
@@ -484,7 +488,7 @@ exports.getYarnRemainCF = async (req, res, next) => {
       token: token,
       expiresIn: process.env.expiresIn,
       userID: userID,
-      // yarnTransferUsage: yarnTransferUsage,
+      yarnData: yarnData,
       // yarnsCount: yarnsCount,
       // yarnPlans: yarnPlans,
       // yarnPlansCount: yarnPlansCount,

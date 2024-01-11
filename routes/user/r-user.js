@@ -18,6 +18,10 @@ const router = express.Router();
 // ## http://192.168.1.39:3022/api/user/test/test
 // ## test
 
+router.get("/test/explain1/testexplain1", userController.gettestexplain1);
+router.get("/test/explain1/testexplain2", userController.gettestexplain2);
+router.get("/test/explain1/testexplain3", userController.gettestexplain3);
+router.get("/test/explain1/testexplain4", userController.gettestexplain4);
 
 router.get("/test/test", userController.getTestTest);
 router.get("/test/test2", userController.getTestTest2);
