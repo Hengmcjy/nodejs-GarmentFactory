@@ -964,72 +964,100 @@ exports.gettestexplain5 = async (req, res, next) => {
 
   console.log('gettestexplain5');
   const companyID = 'c000001';
-  const factoryID = 'f000001';
+  const factoryID = 'f000001';  // 
+  const factoryIDArr = ['f000001'];
   // const orderID = 'AA0QFA4S';
-  // const orderIDArr = ['AA0QFA4S'];
-  // const productBarcodeNoReal = ['AA0QFA4S    JAPN-----24GR--------M---00476'];
+  const orderIDs = ['JBAD9A4S',    'GL-26',    '24S-BP1505',
+    '24S-BP1504',  '203-Y24',  'GL-115D',
+    'GL-115C',     'BA1OPA4S', 'AA0QEA4S',
+    'DAK15A4S',    'DCB08A4S', 'DCB07A4S',
+    'DBC33A4S',    'BA1OGA4S', 'UR37-12B005',
+    'UR37-12B004', 'BA1OQA4S', 'AA0QFA4S',
+    'DCB06A4S',    'BA1ONA4S', 'BA1OOA4S',
+    'BA1OFA4S',    'DDB61A4S', 'DDE60A4S',
+    '23FRAW-006',  'UR391',    'JBAD9A3A',
+    'GL-115B',     'GL-116B',  '23F-YM505',
+    '23F-BP1508',  'GL-92B',   'AA0Q4A3A',
+    'BA1OEA3A',    'DD0ISA3A', 'AA0Q1A3A',
+    'BA1O0A3A',    'AA0Q6A3A', 'BAI13A3A',
+    'BA1ODA3A',    'BA1NIA3A', 'AA0PKA3A',
+    'AA0PJA3A',    'BA1NWA3A', 'AA0PVA3A',
+    'BA1NUA3A'];
+  const orderIDArr = orderIDs;
+  const productBarcodeNoReal = ['AA0QFA4S    JAPN-----24GR--------M---00476'];
   const nodeID = '3.LINKING';
   // const open = true;';
   // const openArr = [true];
+  const statusArr = ['normal', 'complete'];
 
   // ## getRepCFNCurrentProductQtyCount  'normal', 'problem', 'repaired'
   const productStatusArr = ['normal', 'problem', 'repaired'];  
 
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const dateStart = new Date(moment(current).tz('Asia/Bangkok').format('2023/MM/DD 00:00:ss+07:00'));
+  const dateEnd = new Date(moment(current).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+  // console.log(dateStart, dateEnd);
+
   const explain = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      // {"factoryID":factoryID},
-      {"productStatus":{$in: productStatusArr}}
+      {"orderID":{$in: orderIDs}},
+      // {"productStatus":{$in: productStatusArr}},
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
         // factoryID: 1,		
-        // orderID: 1,	
+        orderID: 1,	
         // bundleNo: 1,
-        productID: 1,
+        // productID: 1,
         // productBarcodeNo: 1,
         productBarcodeNoReal: 1,
         // productCount: 1,
         // productionDate: 1,
         // productStatus: 1,
-        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+        productionNode: 1,  // ## 
     }	},
     { $unwind: "$productionNode" },
     { $project: { 
       _id: 0, 
       companyID: 1,
-      // factoryID: 1,		
-      // orderID: 1,	
+      orderID: 1,	
       // bundleNo: 1,
-      productID: 1,
-      // productBarcodeNo: 1,
+      // productID: 1,
       style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
       // productCount: 1,
       // productionDate: 1,
       // productStatus: 1,
-      factoryID: "$productionNode.factoryID",
-      // fromNode: "$productionNode.fromNode",
-      toNode: "$productionNode.toNode",
+      datetime: "$productionNode.datetime",
+      factoryID: "$productionNode.factoryID",	
+      fromNode: "$productionNode.fromNode",
+      status: "$productionNode.status",
+      // toNode: "$productionNode.toNode",
       // datetime: "$productionNode.datetime",
       // createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"factoryID":factoryID},
-      {"toNode":nodeID},
+      {"factoryID":{$in: factoryIDArr}},
+      {"datetime": { $gte: dateStart}} , 
+      {"datetime": { $lte : dateEnd}} ,
+      {"status":{$in: statusArr}},
     ] } },
     { $project: { 
       _id: 0, 
       companyID: 1,
-      factoryID: 1,	
-      productID: 1,	
+      orderID: 1,	
       style: 1,	
-      targetPlace: 1,
-      color: 1,
-      size: 1,
+      // targetPlace: 1,
+      // color: 1,
+      // size: 1,
+      factoryID: 1,	
+      fromNode: 1,
+      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      // dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
       // productID: 1,
       // productBarcodeNo: 1,
       // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
@@ -1039,7 +1067,6 @@ exports.gettestexplain5 = async (req, res, next) => {
       // productionDate: 1,
       // productStatus: 1,
       // productProblem: 1,
-      // fromNode: 1,
       // toNode: 1,
       // datetime: 1,
       // createBy: 1,
@@ -1048,18 +1075,19 @@ exports.gettestexplain5 = async (req, res, next) => {
       _id: { 
         companyID: '$companyID',
         factoryID: '$factoryID',
-        productID: '$productID',
+        orderID: '$orderID',
+        fromNode: '$fromNode',
+        // dayMonthUTC: '$dayMonthUTC',
         style: '$style',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
-        // productID: '$productID',
-        // bundleNo: '$bundleNo',
-        // mode: '$mode',
+        // targetPlace: '$targetPlace',
+        // color: '$color',
+        // size: '$size',
+
       },
-      countStyleTargetPlaceColorSize: {$sum: 1} ,
+      countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
+  // ]).explain("executionStats");
   ]).explain("executionStats");   //  .explain("executionStats")
 
   // const explain = await OrderProduction.aggregate([
