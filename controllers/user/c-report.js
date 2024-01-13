@@ -332,13 +332,17 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     if (repListNameArr.includes('getAllOrderAndProductFromOrderProduction')) {
       // ## get all order product from orderProduction
       // const allOrder = await ShareFunc.getAllOrderFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
-      const allProduct = await ShareFunc.getAllProductFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
+      let productsX = [];
+      await this.asyncForEach(orderProductQtyByOrderIDProductIDRep, async (item1) => {
+        productsX.push(item1.productID);
+      });
+      // const allProduct = await ShareFunc.getAllProductFromOrderProductionCFN(companyID, factoryID, nodeID, productStatusArr);
       // console.log(' 5.1');
       // console.log(allOrder, allProduct);
       // getOrders= async (companyID, statusArr, page, limit)
       orders = await ShareFunc.getOrdersFromNode(companyID, ['open'], 1, 100);
       // console.log(' 5.2');
-      products = await ShareFunc.getProductsByProductIDs(companyID, allProduct, 1, 100);
+      products = await ShareFunc.getProductsByProductIDs(companyID, productsX, 1, 100);
       // console.log(' 5.3');
       // console.log(orders, products);
     }

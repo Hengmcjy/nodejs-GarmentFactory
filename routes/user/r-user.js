@@ -22,6 +22,7 @@ router.get("/test/explain1/testexplain1", userController.gettestexplain1);
 router.get("/test/explain1/testexplain2", userController.gettestexplain2);
 router.get("/test/explain1/testexplain3", userController.gettestexplain3);
 router.get("/test/explain1/testexplain4", userController.gettestexplain4);
+router.get("/test/explain1/testexplain5", userController.gettestexplain5); // ## test node home
 
 router.get("/test/test", userController.getTestTest);
 router.get("/test/test2", userController.getTestTest2);
