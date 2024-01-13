@@ -10902,7 +10902,8 @@ exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderID
   const staffScan = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":{$in: orderIDs}}
+      {"orderID":{$in: orderIDs}},
+      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -11125,7 +11126,8 @@ exports.getCFStaffScannedByDate12StyleZoneColorSize = async (companyID, factoryI
   const staffScan = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":{$in: orderIDs}}
+      {"orderID":{$in: orderIDs}},
+      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -11232,7 +11234,8 @@ exports.getCFFNStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, o
   const staffScan = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":{$in: orderIDs}}
+      {"orderID":{$in: orderIDs}},
+      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -11342,7 +11345,8 @@ exports.getCFSubNodeScanDate12StaffOverall= async (companyID, factoryIDArr, orde
   const subNodeStaffScan = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":{$in: orderIDArr}}
+      {"orderID":{$in: orderIDArr}},
+      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -11461,7 +11465,8 @@ exports.getCFSubNodeScanDate12Overall= async (companyID, factoryIDArr, orderIDAr
   const subNodeStaffScan = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":{$in: orderIDArr}}
+      {"orderID":{$in: orderIDArr}},
+      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -11577,7 +11582,8 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall= async (companyID, 
   const subNodeStaffScan = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":{$in: orderIDArr}}
+      {"orderID":{$in: orderIDArr}},
+      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -11697,7 +11703,8 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12Overall= async (companyID, facto
   const subNodeStaffScan = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":{$in: orderIDArr}}
+      {"orderID":{$in: orderIDArr}},
+      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
     ] } },
     { $project: {			
         _id: 0,	
@@ -11813,7 +11820,8 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
   const subNodeStaffScan = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"orderID":{$in: orderIDArr}}
+      {"orderID":{$in: orderIDArr}},
+      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
     ] } },
     { $project: {			
         _id: 0,	
