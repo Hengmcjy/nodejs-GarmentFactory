@@ -25,6 +25,9 @@ router.get("/test/explain1/testexplain4", userController.gettestexplain4);
 router.get("/test/explain1/testexplain5", userController.gettestexplain5); // ## test node home
 router.get("/test/explain1/testexplain6", userController.gettestexplain6); // ## test node scan qrcode
 
+// ## test object array
+router.get("/test/arrayobject/testAO1", userController.getOA1);
+
 router.get("/test/test", userController.getTestTest);
 router.get("/test/test2", userController.getTestTest2);
 router.get("/test/test3", userController.getTestTest3);

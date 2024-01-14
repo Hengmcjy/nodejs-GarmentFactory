@@ -850,7 +850,7 @@ exports.gettestexplain3 = async (req, res, next) => {
   return res.send(explain);
 }
 
-// ## http://172.31.201.13:3968/api/user/test/explain1/testexplain4
+// ## http://192.168.1.27:3968/api/user/test/explain1/testexplain4
 // router.get("/test/explain1/testexplain4", userController.gettestexplain4);
 exports.gettestexplain4 = async (req, res, next) => {
   console.log('gettestexplain4');
@@ -911,24 +911,24 @@ exports.gettestexplain4 = async (req, res, next) => {
       // createBy: "$productionNode.createBy",
     }},
 
-    // { $match: { $and: [
-    //   {"status":{$in: productionNodeStatusArr}}
-    // ] } },
+    { $match: { $and: [
+      {"status":{$in: productionNodeStatusArr}}
+    ] } },
 
-    // { $project: { 
-    //   _id: 0, 
-    //   companyID: 1,
-    //   // factoryID: 1,		
-    //   orderID: 1,	
-    //   style: 1,
-    //   color: 1,
-    //   size: 1,
-    //   // productProblem: 1,
-    //   // fromNode: 1,
-    //   fromNode: 1,
-    //   // datetime: 1,
-    //   // createBy: 1,
-    // }},
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      style: 1,
+      color: 1,
+      size: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      fromNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
 
     { $group: {			
       _id: { 
@@ -958,15 +958,15 @@ exports.gettestexplain4 = async (req, res, next) => {
   return res.send(explain);
 }
 
-// ## http://192.168.1.25:3968/api/user/test/explain1/testexplain5
+// ## http://192.168.1.27:3968/api/user/test/explain1/testexplain5
 // router.get("/test/explain1/testexplain5", userController.gettestexplain5); // ## test node home
 exports.gettestexplain5 = async (req, res, next) => {
 
   console.log('gettestexplain5');
   const companyID = 'c000001';
   const factoryID = 'f000001';  // 
-  const factoryIDArr = ['f000001'];
-  // const orderID = 'AA0QFA4S';
+  const factoryIDArr = ['f000001', 'f000002', 'f000003'];
+  const orderID = 'BA1OOA4S';
   const orderIDs = ['JBAD9A4S',    'GL-26',    '24S-BP1505',
     '24S-BP1504',  '203-Y24',  'GL-115D',
     'GL-115C',     'BA1OPA4S', 'AA0QEA4S',
@@ -984,111 +984,95 @@ exports.gettestexplain5 = async (req, res, next) => {
     'AA0PJA3A',    'BA1NWA3A', 'AA0PVA3A',
     'BA1NUA3A'];
   const orderIDArr = orderIDs;
-  const productBarcodeNoReal = ['AA0QFA4S    JAPN-----24GR--------M---00476'];
+  const productBarcodeNoReal = 'AA0QFA4S    JAPN-----24GR--------M---00476';
+  const productBarcodeNoRealArr = ['AA0QFA4S    JAPN-----24GR--------M---00476'];
   const nodeID = '3.LINKING';
-  // const open = true;';
+  const bundleNo = 1435755;
+  const bundleNos = [1435755, 1435756];
+  const bundleID = '14089bec-effd-466a-bcd9-529c8880c9c5';
+  const open = true;
+  const forLoss = false;
+  const isOutsourceTracking = false;
   // const openArr = [true];
   const statusArr = ['normal', 'complete'];
 
   // ## getRepCFNCurrentProductQtyCount  'normal', 'problem', 'repaired'
-  const productStatusArr = ['normal', 'problem', 'repaired'];  
+  const productStatusArr = ['normal', 'problem', 'repaired', 'complete'];  
 
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-  const dateStart = new Date(moment(current).tz('Asia/Bangkok').format('2023/MM/DD 00:00:ss+07:00'));
-  const dateEnd = new Date(moment(current).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+  const date1 = new Date(moment().tz('Asia/Bangkok').format('2024/01/01 HH:mm:ss+07:00'));
+  const date2 = new Date(moment().tz('Asia/Bangkok').format('2024/01/14 HH:mm:ss+07:00'));
+  const dateStart = new Date(moment(date1).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
+  const dateEnd = new Date(moment(date2).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
   // console.log(dateStart, dateEnd);
 
   const explain = await OrderProduction.aggregate([
+    { $unwind: "$productionNode" },
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
-      // {"productStatus":{$in: productStatusArr}},
+
+      // {"productionNode":  {$elemMatch: { 
+      //   "factoryID":{$in: factoryIDArr},
+      //   "datetime": { $gte: dateStart}, 
+      //   "datetime": { $lte : dateEnd},
+      //   "status":{$in: statusArr},
+      // }}},
+
+      {"productionNode.factoryID":{$in: factoryIDArr}},
+      {"productionNode.datetime": { $gte: dateStart}} , 
+      {"productionNode.datetime": { $lte : dateEnd}} ,
+      {"productionNode.status":{$in: statusArr}},
+
     ] } },
-    { $project: {			
-        _id: 0,	
-        companyID: 1,
-        // factoryID: 1,		
-        orderID: 1,	
-        // bundleNo: 1,
-        // productID: 1,
-        // productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: 1,  // ## 
-    }	},
-    { $unwind: "$productionNode" },
+
+    // { $project: {			
+    //     _id: 0,	
+    //     companyID: 1,		
+    //     orderID: 1,	
+    //     productBarcodeNoReal: 1,
+    //     productionNode: 1,  // ## 
+    // }	},
+    // { $unwind: "$productionNode" },
+
     { $project: { 
       _id: 0, 
       companyID: 1,
       orderID: 1,	
-      // bundleNo: 1,
-      // productID: 1,
       style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
       datetime: "$productionNode.datetime",
       factoryID: "$productionNode.factoryID",	
       fromNode: "$productionNode.fromNode",
       status: "$productionNode.status",
-      // toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
     }},
-    { $match: { $and: [
-      {"factoryID":{$in: factoryIDArr}},
-      {"datetime": { $gte: dateStart}} , 
-      {"datetime": { $lte : dateEnd}} ,
-      {"status":{$in: statusArr}},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      orderID: 1,	
-      style: 1,	
-      // targetPlace: 1,
-      // color: 1,
-      // size: 1,
-      factoryID: 1,	
-      fromNode: 1,
-      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
-      // dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
-      // productID: 1,
-      // productBarcodeNo: 1,
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
-      // lottoMainTypeID: { $substr: [ "$lottoRoundID", 9, 3 ] },	
-      // item: { $toUpper: "$item" },
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // productProblem: 1,
-      // toNode: 1,
-      // datetime: 1,
-      // createBy: 1,
-    }},
+
+    // { $match: { $and: [
+    //   {"factoryID":{$in: factoryIDArr}},
+    //   {"datetime": { $gte: dateStart}} , 
+    //   {"datetime": { $lte : dateEnd}} ,
+    //   {"status":{$in: statusArr}},
+    // ] } },
+    // { $project: { 
+    //   _id: 0, 
+    //   companyID: 1,
+    //   orderID: 1,	
+    //   style: 1,	
+    //   factoryID: 1,	
+    //   fromNode: 1,
+    // }},
+
     { $group: {			
       _id: { 
         companyID: '$companyID',
         factoryID: '$factoryID',
         orderID: '$orderID',
         fromNode: '$fromNode',
-        // dayMonthUTC: '$dayMonthUTC',
         style: '$style',
-        // targetPlace: '$targetPlace',
-        // color: '$color',
-        // size: '$size',
-
       },
       countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
     }}  
   // ]).explain("executionStats");
-  ]).explain("executionStats");   //  .explain("executionStats")
+  ]).explain("executionStats");  //  .explain("executionStats")
 
   // const explain = await OrderProduction.aggregate([
   //   { $match: { $and: [
@@ -1284,6 +1268,154 @@ exports.getTestTest = async (req, res, next) => {
 // 529  -  1056
 // 1447882
 // 1447925
+
+
+// ## http://192.168.1.27:3968/api/user/test/arrayobject/testAO1
+// router.get("/test/arrayobject/testAO1", userController.getOA1);
+exports.getOA1 = async (req, res, next) => {
+  console.log('getOA1');
+  const companyID = 'c000001';
+  const factoryID = 'f000001';
+  
+  const orderIDs = ['JBAD9A4S',    'GL-26',    '24S-BP1505',
+    '24S-BP1504',  '203-Y24',  'GL-115D',
+    'GL-115C',     'BA1OPA4S', 'AA0QEA4S',
+    'DAK15A4S',    'DCB08A4S', 'DCB07A4S',
+    'DBC33A4S',    'BA1OGA4S', 'UR37-12B005',
+    'UR37-12B004', 'BA1OQA4S', 'AA0QFA4S',
+    'DCB06A4S',    'BA1ONA4S', 'BA1OOA4S',
+    'BA1OFA4S',    'DDB61A4S', 'DDE60A4S',
+    '23FRAW-006',  'UR391',    'JBAD9A3A',
+    'GL-115B',     'GL-116B',  '23F-YM505',
+    '23F-BP1508',  'GL-92B',   'AA0Q4A3A',
+    'BA1OEA3A',    'DD0ISA3A', 'AA0Q1A3A',
+    'BA1O0A3A',    'AA0Q6A3A', 'BAI13A3A',
+    'BA1ODA3A',    'BA1NIA3A', 'AA0PKA3A',
+    'AA0PJA3A',    'BA1NWA3A', 'AA0PVA3A',
+    'BA1NUA3A'];
+  const orderIDArr = orderIDs;
+  const productBarcodeNoReal = 'BA1OOA4S    UK-------24BK--------XS--00001';
+
+  const productionNodeStatusArr = ['normal', 'complete'];
+
+  const result = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"productBarcodeNoReal":productBarcodeNoReal},
+      // {"isOutsourceTracking":isOutsourceTracking1},
+      // {"orderID":{$in: orderIDs}},
+      // {"productionNode":  {$elemMatch: {"status":{$in: productionNodeStatusArr}}}},
+
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", 0] }, "starterNode"] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, "7.QC"] } },
+      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.status", -1] }, productionNodeStatusArr] } },
+
+      
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeIDs] } },
+
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // productID: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        bundleNo: 1,  // ## system running no
+        // bundleID: 1,
+        productCount: 1,
+        isOutsourceTracking: 1,
+        productionNode: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+
+    // { $unwind: "$productionNode" },
+    // { $project: { 
+    //   _id: 0, 
+    //   companyID: 1,
+    //   // factoryID: 1,		
+    //   orderID: 1,	
+    //   bundleNo: 1,
+    //   productCount: 1,
+    //   isOutsourceTracking: 1,
+    //   // productID: 1,
+    //   // productBarcodeNo: 1,
+    //   // productCount: 1,
+    //   // productionDate: 1,
+    //   // productStatus: 1,
+    //   style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+    //   targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+    //   color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+    //   size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+    //   productionNode: 1,
+    //   factoryID: "$productionNode.factoryID",
+    //   fromNode: "$productionNode.fromNode",
+    //   toNode: "$productionNode.toNode",
+    //   datetime: "$productionNode.datetime",
+    //   status: "$productionNode.status",
+    //   // createBy: "$productionNode.createBy",
+    // }},
+
+    // { $match: { $and: [
+    //   // {"targetPlace":{$in: zoneArr}},
+    //   // {"color":{$in: colorArr}},
+    //   // {"size":{$in: sizeArr}},
+    //   {"status":{$in: productionNodeStatusArr}},
+    //   // {"fromNode":{$in: nodeIDs}},
+    //   // {"status":productionNodeStatusArr},
+    // ] } },
+
+    // { $project: { 
+    //   _id: 0, 
+    //   companyID: 1,
+    //   factoryID: 1,	
+    //   orderID: 1,
+    //   bundleNo: 1,
+    //   nodeID: "$fromNode",
+    //   productCount: 1,
+    //   isOutsourceTracking: 1,
+    //   targetPlace: 1,
+    //   color: 1,
+    //   size: 1,
+    //   // productID: 1,
+    //   // productBarcodeNo: 1,
+    //   // productCount: 1,
+    //   // productionDate: 1,
+    //   // productStatus: 1,
+    //   // productProblem: 1,
+    //   // fromNode: 1,
+    //   // toNode: 1,
+    //   // datetime: 1,
+    //   // createBy: 1,
+    // }},
+
+    // { $group: {			
+    //   _id: { 
+    //     companyID: '$companyID',
+    //     factoryID: '$factoryID',
+    //     orderID: '$orderID',
+    //     bundleNo: '$bundleNo',
+    //     productCount: '$productCount',
+    //     nodeID: '$nodeID',
+    //     isOutsourceTracking: '$isOutsourceTracking',
+    //     targetPlace: '$targetPlace',
+    //     color: '$color',
+    //     size: '$size',
+    // },
+    //   // countProductQty: {$sum: 1} ,
+    //   // sumProductQty: {$sum:  '$amount'} ,
+    // }}  
+
+  ]);
+
+  // console.log('getOA1', result);
+
+  return res.send(result);
+}
 
 // getOrderQueueTest1
 // // ## http://192.168.1.35:3968/api/user/test/orderqueue/test1
