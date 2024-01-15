@@ -8001,7 +8001,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
   // const allQTY = orderProductRep[0]?orderProductRep[0].sumProductQty:0;
 
   // console.log(orderProductRep[0].sum);
-  const orderProductRepS = orderProductRep.length > 0 ? orderProductRep[0].sum : 0;
+  const orderProductRepS = orderProductRep.length > 0 ? orderProductRep[0].sumProductQty : 0;
 
   return orderProductRepS;
 }
