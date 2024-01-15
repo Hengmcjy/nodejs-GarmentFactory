@@ -1554,8 +1554,8 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
             {"companyID":companyID},
             // {"factoryID":factoryID},
             {"orderID":orderID},
-            {"productID":productID},
-            {"productBarcodeNo":{$in: productBarcodeNos}}
+            // {"productID":productID},
+            {"productBarcodeNoReal":{$in: productBarcodeNos}}
           ]}, 
           {
             // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
@@ -1570,8 +1570,8 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
             {"companyID":companyID},
             // {"factoryID":factoryID},
             {"orderID":orderID},
-            {"productID":productID},
-            {"productBarcodeNo":{$in: productBarcodeNos}}
+            // {"productID":productID},
+            {"productBarcodeNoReal":{$in: productBarcodeNos}}
           ]}, 
           // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
           {
@@ -1587,8 +1587,8 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
           {"companyID":companyID},
           // {"factoryID":factoryID},
           {"orderID":orderID},
-          {"productID":productID},
-          {"productBarcodeNo":{$in: productBarcodeNos}}
+          // {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
         ]}, 
         {
           // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
@@ -1604,8 +1604,8 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
           {"companyID":companyID},
           // {"factoryID":factoryID},
           {"orderID":orderID},
-          {"productID":productID},
-          {"productBarcodeNo":{$in: productBarcodeNos}}
+          // {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
         ]}, 
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
@@ -1618,8 +1618,8 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
           {"companyID":companyID},
           // {"factoryID":factoryID},
           {"orderID":orderID},
-          {"productID":productID},
-          {"productBarcodeNo":{$in: productBarcodeNos}}
+          // {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
         ]}, 
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
@@ -1633,8 +1633,8 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
           {"companyID":companyID},
           // {"factoryID":factoryID},
           {"orderID":orderID},
-          {"productID":productID},
-          {"productBarcodeNo":{$in: productBarcodeNos}}
+          // {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
         ]}, 
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
@@ -1732,8 +1732,8 @@ exports.putOrderProductionRepaired = async (req, res, next) => {
             {"companyID":companyID},
             {"factoryID":factoryID},
             {"orderID":orderID},
-            {"productID":productID},
-            {"productBarcodeNo":productBarcodeNo},
+            // {"productID":productID},
+            {"productBarcodeNoReal":productBarcodeNo},
             // {"productBarcodeNo":{$in: productBarcodeNos}}
           ]}, 
           {
@@ -1825,7 +1825,7 @@ exports.putOrderProductionProblem = async (req, res, next) => {
         {"companyID":companyID},
         {"factoryID":factoryID},
         {"orderID":orderID},
-        {"productID":productID},
+        // {"productID":productID},
         {"bundleID":bundleID},
         // {"productBarcodeNo":{$in: productBarcodeNos}}
       ]}, 
@@ -1839,8 +1839,8 @@ exports.putOrderProductionProblem = async (req, res, next) => {
         {"companyID":companyID},
         {"factoryID":factoryID},
         {"orderID":orderID},
-        {"productID":productID},
-        {"productBarcodeNo":productBarcodeNo},
+        // {"productID":productID},
+        {"productBarcodeNoReal":productBarcodeNo},
         // {"productBarcodeNo":{$in: productBarcodeNos}}
       ]}, 
       {
@@ -2654,9 +2654,9 @@ exports.putScanNextDepCompleteOrderProductionBarcodeNo = async (req, res, next) 
             {"companyID":companyID},
             {"factoryID":factoryID},
             {"orderID":orderID},
-            {"productID":productID},
-            {"productBarcodeNo":item1.productBarcodeNo},
+            // {"productID":productID},
             {"bundleNo":bundleNo},
+            {"productBarcodeNoReal":item1.productBarcodeNo},
           ]},
           {$push: {productionNode: productionNode}});
       });
@@ -3037,7 +3037,7 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
           {"companyID":companyID},
           {"factoryID":factoryID},
           {"orderID":orderID},
-          {"productID":productID},
+          // {"productID":productID},
           {"productBarcodeNoReal":{$in: productBarcodeNos}}
           // {"productBarcodeNo":{$in: productBarcodeNos}}
         ]}, 
@@ -3142,8 +3142,8 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
           {"companyID":companyID},
           // {"factoryID":factoryID},
           {"orderID":orderID},
-          {"productID":productID},
-          {"productBarcodeNo":{$in: productBarcodeNos}}
+          // {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
         ]}, 
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
@@ -3159,8 +3159,8 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
           {"companyID":companyID},
           // {"factoryID":factoryID},
           {"orderID":orderID},
-          {"productID":productID},
-          {"productBarcodeNo":{$in: productBarcodeNos}}
+          // {"productID":productID},
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
         ]}, 
         // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
         {
@@ -3384,7 +3384,7 @@ exports.putCancelOutsourceOrderProductionsendout = async (req, res, next) => {
       result0 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
-          {"productBarcodeNo":{$in: productBarcodeNos}}
+          {"productBarcodeNoReal":{$in: productBarcodeNos}}
         ]}, 
         {
           $pop: { productionNode: 1, outsourceData: 1 },  // ## delete last element of productionNode
@@ -3543,7 +3543,7 @@ exports.putAffiliateOrderProductionNextNodeID = async (req, res, next) => {
           {"companyID":companyID},
           // {"factoryID":factoryID},
           {"orderID":orderID},
-          {"productID":productID},
+          // {"productID":productID},
           {"productBarcodeNoReal":{$in: productBarcodeNos}}
           // {"productBarcodeNo":{$in: productBarcodeNos}}
         ]}, 

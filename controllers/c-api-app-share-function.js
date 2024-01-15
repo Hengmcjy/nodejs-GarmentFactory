@@ -7904,7 +7904,13 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
-      {"productStatus":{$in: productStatusArr}}
+      {"productStatus":{$in: productStatusArr}},
+
+      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"factoryID":factoryID},
+      // {"toNode":nodeID},
     ] } },
     { $project: {			
         _id: 0,	
@@ -13971,7 +13977,7 @@ exports.testview2 = async () => {
       // {"factoryID":factoryID},
       {"factoryID":{$in: factoryIDArr}},
       // {"productStatus":{$in: productStatusArr}}
-      {"productID":{$in: factoryIDArr}}
+      // {"productID":{$in: factoryIDArr}}
     ] } },
     { $project: {			
         _id: 0,	
@@ -14242,7 +14248,7 @@ exports.getDelOrderProductionV3 = async (companyID, orderID, productBarcode, bun
   result01 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr1}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -14296,7 +14302,7 @@ exports.getDelOrderProductionV2 = async (companyID, orderID, productBarcode, bun
   result01 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr1}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -14424,7 +14430,7 @@ exports.getDelOrderProduction2 = async (companyID, orderID, productBarcode, no1,
   result01 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr1}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -14483,7 +14489,7 @@ exports.getDelOrderProduction1 = async () => {
   result01 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr1}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -14495,7 +14501,7 @@ exports.getDelOrderProduction1 = async () => {
   result02 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr2}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr2}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -14507,7 +14513,7 @@ exports.getDelOrderProduction1 = async () => {
   result03 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr3}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr3}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -14519,7 +14525,7 @@ exports.getDelOrderProduction1 = async () => {
   result04 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr4}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr4}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -14610,7 +14616,7 @@ exports.cancelOrderQueueAllByProductBarcode = async () => {
   result01 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr1}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr1}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -15129,7 +15135,7 @@ exports.delManyOrderProduction = async () => {
   result1 = await OrderProduction.deleteMany({$and: [
     {"companyID":companyID} , 
     {"orderID":orderID} ,
-    {"productBarcodeNo":{$in: productBarcodeNo1Arr}},
+    {"productBarcodeNoReal":{$in: productBarcodeNo1Arr}},
     // {"factoryID":factoryID} ,
     // {"orderID":orderID} ,
   ]}); 
@@ -15172,7 +15178,7 @@ exports.getOrderProductionByBundleNo = async () => {
     {$and: [
       {"companyID":companyID},
       // {"productBarcodeNo":factoryID},
-      {"productBarcodeNo":{$in: productBarcodeNo1Arr}}
+      {"productBarcodeNoReal":{$in: productBarcodeNo1Arr}}
     ]},
     {
       "factoryID": factoryIDx,

@@ -910,7 +910,7 @@ exports.deleteOrderProductionQueuesCancel = async (req, res, next) => {
       const result1 = await OrderProductionQueueList.deleteMany({$and: [
         {"companyID":companyID}, 
         {"orderID":orderID}, 
-        {"productID":productID}, 
+        // {"productID":productID}, 
 
         {"productBarcode":productBarcode}, 
         {"isOutsource":isOutsource}, 
@@ -926,7 +926,7 @@ exports.deleteOrderProductionQueuesCancel = async (req, res, next) => {
         {$and: [
           {"companyID":companyID},
           {"orderID":orderID},
-          {"productID":productID},
+          // {"productID":productID},
         ]}, 
         {
           $pull: { queueInfo: {                // ## delete n element for this condition
@@ -950,7 +950,7 @@ exports.deleteOrderProductionQueuesCancel = async (req, res, next) => {
       const result3 = await OrderProduction.deleteMany({$and: [
         {"companyID":companyID}, 
         {"orderID":orderID}, 
-        {"productID":productID}, 
+        // {"productID":productID}, 
         {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
       ]}).session(session3);
       
