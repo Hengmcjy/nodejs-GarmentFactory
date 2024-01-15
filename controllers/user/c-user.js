@@ -958,7 +958,7 @@ exports.gettestexplain4 = async (req, res, next) => {
   return res.send(explain);
 }
 
-// ## http://192.168.1.27:3968/api/user/test/explain1/testexplain5
+// ## http://192.168.1.25:3968/api/user/test/explain1/testexplain5
 // router.get("/test/explain1/testexplain5", userController.gettestexplain5); // ## test node home
 exports.gettestexplain5 = async (req, res, next) => {
 
@@ -1019,6 +1019,8 @@ exports.gettestexplain5 = async (req, res, next) => {
       { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
       // {"factoryID":{$in: factoryIDArr}},
       // {"toNode":nodeID},
+
+      // .hint( { companyID: 1, orderID: 1, productStatus: 1, productionNode.factoryID: 1, productionNode.toNode: 1 } )
     ] } },
     { $project: {			
         _id: 0,	
@@ -1108,8 +1110,12 @@ exports.gettestexplain5 = async (req, res, next) => {
       // countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]).explain("executionStats");  //  .explain("executionStats")
-
+  ])
+    // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } )
+    .hint( { companyID: 1, orderID: 1, productStatus: 1 } )
+    // .explain("executionStats");  //  .explain("executionStats")
+    ;
+    // companyID: 1, orderID: 1 
   // const explain = await OrderProduction.aggregate([
   //   { $match: { $and: [
   //     {"companyID":companyID},
@@ -1220,7 +1226,7 @@ exports.gettestexplain6 = async (req, res, next) => {
         outsourceData: 1,
         productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	}
-  ]).explain("executionStats");   //  .explain("executionStats")
+  ]).hint( { companyID: 1, productBarcodeNoReal: 1 } ).explain("executionStats");   //  .explain("executionStats")
 
   console.log('gettestexplain6  *****');
 
@@ -1421,12 +1427,12 @@ exports.getOA1 = async (req, res, next) => {
       _id: { 
         companyID: '$companyID',
       },
-      sum: {$sum: 1} ,
+      sumProductQty: {$sum: 1} ,
     }} 
   ]);
 
-  console.log('getOA1', result);
-  console.log(result[0].sum);
+  // console.log('getOA1', result);
+  // console.log(result[0].sumProductQty);
   return res.send(result);
 
   // return res.send(result);

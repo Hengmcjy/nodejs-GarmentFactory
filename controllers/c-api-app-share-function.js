@@ -2583,7 +2583,7 @@ exports.getCOrderProductionBundleNos= async (companyID, productBarcodeNoArr) => 
         bundleNo: 1,
         isOutsourceTracking:1,
     }	}
-  ]);
+  ]).hint( { companyID: 1, productBarcodeNoReal: 1 } );
   // console.log(orderProductionBundleNos);
   return orderProductionBundleNos;
 }
@@ -2615,7 +2615,7 @@ exports.getProductBarcodeNosOrderProductionbyBundleNo= async (companyID, orderID
         // productStatus: 1,
         // productBarcodeNoReal: 1,
     }	}
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, bundleNo: 1 } );
   // console.log(orderProduction);
 
   // let ProductBarcodeNos = [];
@@ -2673,7 +2673,7 @@ exports.getCSZCSOrderProductionBundleNos= async (companyID, orderIDs, isOutsourc
 
       {"productionNode":  {$elemMatch: {"status":{$in: productionNodeStatusArr}}}},
       { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.status", -1] }, productionNodeStatusArr] } },
-
+      
     ] } },
     { $project: {			
         _id: 0,	
@@ -2784,7 +2784,7 @@ exports.getCSZCSOrderProductionBundleNos= async (companyID, orderIDs, isOutsourc
     size: fw._id.size,
     // productID: fw._id.productID,
     // countProductQty: fw.countProductQty,
-  }));
+  })).hint( { companyID: 1, orderID: 1, "productionNode.status": 1 } );
   // console.log(orderProduction1F);
   return orderProduction1F;
 }
@@ -7005,7 +7005,7 @@ exports.getCFNCurrentProductAllDetail = async (companyID, factoryID, nodeID, pro
       { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
       // {"factoryID":factoryID},
       // {"toNode":nodeID},
-
+      
     ] } },
     { $project: {			
         _id: 0,	
@@ -7075,9 +7075,7 @@ exports.getCFNCurrentProductAllDetail = async (companyID, factoryID, nodeID, pro
       productProblemID: 1,
       createBy: 1,
     }},
-  ]);
-
-
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   // console.log(orderProductRep);
   // return orderProductRep.length>0?orderProduct[0]:null;
@@ -7173,7 +7171,7 @@ exports.getCFNCurrentProductAllDetailPL = async (companyID, factoryID, nodeID, p
     { $sort: { datetime: -1 } },
     { $skip: (page-1) *  limit},
     { $limit: +limit }
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.fromNode": 1 } );
   // console.log(currentProductAllDetailCFN);
   // return orderProductRep.length>0?orderProduct[0]:null;
   return currentProductAllDetailCFN;
@@ -7262,7 +7260,7 @@ exports.getCountCFNCurrentProductAllDetailPL = async (companyID, factoryID, node
       createBy: 1,
     }},
     { $group: { _id: null, count: { $sum: 1 } } }
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.fromNode": 1 } );
   // console.log(countCurrentProductAllDetailCFN);
   let rows = 0;
   if (countCurrentProductAllDetailCFN.length > 0 ) {
@@ -7360,7 +7358,7 @@ exports.getCFNCurrentProductAllDetailToNodePL = async (companyID, factoryID, nod
     { $sort: { datetime: -1 } },
     { $skip: (page-1) *  limit},
     { $limit: +limit }
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(currentProductAllDetailCFNPL);
   // return orderProductRep.length>0?orderProduct[0]:null;
   return currentProductAllDetailCFN;
@@ -7455,7 +7453,7 @@ exports.getCFNCurrentProductStyleQRCode = async (companyID, factoryID, nodeID, s
     { $sort: { productBarcodeNoReal: 1 } },
     { $skip: (page-1) *  limit},
     { $limit: +limit }
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(currentProductStyleQRCodeCFN);
   // return orderProductRep.length>0?orderProduct[0]:null;
   return currentProductStyleQRCodeCFN;
@@ -7556,7 +7554,7 @@ exports.getCFNCurrentProductStyleZoneSizeColorQRCode = async (companyID, factory
     { $sort: { productBarcodeNoReal: 1 } },
     { $skip: (page-1) *  limit},
     { $limit: +limit }
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(currentProductStyleQRCodeCFN);
   // return orderProductRep.length>0?orderProduct[0]:null;
   return currentProductStyleQRCodeCFN;
@@ -7655,7 +7653,7 @@ exports.getQRCodeCFTNszcsList = async (companyID, factoryID, toNode, style, zone
     { $sort: { productBarcodeNoReal: 1 } },
     { $skip: (page-1) *  limit},
     { $limit: +limit }
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(qrCodeList);
   // return orderProductRep.length>0?orderProduct[0]:null;
   return qrCodeList;
@@ -7764,7 +7762,7 @@ exports.getQRCodeCFTNszcsCount = async (companyID, factoryID, toNode, style, zon
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   // console.log(qrCodeCount);
   const qrCodeCountF = await qrCodeCount.map(fw => ({
@@ -7882,7 +7880,7 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
 
 
@@ -7983,7 +7981,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
     },
       sumProductQty: {$sum: 1} ,
     }} 
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   // const productionPeriodM = await productionPeriod.map(fw => ({
@@ -8219,7 +8217,7 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
     },
       sumProductQty: {$sum: 1} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1 } );
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -8335,7 +8333,7 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
     },
       sumProductQty: {$sum: 1} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1 } );
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -8434,7 +8432,7 @@ exports.getRepCFNCurrentProductQtyByOrderID = async (companyID, factoryID, nodeI
       sumProductQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   // console.log(orderProductRep);
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -8528,7 +8526,7 @@ exports.getRepCFNCurrentProductQtyByOrderIDProductID = async (companyID, factory
       sumProductQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   // console.log(orderProductRep);
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -8620,7 +8618,7 @@ exports.getCFNCurrentProductAllRepairCount = async (companyID, factoryID, nodeID
       countProductQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   // console.log(orderProductRep);
   const currentProductAllRepairCountF = await currentProductAllRepairCount.map(fw => ({
@@ -8717,7 +8715,7 @@ exports.getCFNCurrentProductStyleCount = async (companyID, factoryID, nodeID, st
       countProductQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   // console.log(orderProductRep);
   const currentProductStyleCountF = await currentProductStyleCount.map(fw => ({
@@ -8821,7 +8819,7 @@ exports.getCFNCurrentProductStyleZoneSizeColorCount = async (companyID, factoryI
       countProductQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   // console.log(orderProductRep);
   const currentProductStyleCountF = await currentProductStyleCount.map(fw => ({
@@ -8913,7 +8911,7 @@ exports.getCFNCurrentProductAllProblemCount = async (companyID, factoryID, nodeI
       countProductQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.fromNode": 1 } );
 
   // console.log(orderProductRep);
   const currentProductAllProblemCountF = await currentProductAllProblemCount.map(fw => ({
@@ -9008,7 +9006,7 @@ exports.getRepCFNCurrentProductBundleList = async (companyID, factoryID, nodeID,
       sumProductQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   // console.log(orderProductRep);
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -9102,7 +9100,7 @@ exports.getAllOrderFromOrderProductionCFN = async (companyID, factoryID, nodeID,
       // countOrder: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   let orders = [];
@@ -9192,7 +9190,7 @@ exports.getAllProductFromOrderProductionCFN = async (companyID, factoryID, nodeI
       // countOrder: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   let products = [];
@@ -9287,7 +9285,7 @@ exports.getRepCFNProductStateStyle = async (companyID, factoryID, nodeID, produc
       countStyle: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -9386,7 +9384,7 @@ exports.getRepCFNProductStateTargetPlace = async (companyID, factoryID, nodeID, 
       countTargetPlace: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -9486,7 +9484,7 @@ exports.getRepCFNProductStateColor = async (companyID, factoryID, nodeID, produc
       countColor: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -9586,7 +9584,7 @@ exports.getRepCFNProductStateSize = async (companyID, factoryID, nodeID, product
       countSize: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -9694,7 +9692,7 @@ exports.getRepCFNProductStateStyleTargetPlaceColorSize = async (companyID, facto
       countStyleTargetPlaceColorSize: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -9893,7 +9891,7 @@ exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, product
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1} );
   // console.log(companyCurrentProductQtyAll);
 
   const companyCurrentProductQtyAllF = await companyCurrentProductQtyAll.map(fw => ({
@@ -9995,7 +9993,7 @@ exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatus
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1} );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -10078,7 +10076,7 @@ exports.getCCurrentProductQtyAllList = async (companyID, factoryIDArr, productSt
     //   countQty: {$sum: 1} ,
     //   // sumProductQty: {$sum:  '$amount'} ,
     // }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1} );
   // console.log(orderProductRep);
 
   // const orderProductRepF = await orderProductRep.map(fw => ({
@@ -10157,7 +10155,7 @@ exports.getCCurrentProductQtyAllByStyleC = async (companyID, style, productStatu
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1} );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -10432,7 +10430,7 @@ exports.getRepCFNCurrentMainDataBundleNoscanDetail = async (companyID, factoryID
     { $sort: { countQty: 1, bundleNo: 1 } },
     { $skip: (page-1) *  limit},
     { $limit: limit }
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // { $sort : { age : -1, posts: 1 } }
   // console.log(mainDataBundleNoScan);
 
@@ -10559,7 +10557,7 @@ exports.getRepCFNCurrentMainDataBundleNoscan = async (companyID, factoryIDArr, n
       // countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(mainDataBundleNoScan);
 
   const mainDataBundleNoScanF = await mainDataBundleNoScan.map(fw => ({
@@ -10676,7 +10674,7 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1 } );
   // console.log(orderProductRep);
 
   const orderProductCFNodeRepF = await orderProductCFNodeRep.map(fw => ({
@@ -10770,7 +10768,7 @@ exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, product
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1 } );
   // console.log(currentCompanyProductQtyAll);
 
   const currentCompanyProductQtyAllF = await currentCompanyProductQtyAll.map(fw => ({
@@ -10834,7 +10832,7 @@ exports.getComCurrentProductQtyCountryCSAll = async (companyID, factoryIDArr, pr
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, factoryID: 1, orderID: 1, productStatus: 1 } );
   // console.log(currentCompanyProductQtyCountryAll);
 
   const currentCompanyProductQtyCountryAllF = await currentCompanyProductQtyCountryAll.map(fw => ({
@@ -10893,7 +10891,7 @@ exports.getComCurrentProductQtyCountryAll = async (companyID, factoryIDArr, prod
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, factoryID: 1, orderID: 1, productStatus: 1 } );
   // console.log(currentCompanyProductQtyCountryAll);
 
   const currentCompanyProductQtyCountryAllF = await currentCompanyProductQtyCountryAll.map(fw => ({
@@ -10994,7 +10992,7 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1 } );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -11155,7 +11153,7 @@ exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderID
       countQty: {$sum: 1} ,
     }}  
   // ]).explain("executionStats");
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, "productionNode.datetime": 1, "productionNode.factoryID": 1, "productionNode.status": 1 } );
 
   // const staffScan = await OrderProduction.aggregate([
   //   { $match: { $and: [
@@ -11304,7 +11302,7 @@ exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, ord
       },
       countQty: {$sum: 1} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, "productionNode.datetime": 1, "productionNode.factoryID": 1, "productionNode.status": 1 } );
 
   // const staffScan = await OrderProduction.aggregate([
   //   { $match: { $and: [
@@ -11484,7 +11482,7 @@ exports.getCFStaffScannedByDate12StyleZoneColorSize = async (companyID, factoryI
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, "productionNode.datetime": 1, "productionNode.factoryID": 1, "productionNode.status": 1 } );
 
   const staffScanF = await staffScan.map(fw => ({
     companyID: fw._id.companyID, 
@@ -11612,7 +11610,7 @@ exports.getCFFNStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, o
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, "productionNode.datetime": 1, "productionNode.factoryID": 1, "productionNode.status": 1 } );
 
   const staffScanF = await staffScan.map(fw => ({
     companyID: fw._id.companyID, 
