@@ -1306,7 +1306,7 @@ exports.getTestTest = async (req, res, next) => {
 // 1447925
 
 
-// ## http://192.168.1.27:3968/api/user/test/arrayobject/testAO1
+// ## http://100.125.196.206:3968/api/user/test/arrayobject/testAO1
 // router.get("/test/arrayobject/testAO1", userController.getOA1);
 exports.getOA1 = async (req, res, next) => {
   console.log('getOA1');
@@ -1333,124 +1333,103 @@ exports.getOA1 = async (req, res, next) => {
   const productBarcodeNoReal = 'BA1OOA4S    UK-------24BK--------XS--00001';
 
   const productionNodeStatusArr = ['normal', 'complete'];
+  const productStatusArr = ['normal'];
 
-  const result = await OrderProduction.aggregate([
+  const nodeID = '3.LINKING';
+
+  const result = await OrderProduction.aggregate([  //  aggregate  ,  countDocuments
     { $match: { $and: [
       {"companyID":companyID},
-      {"productBarcodeNoReal":productBarcodeNoReal},
-      // {"isOutsourceTracking":isOutsourceTracking1},
-      // {"orderID":{$in: orderIDs}},
-      // {"productionNode":  {$elemMatch: {"status":{$in: productionNodeStatusArr}}}},
+      // {"factoryID":factoryID},
+      {"productStatus":{$in: productStatusArr}},
 
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", 0] }, "starterNode"] } },
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, "7.QC"] } },
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.status", -1] }, productionNodeStatusArr] } },
-
-      
-      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeIDs] } },
-
+      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"factoryID":factoryID},
+      // {"toNode":nodeID},
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
         // factoryID: 1,		
-        orderID: 1,	
+        // orderID: 1,	
+        // bundleNo: 1,
         // productID: 1,
-        productBarcodeNoReal: 1,
+        // productBarcodeNo: 1,
+        // productBarcodeNoReal: 1,
+        // productBarcodeNoReserve: 1,
         // productCount: 1,
         // productionDate: 1,
         // productStatus: 1,
-        bundleNo: 1,  // ## system running no
-        // bundleID: 1,
-        productCount: 1,
-        isOutsourceTracking: 1,
-        productionNode: 1,
-        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+        // yarnLot: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      // orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // productBarcodeNoReal: 1,
+      // productBarcodeNoReserve: 1,
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // yarnLot: 1,
+      factoryID: "$productionNode.factoryID",
+      // fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      // status: "$productionNode.status",
+      // productProblemID: "$productionNode.productProblemID",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+    { $match: { $and: [
+      {"factoryID":factoryID},
+      {"toNode":nodeID},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      // orderID: 1,	
+      // bundleNo: 1,
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // productBarcodeNoReal: 1,
+      // productBarcodeNoReserve: 1,
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // yarnLot: 1,
 
-    // { $unwind: "$productionNode" },
-    // { $project: { 
-    //   _id: 0, 
-    //   companyID: 1,
-    //   // factoryID: 1,		
-    //   orderID: 1,	
-    //   bundleNo: 1,
-    //   productCount: 1,
-    //   isOutsourceTracking: 1,
-    //   // productID: 1,
-    //   // productBarcodeNo: 1,
-    //   // productCount: 1,
-    //   // productionDate: 1,
-    //   // productStatus: 1,
-    //   style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-    //   targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-    //   color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-    //   size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // fromNode: 1,
+      // toNode: 1,
+      // status: 1,
+      // toNode: 1,
+      // productProblemID: 1,
+      // createBy: 1,
+    }},
 
-    //   productionNode: 1,
-    //   factoryID: "$productionNode.factoryID",
-    //   fromNode: "$productionNode.fromNode",
-    //   toNode: "$productionNode.toNode",
-    //   datetime: "$productionNode.datetime",
-    //   status: "$productionNode.status",
-    //   // createBy: "$productionNode.createBy",
-    // }},
+    // {$count: "passing_scores"},
 
-    // { $match: { $and: [
-    //   // {"targetPlace":{$in: zoneArr}},
-    //   // {"color":{$in: colorArr}},
-    //   // {"size":{$in: sizeArr}},
-    //   {"status":{$in: productionNodeStatusArr}},
-    //   // {"fromNode":{$in: nodeIDs}},
-    //   // {"status":productionNodeStatusArr},
-    // ] } },
-
-    // { $project: { 
-    //   _id: 0, 
-    //   companyID: 1,
-    //   factoryID: 1,	
-    //   orderID: 1,
-    //   bundleNo: 1,
-    //   nodeID: "$fromNode",
-    //   productCount: 1,
-    //   isOutsourceTracking: 1,
-    //   targetPlace: 1,
-    //   color: 1,
-    //   size: 1,
-    //   // productID: 1,
-    //   // productBarcodeNo: 1,
-    //   // productCount: 1,
-    //   // productionDate: 1,
-    //   // productStatus: 1,
-    //   // productProblem: 1,
-    //   // fromNode: 1,
-    //   // toNode: 1,
-    //   // datetime: 1,
-    //   // createBy: 1,
-    // }},
-
-    // { $group: {			
-    //   _id: { 
-    //     companyID: '$companyID',
-    //     factoryID: '$factoryID',
-    //     orderID: '$orderID',
-    //     bundleNo: '$bundleNo',
-    //     productCount: '$productCount',
-    //     nodeID: '$nodeID',
-    //     isOutsourceTracking: '$isOutsourceTracking',
-    //     targetPlace: '$targetPlace',
-    //     color: '$color',
-    //     size: '$size',
-    // },
-    //   // countProductQty: {$sum: 1} ,
-    //   // sumProductQty: {$sum:  '$amount'} ,
-    // }}  
-
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+      },
+      sum: {$sum: 1} ,
+    }} 
   ]);
 
-  // console.log('getOA1', result);
-
+  console.log('getOA1', result);
+  console.log(result[0].sum);
   return res.send(result);
+
+  // return res.send(result);
 }
 
 // getOrderQueueTest1

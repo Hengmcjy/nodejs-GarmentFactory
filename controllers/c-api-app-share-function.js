@@ -7900,7 +7900,7 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
   // ]});
   // return rows;
 
-  const orderProductRep = await OrderProduction.countDocuments([
+  const orderProductRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
@@ -8000,7 +8000,10 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
 
   // const allQTY = orderProductRep[0]?orderProductRep[0].sumProductQty:0;
 
-  return orderProductRep;
+  // console.log(orderProductRep[0].sum);
+  const orderProductRepS = orderProductRep.length > 0 ? orderProductRep[0].sum : 0;
+
+  return orderProductRepS;
 }
 
 // getProductionZoneForLossQTYC
