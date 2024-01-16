@@ -1588,13 +1588,13 @@ exports.getTestTest = async (req, res, next) => {
 // 1447925
 
 
-// ## http://100.125.196.206:3968/api/user/test/arrayobject/testAO1
+// ## http://100.125.192.84:3968/api/user/test/arrayobject/testAO1
 // router.get("/test/arrayobject/testAO1", userController.getOA1);
 exports.getOA1 = async (req, res, next) => {
   console.log('getOA1');
   const companyID = 'c000001';
   const factoryID = 'f000001';
-  
+  const factoryIDArr = ['f000001'];  // ['f000001', 'f000002', 'f000003'];
   const orderIDs = ['JBAD9A4S',    'GL-26',    '24S-BP1505',
     '24S-BP1504',  '203-Y24',  'GL-115D',
     'GL-115C',     'BA1OPA4S', 'AA0QEA4S',
@@ -1625,8 +1625,10 @@ exports.getOA1 = async (req, res, next) => {
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      {"productionNode":  {$elemMatch: {"factoryID":{$in: factoryIDArr}, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
       { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
       // {"factoryID":factoryID},
       // {"toNode":nodeID},
@@ -1671,7 +1673,8 @@ exports.getOA1 = async (req, res, next) => {
       // createBy: "$productionNode.createBy",
     }},
     { $match: { $and: [
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
+      {"factoryID":{$in: factoryIDArr}} ,
       {"toNode":nodeID},
     ] } },
     { $project: { 
@@ -1709,6 +1712,7 @@ exports.getOA1 = async (req, res, next) => {
 
   // console.log('getOA1', result);
   // console.log(result[0].sumProductQty);
+  console.log('getOA1  ***');
   return res.send(result);
 
   // return res.send(result);
