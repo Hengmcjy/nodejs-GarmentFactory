@@ -2671,8 +2671,8 @@ exports.getCSZCSOrderProductionBundleNos= async (companyID, orderIDs, isOutsourc
       // {"isOutsourceTracking":isOutsourceTracking1},
       {"orderID":{$in: orderIDs}},
 
-      {"productionNode":  {$elemMatch: {"status":{$in: productionNodeStatusArr}}}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.status", -1] }, productionNodeStatusArr] } },
+      // {"productionNode":  {$elemMatch: {"status":{$in: productionNodeStatusArr}}}},
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.status", -1] }, productionNodeStatusArr] } },
       
     ] } },
     { $project: {			
@@ -2802,8 +2802,8 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
       {"isOutsourceTracking":isOutsourceTracking},
 
 
-      {"productionNode":  {$elemMatch: {"fromNode":{$in: nodeIDs}}}},
-      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeIDs] } },
+      // {"productionNode":  {$elemMatch: {"fromNode":{$in: nodeIDs}}}},
+      // // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeIDs] } },
 
     ] } },
     { $project: {			
@@ -6529,8 +6529,8 @@ exports.getCurrentCompanyOrderOutsource= async (companyID, orderIDs) => {
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
 
-      {"productionNode":  {$elemMatch: {"isOutsource": true }}},
-      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeIDs] } },
+      // {"productionNode":  {$elemMatch: {"isOutsource": true }}},
+      // // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeIDs] } },
 
     ] } },
     { $project: {			
@@ -6632,9 +6632,9 @@ exports.getCurrentCompanyOrderOutsourceRemianQTY= async (companyID, orderIDs) =>
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
 
-      {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
+      // {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
 
     ] } },
     { $project: {			
@@ -6759,9 +6759,9 @@ exports.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY= async (companyID
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
 
-      {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
+      // {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
 
     ] } },
     { $project: {			
@@ -7002,9 +7002,9 @@ exports.getCFNCurrentProductAllDetail = async (companyID, factoryID, nodeID, pro
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
       // {"factoryID":factoryID},
       // {"toNode":nodeID},
       
@@ -7095,9 +7095,9 @@ exports.getCFNCurrentProductAllDetailPL = async (companyID, factoryID, nodeID, p
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "fromNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "fromNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeID] } },
       // {"factoryID":factoryID},
       // {"fromNode":nodeID},
 
@@ -7189,9 +7189,9 @@ exports.getCountCFNCurrentProductAllDetailPL = async (companyID, factoryID, node
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "fromNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "fromNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -7286,9 +7286,9 @@ exports.getCFNCurrentProductAllDetailToNodePL = async (companyID, factoryID, nod
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -7382,9 +7382,9 @@ exports.getCFNCurrentProductStyleQRCode = async (companyID, factoryID, nodeID, s
       {"orderID":style1},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -7477,9 +7477,9 @@ exports.getCFNCurrentProductStyleZoneSizeColorQRCode = async (companyID, factory
       {"orderID":style1},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -7570,7 +7570,7 @@ exports.getCFNCurrentProductStyleZoneSizeColorQRCode = async (companyID, factory
 
 // ShareFunc.getQRCodeCFTNszcsList(companyID, factoryID, toNode, style, zone, color, size, page, limit);
 exports.getQRCodeCFTNszcsList = async (companyID, factoryID, toNode, style, zone, color, size, page, limit) => {
-  // console.log('getRepCFNCurrentProductQty');
+  // console.log('getQRCodeCFTNszcsList');
   const qrCodeList = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -7578,9 +7578,9 @@ exports.getQRCodeCFTNszcsList = async (companyID, factoryID, toNode, style, zone
       {"orderID":style},
       // {"productStatus":{$in: productStatusArr}}
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -7678,9 +7678,9 @@ exports.getQRCodeCFTNszcsCount = async (companyID, factoryID, toNode, style, zon
       {"orderID":style},
       // {"productStatus":{$in: productStatusArr}}
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -7807,9 +7807,9 @@ exports.getRepCFNCurrentProductQty = async (companyID, factoryID, nodeID, produc
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -7915,9 +7915,9 @@ exports.getRepCFNCurrentProductQtyCount = async (companyID, factoryID, nodeID, p
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
       // {"factoryID":factoryID},
       // {"toNode":nodeID},
     ] } },
@@ -8375,9 +8375,9 @@ exports.getRepCFNCurrentProductQtyByOrderID = async (companyID, factoryID, nodeI
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -8469,9 +8469,9 @@ exports.getRepCFNCurrentProductQtyByOrderIDProductID = async (companyID, factory
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -8564,9 +8564,9 @@ exports.getCFNCurrentProductAllRepairCount = async (companyID, factoryID, nodeID
       // {"factoryID":factoryID},
       {"productStatus":{$in: productProbelmStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -8659,9 +8659,9 @@ exports.getCFNCurrentProductStyleCount = async (companyID, factoryID, nodeID, st
       {"orderID":style1},
       {"productStatus":{$in: productProbelmStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -8757,9 +8757,9 @@ exports.getCFNCurrentProductStyleZoneSizeColorCount = async (companyID, factoryI
       {"orderID":style1},
       {"productStatus":{$in: productProbelmStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -8860,9 +8860,9 @@ exports.getCFNCurrentProductAllProblemCount = async (companyID, factoryID, nodeI
       // {"factoryID":factoryID},
       {"productStatus":{$in: productProbelmStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "fromNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "fromNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -8954,9 +8954,9 @@ exports.getRepCFNCurrentProductBundleList = async (companyID, factoryID, nodeID,
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -9052,9 +9052,9 @@ exports.getAllOrderFromOrderProductionCFN = async (companyID, factoryID, nodeID,
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -9143,9 +9143,9 @@ exports.getAllProductFromOrderProductionCFN = async (companyID, factoryID, nodeI
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -9234,9 +9234,9 @@ exports.getRepCFNProductStateStyle = async (companyID, factoryID, nodeID, produc
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -9332,9 +9332,9 @@ exports.getRepCFNProductStateTargetPlace = async (companyID, factoryID, nodeID, 
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -9433,9 +9433,9 @@ exports.getRepCFNProductStateColor = async (companyID, factoryID, nodeID, produc
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -9534,9 +9534,9 @@ exports.getRepCFNProductStateSize = async (companyID, factoryID, nodeID, product
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -9635,9 +9635,9 @@ exports.getRepCFNProductStateStyleTargetPlaceColorSize = async (companyID, facto
       // {"factoryID":factoryID},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": factoryID, "toNode": nodeID }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryID] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -9755,9 +9755,9 @@ exports.getCNCurrentProductionNodeQty = async (companyID, orderStatusArr, produc
       // {"productStatus":{$in: productStatusArr}},
       {"orderID":{$in: orderIDArr}},
 
-      {"productionNode":  {$elemMatch: {"toNode": {$in: toNodeArr}, "status": {$in: productStatusArr} }}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, toNodeArr] } },
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.status", -1] }, productStatusArr] } },
+      // {"productionNode":  {$elemMatch: {"toNode": {$in: toNodeArr}, "status": {$in: productStatusArr} }}},
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, toNodeArr] } },
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.status", -1] }, productStatusArr] } },
       // {"toNode":{$in: toNodeArr}},
       // {"status":{$in: productStatusArr}},
     ] } },
@@ -10212,8 +10212,8 @@ exports.getRepCFNCurrentMainDataBundleNoscanProductBarcode = async (companyID, f
       {"bundleID":{$in: bundleIDArr}},
       {"productStatus":{$in: statusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr} }}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr} }}},
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
       // {"factoryID":{$in: factoryIDArr}},
       // {"productBarcode":{$in: productBarcodeArr}},
     ] } },
@@ -10355,9 +10355,9 @@ exports.getRepCFNCurrentMainDataBundleNoscanDetail = async (companyID, factoryID
       {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: statusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
       // {"factoryID":{$in: factoryIDArr}},
       // {"toNode":nodeID},
     ] } },
@@ -10492,9 +10492,9 @@ exports.getRepCFNCurrentMainDataBundleNoscan = async (companyID, factoryIDArr, n
       {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: statusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
       // {"factoryID":{$in: factoryIDArr}},
       // {"toNode":nodeID},
     ] } },
@@ -10619,9 +10619,9 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
       {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr} }}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr} }}},
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+      // // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
@@ -10951,9 +10951,9 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
       {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}}}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}}}},
+      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+      // // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
