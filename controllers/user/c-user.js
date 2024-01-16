@@ -1113,7 +1113,7 @@ exports.gettestexplain5 = async (req, res, next) => {
   ])
     // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } )
     .hint( { companyID: 1, orderID: 1, productStatus: 1 } )
-    // .explain("executionStats");  //  .explain("executionStats")
+    // .explain("");  //  .explain("executionStats") queryPlanner , executionStats , allPlansExecution
     ;
     // companyID: 1, orderID: 1 
   // const explain = await OrderProduction.aggregate([
@@ -1233,6 +1233,282 @@ exports.gettestexplain6 = async (req, res, next) => {
   // console.log(explain);
   return res.send(explain);
 }
+
+
+// ## http://100.125.192.84:3968/api/user/test/explain1/testexplain7
+// router.get("/test/explain1/testexplain7", userController.gettestexplain7);
+exports.gettestexplain7 = async (req, res, next) => {
+
+  console.log('gettestexplain7');
+  const companyID = 'c000001';
+  const factoryID = 'f000001';  // 
+  const factoryIDArr = ['f000001'];  // ['f000001', 'f000002', 'f000003'];
+  const orderID = 'BA1OOA4S';
+  const orderIDs = ['JBAD9A4S',    'GL-26',    '24S-BP1505',
+    '24S-BP1504',  '203-Y24',  'GL-115D',
+    'GL-115C',     'BA1OPA4S', 'AA0QEA4S',
+    'DAK15A4S',    'DCB08A4S', 'DCB07A4S',
+    'DBC33A4S',    'BA1OGA4S', 'UR37-12B005',
+    'UR37-12B004', 'BA1OQA4S', 'AA0QFA4S',
+    'DCB06A4S',    'BA1ONA4S', 'BA1OOA4S',
+    'BA1OFA4S',    'DDB61A4S', 'DDE60A4S',
+    '23FRAW-006',  'UR391',    'JBAD9A3A',
+    'GL-115B',     'GL-116B',  '23F-YM505',
+    '23F-BP1508',  'GL-92B',   'AA0Q4A3A',
+    'BA1OEA3A',    'DD0ISA3A', 'AA0Q1A3A',
+    'BA1O0A3A',    'AA0Q6A3A', 'BAI13A3A',
+    'BA1ODA3A',    'BA1NIA3A', 'AA0PKA3A',
+    'AA0PJA3A',    'BA1NWA3A', 'AA0PVA3A',
+    'BA1NUA3A'];
+  const orderIDs2 = ['DDE60A4S'];
+  const orderIDArr = orderIDs;
+  const productBarcodeNoReal = 'AA0QFA4S    JAPN-----24GR--------M---00476';
+  const productBarcodeNoRealArr = ['AA0QFA4S    JAPN-----24GR--------M---00476'];
+  const nodeID = '3.LINKING';
+  const bundleNo = 1435755;
+  const bundleNos = [1435755, 1435756];
+  const bundleID = '14089bec-effd-466a-bcd9-529c8880c9c5';
+  const open = true;
+  const forLoss = false;
+  const isOutsourceTracking = false;
+  // const openArr = [true];
+  const statusArr = ['normal', 'complete'];
+
+  // ## getRepCFNCurrentProductQtyCount  'normal', 'problem', 'repaired'
+  const productStatusArr = ['normal', 'problem', 'repaired', 'complete'];  
+
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const date1 = new Date(moment().tz('Asia/Bangkok').format('2024/01/01 HH:mm:ss+07:00'));
+  const date2 = new Date(moment().tz('Asia/Bangkok').format('2024/01/14 HH:mm:ss+07:00'));
+  const dateStart = new Date(moment(date1).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
+  const dateEnd = new Date(moment(date2).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+  // console.log(dateStart, dateEnd);
+
+  const explain = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"factoryID":{$in: factoryIDArr}},
+      {"orderID":{$in: orderIDs2}},
+      {"productStatus":{$in: statusArr}},
+
+      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
+      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+      // {"factoryID":{$in: factoryIDArr}},
+      // {"toNode":nodeID},
+
+      // .hint( { companyID: 1, orderID: 1, productStatus: 1, productionNode.factoryID: 1, productionNode.toNode: 1 } )
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        bundleID: 1,
+        // productID: 1,
+        // targetPlace: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      bundleNo: 1,
+      bundleID: 1,
+      // productID: 1,
+      // targetPlaceID: "$targetPlace.targetPlaceID",
+      // productBarcodeNo: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // fromNode: "$productionNode.fromNode",
+      factoryID: "$productionNode.factoryID",
+      toNode: "$productionNode.toNode",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+
+    { $match: { $and: [
+      {"factoryID":{$in: factoryIDArr}},
+      {"toNode":nodeID},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      factoryID: 1,		
+      orderID: 1,	
+      bundleNo: 1,
+      bundleID: 1,
+      // productID: 1,
+      // targetPlaceID: "$targetPlace.targetPlaceID",
+      // productBarcodeNo: 1,
+      style: 1,
+      targetPlace: 1,
+      color: 1,
+      size: 1,
+      productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // fromNode: "$productionNode.fromNode",
+      // factoryID: "$productionNode.factoryID",
+      toNode: 1,
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+        orderID: '$orderID',
+        bundleNo: '$bundleNo',
+        bundleID: '$bundleID',
+        style: '$style',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+        toNode: '$toNode',
+        productCount: '$productCount',
+        // bundleNo: '$bundleNo',
+        // mode: '$mode',
+      },
+      // countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ])
+    .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } )
+    // .hint( { companyID: 1, orderID: 1, productStatus: 1 } )
+    .explain("executionStats");  //  .explain("executionStats") queryPlanner , executionStats , allPlansExecution
+    ;
+    // companyID: 1, orderID: 1 
+  // const explain = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     // {"factoryID":factoryID},
+  //     {"productStatus":{$in: productStatusArr}}
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,
+  //       productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+  //   }	},
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     factoryID: "$productionNode.factoryID",
+  //     toNode: "$productionNode.toNode",
+  //   }},
+  //   { $match: { $and: [
+  //     {"factoryID":factoryID},
+  //     {"toNode":nodeID},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //   }},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //   },
+  //     sumProductQty: {$sum: 1} ,
+  //   }} 
+  // ]).explain("executionStats");  //  .explain("executionStats")
+
+
+
+
+  console.log('gettestexplain7  *****');
+  // ## {$indexStats: {}}
+
+
+  // console.log(explain);
+  return res.send(explain);
+}
+
+// // ## http://192.168.1.84:3968/api/user/test/test
+// router.get("/test/test", userController.getTestTest);
+exports.getTestTest = async (req, res, next) => {
+  // console.log('getTestTest');
+  // user = await User.updateOne(  
+  //   {$and: [
+  //     {"userID": "heng067@gmail.com"},
+
+  //   ]},
+  //   {$unset: {status: ""} });
+
+  // // updateTargetPlaceOrder
+  // const updateTargetPlaceOrder = await ShareFunc.updateTargetPlaceOrder();
+
+  // // updateTargetPlaceCountryIDOrder
+  // const updateTargetPlaceCountryIDOrder = await ShareFunc.updateTargetPlaceCountryIDOrder();
+
+  // // xxFindCountry2
+  // const updateTargetPlaceCountryIDOrder = await ShareFunc.xxFindOrder();
+
+  // 1376989
+  // const result = await ShareFunc.getOrderProductionByBundleNo();
+  // console.log(result , result.length);
+
+  // getOrderProduction0001
+  // const result = await ShareFunc.getOrderProduction0001();
+  // console.log(result , result.length);
+
+  // // delManyOrderProduction
+  // const result = await ShareFunc.delManyOrderProduction();
+
+  // // getTestOrderProduction1
+  // const result = await ShareFunc.getTestOrderProduction1();
+  // // console.log(result , result.length);
+  // // console.log('result len = ' , result.length);
+
+  // const result = await ShareFunc.getTestOrderProduction2();
+  // console.log(result , result.length);
+
+  // const result = await ShareFunc.getviewGroupBundleNoOrderProductionQueue();
+  // // const resultF = result.filter(i=>(i.sumQty > 1));
+  // console.log(result , result.length);
+  // // hostURL = await hostURLf.filter(i=>(i.status == status));
+
+  // const result = await ShareFunc.setOpenOrderProduction();
+  // // console.log(result , result.length);
+
+  // // edit to factory when lock/pay job to knitting
+  // // EditOrderProductionFactory 
+  // const result = await ShareFunc.editOrderProductionFactory();
+
+  // ## test socket IO
+  io.getIO().emit(process.env.IOID+'/iomessage/user', {
+    action: 'sent by socketIO',
+    post: { socket: 'IO', creator: { _id: req.body.userID, name: 'namex' } }
+  });
+
+  
+  const test = await ShareFunc.test1();
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>1.) general test</title><head>');
+  res.write('<body>');
+  res.write('<h1>1.) general test</h1></br>');
+  res.write('<h1>Hello from my Node.js Server!</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 
 // // ## http://192.168.1.84:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);

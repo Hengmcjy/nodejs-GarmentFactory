@@ -2655,7 +2655,7 @@ exports.checkExistOrderProductionbyBundleNo= async (companyID, orderID, bundleNo
         productStatus: 1,
         // productBarcodeNoReal: 1,
     }	}
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, bundleNo: 1 } );
   // console.log(orderProductionBundleNo);
   return orderProductionBundleNo;
 }
@@ -2769,6 +2769,7 @@ exports.getCSZCSOrderProductionBundleNos= async (companyID, orderIDs, isOutsourc
     }}  
 
   ]);
+  // .hint( { companyID: 1, orderID: 1, "productionNode.status": 1 } );
 
   // console.log(orderProduction1);
   const orderProduction1F = await orderProduction1.map(fw => ({
@@ -2785,7 +2786,7 @@ exports.getCSZCSOrderProductionBundleNos= async (companyID, orderIDs, isOutsourc
     // productID: fw._id.productID,
     // countProductQty: fw.countProductQty,
   }));
-  // .hint( { companyID: 1, orderID: 1, "productionNode.status": 1 } );
+  
   // console.log(orderProduction1F);
   return orderProduction1F;
 }
@@ -8228,8 +8229,8 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
     },
       sumProductQty: {$sum: 1} ,
     }}  
-  ]);
-  // .hint( { companyID: 1, orderID: 1, productStatus: 1 } );
+  ])
+  .hint( { companyID: 1, orderID: 1, productStatus: 1 } );
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -8345,8 +8346,8 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
     },
       sumProductQty: {$sum: 1} ,
     }}  
-  ]);
-  // .hint( { companyID: 1, orderID: 1, productStatus: 1 } );
+  ])
+  .hint( { companyID: 1, orderID: 1, productStatus: 1 } );
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -10704,7 +10705,7 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
   ]);
-  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   const orderProductCFNodeRepF = await orderProductCFNodeRep.map(fw => ({
@@ -11023,7 +11024,7 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
   ]);
-  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -12070,7 +12071,7 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12Overall= async (companyID, facto
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":{$in: orderIDArr}},
-      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
+      {"subNodeFlow":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
 
       {"subNodeFlow":  {$elemMatch: {
         "factoryID": {$in: factoryIDArr}, 
@@ -12200,7 +12201,7 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":{$in: orderIDArr}},
-      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
+      {"subNodeFlow":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
 
       {"subNodeFlow":  {$elemMatch: {
         "factoryID": {$in: factoryIDArr}, 
