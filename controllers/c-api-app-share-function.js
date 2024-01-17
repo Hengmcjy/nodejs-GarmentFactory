@@ -11131,22 +11131,27 @@ exports.getCurrentCFactoryOrder = async (companyID, orderIDs) => {
 
 exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
   const staffScan = await OrderProduction.aggregate([
-    { $unwind: "$productionNode" },
+    // { $unwind: "$productionNode" },
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
 
       // {"productionNode":  {$elemMatch: { 
       //   "factoryID":{$in: factoryIDArr},
-      //   "datetime": { $gte: dateStart}, 
-      //   "datetime": { $lte : dateEnd},
+      //   "datetime": { $gte: dateStart, $lte : dateEnd}, 
       //   "status":{$in: statusArr},
       // }}},
 
-      {"productionNode.factoryID":{$in: factoryIDArr}},
-      {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // {"productionNode.datetime": { $lte : dateEnd}} ,
-      {"productionNode.status":{$in: statusArr}},
+      // {"productionNode.factoryID":{$in: factoryIDArr}},
+      // {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // // {"productionNode.datetime": { $lte : dateEnd}} ,
+      // {"productionNode.status":{$in: statusArr}},
+
+      {"productionNode":  {$elemMatch: {
+        "factoryID": {$in: factoryIDArr}, 
+        "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: statusArr}, 
+      }}},
 
     ] } },
 
@@ -11157,7 +11162,7 @@ exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderID
     //     productBarcodeNoReal: 1,
     //     productionNode: 1,  // ## 
     // }	},
-    // { $unwind: "$productionNode" },
+    { $unwind: "$productionNode" },
 
     { $project: { 
       _id: 0, 
@@ -11170,20 +11175,20 @@ exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderID
       status: "$productionNode.status",
     }},
 
-    // { $match: { $and: [
-    //   {"factoryID":{$in: factoryIDArr}},
-    //   {"datetime": { $gte: dateStart}} , 
-    //   {"datetime": { $lte : dateEnd}} ,
-    //   {"status":{$in: statusArr}},
-    // ] } },
-    // { $project: { 
-    //   _id: 0, 
-    //   companyID: 1,
-    //   orderID: 1,	
-    //   style: 1,	
-    //   factoryID: 1,	
-    //   fromNode: 1,
-    // }},
+    { $match: { $and: [
+      {"factoryID":{$in: factoryIDArr}},
+      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // {"datetime": { $lte : dateEnd}} ,
+      {"status":{$in: statusArr}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      style: 1,	
+      factoryID: 1,	
+      fromNode: 1,
+    }},
 
     { $group: {			
       _id: { 
@@ -11275,7 +11280,7 @@ exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderID
 exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
   // console.log('getCFStaffScannedByDate12StyleZone');
   const staffScan = await OrderProduction.aggregate([
-    { $unwind: "$productionNode" },
+    // { $unwind: "$productionNode" },
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
@@ -11293,12 +11298,19 @@ exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, ord
       //   "status":{$in: statusArr},
       // }}},
 
-      {"productionNode.factoryID":{$in: factoryIDArr}},
-      {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // {"productionNode.datetime": { $lte : dateEnd}} ,
-      {"productionNode.status":{$in: statusArr}},
+      // {"productionNode.factoryID":{$in: factoryIDArr}},
+      // {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // // {"productionNode.datetime": { $lte : dateEnd}} ,
+      // {"productionNode.status":{$in: statusArr}},
+
+      {"productionNode":  {$elemMatch: {
+        "factoryID": {$in: factoryIDArr}, 
+        "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: statusArr}, 
+      }}},
 
     ] } },
+
 
     // { $project: {			
     //     _id: 0,	
@@ -11307,7 +11319,7 @@ exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, ord
     //     productBarcodeNoReal: 1,
     //     productionNode: 1,  // ## 
     // }	},
-    // { $unwind: "$productionNode" },
+    { $unwind: "$productionNode" },
 
     { $project: { 
       _id: 0, 
@@ -11320,21 +11332,21 @@ exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, ord
       fromNode: "$productionNode.fromNode",
       status: "$productionNode.status",
     }},
-    // { $match: { $and: [
-    //   {"factoryID":{$in: factoryIDArr}},
-    //   {"datetime": { $gte: dateStart}} , 
-    //   {"datetime": { $lte : dateEnd}} ,
-    //   {"status":{$in: statusArr}},
-    // ] } },
-    // { $project: { 
-    //   _id: 0, 
-    //   companyID: 1,
-    //   orderID: 1,	
-    //   style: 1,	
-    //   targetPlace: 1,
-    //   factoryID: 1,	
-    //   fromNode: 1,
-    // }},
+    { $match: { $and: [
+      {"factoryID":{$in: factoryIDArr}},
+      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // {"datetime": { $lte : dateEnd}} ,
+      {"status":{$in: statusArr}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      style: 1,	
+      targetPlace: 1,
+      factoryID: 1,	
+      fromNode: 1,
+    }},
     { $group: {			
       _id: { 
         companyID: '$companyID',
@@ -11432,17 +11444,24 @@ exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, ord
 // ShareFunc.getCFStaffScannedByDate12(companyID, factoryIDArr, orderIDs, dateStart, dateEnd)
 exports.getCFStaffScannedByDate12StyleZoneColorSize = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
   const staffScan = await OrderProduction.aggregate([
-    { $unwind: "$productionNode" },
+    // { $unwind: "$productionNode" },
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
       
-      {"productionNode.factoryID":{$in: factoryIDArr}},
-      {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // {"productionNode.datetime": { $lte : dateEnd}} ,
-      {"productionNode.status":{$in: statusArr}},
+      // {"productionNode.factoryID":{$in: factoryIDArr}},
+      // {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // // {"productionNode.datetime": { $lte : dateEnd}} ,
+      // {"productionNode.status":{$in: statusArr}},
 
-      {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
+      {"productionNode":  {$elemMatch: {
+        "factoryID": {$in: factoryIDArr}, 
+        // "fromNode": nodeID, 
+        "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: statusArr}, 
+      }}},
+
+      // {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
 
     ] } },
     // { $project: {			
@@ -11459,7 +11478,7 @@ exports.getCFStaffScannedByDate12StyleZoneColorSize = async (companyID, factoryI
     //     // productStatus: 1,
     //     productionNode: 1,  // ## 
     // }	},
-    // { $unwind: "$productionNode" },
+    { $unwind: "$productionNode" },
     { $project: { 
       _id: 0, 
       companyID: 1,
@@ -11549,23 +11568,23 @@ exports.getCFStaffScannedByDate12StyleZoneColorSize = async (companyID, factoryI
 // ShareFunc.getCFFNStaffScannedByDate12StyleZone(companyID, factoryIDArr, orderIDs, zoneArr, dateStart, dateEnd, statusArr);
 exports.getCFFNStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, orderIDs, zoneArr, nodeID, dateStart, dateEnd, statusArr) => {
   const staffScan = await OrderProduction.aggregate([
-    { $unwind: "$productionNode" },
+    // { $unwind: "$productionNode" },
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
 
-      {"productionNode.factoryID":{$in: factoryIDArr}},
-      {"productionNode.fromNode":nodeID},
-      {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // {"productionNode.datetime": { $lte : dateEnd}} ,
-      {"productionNode.status":{$in: statusArr}},
+      // {"productionNode.factoryID":{$in: factoryIDArr}},
+      // {"productionNode.fromNode":nodeID},
+      // {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // // {"productionNode.datetime": { $lte : dateEnd}} ,
+      // {"productionNode.status":{$in: statusArr}},
 
-      // {"productionNode":  {$elemMatch: {
-      //   "factoryID": {$in: factoryIDArr}, 
-      //   "fromNode": nodeID, 
-      //   "datetime": { $gte: dateStart}, 
-      //   "datetime": { $lte : dateEnd} 
-      // }}},
+      {"productionNode":  {$elemMatch: {
+        "factoryID": {$in: factoryIDArr}, 
+        "fromNode": nodeID, 
+        "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: statusArr}, 
+      }}},
 
       // {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "fromNode": nodeID }}},
       // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
@@ -11587,7 +11606,7 @@ exports.getCFFNStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, o
     //     // productStatus: 1,
     //     productionNode: 1,  // ## 
     // }	},
-    // { $unwind: "$productionNode" },
+    { $unwind: "$productionNode" },
     { $project: { 
       _id: 0, 
       companyID: 1,
@@ -11693,6 +11712,7 @@ exports.getCFSubNodeScanDate12StaffOverall= async (companyID, factoryIDArr, orde
         "datetime": { $gte: dateStart, $lte : dateEnd}, 
         // "datetime": { $lte : dateEnd} 
       }}},
+
       // {"factoryID":{$in: factoryIDArr}},
       // {"nodeID":{$in: nodeIDs}},
       // {"qrCode":{$in: qrCodeArr}},
@@ -11746,8 +11766,8 @@ exports.getCFSubNodeScanDate12StaffOverall= async (companyID, factoryIDArr, orde
       {"nodeID":{$in: nodeIDs}},
       {"qrCode":{$in: qrCodeArr}},
       // {"status":{$in: statusArr}},
-      {"datetime": { $gte: dateStart}} , 
-      {"datetime": { $lte : dateEnd}} ,
+      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // {"datetime": { $lte : dateEnd}} ,
     ] } },
     { $project: { 
       _id: 0, 
@@ -11878,8 +11898,8 @@ exports.getCFSubNodeScanDate12Overall= async (companyID, factoryIDArr, orderIDAr
     { $match: { $and: [
       {"factoryID":{$in: factoryIDArr}},
       {"nodeID":{$in: nodeIDs}},
-      {"datetime": { $gte: dateStart}} , 
-      {"datetime": { $lte : dateEnd}} ,
+      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // {"datetime": { $lte : dateEnd}} ,
     ] } },
     { $project: { 
       _id: 0, 
