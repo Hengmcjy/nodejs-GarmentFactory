@@ -11794,7 +11794,8 @@ exports.getCFSubNodeScanDate12StaffOverall= async (companyID, factoryIDArr, orde
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ])
+  .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.qrCode": 1, "subNodeFlow.datetime": -1 } );
   // console.log(subNodeStaffScan);
 
   const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
@@ -11923,7 +11924,9 @@ exports.getCFSubNodeScanDate12Overall= async (companyID, factoryIDArr, orderIDAr
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ])
+  .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.datetime": -1 } );
+  
   // console.log(subNodeStaffScan);
 
   const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
@@ -12058,7 +12061,9 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall= async (companyID, 
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ])
+  .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.subNodeID": 1, "subNodeFlow.qrCode": 1, "subNodeFlow.datetime": -1 } );
+  
   // console.log(subNodeStaffScan);
 
   const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
@@ -12189,7 +12194,9 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12Overall= async (companyID, facto
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ])
+  .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.datetime": -1 } );
+  
   // console.log(subNodeStaffScan);
 
   const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
@@ -12324,7 +12331,8 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ])
+  .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.datetime": -1 } );
   // console.log(subNodeStaffScan);
 
   const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
