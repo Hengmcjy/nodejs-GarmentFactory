@@ -70,9 +70,11 @@ exports.asyncForEach4= async (array, callback) => {
 // // ## get yarn list /api/yarn/getlists/:companyID/:userID
 // router.get("/getlists/:companyID/:userID", checkAuth, checkUUID, yarnController.getYarnsList);
 exports.getYarnsList = async (req, res, next) => {
+  // console.log('getYarnsList');
   // try {} catch (err) {}
   const companyID = req.params.companyID;
   const userID = req.params.userID;
+  const yarnSeasonID = req.params.userID;
   // const page = +req.params.page;
   // const limit = +req.params.limit;
   // console.log('getProducts');
@@ -80,8 +82,8 @@ exports.getYarnsList = async (req, res, next) => {
   
   try {
     // getProducts= async (companyID, page, limit)
-    const yarns = await ShareFunc.getYarns(companyID);
-    const yarnsCount = await ShareFunc.getYarnsCount(companyID);
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
 
     const showArr = [true]; 
     // ## get yarn season
@@ -101,6 +103,58 @@ exports.getYarnsList = async (req, res, next) => {
       userID: userID,
       yarns: yarns,
       yarnsCount: yarnsCount,
+      yarnSeasons: yarnSeasons,
+      yarnSuppliers: yarnSuppliers,
+      yarnColors: [],
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'erry001', 
+        mode:'errYarnList', 
+        value: "error get yarn list"
+      }
+    });
+  }
+}
+
+// // ## get yarn list /api/yarn/getlists/yarnseasons/:companyID/:userID
+// router.get("/getlists/yarnseasons/:companyID/:userID", checkAuth, checkUUID, yarnController.getYarnsSeasons);
+exports.getYarnsSeasons = async (req, res, next) => {
+  // console.log('getYarnsSeasons');
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  // const yarnSeasonID = req.params.userID;
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;
+  // console.log(companyID);
+
+  
+  try {
+    // // getProducts= async (companyID, page, limit)
+    // const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    // const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
+    const showArr = [true]; 
+    // ## get yarn season
+    const yarnSeasons = await ShareFunc.getYarnSeasons(companyID, showArr);
+    const yarnSuppliers = await ShareFunc.getYarnSuppliers(companyID, showArr);
+    // const yarnColors = await ShareFunc.getYarnColors(companyID, showArr);
+
+    
+    
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      // yarns: yarns,
+      // yarnsCount: yarnsCount,
       yarnSeasons: yarnSeasons,
       yarnSuppliers: yarnSuppliers,
       yarnColors: [],

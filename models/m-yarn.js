@@ -6,9 +6,11 @@ const yarnSchema = mongoose.Schema({
   yarnSupplierID: {type: String},
   customerID: {type: String},
   seq: {type: Number},
+  yarnSeasonID: {type: String},
   yarnID: {type: String},
   yarnName: {type: String},
   yarnFullName: {type: String},
+  yarnUUID: {type: String},
   detail: {type: String},
 
 });

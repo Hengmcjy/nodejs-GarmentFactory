@@ -1111,8 +1111,8 @@ exports.gettestexplain5 = async (req, res, next) => {
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
   ])
-    // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } )
-    .hint( { companyID: 1, orderID: 1, productStatus: 1 } )
+    .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } )
+    // .hint( { companyID: 1, orderID: 1, productStatus: 1 } )
     // .explain("");  //  .explain("executionStats") queryPlanner , executionStats , allPlansExecution
     ;
     // companyID: 1, orderID: 1 
@@ -1235,7 +1235,7 @@ exports.gettestexplain6 = async (req, res, next) => {
 }
 
 
-// ## http://100.125.192.84:3968/api/user/test/explain1/testexplain7
+// ## http://192.168.1.17:3968/api/user/test/explain1/testexplain7
 // router.get("/test/explain1/testexplain7", userController.gettestexplain7);
 exports.gettestexplain7 = async (req, res, next) => {
 
@@ -1389,8 +1389,8 @@ exports.gettestexplain7 = async (req, res, next) => {
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
   ])
-    .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } )
-    // .hint( { companyID: 1, orderID: 1, productStatus: 1 } )
+    // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } )
+    .hint( { companyID: 1, orderID: 1, productStatus: 1 } )
     .explain("executionStats");  //  .explain("executionStats") queryPlanner , executionStats , allPlansExecution
     ;
     // companyID: 1, orderID: 1 

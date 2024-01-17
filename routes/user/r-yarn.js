@@ -14,7 +14,10 @@ const router = express.Router();
 // router.get("/getlist1/:companyID/:userID/:productID", checkAuth, checkUUID, yarnController.getYarn);
 
 // ## get yarn list /api/yarn/getlists/:companyID/:userID
-router.get("/getlists/:companyID/:userID", checkAuth, checkUUID, yarnController.getYarnsList);
+router.get("/getlists/:companyID/:yarnSeasonID/:userID", checkAuth, checkUUID, yarnController.getYarnsList);
+
+// ## get yarn list /api/yarn/getlists/yarnseasons/:companyID/:userID
+router.get("/getlists2/yarnseasons/:companyID/:userID", checkAuth, checkUUID, yarnController.getYarnsSeasons);
 
 // ## get yart info for create new
 router.get("/getinfo1/:companyID/:factoryID/:customerID/:setName/:yarnSeason", checkAuth, checkUUID, yarnController.getYarnInfo1);
