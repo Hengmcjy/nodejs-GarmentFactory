@@ -2615,7 +2615,7 @@ exports.getProductBarcodeNosOrderProductionbyBundleNo= async (companyID, orderID
         // productStatus: 1,
         // productBarcodeNoReal: 1,
     }	}
-  ]).hint( { companyID: 1, orderID: 1, bundleNo: 1 } );
+  ]).hint( { companyID : 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
   // console.log(orderProduction);
 
   // let ProductBarcodeNos = [];
@@ -2655,7 +2655,7 @@ exports.checkExistOrderProductionbyBundleNo= async (companyID, orderID, bundleNo
         productStatus: 1,
         // productBarcodeNoReal: 1,
     }	}
-  ]).hint( { companyID: 1, orderID: 1, bundleNo: 1 } );
+  ]).hint( { companyID : 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
   // console.log(orderProductionBundleNo);
   return orderProductionBundleNo;
 }
@@ -9929,7 +9929,7 @@ exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, product
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]).hint( { companyID: 1, orderID: 1, productStatus: 1} );
+  ]).hint( { companyID : 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1} );
   // console.log(companyCurrentProductQtyAll);
 
   const companyCurrentProductQtyAllF = await companyCurrentProductQtyAll.map(fw => ({
@@ -10031,7 +10031,7 @@ exports.getCCurrentProductQtyAll = async (companyID, factoryIDArr, productStatus
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]).hint( { companyID: 1, orderID: 1, productStatus: 1} );
+  ]).hint( { companyID : 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1} );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -10114,7 +10114,7 @@ exports.getCCurrentProductQtyAllList = async (companyID, factoryIDArr, productSt
     //   countQty: {$sum: 1} ,
     //   // sumProductQty: {$sum:  '$amount'} ,
     // }}  
-  ]).hint( { companyID: 1, orderID: 1} );
+  ]).hint( { companyID : 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
   // console.log(orderProductRep);
 
   // const orderProductRepF = await orderProductRep.map(fw => ({
@@ -10193,7 +10193,7 @@ exports.getCCurrentProductQtyAllByStyleC = async (companyID, style, productStatu
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]).hint( { companyID: 1, orderID: 1} );
+  ]).hint( { companyID : 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -10715,7 +10715,7 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
   ])
-  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1 } );
+  .hint( { companyID : 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1} );
   // console.log(orderProductRep);
 
   const orderProductCFNodeRepF = await orderProductCFNodeRep.map(fw => ({
@@ -10809,7 +10809,7 @@ exports.getComCurrentProductQtyZoneAll = async (companyID, factoryIDArr, product
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}
-  ]).hint( { companyID: 1, orderID: 1, productStatus: 1 } );
+  ]).hint( { companyID : 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1} );
   // console.log(currentCompanyProductQtyAll);
 
   const currentCompanyProductQtyAllF = await currentCompanyProductQtyAll.map(fw => ({
@@ -11034,7 +11034,7 @@ exports.getCFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatu
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
   ])
-  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1} );
+  .hint( { companyID : 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1} );
   // console.log(orderProductRep);
 
   const orderProductRepF = await orderProductRep.map(fw => ({
@@ -11112,7 +11112,7 @@ exports.getCurrentCFactoryOrder = async (companyID, orderIDs) => {
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
   ])
-  .hint( { companyID: 1, orderID: 1} );
+  .hint( { companyID : 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
 
   const factoryOrderF = await factoryOrder.map(fw => ({
     companyID: fw._id.companyID, 
