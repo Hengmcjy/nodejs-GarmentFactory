@@ -5425,7 +5425,7 @@ exports.getYarnPlanMainLists= async (companyID, factoryID, customerID, yarnSeaso
   const yarnData = await YarnData.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      {"factoryID":factoryID},
+      // {"factoryID":factoryID},
       {"customerID":customerID},
       {"yarnSeasonID":yarnSeasonID},
       {"status":{$in: status}},
@@ -5454,21 +5454,23 @@ exports.getYarnPlanMainLists= async (companyID, factoryID, customerID, yarnSeaso
 }
 
 // ShareFunc.getYarnCussCount(companyID, customerID);
-exports.getYarnCussCount= async (companyID, customerID) => {
+exports.getYarnCussCount= async (companyID, customerID, yarnSeasonID) => {
   rows = await Yarn.countDocuments({$and: [
     {"companyID":companyID},
     {"customerID":customerID},
+    {"yarnSeasonID":yarnSeasonID},
   ]});
   return rows;
 }
 
 // getYarnCuss(companyID, customerID);
-exports.getYarnCuss= async (companyID, customerID) => {
+exports.getYarnCuss= async (companyID, customerID, yarnSeasonID) => {
   // limit = +limit; // ## change to number
   const yarns = await Yarn.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
     ] } },
     { $project: {			
         _id: 0,	

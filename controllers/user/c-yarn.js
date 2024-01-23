@@ -77,13 +77,14 @@ exports.getYarnsList = async (req, res, next) => {
   const yarnSeasonID = req.params.userID;
   // const page = +req.params.page;
   // const limit = +req.params.limit;
-  // console.log('getProducts');
+  // console.log(companyID, yarnSeasonID, 'getYarnsList');
 
   
   try {
     // getProducts= async (companyID, page, limit)
     const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
     const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+    // console.log(yarns, yarnsCount, 'getYarnsList');
 
     const showArr = [true]; 
     // ## get yarn season
@@ -184,15 +185,15 @@ exports.getYarnInfo1 = async (req, res, next) => {
   const season = yarnSeason.substr(0, 4);  // 2024
   // const page = +req.params.page;
   // const limit = +req.params.limit;
-  // console.log('getProducts');
+  // console.log('getYarnInfo1');
   // console.log(setName);
   try {
 
     const uuid = uuidv4();
     
     // getProducts= async (companyID, page, limit)
-    const yarns = await ShareFunc.getYarnCuss(companyID, customerID);
-    const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID);
+    const yarns = await ShareFunc.getYarnCuss(companyID, customerID, yarnSeason);
+    const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID, yarnSeason);
 
     const showArr = [true]; 
     // ## get yarn season
@@ -387,15 +388,17 @@ exports.getYarPlansList = async (req, res, next) => {
   const status = ['open'];
   const orderIDs = JSON.parse(req.params.orderIDs);
   // const limit = +req.params.limit;
-  // console.log('getProducts');
+  // console.log(factoryID, customerID, yarnSeasonID, 'getYarPlansList');
   // console.log(setName);
   try {
 
-    const yarns = await ShareFunc.getYarnCuss(companyID, customerID);
-    const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID);
+    const yarns = await ShareFunc.getYarnCuss(companyID, customerID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID, yarnSeasonID);
+    // console.log(yarns, yarnsCount, 'getYarPlansList');
 
     const yarnPlans = await ShareFunc.getYarnPlanMainLists(companyID, factoryID, customerID, yarnSeasonID, status);
     const yarnPlansCount = await ShareFunc.getYarnPlanMainCount(companyID, factoryID, customerID, yarnSeasonID, status);
+    // console.log(yarnPlans, yarnPlansCount, 'getYarPlansList');
 
     let productIDs = [];
     await this.asyncForEach(orderIDs, async (item1) => {
