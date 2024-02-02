@@ -1356,11 +1356,12 @@ exports.putEditYarnLotID1 = async (req, res, next) => {
           {"uuid":uuid},
           {"yarnID":yarnID},
         ]},
-        // {$push: {"yarnDataInfo.$[elem].packageInfo.$[elem2].yarnBoxInfo" : yarnBoxInfo}},
+        // {$push: {"yarnDataInfo.$[elem].packageInfo.$[elem2].yarnBoxInfo" : yarnBoxInfo}},  
         { 
           $set: { 
             "yarnDataInfo.$[elem].packageInfo.$[elem2].yarnBoxInfo" : yarnBoxInfo ,
             "yarnDataInfo.$[elem].packageInfo.$[elem2].invoiceID" : invoiceID,
+            "yarnDataInfo.$[elem].packageInfo.$[elem2].yarnLotID" : yarnLotID,
             "yarnDataInfo.$[elem].packageInfo.$[elem2].coneWeight" : coneWeight,
             "yarnDataInfo.$[elem].packageInfo.$[elem2].boxWeight" : boxWeight
           },
