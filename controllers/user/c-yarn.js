@@ -333,6 +333,12 @@ exports.getYarnPlansInvoiceList2 = async (req, res, next) => {
     const yarnInvoiceList = await ShareFunc.getYarnPlanInvoiceList(companyID, factoryID, customerID, yarnSeasonID, type, invoiceID, status);
     // console.log(yarnPlan);
 
+    // getYarnPlanMainListByYarnIDs= async (companyID, factoryID, customerID, yarnSeasonID, uuid, yarnIDs, status)
+    // this.orderIDs = Array.from(new Set(this.currentCompanyOrder.map((item: any) => item.orderID)));
+    const yarnIDs = Array.from(new Set(yarnInvoiceList.map((item) => item.yarnID)));
+    // console.log(yarnIDs);
+    const yarnPlans = await ShareFunc.getYarnPlanMainListByYarnIDs(companyID, factoryID, customerID, yarnSeasonID, yarnIDs, status);
+
     // await this.asyncForEach(yarnData, async (item1) => {
     //   await this.asyncForEach2(item1.yarnDataInfo.packageInfo, async (item2) => {
     //     await this.asyncForEach3(item2.yarnBoxInfo, async (item3) => {
@@ -360,6 +366,7 @@ exports.getYarnPlansInvoiceList2 = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       yarnInvoiceList: yarnInvoiceList,
+      yarnPlans: yarnPlans,
 
     });
   } catch (err) {

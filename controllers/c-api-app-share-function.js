@@ -5282,7 +5282,7 @@ exports.getYarnPlanMainList= async (companyID, factoryID, customerID, yarnSeason
   return yarnData;
 }
 
-exports.getYarnPlanInvoiceList= async (companyID, factoryID, customerID, yarnSeasonID, type, invoiceID, status) => {
+exports.getYarnPlanMainListByYarnIDs= async (companyID, factoryID, customerID, yarnSeasonID, yarnIDs, status) => {
   const yarnData = await YarnData.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -5290,7 +5290,7 @@ exports.getYarnPlanInvoiceList= async (companyID, factoryID, customerID, yarnSea
       {"customerID":customerID},
       {"yarnSeasonID":yarnSeasonID},
       // {"uuid":uuid},
-      // {"yarnID":yarnID},
+      {"yarnID":{$in: yarnIDs}},
       {"status":{$in: status}},
     ] } },
     { $project: {			
@@ -5310,6 +5310,69 @@ exports.getYarnPlanInvoiceList= async (companyID, factoryID, customerID, yarnSea
         yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
         mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
     }	},
+    // { $sort: { datetime: 1 } }
+  ]);
+  // console.log(yarns);
+
+  // const yarnDataF = await yarnData.map(fw => ({
+  //   companyID: fw._id.companyID, 
+  //   productID: fw._id.productID,
+  //   style: fw._id.style,
+  //   size: fw._id.size,
+  //   targetPlace: fw._id.targetPlace,
+  //   color: fw._id.color,
+  //   countQty: fw.countQty,
+  // }));
+  // const yarnDataInfo = yarnData.length>0 ? yarnData[0].yarnDataInfo : [];
+
+  await this.asyncForEach4(yarnData, async (item0) => {
+    await this.asyncForEach(item0.yarnDataInfo, async (item1) => {
+      item1.yarnWeight = parseFloat(item1.yarnWeight);
+      await this.asyncForEach2(item1.packageInfo, async (item2) => {
+        item2.coneWeight = parseFloat(item2.coneWeight);
+        item2.boxWeight = parseFloat(item2.boxWeight);
+        await this.asyncForEach3(item2.yarnBoxInfo, async (item3) => {
+          item3.yarnPlanWeight = parseFloat(item3.yarnPlanWeight);
+          item3.yarnWeight = parseFloat(item3.yarnWeight);
+          item3.useWeight = parseFloat(item3.useWeight);
+          item3.yarnWeightNet = parseFloat(item3.yarnWeightNet);
+          item3.yarnTransferWeight = parseFloat(item3.yarnTransferWeight);
+        });
+      });
+    });
+  });
+
+  return yarnData;
+}
+
+exports.getYarnPlanInvoiceList= async (companyID, factoryID, customerID, yarnSeasonID, type, invoiceID, status) => {
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
+      // {"uuid":uuid},
+      // {"yarnID":yarnID},
+      {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        status: 1,
+        uuid: 1,
+        // datetime: 1,
+        // editDate: 1,
+        yarnID: 1,		
+        orderID: 1,
+        colorS: 1,
+        yarnDataInfo: 1,
+        // yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+        // mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+    }	},
     { $unwind: "$yarnDataInfo" },
     { $project: { _id: 0, 
       companyID: 1,
@@ -5318,14 +5381,16 @@ exports.getYarnPlanInvoiceList= async (companyID, factoryID, customerID, yarnSea
       yarnSeasonID: 1,
       status: 1,
       uuid: 1,
-      datetime: 1,
-      editDate: 1,
+      // datetime: 1,
+      // editDate: 1,
       yarnID: 1,		
       orderID: 1,
       colorS: 1,
       // yarnDataInfo: 1,
-      yyyymmdd: 1,
-      mmdd: 1,
+      // yyyymmdd: 1,
+      // mmdd: 1,
+      datetime: "$yarnDataInfo.datetime",
+      editDate: "$yarnDataInfo.editDate",
       type: "$yarnDataInfo.type",
       packageInfo: "$yarnDataInfo.packageInfo",
       yarnDataUUID: "$yarnDataInfo.yarnDataUUID",
@@ -5349,8 +5414,10 @@ exports.getYarnPlanInvoiceList= async (companyID, factoryID, customerID, yarnSea
       orderID: 1,
       colorS: 1,
       // yarnDataInfo: 1,
-      yyyymmdd: 1,
-      mmdd: 1,
+      // yyyymmdd: 1,
+      // mmdd: 1,
+      yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
 
       type: 1,
       yarnDataUUID: 1,
