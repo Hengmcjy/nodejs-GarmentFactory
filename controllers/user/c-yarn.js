@@ -1015,6 +1015,151 @@ exports.putCancelYarnPackingList1 = async (req, res, next) => {
   }
 }
 
+exports.putYarnDataInfoDatetime = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  const userID = req.userData.tokenSet.userID;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const toFactoryID = data.factoryID;
+  const customerID = data.customerID;
+  const yarnDataUUID = data.yarnDataUUID; // ##   
+  const uuid = data.uuid;
+  const yarnSeasonID = data.yarnSeasonID;  // ## 2023AW,  2024SS
+  const yarnID = data.yarnID;
+  const yarnColorID = data.yarnColorID;
+  const type = data.type;  // ## plan , receive
+  
+  // const yarnWeight = data.yarnWeight;
+  // const yarnDataUUID = data.yarnDataUUID;
+
+  // console.log('putYarnPlanDataInfo');
+  // console.log(companyID, factoryID, customerID);
+  // console.log(uuid, yarnSeasonID, yarnID, yarnColorID, type);
+
+  const datetime = new Date(moment(data.datetime).tz('Asia/Bangkok').format('YYYY/MM/DD 08:00:ss+07:00'));
+  // const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  // console.log(dateStart);
+
+  let session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+
+    const yarnDataUpdate1 = await YarnData.updateOne(
+      {$and: [
+        {"companyID":companyID},
+        {"factoryID":factoryID},
+        {"customerID":customerID},
+        {"yarnSeasonID":yarnSeasonID},
+        {"uuid":uuid},
+        {"yarnID":yarnID},
+      ]},
+      {$set: { 
+        "yarnDataInfo.$[elem].datetime" : datetime,
+        // "yarnDataInfo.$[elem].editDate" : current,
+        // "editDate": current
+      }}, 
+      {
+        multi: true,
+        arrayFilters: [  {
+          "elem.yarnDataUUID": yarnDataUUID ,
+          "elem.yarnColorID": yarnColorID , 
+          "elem.type": type , 
+          // "elem.toFactoryID": toFactoryID , 
+        } ]
+      }).session(session);
+
+    // // ## check existed
+    // const yarnPackingList = await ShareFunc.getYarnPlanDataInfo2(
+    //   companyID, factoryID, customerID, yarnSeasonID, uuid, yarnID, yarnDataUUID, yarnColorID, type, toFactoryID
+    // );
+    // if (yarnPackingList.length > 0) {
+    //   const packageInfo = yarnPackingList[0].packageInfo;
+    //   if (packageInfo.length === 0) { // ## no have record , can delete
+    //     // ## delete from orderProductionQueue
+    //     result2 = await YarnData.updateOne({$and: [
+    //       {"companyID":companyID},
+    //       {"factoryID":factoryID},
+    //       {"customerID":customerID},
+    //       {"yarnSeasonID":yarnSeasonID},
+    //       {"uuid":uuid},
+    //       {"yarnID":yarnID}, 
+    //     ]} , 
+    //     {
+    //       $pull: {
+    //         yarnDataInfo: {
+    //           "yarnDataUUID": yarnDataUUID,
+    //           "yarnColorID": yarnColorID,
+    //           "type": type,
+    //           // "productBarcode":{$in: productBarcodes}, 
+    //           // "bundleNo":{$in: bundleNos}, 
+    //           // "numberFrom": { $gte: no1 } , 
+    //           // "numberTo": { $lte: no2 }
+    //         }
+    //       }
+    //       // $pull: {queueInfo: {"bundleNo":{$in: bundleNos}, "numberFrom": no1, "numberTo": no2, "productCount": productCount}}
+    //       // $pull: { fruits: { $in: [ "apples", "oranges" ] }, vegetables: "carrots" }
+    //     }).session(session);
+
+    //   } else if (packageInfo.length > 0) { // ## have record , cannot delete
+    //     return res.status(422).json({
+    //       message: {
+    //         messageID: 'erry014', 
+    //         mode:'errPutYarnDataInfoDatetime', 
+    //         value: "error put yarn dataInfo datetime"
+    //       },
+    //       token: token,
+    //       expiresIn: process.env.expiresIn,
+    //       userID: data.userID,
+    //       success: false
+    //     });
+    //   }
+    // } 
+    
+
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    await session.commitTransaction();
+    session.endSession();
+
+    const status1 = ['open'];
+    const yarnPlan = await ShareFunc.getYarnPlanMainList(companyID, factoryID, customerID, yarnSeasonID, uuid, yarnID, status1);
+
+    const uuidArr = [uuid];
+    const type1 = [type]; // ## receive
+    const yarnPlanDateGroup = await ShareFunc.getYarnPlanDateGroup(
+        companyID, factoryID, customerID, yarnSeasonID, uuidArr, type1
+    );
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      success: true,
+      message: {},
+      yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
+      yarnPlanDateGroup: yarnPlanDateGroup
+      
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'erry014', 
+        mode:'errPutYarnDataInfoDatetime', 
+        value: "error put yarn dataInfo datetime"
+      }
+    });
+  }  finally {
+    session.endSession();
+  }
+}
+
+
 // // ## /api/yarn/yarnpackageInfo/del   putDelYarnPackingList1
 // router.put("/yarnpackageInfo/del", checkAuth, checkUUID, yarnController.putDelYarnPackingList1);
 exports.putDelYarnPackingList1 = async (req, res, next) => {

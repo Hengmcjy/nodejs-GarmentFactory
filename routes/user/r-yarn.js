@@ -49,6 +49,10 @@ router.put("/yarnpackinglist1/add", checkAuth, checkUUID, yarnController.putAddY
 // ## /api/yarn/yarnpackinglist1/cancel   putCancelYarnPackingList1
 router.put("/yarnpackinglist1/cancel", checkAuth, checkUUID, yarnController.putCancelYarnPackingList1);
 
+// putYarnDataInfoDatetime
+// ## /api/yarn/yarndatainfo/datetime   putYarnDataInfoDatetime
+router.put("/yarndatainfo/datetime", checkAuth, checkUUID, yarnController.putYarnDataInfoDatetime);
+
 // ## /api/yarn/yarnpackageInfo/del   putDelYarnPackingList1
 router.put("/yarnpackageInfo/del", checkAuth, checkUUID, yarnController.putDelYarnPackingList1);
 
