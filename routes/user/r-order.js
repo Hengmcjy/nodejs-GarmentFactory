@@ -95,7 +95,7 @@ router.get("/lastProduction/getlists/:companyID/:orderID/:productID/:page/:limit
             checkAuth, checkUUID, orderController.getProductionQueue);
 
 // ## get last running number order production  return last number
-router.get("/lastroderProduction/runningno/:companyID/:orderID/:productID/:productBarcode", 
+router.get("/lastroderProduction/runningno/:companyID/:orderID/:productID/:productBarcode/:ver", 
             checkAuth, checkUUID, orderController.getLastNoOrderProductionBarcode);
         
 //

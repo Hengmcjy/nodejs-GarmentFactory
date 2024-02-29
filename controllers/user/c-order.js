@@ -354,6 +354,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
     const companyID = data.order.companyID;
     const factoryID = data.order.factoryID;
     const bundleNo = data.order.bundleNo;
+    const ver = +data.order.ver;
     const orderID = data.order.orderID;
     const seasonYear = data.order.seasonYear;
     const orderDetail = data.order.orderDetail;
@@ -371,6 +372,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
         "seasonYear": seasonYear,
         "factoryID": factoryID,
         "bundleNo": bundleNo,
+        "ver": ver,
         "orderStatus": 'open',
         "orderDetail": orderDetail,
         "orderDate": orderDate,
@@ -1171,6 +1173,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     
     const orderID = data.orderID;
     const productID = data.productID;
+    const ver = +data.ver;
     const productBarcode = data.productBarcode;
     const targetPlace = data.targetPlace;
     let queueInfo = data.queueInfo;  // array
@@ -1183,6 +1186,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     const toNo = +data.toNo;
     // console.log(startNo , toNo);
     // console.log(productBarcode );
+    console.log(data.ver);
 
     const bundleItems = +data.bundleItems;
     const bundleNoFrom = +data.bundleNoFrom;
@@ -1215,7 +1219,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     for (let i = +bundleNoFrom; i <= +bundleNoTo; i++) {
       bundleNos.push(i);
     }
-    const bundleNoExisted = await ShareFunc.checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos);
+    const bundleNoExisted = await ShareFunc.checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos, ver);
     // console.log('bundleNoExisted = ', bundleNoExisted);
     if (bundleNoExisted) {
       await session.abortTransaction(); 
@@ -1368,6 +1372,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               open: true,
               bundleNo: +bundleNoArr[bundleNoF - 1],
               bundleID: productBarcodeNoUUID[bundleNoF - 1],
+              ver: +ver,
               productID: productID,
               productBarcodeNo: productBarcodeNo,
               productBarcodeNoReal: productBarcodeNo,
@@ -1401,7 +1406,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
             {$and: [
               {"companyID":companyID},
               {"orderID":orderID},
-              // {"productID":productID},
+              {"ver":ver},
             ]}, 
             {
               // "forLossQty": forLossQty,
@@ -2220,6 +2225,7 @@ exports.getProductionQueue = async (req, res, next) => {
 exports.getLastNoOrderProductionBarcode = async (req, res, next) => {
   // try {} catch (err) {}
   const companyID = req.params.companyID;
+  const ver = +req.params.ver;
   // const factoryID = req.params.factoryID;
   const orderID = req.params.orderID;
   const productID = req.params.productID;
@@ -2228,11 +2234,15 @@ exports.getLastNoOrderProductionBarcode = async (req, res, next) => {
   // const limit = +req.params.limit;  // ## records we need to get
   const userID = req.userData.tokenSet.userID;
   // console.log('getLastProductionQueueBarcode');
-  // console.log(companyID,orderID,productID, productBarcode );
+  // console.log(companyID,orderID,productID, productBarcode, 'ver= '+ ver );
   try {
 
     // ## get last running number order production  by barcodeNo
     const runningNo = await ShareFunc.getLastRunningNoOrderProduction(companyID, orderID, productID, productBarcode);
+
+    // ## get last bundleNo
+    const lastBundleNo = await ShareFunc.getLastBundleNoOrderProduction(companyID, ver);
+    // console.log(lastBundleNo);
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
@@ -2242,8 +2252,9 @@ exports.getLastNoOrderProductionBarcode = async (req, res, next) => {
       token: token,
       expiresIn: process.env.expiresIn,
       userID: userID,
-      runningNo: runningNo
-      // orderProductionQueue: orderProductionQueue,
+      runningNo: runningNo,
+      lastBundleNo: lastBundleNo,
+      ver: ver
       // countProductionQueueAll: countProductionQueueAll,
       // sumProductionQueueAll: sumProductionQueueAll,
     });

@@ -5,6 +5,7 @@ const uniqueValidator = require("mongoose-unique-validator");
 const orderSchema = mongoose.Schema({
   orderID: { type: String, required: true },
   seasonYear: {type: String},
+  ver: {type: Number},  // ## version
   orderDetail: {type: String},
   orderDate: {type: Date, required: true},
   deliveryDate: {type: Date},

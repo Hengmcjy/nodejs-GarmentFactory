@@ -8,6 +8,7 @@ const controlAppSchema = mongoose.Schema({
     factoryRunID: {type: Number, required: true},
     nodeRunID: {type: Number, required: true},
     customerRunID: {type: Number, required: true},
+    ver: {type: Number, required: true}, // ## version
   },
   google: {
     storageAPIPath: { type: String, required: true},

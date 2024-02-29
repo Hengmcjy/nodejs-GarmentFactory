@@ -943,6 +943,7 @@ exports.getControlApp= async () => {
     factoryRunID: controlAppf.app.factoryRunID,
     nodeRunID: controlAppf.app.nodeRunID,
     customerRunID: controlAppf.app.customerRunID,
+    ver: controlAppf.app.ver,
   };
   // console.log(controlApp);
   return controlApp;
@@ -1633,6 +1634,7 @@ exports.getOrder= async (companyID, orderID) => {
         _id: 1,	
         orderID: 1,
         seasonYear: 1,
+        ver: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -1664,6 +1666,7 @@ exports.getOrdersByOrderIDsAll= async (companyID, orderIDs) => {
         _id: 1,	
         orderID: 1,
         seasonYear: 1,
+        ver: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -1696,6 +1699,7 @@ exports.getOrderProductionSubNodeFlowCost1= async (companyID, orderID) => {
       companyID: 1,
       orderID: 1,
       seasonYear: 1,
+      ver: 1,
       orderTargetPlace: 1,
       orderColor: 1,
       subNodeFlowCost: "$productOR.subNodeFlowCost",
@@ -1782,6 +1786,7 @@ exports.getOrdersFromNode= async (companyID, statusArr, page, limit) => {
         _id: 1,	
         orderID: 1,
         seasonYear: 1,
+        ver: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -1816,6 +1821,7 @@ exports.getOrders= async (companyID, statusArr, page, limit, seasonYearArr) => {
         _id: 1,	
         orderID: 1,
         seasonYear: 1,
+        ver: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -1868,6 +1874,7 @@ exports.getOrdersByOrderIDs= async (companyID, orderIDArr, page, limit) => {
         _id: 1,	
         orderID: 1,
         seasonYear: 1,
+        ver: 1,
         companyID: 1,
         factoryID: 1,
         bundleNo: 1,
@@ -2066,6 +2073,35 @@ exports.getOrderQueueSetListCount= async (companyID, orderID) => {
     // {"productBarcode":productBarcode},
   ]});
   return rows;
+}
+
+// ShareFunc.getLastBundleNoOrderProduction(companyID, ver);
+exports.getLastBundleNoOrderProduction= async (companyID, ver) => {
+  // ver = 1;
+  const maxBundleNoF = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"ver": ver},
+      // {$expr: { $eq: [{ $substr: ["$productBarcodeNoReal", 0, 37] }, productBarcode] }}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        ver: 1,
+        bundleNo: 1,
+    }	},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        ver: '$ver',
+      },
+      maxBundleNo: { $max: "$bundleNo" }
+    }}  
+  ]).hint( { companyID: 1, ver: 1 } );
+  console.log('ver= ', ver);
+  console.log(maxBundleNoF);
+  return maxBundleNoF.length > 0 ? +maxBundleNoF[0].maxBundleNo : 0;
 }
 
 // const runningNo = await ShareFunc.getLastRunningNoOrderProduction(companyID, orderID, productID, productBarcode);
@@ -2924,12 +2960,13 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
 }
 
 // checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos)
-exports.checkBundleNoExisted= async (companyID, orderID, productBarcode, bundleNos) => {
+exports.checkBundleNoExisted= async (companyID, orderID, productBarcode, bundleNos, ver) => {
   const orderIDs = [orderID];
   // console.log(bundleNos);
   const OrderProductionQueueRow = await OrderProductionQueue.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
+      {"ver":ver},
       // {"orderID":{$in: orderIDs}},
     ] } },
     { $unwind: "$queueInfo"},

@@ -14,6 +14,7 @@ const Company = require("../../models/m-company");
 const Factory = require("../../models/m-factory");
 const NodeStation = require("../../models/m-nodeStation");
 
+const Order = require("../../models/m-order");
 const OrderProduction = require("../../models/m-orderProduction");
 const OrderProductionQueueList = require("../../models/m-orderProductionQueueList");
 const OrderProductionQueue = require("../../models/m-orderProductionQueue");
@@ -365,6 +366,128 @@ exports.getTestTest15 = async (req, res, next) => {
   // ]);
   console.log(result.length);
   return res.send(result);
+}
+
+// ## http://192.168.1.35:3968/api/user/test/test17
+// router.get("/test/test17", userController.getTestTest17);  // ##  update ver for orderProduction all
+exports.getTestTest17 = async (req, res, next) => {
+  const companyID = 'c000001';
+  const ver = 1;
+
+  // const result1 = await OrderProduction.updateMany(
+  //   {$and: [
+  //     {"companyID":companyID}  ,
+  //     // {"factoryID":fromFactoryID}  ,
+  //   ]},
+  //   {$set: { 
+  //     "ver": ver
+  //   }}, 
+  // );
+
+  console.log('OK update ver for orderProduction all');
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>update ver for orderProduction all</title><head>');
+  res.write('<body>');
+  res.write('<h1>update ver for orderProduction   </h1></br>');
+  res.write('<h1>all</h1>');
+  res.write('<h1>'+ ' OK '+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
+}
+
+// ## http://192.168.1.35:3968/api/user/test/test18
+// router.get("/test/test18", userController.getTestTest18);  // ##  update ver for order all
+exports.getTestTest18 = async (req, res, next) => {
+  const companyID = 'c000001';
+  const ver = 1;
+
+  const result1 = await Order.updateMany(
+    {$and: [
+      {"companyID":companyID}  ,
+      // {"factoryID":fromFactoryID}  ,
+    ]},
+    {$set: { 
+      "ver": ver
+    }}, 
+  );
+
+  console.log('OK update ver for order all');
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>update ver for order all</title><head>');
+  res.write('<body>');
+  res.write('<h1>update ver for order    </h1></br>');
+  res.write('<h1>all</h1>');
+  res.write('<h1>'+ ' OK '+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
+}
+
+// ## http://192.168.1.35:3968/api/user/test/test19
+// router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
+exports.getTestTest19 = async (req, res, next) => {
+  const companyID = 'c000001';
+  const ver = 1;
+
+  const result1 = await OrderProductionQueue.updateMany(
+    {$and: [
+      {"companyID":companyID}  ,
+      // {"factoryID":fromFactoryID}  ,
+    ]},
+    {$set: { 
+      "ver": ver
+    }}, 
+  );
+
+  console.log('OK update ver for orderProductionQueue all');
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>update ver for orderProductionQueue all</title><head>');
+  res.write('<body>');
+  res.write('<h1>update ver for orderProductionQueue     </h1></br>');
+  res.write('<h1>all</h1>');
+  res.write('<h1>'+ ' OK '+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
+}
+
+// ## http://192.168.1.35:3968/api/user/test/test20
+// router.get("/test/test20", userController.getTestTest20);  // ##  update ver for orderProductionQueue = queueInfo --> []
+exports.getTestTest20 = async (req, res, next) => {
+  const companyID = 'c000001';
+  const orderID = 'BA1OOA4S';
+  const ver = 1;
+
+  const result1 = await OrderProductionQueue.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"factoryID":fromFactoryID}  ,
+    ]},
+    {$set: { 
+      "queueInfo": []
+    }}, 
+  );
+
+  console.log('OK update ver for orderProductionQueue = queueInfo --> []');
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>update ver for orderProductionQueue = queueInfo --> []</title><head>');
+  res.write('<body>');
+  res.write('<h1>update ver for orderProductionQueue = queueInfo --> []     </h1></br>');
+  res.write('<h1> [] </h1>');
+  res.write('<h1>'+ ' OK '+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
 }
 
 // // ## http://192.168.1.35:3968/api/user/test/test14
@@ -1814,6 +1937,10 @@ exports.getGeneralInfo = async (req, res, next) => {
     // ## get client control
     const controlApp = await ShareFunc.getControlAppClientControl();
 
+    // ## get ver control
+    const controlAppVer = await ShareFunc.getControlApp();
+    const ver = controlAppVer.ver;
+
     // ## get client control
     const outSourceLocationDepartment = (await ShareFunc.getControlAppOutSourceLocationDepartment()).outSourceLocationDepartment;
     // console.log(outSourceLocationDepartment);
@@ -1848,6 +1975,7 @@ exports.getGeneralInfo = async (req, res, next) => {
       langData: langData,
       userClass: userClass,
       controlApp: controlApp,
+      ver: ver,
       sysInfo: sysInfo,
       outSourceLocationDepartment: outSourceLocationDepartment
       // updateQrCodeRealOrderProduction: updateQrCodeRealOrderProduction

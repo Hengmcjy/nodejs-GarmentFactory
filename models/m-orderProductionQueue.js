@@ -6,6 +6,7 @@ const orderProductionQueueSchema = mongoose.Schema({
   companyID: { type: String, required: true },
   orderID: { type: String, required: true}, // ## from orderID
   productID : {type: String, required: true},  
+  ver : {type: Number},
   queueInfo: [{   // ## 
     productBarcode : {type: String},   // ## all product เสื้อทุกตัว barcode
     queueDate : {type: Date},  // ## วันที่ queue

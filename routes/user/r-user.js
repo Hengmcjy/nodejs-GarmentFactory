@@ -47,6 +47,10 @@ router.get("/test/test16", userController.getTestTest16);  // delete all orderPr
 router.get("/test/test14", userController.getTestTest14); // ## cancel orderProduction , queue (all) 100%
 
 router.get("/test/test15", userController.getTestTest15);  // ## view group qty orderProduction / productBarcode
+router.get("/test/test17", userController.getTestTest17);  // ##  update ver for orderProduction all
+router.get("/test/test18", userController.getTestTest18);  // ##  update ver for order all
+router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
+router.get("/test/test20", userController.getTestTest20);  // ##  update ver for orderProductionQueue = queueInfo --> []
 
 // ## test order queue
 router.get("/test/orderqueue/test1", userController.getOrderQueueTest1);
