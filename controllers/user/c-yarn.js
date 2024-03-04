@@ -1996,6 +1996,124 @@ exports.getYarnUsageCF = async (req, res, next) => {
   }
 }
 
+// router.put("/edot/usage/transfer/date", checkAuth, checkUUID, yarnController.putYarnUsageTransfersDate); 
+exports.putYarnUsageTransfersDate = async (req, res, next) => {
+  // console.log('putEditYarnLotIDDevide');
+  const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const companyID = data.companyID;
+  const yarnSeasonID = data.yarnSeasonID;// 2024SS
+  const season = yarnSeasonID.substr(0, 4);  // 2024 
+  const yarnID = data.yarnID;
+  const yarnColorID = data.yarnColorID;
+  const mode = data.mode; // ##  'yarn-packaging-list-stock-card'   'fac-lot'
+
+  const invoiceID = data.invoiceID;
+  const yuUUID = data.yuUUID;
+  const yarnLotID = data.yarnLotID;
+  // const yarnLotUUID = data.yarnLotUUID;
+  const usageMode = data.usageMode;  // ## t = transfer
+  // const type = data.type;  // ## ['receive']    
+  // const yarnColorID = data.yarnColorID;
+
+  const datetime = new Date(moment(data.datetime).tz('Asia/Bangkok').format('YYYY/MM/DD 08:00:ss+07:00'));
+
+
+  const setfactoryID = data.setfactoryID;  // ## sub factory 
+  const factoryID = data.factoryID;   // ## main factory 
+  const toFactoryID = data.toFactoryID; 
+  const customerID = data.customerID;
+  const yarnDataUUID = data.yarnDataUUID;
+  const status = data.status;
+
+  // console.log(type);
+  // console.log(companyID, yarnDataUUID, uuid, yarnSeasonID);
+  // console.log(yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, factoryIDBox);
+  // console.log(setfactoryID, factoryID, toFactoryID, customerID, yarnDataUUID, status);
+  // console.log( mode, yuUUID, yarnLotID, invoiceID, usageMode, datetime);
+
+  let session = await mongoose.startSession();
+  // let session2 = await mongoose.startSession();
+  // session.startTransaction();
+  // session2.startTransaction();
+  try {
+    await session.withTransaction(async (session) => {
+
+      const yarnLotUsageUpdate = await YarnLotUsage.updateOne(
+        {$and: [
+          {"companyID":companyID},
+          // {"factoryID":factoryID},
+          // {"customerID":customerID},
+          {"yarnID":yarnID},
+          {"yarnColorID":yarnColorID},
+          {"yarnSeasonID":yarnSeasonID},
+        ]},
+        {$set: {"yarnUsage.$[elem].datetimeIssue" : datetime}},
+        {
+          multi: true,
+          arrayFilters: [  
+            {
+              "elem.yuUUID": yuUUID ,
+              "elem.invoiceID": invoiceID , 
+              "elem.usageMode": usageMode , 
+              "elem.yarnLotID": yarnLotID , 
+              // "elem.yarnLotUUID": yarnLotUUID , 
+              // "elem.toFactoryID": toFactoryID , 
+            },
+            // {
+            //   "elem2.yarnLotUUID": yarnLotUUID,
+            //   "elem2.yarnLotID": yarnLotID,
+            // }
+          ]
+        }).session(session);
+
+        await session.commitTransaction();
+        session.endSession();
+    });
+
+    // const yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+
+    let yarnLotUsageList = [];
+    if (mode === 'yarn-packaging-list-stock-card') {
+      yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    } else if (mode === 'fac-lot') {
+      yarnLotUsageList = await ShareFunc.getYarnUsageCF(companyID, [setfactoryID], customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    }
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    // console.log('4');
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      success: true,
+      message: {},
+      yarnLotUsageList: yarnLotUsageList,
+      // yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
+      // yarnPlanDateGroup: yarnPlanDateGroup
+      
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    // await session2.abortTransaction(); 
+    session.endSession();
+    // session2.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'erry010', 
+        mode:'errYarnLotDevide', 
+        value: "error yarn lotID edit devide"
+      },
+    });
+  }  finally {
+    session.endSession();
+    // session2.endSession();
+  }
+}
+
 // // ## getYarnLotInfo
 // router.put("/yarnlotID/getinfo", checkAuth, checkUUID, yarnController.getYarnLotInfo);
 exports.getYarnLotInfo = async (req, res, next) => {

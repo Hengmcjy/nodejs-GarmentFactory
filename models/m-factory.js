@@ -7,6 +7,7 @@ const factorySchema = mongoose.Schema({
   companyID: {type: String},
   fInfo: {
     factoryName: {type: String, required: true},
+    factoryName2: {type: String},
     abbreviation: {type: String},
     pic: {type: String},
     tel: {type: String},

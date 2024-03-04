@@ -72,6 +72,9 @@ router.put("/usage/list", checkAuth, checkUUID, yarnController.getYarnUsage);
 // ## getYarnUsageCF
 router.put("/usage/list2", checkAuth, checkUUID, yarnController.getYarnUsageCF);
 
+// ## putYarnUsageTransfersDate
+router.put("/edit/usage/transfer/date", checkAuth, checkUUID, yarnController.putYarnUsageTransfersDate); 
+
 // ## getYarnLotInfo
 router.put("/yarnlotID/getinfo", checkAuth, checkUUID, yarnController.getYarnLotInfo);
 
