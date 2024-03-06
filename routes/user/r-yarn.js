@@ -40,6 +40,9 @@ router.put("/yarnplan/get/invoice/list2", checkAuth, checkUUID, yarnController.g
 // ## /api/yarn/yarnplan/createnew   postYarnPlanCreateNew
 router.post("/yarnplan/createnew", checkAuth, checkUUID, yarnController.postYarnPlanCreateNew);
 
+// ## /api/yarn/yarnplan/edit/maindata   putYarnPlan
+router.put("/yarnplan/edit/maindata", checkAuth, checkUUID, yarnController.putYarnPlan);
+
 // ## /api/yarn/yarnplan/yarnDataInfo    putYarnPlanDataInfo
 router.put("/yarnplan/yarnDataInfo", checkAuth, checkUUID, yarnController.putYarnPlanDataInfo);
 
