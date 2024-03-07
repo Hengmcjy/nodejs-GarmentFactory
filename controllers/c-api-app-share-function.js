@@ -1766,7 +1766,7 @@ exports.getOrderSeasonYears= async (companyID) => {
   // console.log(orderProductRep);
   const orderSeasonYearsF = await orderSeasonYears.map(fw => ({
     companyID: fw._id.companyID, 
-    seasonYear: +fw._id.seasonYear,
+    seasonYear: fw._id.seasonYear,
     // productID: fw._id.productID,
     sumSeasonYearQty: fw.sumSeasonYearQty,
   }));
