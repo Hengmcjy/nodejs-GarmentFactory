@@ -1352,7 +1352,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             nodeStationSetting = factory.nodeStationSetting;
             if (nodeStationSetting.scanNode && nodeStationSetting.scanNode.length > 0) {
               scanNode = nodeStationSetting.scanNode;
-              const scanNodeF = await scanNode.filter(i=>(i.nodeID == nodeID && i.active == true));
+              const scanNodeF = await scanNode.filter(i=>(i.nodeID == nodeID && i.stationID == stationID && i.active == true));
               if (scanNodeF.length > 0) {
                 isNodeIDScanListSetting = true;
                 const nodeIDSetting = scanNodeF[0].nodeIDSetting;
@@ -1465,7 +1465,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
 }
 
 // ## for special setting for temp time (computer not ready to use in every node department)
-exports.checkNodeStationSettingList= async (companyID, factoryID, flowSeq, productionNode, productBarcodeNo) => {
+exports.checkNodeStationSettingList= async (companyID, factoryID, stationID, flowSeq, productionNode, productBarcodeNo) => {
 
   let lastToNodeID = '';
 
@@ -1474,10 +1474,17 @@ exports.checkNodeStationSettingList= async (companyID, factoryID, flowSeq, produ
   if (orderProduction) {
     lastToNodeID = orderProduction.productionNode[0].toNode;
     if (lastToNodeID === productionNode.fromNode) { // ## this is special case or not
+      // console.log('// ## this is special case or not');
       return [];
     } else {
+      // console.log('+++++++');
       const factory = await ShareFunc.getFactory1Info(companyID, factoryID);
-      const scanNodeF = await factory.nodeStationSetting.scanNode.filter(i=>(i.nodeID == productionNode.fromNode && i.active == true));
+      const scanNodeF = 
+        await factory.nodeStationSetting.scanNode.filter(i=>(i.nodeID == productionNode.fromNode && i.stationID == stationID && i.active == true));
+      // console.log(scanNodeF);
+      if (scanNodeF.length === 0) {
+        return [];
+      }
       const nodeIDSetting = scanNodeF[0].nodeIDSetting;
 
       // console.log(flowSeq);
@@ -1511,11 +1518,12 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
   // try {} catch (err) {}
   const data = req.body;
   const userID = data.userID;
-  // console.log('putOrderProductionNextNodeID');
+  // console.log('putOrderProductionNextNodeID');  
   // console.log(data);
   const productBarcodeNos = data.productBarcodeNos;
   const companyID = data.companyID;
   const factoryID = data.factoryID;
+  const stationID = data.stationID;
   const orderID = data.orderID;
   const productID = data.productID;
   let productionNode = data.productionNode;
@@ -1527,6 +1535,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
 
     // console.log(productBarcodeNos);
     // console.log(productionNode);
+    // console.log(stationID);
     
     // ## get flowseq
     // getNodeFlow1= async (companyID, factoryID, nodeFlowID)
@@ -1539,8 +1548,8 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
 
     // ## check special case / for special setting for temp time (computer not ready to use in every node department)
     const productionNodeArr = 
-      await this.checkNodeStationSettingList(companyID, factoryID, flowSeq, productionNode, productBarcodeNos[0]);
-
+      await this.checkNodeStationSettingList(companyID, factoryID, stationID, flowSeq, productionNode, productBarcodeNos[0]);
+    // console.log('productionNodeArr = ',productionNodeArr);
     // ## special case 
     if (productionNodeArr.length > 0) {
 
@@ -2597,7 +2606,7 @@ exports.putScanNextDepCompleteOrderProductionBarcodeNo = async (req, res, next) 
   const userID = data.createBy.userID;
   const createBy = data.createBy
   const tempID = data.tempID;
-  // console.log('putScanOrderProductionBarcodeNo');
+  // console.log('putScanNextDepCompleteOrderProductionBarcodeNo');
   // console.log(data);
 
   // const productBarcodeNo = data.productBarcodeNo;

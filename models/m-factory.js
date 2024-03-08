@@ -30,7 +30,8 @@ const factorySchema = mongoose.Schema({
       nodeID : {type: String},
       lastNodeID : {type: String},
       active : {type: Boolean},
-      nodeIDSetting: [{type: String}]
+      nodeIDSetting: [{type: String}],
+      stationID : {type: String},
     }],
   },
 });
