@@ -2412,8 +2412,8 @@ exports.putEditYarnLotIDDevide = async (req, res, next) => {
       // console.log(yarnData);
       if (yarnData.length > 0) {
         await session.abortTransaction(); 
-        // await session2.abortTransaction(); 
         session.endSession();
+        // await session2.abortTransaction(); 
         // session2.endSession();
         return res.status(501).json({
           message: {

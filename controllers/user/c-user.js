@@ -490,6 +490,41 @@ exports.getTestTest20 = async (req, res, next) => {
 
 }
 
+// router.get("/test/orderProductionQueue/01", userController.getOrderProductionQueue01);  // ##  update orderProductionQueue insert queueInfo
+exports.getOrderProductionQueue01 = async (req, res, next) => {
+  const companyID = 'c000001';
+  const orderID = 'AAD05A4A';
+  // const ver = 1;
+  const queueInfo = [];
+
+  const result5 = await OrderProductionQueue.updateOne(
+    {$and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"ver":ver},
+    ]}, 
+    {
+      // "forLossQty": forLossQty,
+      $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
+    },
+    {upsert: true});
+
+
+
+  console.log('OK update insert for orderProductionQueue = insert queueInfo ');
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>OK update insert for orderProductionQueue = insert queueInfo </title><head>');
+  res.write('<body>');
+  res.write('<h1>OK update insert for orderProductionQueue = insert queueInfo    </h1></br>');
+  res.write('<h1> [] </h1>');
+  res.write('<h1>'+ ' OK '+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
+}
+
 // // ## http://192.168.1.35:3968/api/user/test/test14
 // ## ## cancel orderProduction , queue (all) 100%
 exports.getTestTest14 = async (req, res, next) => {

@@ -863,141 +863,143 @@ exports.deleteOrderProductionQueuesCancel = async (req, res, next) => {
   // console.log(data);
 
   let session = await mongoose.startSession();
-  session.startTransaction();
-  let session2 = await mongoose.startSession();
-  session2.startTransaction();
-  let session3 = await mongoose.startSession();
-  session3.startTransaction();
+  // session.startTransaction();
+  // let session2 = await mongoose.startSession();
+  // session2.startTransaction();
+  // let session3 = await mongoose.startSession();
+  // session3.startTransaction();
   try {
-    // ##  
-    // const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-    const companyID = data.companyID;
-    const orderID = data.orderID;
-    const productID = data.productID;
-    const productBarcode = data.productBarcode;
-    const isOutsource = data.isOutsource;
+    await session.withTransaction(async (session) => {
+      // ##  
+      // const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+      const companyID = data.companyID;
+      const orderID = data.orderID;
+      const productID = data.productID;
+      const productBarcode = data.productBarcode;
+      const isOutsource = data.isOutsource;
 
-    const bundleNoFrom = +data.bundleNoFrom;
-    const bundleNoTo = +data.bundleNoTo;
-    // const createBy = data.createBy;
-    const numberFrom = +data.numberFrom;
-    const numberTo = +data.numberTo;
+      const bundleNoFrom = +data.bundleNoFrom;
+      const bundleNoTo = +data.bundleNoTo;
+      // const createBy = data.createBy;
+      const numberFrom = +data.numberFrom;
+      const numberTo = +data.numberTo;
 
-    const page = +req.body.page;
-    const limit = +req.body.limit;
+      const page = +req.body.page;
+      const limit = +req.body.limit;
 
-    // ## gen productBarcodeNoArr
-    const productBarcodeNoArr = await ShareFunc.genProductBarcodeNoArr(productBarcode, +numberFrom, +numberTo);
+      // ## gen productBarcodeNoArr
+      const productBarcodeNoArr = await ShareFunc.genProductBarcodeNoArr(productBarcode, +numberFrom, +numberTo);
 
-    // ## check first ===>  must orderProduction have to not scaned by somw staff for update to next station
-    const checkArrLen = await OrderProduction.aggregate([
-      { $match: { $and: [
-        {"companyID":companyID}, 
-        {"orderID":orderID}, 
-        // {"productID":productID}, 
-        {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
-        { $expr:{$gte: [{$size: "$productionNode"}, 2]}}
-      ] } },
-      { $project: {			
-          _id: 1,	
-          productBarcodeNo: 1,
-          productBarcodeNoReal: 1,
-      }	}
-    ]);
-    // console.log(checkArrLen);
+      // ## check first ===>  must orderProduction have to not scaned by somw staff for update to next station
+      const checkArrLen = await OrderProduction.aggregate([
+        { $match: { $and: [
+          {"companyID":companyID}, 
+          {"orderID":orderID}, 
+          // {"productID":productID}, 
+          {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
+          { $expr:{$gte: [{$size: "$productionNode"}, 2]}}
+        ] } },
+        { $project: {			
+            _id: 1,	
+            productBarcodeNo: 1,
+            productBarcodeNoReal: 1,
+        }	}
+      ]);
+      // console.log(checkArrLen);
 
-    if (checkArrLen.length === 0) {
+      if (checkArrLen.length === 0) {
 
-      //  ## delete orderProductionQueueList
-      const result1 = await OrderProductionQueueList.deleteMany({$and: [
-        {"companyID":companyID}, 
-        {"orderID":orderID}, 
-        // {"productID":productID}, 
+        //  ## delete orderProductionQueueList
+        const result1 = await OrderProductionQueueList.deleteMany({$and: [
+          {"companyID":companyID}, 
+          {"orderID":orderID}, 
+          // {"productID":productID}, 
 
-        {"productBarcode":productBarcode}, 
-        {"isOutsource":isOutsource}, 
-        {"numberFrom":numberFrom}, 
-        {"numberTo":numberTo}, 
-        {"bundleNoFrom":bundleNoFrom}, 
-        {"bundleNoTo":bundleNoTo}, 
-      ]}).session(session); 
+          {"productBarcode":productBarcode}, 
+          {"isOutsource":isOutsource}, 
+          {"numberFrom":numberFrom}, 
+          {"numberTo":numberTo}, 
+          {"bundleNoFrom":bundleNoFrom}, 
+          {"bundleNoTo":bundleNoTo}, 
+        ]}).session(session); 
 
 
-      //  ## update orderProductionQueue / delete array 1 element 
-      const result2 = await OrderProductionQueue.updateOne(
-        {$and: [
-          {"companyID":companyID},
-          {"orderID":orderID},
-          // {"productID":productID},
-        ]}, 
-        {
-          $pull: { queueInfo: {                // ## delete n element for this condition
-            productBarcode: productBarcode, 
-            isOutsource: isOutsource,
+        //  ## update orderProductionQueue / delete array 1 element 
+        const result2 = await OrderProductionQueue.updateOne(
+          {$and: [
+            {"companyID":companyID},
+            {"orderID":orderID},
+            // {"productID":productID},
+          ]}, 
+          {
+            $pull: { queueInfo: {                // ## delete n element for this condition
+              productBarcode: productBarcode, 
+              isOutsource: isOutsource,
 
-            numberFrom: { $gte: numberFrom},   // ## numberFrom ===>  >= numberFrom  && <= numberTo
-            numberFrom: { $lte : numberTo},
+              numberFrom: { $gte: numberFrom},   // ## numberFrom ===>  >= numberFrom  && <= numberTo
+              numberFrom: { $lte : numberTo},
 
-            numberTo: { $gte: numberFrom},   // ## numberTo ===>  >= numberFrom  && <= numberTo
-            numberTo: { $lte : numberTo},
+              numberTo: { $gte: numberFrom},   // ## numberTo ===>  >= numberFrom  && <= numberTo
+              numberTo: { $lte : numberTo},
 
-            bundleNo: { $gte: bundleNoFrom},   // ## bundleNo ===>  >= bundleNoFrom  && <= bundleNoTo
-            bundleNo: { $lte : bundleNoTo},
-            
-          } }  
-        },
-        {upsert: true}).session(session2);
+              bundleNo: { $gte: bundleNoFrom},   // ## bundleNo ===>  >= bundleNoFrom  && <= bundleNoTo
+              bundleNo: { $lte : bundleNoTo},
+              
+            } }  
+          },
+          {upsert: true}).session(session);
 
-      // ## delete orderProduction
-      const result3 = await OrderProduction.deleteMany({$and: [
-        {"companyID":companyID}, 
-        {"orderID":orderID}, 
-        // {"productID":productID}, 
-        {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
-      ]}).session(session3);
+        // ## delete orderProduction
+        const result3 = await OrderProduction.deleteMany({$and: [
+          {"companyID":companyID}, 
+          {"orderID":orderID}, 
+          // {"productID":productID}, 
+          {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
+        ]}).session(session);
+        
+      // ## err / have some orderProduction scanned already 
+      } else {
+        return res.status(501).json({
+          message: {
+            messageID: 'errO018', 
+            mode:'errCancelOrderProduction', 
+            value: "cancel Order Production error"
+          }
+        });
+      }
+
+      await session.commitTransaction();
+      session.endSession();
+      // await session2.commitTransaction();
+      // session2.endSession();
+      // await session3.commitTransaction();
+      // session3.endSession();
+
+      // queueList: OrderProductionQueueList[]; queueListCount: number
+      const queueList = await ShareFunc.getOrderQueueSetList(companyID, orderID, page, limit);
+      const queueListCount = await ShareFunc.getOrderQueueSetListCount(companyID, orderID);
+
+      await ShareFunc.upsertUserSession1hr(userID);
+      const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
       
-    // ## err / have some orderProduction scanned already 
-    } else {
-      return res.status(501).json({
-        message: {
-          messageID: 'errO018', 
-          mode:'errCancelOrderProduction', 
-          value: "cancel Order Production error"
-        }
+      res.status(200).json({
+        token: token,
+        expiresIn: process.env.expiresIn,
+        userID: userID,
+        success: true,
+        queueList: queueList,
+        queueListCount: queueListCount
       });
-    }
 
-    await session.commitTransaction();
-    session.endSession();
-    await session2.commitTransaction();
-    session2.endSession();
-    await session3.commitTransaction();
-    session3.endSession();
-
-    // queueList: OrderProductionQueueList[]; queueListCount: number
-    const queueList = await ShareFunc.getOrderQueueSetList(companyID, orderID, page, limit);
-    const queueListCount = await ShareFunc.getOrderQueueSetListCount(companyID, orderID);
-
-    await ShareFunc.upsertUserSession1hr(userID);
-    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-    
-    res.status(200).json({
-      token: token,
-      expiresIn: process.env.expiresIn,
-      userID: userID,
-      success: true,
-      queueList: queueList,
-      queueListCount: queueListCount
     });
-
   } catch (err) {
     console.log(err);
     await session.abortTransaction(); 
     session.endSession();
-    await session2.abortTransaction(); 
-    session2.endSession();
-    await session3.abortTransaction(); 
-    session3.endSession();
+    // await session2.abortTransaction(); 
+    // session2.endSession();
+    // await session3.abortTransaction(); 
+    // session3.endSession();
     return res.status(501).json({
       message: {
         messageID: 'errO018', 
@@ -1007,8 +1009,8 @@ exports.deleteOrderProductionQueuesCancel = async (req, res, next) => {
     });
   }  finally {
     session.endSession();
-    session2.endSession();
-    session3.endSession();
+    // session2.endSession();
+    // session3.endSession();
   }
 }
 
@@ -1159,569 +1161,323 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
   // console.log('postOrderProductionQueuesCreateNew');
   // console.log(data);
 
+  // let session = await mongoose.startSession();
+  // session.startTransaction();
+  // let session2 = await mongoose.startSession();
+  // session2.startTransaction();
+  // let session3 = await mongoose.startSession();
+  // session3.startTransaction();
   let session = await mongoose.startSession();
-  session.startTransaction();
-  let session2 = await mongoose.startSession();
-  session2.startTransaction();
-  let session3 = await mongoose.startSession();
-  session3.startTransaction();
+
   try {
-    // ##  
-    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-    const companyID = data.companyID;
-    const factoryID = data.factoryID;
-    
-    const orderID = data.orderID;
-    const productID = data.productID;
-    const ver = +data.ver;
-    const productBarcode = data.productBarcode;
-    const targetPlace = data.targetPlace;
-    let queueInfo = data.queueInfo;  // array
-    const qty = data.qty;
-    const orderQty = data.orderQty; // full order zone qty
-    const forLoss = data.forLoss;
-    const productStatusArr = [''];
-
-    const startNo = +data.startNo;
-    const toNo = +data.toNo;
-    // console.log(startNo , toNo);
-    // console.log(productBarcode );
-    console.log(data.ver);
-
-    const bundleItems = +data.bundleItems;
-    const bundleNoFrom = +data.bundleNoFrom;
-    const bundleNoTo = +data.bundleNoTo;
-    const toNode1 = data.toNode1;
-    const toNode = data.toNode1;
-    const numberFrom1 = startNo;
-    const numberTo1 = toNo;
-    const yarnLot = data.yarnLots;
-    const isOutsource = data.isOutsource;
-    const txtOutsource = 'outsource';
-    let outsourceData = data.outsourceData;
-    outsourceData.datetime = current;
-
-    const createBy = data.createBy;
-
-    await ShareFunc.upsertUserSession1hr(userID);
-    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-
-    // console.log(queueInfo[0]);
-    // console.log(isOutsource, bundleNoFrom,bundleNoTo,toNode1,numberFrom1,numberTo1);
-    // console.log(qty);
-
-    // queueInfo.queueDate = current;
-    // console.log(targetPlace);
-    // console.log(queueInfo);
-
-    // ## check T.orderProductionQueue  for bundleNo exist 
-    let bundleNos = [];
-    for (let i = +bundleNoFrom; i <= +bundleNoTo; i++) {
-      bundleNos.push(i);
-    }
-    const bundleNoExisted = await ShareFunc.checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos, ver);
-    // console.log('bundleNoExisted = ', bundleNoExisted);
-    if (bundleNoExisted) {
-      await session.abortTransaction(); 
-          session.endSession();
-          await session2.abortTransaction(); 
-          session2.endSession();
-          await session3.abortTransaction(); 
-          session3.endSession();
-          return res.status(422).json({
-            message: {
-              messageID: 'errO007-2-1', 
-              mode:'errCreateOrderProductionsListQueueBybundleNoExisted', 
-              value: "create Order Productions list Queue error by bundleNo Existed"
-            },
-            token: token,
-            expiresIn: process.env.expiresIn,
-            userID: data.userID,
-            success: false
-          });
-    }
-
-    // console.log(yarnLot);
-    let yarnLot2 = [];
-    await this.asyncForEach(yarnLot, async (item1) => {
-      yarnLot2.push({yarnLotID: item1.yarnLotID});
-    });
-
-    let outsourceData1 = [];
-    if (outsourceData.factoryID !== '') {
-      outsourceData1 = [outsourceData];
-    }
-    // console.log(yarnLot2);
-
-    const createOrderQtyMaxPerRound = process.env.createOrderQtyMaxPerRound; // ## 1200 record
-
-    // ## create range of productBarcodeNo
-    // createRangeProductBarcodeNoArr= async (productBarcode, qty, startNo, toNo)
-    const productBarcodeNoRange = await this.createRangeProductBarcodeNoArr(
-      productBarcode, 
-      +qty, 
-      +startNo, 
-      +toNo, 
-      +createOrderQtyMaxPerRound,
-      +bundleItems,
-      bundleNoFrom,
-      bundleNoTo
-    );
-    // console.log(productBarcodeNoRange);
-
-
-    // await session.abortTransaction(); 
-    // session.endSession();
-    // await session2.abortTransaction(); 
-    // session2.endSession();
-    // await session3.abortTransaction(); 
-    // session3.endSession();
-    // // console.log('productBarcodeNoRange');
-    // return res.status(422).json({
-    //   message: {
-    //     messageID: 'errO007-2', 
-    //     mode:'errCreateOrderProductionsListQueueByBarcodeNoExisted', 
-    //     value: "create Order Productions list Queue error by barcodeNo Existed",
-    //     productBarcodeNoRange: productBarcodeNoRange
-    //   },
-    //   token: token,
-    //   expiresIn: process.env.expiresIn,
-    //   userID: data.userID,
-    //   success: false
-    // });
-
-
-
-    // ## find forLossQty
-    let forLossQty = 0;
-    if (+toNo > orderQty) {  // not over qty
-      forLossQty = +toNo - +orderQty;
-    }
-
-    let maxRecordRound = 0;  // ## for * createOrderQtyMaxPerRound (createOrderQtyMaxPerRound * maxRecordRound)
-    await this.asyncForEach(productBarcodeNoRange, async (item1) => {
-
-      // ## gen productBarcodeNoArr
-      const productBarcodeNoArr = await this.createProductBarcodeNoArr(item1);
-      // console.log(productBarcodeNoArr);
-
-      // ## gen uuid for by bundle count
-      let productBarcodeNoUUID = [];
-      for(let k = +item1.bundleNoFrom; k <= +item1.bundleNoTo;k++) {
-        const uuid = uuidv4();
-        productBarcodeNoUUID.push(uuid);
-      }
-
-      // console.log('0000');
-      let bundleNoArr = [];
-      for (i = +bundleNoFrom; i <= +bundleNoTo; i++) {
-        bundleNoArr.push(i);
-      }
-      // console.log(bundleNoArr);
-      // console.log('1111');
-
-      // ## check running number exist /  check existed for productBarcodeNo
-      const existed = await ShareFunc.checkExistOrderProductionByBarcodeNo(
-                            companyID, factoryID, orderID, productID, productBarcodeNoArr);
-      // console.log(existed);
-      if (!existed) {
-          // ## add new record to orderProduction n record
-          let productionNode1;
-          if (isOutsource) {  // ## case id outsource
-            productionNode1 = {
-                factoryID: outsourceData1[0].factoryID,
-                fromNode: txtOutsource,
-                toNode: txtOutsource,
-                datetime: current,
-                status: txtOutsource,
-                isOutsource: isOutsource,
-                outsourceData: outsourceData1,
-                productProblemID: '',
-                createBy: createBy
-              };
-          } else {
-            productionNode1 = {
-                factoryID: factoryID,
-                fromNode: 'starterNode',
-                toNode: toNode,
-                datetime: current,
-                status: 'normal',
-                isOutsource: isOutsource,
-                productProblemID: '',
-                createBy: createBy
-              };
-          }
-          let orderProductionArr = [];
-          let j = 0;
-          let x = 1; // ## qty running
-          await this.asyncForEach2(productBarcodeNoArr , async (productBarcodeNo) => {
-            const runningNO = +productBarcodeNo.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
-            const forLossX = runningNO > orderQty;
-
-            // ## find bundle no
-            const bundleNoCount = Math.floor((x + (createOrderQtyMaxPerRound * maxRecordRound)) / +bundleItems)
-            const bundleNofraction = ((x + (createOrderQtyMaxPerRound * maxRecordRound)) % +bundleItems) > 0 ? 1 : 0;
-            const bundleNoF = +bundleNoCount + +bundleNofraction;
-
-            // console.log('bundleNoF ' , bundleNoF);
-
-            orderProductionArr.push({
-              companyID: companyID,
-              factoryID: factoryID,
-              orderID: orderID,
-              open: true,
-              bundleNo: +bundleNoArr[bundleNoF - 1],
-              bundleID: productBarcodeNoUUID[bundleNoF - 1],
-              ver: +ver,
-              productID: productID,
-              productBarcodeNo: productBarcodeNo,
-              productBarcodeNoReal: productBarcodeNo,
-              productBarcodeNoReserve: [],
-              targetPlace: targetPlace,
-              productCount: +bundleItems,
-              productionDate: current,
-              productStatus: 'normal',
-              forLoss: forLossX,
-              isOutsourceTracking: false,
-              yarnLot: yarnLot2,
-              outsourceData: outsourceData1,
-              productionNode: [productionNode1]
-            });
-            lastQty = +runningNO;
-            // j++;
-            x++;
-          });
-          // console.log(orderProductionArr);
-          // console.log('orderProductionArr size = ', Buffer.byteLength(orderProductionArr));
-          const result3 = await OrderProduction.insertMany(orderProductionArr, { session: session3 });
-          // console.log('1111');
-
-          // ## gen queueInfo
-          const queueInfo = await this.createQueueInfo(item1, productBarcodeNoUUID, current, 
-                        factoryID, isOutsource, forLoss, forLossQty,
-                        toNode, yarnLot, createBy);
-          // console.log('222222');
-          // ## edit queueInfo to OrderProductionQueue.queueInfo
-          const result5 = await OrderProductionQueue.updateOne(
-            {$and: [
-              {"companyID":companyID},
-              {"orderID":orderID},
-              {"ver":ver},
-            ]}, 
-            {
-              // "forLossQty": forLossQty,
-              $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
-            },
-            {upsert: true}).session(session2);
-          // console.log('3333333');
-
-      } else {  // ## err --> had Order Production  BarcodeNo , existed
-          await session.abortTransaction(); 
-          session.endSession();
-          await session2.abortTransaction(); 
-          session2.endSession();
-          await session3.abortTransaction(); 
-          session3.endSession();
-          return res.status(422).json({
-            message: {
-              messageID: 'errO007-2', 
-              mode:'errCreateOrderProductionsListQueueByBarcodeNoExisted', 
-              value: "create Order Productions list Queue error by barcodeNo Existed"
-            },
-            token: token,
-            expiresIn: process.env.expiresIn,
-            userID: data.userID,
-            success: false
-          });
-      }
-
-      maxRecordRound++;
-
-    });
-
-    // console.log('yyyy');
-
-    // ## insert one orderProductionQueueList
-    const orderProductionQueueList1 = [{
-      companyID: companyID,
-      orderID: orderID,
-      productID: productID,
-      factoryID: factoryID,
-      productBarcode: productBarcode,
-      isOutsource: isOutsource,
-      queueDate: current,
-      forLoss: forLoss,
-      forLossQty: forLossQty,
-      toNode: isOutsource ? txtOutsource: toNode1,
-      numberFrom: numberFrom1,
-      numberTo: numberTo1,
-      bundleNoFrom: bundleNoFrom,
-      bundleNoTo: bundleNoTo,
-      yarnLot: yarnLot2,
-      outsourceData: outsourceData1,
-      createBy: createBy
-    }];
-    // console.log(companyID, current, userID, logID, note);
-    const insertone = await OrderProductionQueueList.insertMany(orderProductionQueueList1, { session: session });
-
-    // console.log('zzzzz');
-
-    // ## edit order if qty > orderQty ----> forLoss case
-    if (forLossQty > 0) {
-      const resultX = await ShareFunc.editOrderForLossToStyleZone
-                            (companyID, factoryID, orderID, productBarcode, targetPlace,  forLossQty);
-      // companyID factoryID orderID productBarcode targetPlace  forLossQty
-    }
-
-    await session.commitTransaction();
-    session.endSession();
-    await session2.commitTransaction();
-    session2.endSession();
-    await session3.commitTransaction();
-    session3.endSession();
-
+    await session.withTransaction(async (session) => {
+      // ##  
+      const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+      const companyID = data.companyID;
+      const factoryID = data.factoryID;
       
+      const orderID = data.orderID;
+      const productID = data.productID;
+      const ver = +data.ver;
+      const productBarcode = data.productBarcode;
+      const targetPlace = data.targetPlace;
+      let queueInfo = data.queueInfo;  // array
+      const qty = data.qty;
+      const orderQty = data.orderQty; // full order zone qty
+      const forLoss = data.forLoss;
+      const productStatusArr = [''];
 
+      const startNo = +data.startNo;
+      const toNo = +data.toNo;
+      // console.log(startNo , toNo);
+      // console.log(productBarcode );
+      // console.log(data.ver);
 
-    // const bundleNoFrom = data.bundleNoFrom;
-    // const bundleNoTo = data.bundleNoTo;
+      const bundleItems = +data.bundleItems;
+      const bundleNoFrom = +data.bundleNoFrom;
+      const bundleNoTo = +data.bundleNoTo;
+      const toNode1 = data.toNode1;
+      const toNode = data.toNode1;
+      const numberFrom1 = startNo;
+      const numberTo1 = toNo;
+      const yarnLot = data.yarnLots;
+      const isOutsource = data.isOutsource;
+      const txtOutsource = 'outsource';
+      let outsourceData = data.outsourceData;
+      outsourceData.datetime = current;
 
-    // let maxNo = +queueInfo[0].numberFrom - 1;
-    // let numberTo = 0;
-    // // let maxNo = 0;
-    // await this.asyncForEach(queueInfo, async (item1) => {
-    //   const uuid = uuidv4();
-    //   // if (maxNo === 0) {
-    //   //   // ## find max running number  getMaxProductIDRunningNo = async (companyID, productStatusArr)
-    //   //   maxNo = await ShareFunc.getMaxProductIDRunningNo(companyID, item1.productBarcode);
-    //   // }
-    //   // console.log(maxNo);
-    //   item1.queueDate = current;
-    //   item1.bundleID = uuid;
-    //   toNode = isOutsource ? txtOutsource : item1.toNode;
-    //   item1.toNode = isOutsource ? txtOutsource : item1.toNode;
-    //   createBy = item1.createBy;
-    //   factoryID = item1.factoryID;
-    //   productBarcode = item1.productBarcode;
-    //   productCount = item1.productCount;
-    //   // const numberFrom = item1.numberFrom;
-    //   // const numberTo = item1.numberTo;
-    //   const numberFrom = +maxNo + 1;
-    //   numberTo = +maxNo + +productCount;
-    //   item1.numberFrom = numberFrom;
-    //   item1.numberTo = numberTo;
-    //   let forLossQty = 0;
-    //   for(let i = numberTo; i >= numberFrom;i--) {
-    //     // console.log(i);
-    //     if (i > orderQty) { forLossQty++; }
-    //     const num5 = await ShareFunc.setStrLen(5, i);
-    //     productBarcodeNo.push(productBarcode+num5);
-    //     productBarcodeNoUUID.push(uuid);
-    //     maxNo++;
-    //   }
-    //   item1.yarnLot = yarnLot2;
-    //   item1.forLossQty = forLossQty;
-    //   item1.isOutsource = isOutsource;
-    //   forLossQty = 0;
-    // });
-    // // console.log(productBarcodeNo);
-    // // console.log(queueInfo);
-    // // console.log('productBarcodeNo size = ', Buffer.byteLength(productBarcodeNo));
-    
-    // // ## find forLossQty
-    // // ## get last running number order production  by barcodeNo
-    // // console.log(numberTo);
-    // const productBarcodeX = queueInfo[0].productBarcode; 
-    // const runningLastNo = await ShareFunc.getLastRunningNoOrderProduction(companyID, orderID, productID, productBarcodeX);
-    // let forLossQty = 0;
-    // if (numberTo > orderQty) {  // not over qty
-    //   if (+runningLastNo <= orderQty) {
-    //     forLossQty = numberTo - orderQty;
-    //   } else { // +runningLastNo > orderQtyo
-    //     forLossQty = numberTo - +runningLastNo;
-    //   }
-    // }
+      const createBy = data.createBy;
 
-    // await ShareFunc.upsertUserSession1hr(userID);
-    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-    // // console.log(data);
+      await ShareFunc.upsertUserSession1hr(userID);
+      const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
 
-    // // ## check running number exist
-    // const existed = await ShareFunc.checkExistOrderProductionByBarcodeNo(
-    //                         companyID, factoryID, orderID, productID, productBarcodeNo);
-    // // console.log(existed);
-    // // console.log('existed' , existed);
-    // if (!existed) {
-    //   // ## insert one orderProductionQueueList
-    //   const orderProductionQueueList1 = [{
-    //     companyID: companyID,
-    //     orderID: orderID,
-    //     productID: productID,
-    //     factoryID: factoryID,
-    //     productBarcode: productBarcode,
-    //     isOutsource: isOutsource,
-    //     queueDate: current,
-    //     forLoss: forLoss,
-    //     forLossQty: forLossQty,
-    //     toNode: isOutsource ? txtOutsource: toNode1,
-    //     numberFrom: numberFrom1,
-    //     numberTo: numberTo1,
-    //     bundleNoFrom: bundleNoFrom,
-    //     bundleNoTo: bundleNoTo,
-    //     yarnLot: yarnLot2,
-    //     createBy: createBy
-    //   }];
-    //   // console.log(companyID, current, userID, logID, note);
-    //   const insertone = await OrderProductionQueueList.insertMany(orderProductionQueueList1, { session: session });
+      // console.log(queueInfo[0]);
+      // console.log(isOutsource, bundleNoFrom,bundleNoTo,toNode1,numberFrom1,numberTo1);
+      // console.log(qty);
 
-    //   // // #####################################################
-    //   // // #######  test  trsnsaction ##############################################
+      // queueInfo.queueDate = current;
+      // console.log(targetPlace);
+      // console.log(queueInfo);
 
-    //   // // ## insert one orderProductionQueueList
-    //   // const orderProductionQueueList2 = [{
-    //   //   companyID: companyID+'test',
-    //   //   orderID: orderID+'test',
-    //   //   productID: productID+'test',
-    //   //   factoryID: factoryID+'test',
-    //   //   productBarcode: productBarcode+'test',
-    //   //   isOutsource: isOutsource,
-    //   //   queueDate: current,
-    //   //   forLoss: forLoss,
-    //   //   forLossQty: forLossQty,
-    //   //   toNode: isOutsource ? txtOutsource: toNode1,
-    //   //   numberFrom: numberFrom1,
-    //   //   numberTo: numberTo1,
-    //   //   bundleNoFrom: bundleNoFrom,
-    //   //   bundleNoTo: bundleNoTo,
-    //   //   yarnLot: yarnLot2,
-    //   //   createBy: createBy
-    //   // }];
-    //   // // console.log(companyID, current, userID, logID, note);
-    //   // const insertone2 = await OrderProductionQueueList.insertMany(orderProductionQueueList2, { session: session });
+      // ## check T.orderProductionQueue  for bundleNo exist 
+      let bundleNos = [];
+      for (let i = +bundleNoFrom; i <= +bundleNoTo; i++) {
+        bundleNos.push(i);
+      }
+      const bundleNoExisted = await ShareFunc.checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos, ver);
+      // console.log('bundleNoExisted = ', bundleNoExisted);
+      if (bundleNoExisted) {
+        await session.abortTransaction(); 
+        session.endSession();
+        // await session2.abortTransaction(); 
+        // session2.endSession();
+        // await session3.abortTransaction(); 
+        // session3.endSession();
+        return res.status(422).json({
+          message: {
+            messageID: 'errO007-2-1', 
+            mode:'errCreateOrderProductionsListQueueBybundleNoExisted', 
+            value: "create Order Productions list Queue error by bundleNo Existed"
+          },
+          token: token,
+          expiresIn: process.env.expiresIn,
+          userID: data.userID,
+          success: false
+        });
+      }
 
-    //   // // #######  test trsnsaction ##############################################
-    //   // // #####################################################
+      // console.log(yarnLot);
+      let yarnLot2 = [];
+      await this.asyncForEach(yarnLot, async (item1) => {
+        yarnLot2.push({yarnLotID: item1.yarnLotID});
+      });
 
-    //   // console.log(queueInfo);
-    //   // ##  add array new queue 
-    //   const result1 = await OrderProductionQueue.updateOne(
-    //     {$and: [
-    //       {"companyID":companyID},
-    //       {"orderID":orderID},
-    //       {"productID":productID},
-    //     ]}, 
-    //     {
-    //       // "forLossQty": forLossQty,
-    //       $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
-    //     },
-    //     {upsert: true}).session(session2);
-  
-    //   // ## add new record to orderProduction n record
-    //   // const toNode = queueInfo.toNode;
-    //   // const createBy = queueInfo.createBy;
-    //   let productionNode1;
-    //   if (isOutsource) {  // ## case id outsource
-    //     productionNode1 = {
-    //         fromNode: txtOutsource,
-    //         toNode: txtOutsource,
-    //         datetime: current,
-    //         status: txtOutsource,
-    //         isOutsource: isOutsource,
-    //         productProblemID: '',
-    //         createBy: createBy
-    //       };
-    //   } else {
-    //     productionNode1 = {
-    //         fromNode: 'starterNode',
-    //         toNode: toNode,
-    //         datetime: current,
-    //         status: 'normal',
-    //         isOutsource: isOutsource,
-    //         productProblemID: '',
-    //         createBy: createBy
-    //       };
-    //   }
-    //   let orderProductionArr = [];
-    //   let j = 0;
-    //   await this.asyncForEach(productBarcodeNo , async (productBarcodeNo) => {
-    //     const runningNO = +productBarcodeNo.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
-    //     const forLossX = runningNO > orderQty;
-    //     orderProductionArr.push({
-    //       companyID: companyID,
-    //       factoryID: factoryID,
-    //       orderID: orderID,
-    //       bundleNo: await this.getbundleNoByRunningNo(queueInfo, productBarcodeNo),
-    //       bundleID: productBarcodeNoUUID[j],
-    //       productID: productID,
-    //       productBarcodeNo: productBarcodeNo,
-    //       productBarcodeNoReal: productBarcodeNo,
-    //       productBarcodeNoReserve: [],
-    //       targetPlace: targetPlace,
-    //       productCount: productCount,
-    //       productionDate: current,
-    //       productStatus: 'normal',
-    //       forLoss: forLossX,
-    //       yarnLot: yarnLot2,
-    //       productionNode: [productionNode1]
-    //     });
-    //     j++;
-    //   });
-    //   // console.log(orderProductionArr);
-    //   // console.log('orderProductionArr size = ', Buffer.byteLength(orderProductionArr));
-    //   const result3 = await OrderProduction.insertMany(orderProductionArr, { session: session3 });
+      let outsourceData1 = [];
+      if (outsourceData.factoryID !== '') {
+        outsourceData1 = [outsourceData];
+      }
+      // console.log(yarnLot2);
 
-    //   await session.commitTransaction();
-    //   session.endSession();
-    //   await session2.commitTransaction();
-    //   session2.endSession();
-    //   await session3.commitTransaction();
-    //   session3.endSession();
+      const createOrderQtyMaxPerRound = process.env.createOrderQtyMaxPerRound; // ## 1200 record
 
-    //   // ## edit order if qty > orderQty ----> forLoss case
-    //   if (forLossQty > 0) {
-    //     const resultX = await ShareFunc.editOrderForLossToStyleZone
-    //                           (companyID, factoryID, orderID, productBarcode, targetPlace,  forLossQty);
-    //     // companyID factoryID orderID productBarcode targetPlace  forLossQty
-    //   }
+      // ## create range of productBarcodeNo
+      // createRangeProductBarcodeNoArr= async (productBarcode, qty, startNo, toNo)
+      const productBarcodeNoRange = await this.createRangeProductBarcodeNoArr(
+        productBarcode, 
+        +qty, 
+        +startNo, 
+        +toNo, 
+        +createOrderQtyMaxPerRound,
+        +bundleItems,
+        bundleNoFrom,
+        bundleNoTo
+      );
+      // console.log(productBarcodeNoRange);
 
-    // } else {  // ## err --> had Order Production  BarcodeNo , existed
-    //   await session.abortTransaction(); 
-    //   session.endSession();
-    //   await session2.abortTransaction(); 
-    //   session2.endSession();
-    //   await session3.abortTransaction(); 
-    //   session3.endSession();
-    //   return res.status(422).json({
-    //     message: {
-    //       messageID: 'errO007-2', 
-    //       mode:'errCreateOrderProductionsListQueueByBarcodeNoExisted', 
-    //       value: "create Order Productions list Queue error by barcodeNo Existed"
-    //     },
-    //     token: token,
-    //     expiresIn: process.env.expiresIn,
-    //     userID: data.userID,
-    //     success: false
-    //   });
-    // }
+      // ## find forLossQty
+      let forLossQty = 0;
+      if (+toNo > orderQty) {  // not over qty
+        forLossQty = +toNo - +orderQty;
+      }
 
-    // await ShareFunc.upsertUserSession1hr(userID);
-    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-    
-    res.status(200).json({
-      token: token,
-      expiresIn: process.env.expiresIn,
-      userID: userID,
-      success: true
+      let maxRecordRound = 0;  // ## for * createOrderQtyMaxPerRound (createOrderQtyMaxPerRound * maxRecordRound)
+      await this.asyncForEach(productBarcodeNoRange, async (item1) => {
+
+        // ## gen productBarcodeNoArr
+        const productBarcodeNoArr = await this.createProductBarcodeNoArr(item1);
+        // console.log(productBarcodeNoArr);
+
+        // ## gen uuid for by bundle count
+        let productBarcodeNoUUID = [];
+        for(let k = +item1.bundleNoFrom; k <= +item1.bundleNoTo;k++) {
+          const uuid = uuidv4();
+          productBarcodeNoUUID.push(uuid);
+        }
+
+        // console.log('0000');
+        let bundleNoArr = [];
+        for (i = +bundleNoFrom; i <= +bundleNoTo; i++) {
+          bundleNoArr.push(i);
+        }
+        // console.log(bundleNoArr);
+        // console.log('1111');
+
+        // ## check running number exist /  check existed for productBarcodeNo
+        const existed = await ShareFunc.checkExistOrderProductionByBarcodeNo(
+                              companyID, factoryID, orderID, productID, productBarcodeNoArr);
+        // console.log(existed);
+        if (!existed) {
+            // ## add new record to orderProduction n record
+            let productionNode1;
+            if (isOutsource) {  // ## case id outsource
+              productionNode1 = {
+                  factoryID: outsourceData1[0].factoryID,
+                  fromNode: txtOutsource,
+                  toNode: txtOutsource,
+                  datetime: current,
+                  status: txtOutsource,
+                  isOutsource: isOutsource,
+                  outsourceData: outsourceData1,
+                  productProblemID: '',
+                  createBy: createBy
+                };
+            } else {
+              productionNode1 = {
+                  factoryID: factoryID,
+                  fromNode: 'starterNode',
+                  toNode: toNode,
+                  datetime: current,
+                  status: 'normal',
+                  isOutsource: isOutsource,
+                  productProblemID: '',
+                  createBy: createBy
+                };
+            }
+            let orderProductionArr = [];
+            let j = 0;
+            let x = 1; // ## qty running
+            await this.asyncForEach2(productBarcodeNoArr , async (productBarcodeNo) => {
+              const runningNO = +productBarcodeNo.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+              const forLossX = runningNO > orderQty;
+
+              // ## find bundle no
+              const bundleNoCount = Math.floor((x + (createOrderQtyMaxPerRound * maxRecordRound)) / +bundleItems)
+              const bundleNofraction = ((x + (createOrderQtyMaxPerRound * maxRecordRound)) % +bundleItems) > 0 ? 1 : 0;
+              const bundleNoF = +bundleNoCount + +bundleNofraction;
+
+              // console.log('bundleNoF ' , bundleNoF);
+
+              orderProductionArr.push({
+                companyID: companyID,
+                factoryID: factoryID,
+                orderID: orderID,
+                open: true,
+                bundleNo: +bundleNoArr[bundleNoF - 1],
+                bundleID: productBarcodeNoUUID[bundleNoF - 1],
+                ver: +ver,
+                productID: productID,
+                productBarcodeNo: productBarcodeNo,
+                productBarcodeNoReal: productBarcodeNo,
+                productBarcodeNoReserve: [],
+                targetPlace: targetPlace,
+                productCount: +bundleItems,
+                productionDate: current,
+                productStatus: 'normal',
+                forLoss: forLossX,
+                isOutsourceTracking: false,
+                yarnLot: yarnLot2,
+                outsourceData: outsourceData1,
+                productionNode: [productionNode1]
+              });
+              lastQty = +runningNO;
+              // j++;
+              x++;
+            });
+            // console.log(orderProductionArr);
+            // console.log('orderProductionArr size = ', Buffer.byteLength(orderProductionArr));
+            const result3 = await OrderProduction.insertMany(orderProductionArr, { session: session });
+            // console.log('1111');
+
+            // ## gen queueInfo
+            const queueInfo = await this.createQueueInfo(item1, productBarcodeNoUUID, current, 
+                          factoryID, isOutsource, forLoss, forLossQty,
+                          toNode, yarnLot, createBy);
+            // console.log('222222');
+            // ## edit queueInfo to OrderProductionQueue.queueInfo
+            const result5 = await OrderProductionQueue.updateOne(
+              {$and: [
+                {"companyID":companyID},
+                {"orderID":orderID},
+                {"ver":ver},
+              ]}, 
+              {
+                // "forLossQty": forLossQty,
+                $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
+              },
+              {upsert: true}).session(session);
+            // console.log('3333333');
+
+        } else {  // ## err --> had Order Production  BarcodeNo , existed
+            await session.abortTransaction(); 
+            session.endSession();
+            // await session2.abortTransaction(); 
+            // session2.endSession();
+            // await session3.abortTransaction(); 
+            // session3.endSession();
+            return res.status(422).json({
+              message: {
+                messageID: 'errO007-2', 
+                mode:'errCreateOrderProductionsListQueueByBarcodeNoExisted', 
+                value: "create Order Productions list Queue error by barcodeNo Existed"
+              },
+              token: token,
+              expiresIn: process.env.expiresIn,
+              userID: data.userID,
+              success: false
+            });
+        }
+
+        maxRecordRound++;
+
+      });
+
+      // console.log('yyyy');
+
+      // ## insert one orderProductionQueueList
+      const orderProductionQueueList1 = [{
+        companyID: companyID,
+        orderID: orderID,
+        productID: productID,
+        factoryID: factoryID,
+        productBarcode: productBarcode,
+        isOutsource: isOutsource,
+        queueDate: current,
+        forLoss: forLoss,
+        forLossQty: forLossQty,
+        toNode: isOutsource ? txtOutsource: toNode1,
+        numberFrom: numberFrom1,
+        numberTo: numberTo1,
+        bundleNoFrom: bundleNoFrom,
+        bundleNoTo: bundleNoTo,
+        yarnLot: yarnLot2,
+        outsourceData: outsourceData1,
+        createBy: createBy
+      }];
+      // console.log(companyID, current, userID, logID, note);
+      const insertone = await OrderProductionQueueList.insertMany(orderProductionQueueList1, { session: session });
+
+      // console.log('zzzzz');
+
+      // ## edit order if qty > orderQty ----> forLoss case
+      if (forLossQty > 0) {
+        const resultX = await ShareFunc.editOrderForLossToStyleZone
+                              (companyID, factoryID, orderID, productBarcode, targetPlace,  forLossQty);
+        // companyID factoryID orderID productBarcode targetPlace  forLossQty
+      }
+
+      await session.commitTransaction();
+      session.endSession();
+      // await session2.commitTransaction();
+      // session2.endSession();
+      // await session3.commitTransaction();
+      // session3.endSession();
+      
+      res.status(200).json({
+        token: token,
+        expiresIn: process.env.expiresIn,
+        userID: userID,
+        success: true
+      });
+
     });
-
   } catch (err) {
     console.log(err);
     await session.abortTransaction(); 
     session.endSession();
-    await session2.abortTransaction(); 
-    session2.endSession();
-    await session3.abortTransaction(); 
-    session3.endSession();
+    // await session2.abortTransaction(); 
+    // session2.endSession();
+    // await session3.abortTransaction(); 
+    // session3.endSession();
     return res.status(501).json({
       message: {
         messageID: 'errO005-1', 
@@ -1731,8 +1487,8 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
     });
   }  finally {
     session.endSession();
-    session2.endSession();
-    session3.endSession();
+    // session2.endSession();
+    // session3.endSession();
   }
 }
 

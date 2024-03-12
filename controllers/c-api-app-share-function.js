@@ -2487,6 +2487,36 @@ exports.getProductionQueueListByBundleNo= async (companyID, orderID, startNo, en
   return orderProductionQueue;
 }
 
+exports.getProductionQueueListByBundleNoXXX= async (companyID, orderID, startNo, endNo) => {
+  const orderProductionQueue = await OrderProductionQueueList.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      {"bundleNoFrom": { $gte: startNo}} ,  // bundleNo
+      {"bundleNoTo": { $lte : endNo}} ,
+    ] } },
+    // { $unwind: "$queueInfo" },
+    { $project: { 
+      companyID: 1,
+      orderID: 1,
+      productBarcode: 1,
+      // queueDate: "$queueInfo.queueDate",
+      // bundleNo: 1,
+      // productCount: 1,
+      yarnLot: 1,
+      numberFrom: 1,
+      numberTo: 1,
+      bundleNoFrom: 1,
+      bundleNoTo: 1,
+      // createBy: "$queueInfo.createBy",
+      forLossQty: 1,
+    } },
+  ]);
+
+  // console.log(orderProductionQueue);
+  return orderProductionQueue;
+}
+
 exports.getTotalProductionQueued= async (companyID, orderID, productID) => {
   // limit = +limit; // ## change to number
   productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
