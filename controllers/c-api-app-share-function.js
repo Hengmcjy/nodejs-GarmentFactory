@@ -2859,6 +2859,39 @@ exports.getCSZCSOrderProductionBundleNos= async (companyID, orderIDs, isOutsourc
   return orderProduction1F;
 }
 
+exports.getOrderProductbundleID= async (companyID, orderID, ver, productBarcodeNoReal) => {
+  const orderProduction1 = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      {"productBarcodeNoReal":productBarcodeNoReal},
+      {"ver":ver},
+      // {"orderID":{$in: orderIDs}},
+      // {"bundleNo":{$in: bundleNos}},
+      // {"productionNode":  {$elemMatch: {"fromNode":{$in: nodeIDs}}}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // productID: 1,
+        productBarcodeNoReal: 1,
+        bundleID: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        // bundleNo: 1,  // ## system running no
+        // productCount: 1,
+        // isOutsourceTracking: 1,
+        // productionNode: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+  ])
+  .hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
+  return orderProduction1.length>0?orderProduction1[0].bundleID:'';
+}
+
 // getCSZCSOrderProductOutsourceTrackingFlowseqs
 exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderIDs, isOutsourceTracking, bundleNos, nodeIDs) => {
   const orderProduction1 = await OrderProduction.aggregate([
@@ -8511,6 +8544,141 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
   return productionPeriodM;
 }
 
+exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd) => {
+  // console.log('getProductionZonePeriodDate12C');
+  // console.log(companyID, productStatusArr, productionNodeStatusArr);
+  // console.log(dateStart, dateEnd);
+  const productionPeriod = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
+
+      // {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
+
+      {"productionNode":  {$elemMatch: {
+        "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: productionNodeStatusArr},
+      }}},
+
+      // {"subNodeFlow":  {$elemMatch: {
+      //   "factoryID": {$in: factoryIDArr}, 
+      //   "nodeID": {$in: nodeIDs}, 
+      //   // "qrCode": {$in: qrCodeArr}, 
+      //   "datetime": { $gte: dateStart, $lte : dateEnd}, 
+      //   // "datetime": { $lte : dateEnd} 
+      // }}},
+
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // forLoss: 1,
+        // bundleNo: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // targetPlace: 1,
+        targetPlaceID: "$targetPlace.targetPlaceID",
+        targetPlaceName: "$targetPlace.targetPlaceName",
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+        productionNode: 1,
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // forLoss: 1,
+      // bundleNo: 1,
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // productBarcodeNoReal: 1,
+      // targetPlace: 1,
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      fromNode: "$productionNode.fromNode",
+      // toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+
+    { $match: { $and: [
+      {"datetime": { $gte: dateStart, $lte : dateEnd}},
+      {"status":{$in: productionNodeStatusArr}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // forLoss: 1,
+      // bundleNo: 1,
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // productBarcodeNoReal: 1,
+      // targetPlace: 1,
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: 1,
+      color: 1,
+      size: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      fromNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        // forLoss: '$forLoss',
+        targetPlaceID: '$targetPlaceID',
+        targetPlaceName: '$targetPlaceName',
+        style: '$style',
+        color: '$color',
+        size: '$size',
+        fromNode: '$fromNode',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ])
+  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+
+  // console.log(productionPeriod);
+  const productionPeriodM = await productionPeriod.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID,
+    // forLoss: fw._id.forLoss,
+    targetPlaceID: fw._id.targetPlaceID,
+    targetPlaceName: fw._id.targetPlaceName,
+    style: fw._id.style,
+    color: fw._id.color,
+    size: fw._id.size,
+    fromNode: fw._id.fromNode,
+    sumProductQty: fw.sumProductQty,
+  }));
+  // console.log(productionPeriodM);
+  return productionPeriodM;
+}
+
 // await ShareFunc.getRepCFNCurrentProductQtyByOrderID(companyID, factoryID, nodeID, productStatusArr);
 exports.getRepCFNCurrentProductQtyByOrderID = async (companyID, factoryID, nodeID, productStatusArr) => {
   // console.log('getRepCFNCurrentProductQtyByOrderID');
@@ -12511,6 +12679,7 @@ exports.getCFSubNodeStaffScanDate12Overall= async (companyID, factoryIDArr, orde
 // ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
 exports.getCurrentCompanyOrderSpec= async (companyID, orderStatusArr, orderIDArr) => {
   // console.log(+process.env.stylePos, +process.env.styleDigit);
+  // console.log('getCurrentCompanyOrderSpec',companyID, orderStatusArr, orderIDArr);
   // ## get group style color size
   const orderStyleColorSizef = await Order.aggregate([
     { $match: { $and: [

@@ -490,18 +490,75 @@ exports.getTestTest20 = async (req, res, next) => {
 
 }
 
+// ## http://192.168.1.35:3968/api/user/test/orderProductionQueue/01
 // router.get("/test/orderProductionQueue/01", userController.getOrderProductionQueue01);  // ##  update orderProductionQueue insert queueInfo
 exports.getOrderProductionQueue01 = async (req, res, next) => {
   const companyID = 'c000001';
-  const orderID = 'AAD05A4A';
-  // const ver = 1;
-  const queueInfo = [];
+  const orderID = 'BA1P5A4A';
+  const ver = 2;
+  // const productID = 'AAD05A4A    ';
+
+  const factory = 'f000001';
+  const productBarcode = 'BA1P5A4A    UK-------24OM--------L---';
+  const bundleNoFrom = 16867;
+  const bundleNoTo = 16867;  // 
+  const startNo = 507;
+  const endNo = 514;
+  const productCount = 8;
+  const yarnLot = [{yarnLotID: '2315-574-1'}];
+  const queueDate = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const isOutsource = false;
+  const forLoss = false;
+  const forLossQty = 0;
+  const toNode = '1.COMPUTER-KNITTING';
+
+
+  let queueInfo = [];
+
+  let round = 1;
+  // let startNo0 = startNo;
+  let startNo1 = startNo; // ## number start each bundle
+  let endNo1 = 0;
+  // ## ceate numberFrom , numberTo
+  for (let i = bundleNoFrom; i <= bundleNoTo; i++) {
+    endNo1 = startNo + (round * productCount) - 1;
+    let queueInfo1 = {
+      productBarcode: productBarcode,
+      factory: factory,
+      queueDate: queueDate,
+      isOutsource: isOutsource,
+      forLoss: forLoss,
+      forLossQty: forLossQty,
+      toNode: toNode,
+      productCount: productCount,
+      bundleNo: i,
+      bundleID: 'x',
+      yarnLot: yarnLot,
+      numberFrom: startNo1,
+      numberTo: endNo1,
+    };
+    queueInfo.push(queueInfo1);
+
+    startNo1 = endNo1 + 1;
+    round++;
+  }
+ 
+  // getOrderProductbundleID= async (companyID, orderID, ver, productBarcodeNoReal)
+  // ## find bundleID
+  await this.asyncForEach(queueInfo, async (item1) => {
+    const num5 = await ShareFunc.setStrLen(5, item1.numberFrom);
+    const productBarcodeNoReal = productBarcode+num5;
+    const bundleID = await ShareFunc.getOrderProductbundleID(companyID, orderID, ver, productBarcodeNoReal);
+    item1.bundleID = bundleID;
+  });
+
+  
 
   const result5 = await OrderProductionQueue.updateOne(
     {$and: [
       {"companyID":companyID},
       {"orderID":orderID},
-      // {"ver":ver},
+      {"ver":ver},
     ]}, 
     {
       // "forLossQty": forLossQty,
@@ -511,6 +568,7 @@ exports.getOrderProductionQueue01 = async (req, res, next) => {
 
 
 
+  // console.log(queueInfo);
   console.log('OK update insert for orderProductionQueue = insert queueInfo ');
   res.setHeader('Content-Type', 'text/html');
   res.write('<html>');
@@ -518,7 +576,9 @@ exports.getOrderProductionQueue01 = async (req, res, next) => {
   res.write('<body>');
   res.write('<h1>OK update insert for orderProductionQueue = insert queueInfo    </h1></br>');
   res.write('<h1> [] </h1>');
-  res.write('<h1>'+ ' OK '+'</h1>');
+  res.write('<h1>'+ ' OK '+'</h1></br>');
+  // res.write(queueInfo);
+  // res.write('<h1>'+queueInfo+'</h1>');
   res.write('</body>');
   res.write('</html>');
   return res.end();
@@ -1160,8 +1220,8 @@ exports.gettestexplain5 = async (req, res, next) => {
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const date1 = new Date(moment().tz('Asia/Bangkok').format('2024/01/01 HH:mm:ss+07:00'));
   const date2 = new Date(moment().tz('Asia/Bangkok').format('2024/01/14 HH:mm:ss+07:00'));
-  const dateStart = new Date(moment(date1).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
-  const dateEnd = new Date(moment(date2).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+  const dateStart = new Date(moment(date1).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+  const dateEnd = new Date(moment(date2).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
   // console.log(dateStart, dateEnd);
 
   const explain = await OrderProduction.aggregate([
@@ -1356,8 +1416,8 @@ exports.gettestexplain6 = async (req, res, next) => {
   const productStatusArr = ['normal', 'problem', 'repaired'];  
 
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-  const dateStart = new Date(moment(current).tz('Asia/Bangkok').format('2023/MM/DD 00:00:ss+07:00'));
-  const dateEnd = new Date(moment(current).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+  const dateStart = new Date(moment(current).tz('Asia/Bangkok').format('2023/MM/DD 00:00:00+07:00'));
+  const dateEnd = new Date(moment(current).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
   // console.log(dateStart, dateEnd);
 
   const explain = await OrderProduction.aggregate([
@@ -1438,8 +1498,8 @@ exports.gettestexplain7 = async (req, res, next) => {
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const date1 = new Date(moment().tz('Asia/Bangkok').format('2024/01/01 HH:mm:ss+07:00'));
   const date2 = new Date(moment().tz('Asia/Bangkok').format('2024/01/14 HH:mm:ss+07:00'));
-  const dateStart = new Date(moment(date1).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
-  const dateEnd = new Date(moment(date2).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+  const dateStart = new Date(moment(date1).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+  const dateEnd = new Date(moment(date2).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
   // console.log(dateStart, dateEnd);
 
   const explain = await OrderProduction.aggregate([

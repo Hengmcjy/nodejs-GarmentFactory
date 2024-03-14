@@ -238,6 +238,64 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
   }
 }
 
+// // ## put/get  getRepCurrentProductionZonePeriodDate12
+// router.put("/noder/rep12/date12/productions/zoneperiod/c", reportController.getRepCurrentProductionZonePeriodDate12);
+exports.getRepCurrentProductionZonePeriodDate12 = async (req, res, next) => {
+  // console.log('getRepCurrentProductionZonePeriodDate12');
+  // const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const userID = data.userID;
+  const companyID = data.companyID;
+  const productStatusArr = JSON.parse(data.productStatusArr);
+  const productionNodeStatusArr = ['normal', 'complete'];
+  const orderStatusArr = JSON.parse(data.orderStatusArr);
+  const orderIDArr = JSON.parse(data.orderIDArr);
+  const date12Arr = data.date12;
+  const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+  const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
+
+  // console.log(companyID, userID, productStatusArr, productionNodeStatusArr);
+  // console.log(date12Arr, dateStart, dateEnd, orderStatusArr);
+  // console.log(orderIDArr);
+  try {
+    // // ## get Rep Company Current Production work in period
+    const currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodDate12C(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd);
+    // console.log(currentProductionZonePeriod);
+
+    const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
+    // console.log(orderStyleColorSize);
+
+    // const openArr = [true];
+    // const forLossArr = [true];
+    // // getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr)
+    // currentProductionZoneForLoss = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr);
+    // // console.log(currentProductionZoneForLoss);
+    
+    // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
+    // currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
+    // countCurrentProductAllDetailCFN = await ShareFunc.getCountCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      userID: userID,
+      token: '',
+      expiresIn: process.env.expiresIn,
+      currentProductionZonePeriod: currentProductionZonePeriod,
+      orderStyleColorSize: orderStyleColorSize,
+      // currentProductionZoneForLoss: currentProductionZoneForLoss,
+      // currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
+    });
+  } catch (err) {
+    
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp009', 
+        mode:'errRepCurrentCompanyProductionZonePeroidAll', 
+        value: "error report current company production zone period all"
+      }
+    });
+  }
+}
+
 // // ## get node getRepCurrentProductQtyCFN
 // router.get("/noder/rep1/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName", nsController.getRepCurrentProductQtyCFN);
 exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
@@ -1060,8 +1118,8 @@ exports.getRepNodeStaffScannedByDate12 = async (req, res, next) => {
 
     // ## report staff scanned by date1 - date2
     // console.log(date12Arr[0], date12Arr[1]);
-    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
-    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
     // console.log(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
     
     // console.log('1111');
@@ -1135,8 +1193,8 @@ exports.getRepNodeStaffScannedByStyleZoneDate12 = async (req, res, next) => {
   try {
 
     // ## report staff scanned by date1 - date2
-    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
-    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
     // console.log(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
 
     
@@ -1206,8 +1264,8 @@ exports.getRepSubNodeScanDate12StaffOverall = async (req, res, next) => {
 
     // ## report staff scanned by date1 - date2
     // console.log(date12Arr);
-    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
-    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
     // console.log(dateStart, dateEnd);
 
     // ## get orderIDs
@@ -1298,8 +1356,8 @@ exports.getRepSubNodeScanDate12Overall = async (req, res, next) => {
 
     // ## report staff scanned by date1 - date2
     // console.log(date12Arr);
-    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
-    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
     // console.log(dateStart, dateEnd);
 
     // ## get orderIDs
@@ -1387,8 +1445,8 @@ exports.getRepSubNodeStaffScanDate12Overall = async (req, res, next) => {
 
     // ## report staff scanned by date1 - date2
     // console.log(date12Arr);
-    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:ss+07:00'));
-    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:ss+07:00'));
+    const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+    const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
     // console.log(dateStart, dateEnd);
 
     // ## get orderIDs

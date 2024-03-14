@@ -182,7 +182,8 @@ exports.getYarnInfo1 = async (req, res, next) => {
   const customerID = req.params.customerID;
   const setName = req.params.setName;
   const yarnSeason = req.params.yarnSeason;  // 2024SS
-  const season = yarnSeason.substr(0, 4);  // 2024
+  // const season = yarnSeason.substr(0, 4);  // 2024
+  const season = yarnSeason;  // 2024
   // const page = +req.params.page;
   // const limit = +req.params.limit;
   // console.log('getYarnInfo1');
@@ -318,7 +319,8 @@ exports.getYarnPlansInvoiceList2 = async (req, res, next) => {
   // const uuid = data.uuid;
   // const yarnID = data.yarnID;
   const yarnSeasonID = data.yarnSeasonID;
-  const yarnSeason = yarnSeasonID.substr(0, 4);  // 2024
+  // const yarnSeason = yarnSeasonID.substr(0, 4);  // 2024
+  // const yarnSeason = yarnSeasonID;
   const status = ['open'];
   const invoiceID = data.invoiceID;
   const type = JSON.parse(data.typeArr);

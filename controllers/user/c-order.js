@@ -204,7 +204,8 @@ exports.getOrders = async (req, res, next) => {
     orderSeasonYears.sort((a,b)=>{return a.seasonYear <b.seasonYear?1:a.seasonYear >b.seasonYear?-1:0});  // ## desc
     // orderSeasonYears.sort((a,b)=>{return a.seasonYear >b.seasonYear?1:a.seasonYear <b.seasonYear?-1:0});  // ## asc
     // console.log(orderSeasonYears);
-    
+    // console.log(orderSeasonYears);
+
     if (seasonYear === 'last') {
       seasonYear = orderSeasonYears.length>0? orderSeasonYears[0].seasonYear:seasonYear;
     }
@@ -1383,6 +1384,27 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
                           factoryID, isOutsource, forLoss, forLossQty,
                           toNode, yarnLot, createBy);
             // console.log('222222');
+
+            // ## err for create queueInfo array
+            if (queueInfo.length === 0) {
+              await session.abortTransaction(); 
+              session.endSession();
+              // await session2.abortTransaction(); 
+              // session2.endSession();
+              // await session3.abortTransaction(); 
+              // session3.endSession();
+              return res.status(422).json({
+                message: {
+                  messageID: 'errO007-2-1', 
+                  mode:'errCreateOrderProductionsListQueueBybundleNoExisted', 
+                  value: "create Order Productions list Queue error by bundleNo Existed"
+                },
+                token: token,
+                expiresIn: process.env.expiresIn,
+                userID: data.userID,
+                success: false
+              });
+            }
             // ## edit queueInfo to OrderProductionQueue.queueInfo
             const result5 = await OrderProductionQueue.updateOne(
               {$and: [
