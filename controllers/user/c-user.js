@@ -10,6 +10,7 @@ const ShareFunc = require("../c-api-app-share-function");
 
 const User = require("../../models/m-user");
 const UserClass = require("../../models/m-userClass");
+const UserGroupScan = require("../../models/m-userGroupScan");
 const Company = require("../../models/m-company");
 const Factory = require("../../models/m-factory");
 const NodeStation = require("../../models/m-nodeStation");
@@ -1657,7 +1658,7 @@ exports.gettestexplain7 = async (req, res, next) => {
   return res.send(explain);
 }
 
-// // ## http://192.168.1.84:3968/api/user/test/test
+// // ## http://192.168.1.36:3968/api/user/test/test
 // router.get("/test/test", userController.getTestTest);
 exports.getTestTest = async (req, res, next) => {
   // console.log('getTestTest');
@@ -2110,11 +2111,48 @@ exports.getLangData = async (req, res, next) => {
 }
 
 
+
+
 // ## general
 // #######################################################################################################
 
 // #######################################################################################################
 // ## user
+
+// router.get("/get/company/data/info", userController.getCompanyInfo);
+exports.getCompanyInfo = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  const companyID = data.companyID;
+  const groupScanID = data.groupScanID; // ## *=select all
+  try {
+    let userGroupScan = [];
+    if (groupScanID === '*') { // ## select all
+      userGroupScan = await ShareFunc.getUserGroupScanAll(companyID);
+    } else {
+      userGroupScan = await ShareFunc.getUserGroupScan1(companyID);
+    }
+    // const langData = await ShareFunc.getLangData(languageID);
+
+    res.status(200).json({
+      token: '',
+      expiresIn: 3600,
+      userID: '',
+      userGroupScan: userGroupScan
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'erru000-1', 
+        mode:'generalInfolang', 
+        value: "error general info language"
+      }
+    });
+  }
+}
+
+
 
 // ## auth
 //  test getuserLogin

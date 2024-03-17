@@ -70,6 +70,9 @@ router.get("/generalinfo/:languageID/:classLimit", userController.getGeneralInfo
 // ## get language  / starting data
 router.get("/generalinfo1/langdata/:languageID", userController.getLangData);
 
+// ## company general info / starting data  getCompanyInfo
+router.put("/get/company/data/info", userController.getCompanyInfo);
+
 // // ## starting data
 // router.get("/startinginfo", userController.getStartingInfo);
 

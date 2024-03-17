@@ -254,12 +254,21 @@ exports.getRepCurrentProductionZonePeriodDate12 = async (req, res, next) => {
   const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
   const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
 
+  const userGroupScan1 = data.userGroupScan1;
+  const userIDGroup = userGroupScan1.userIDGroup;
+
   // console.log(companyID, userID, productStatusArr, productionNodeStatusArr);
   // console.log(date12Arr, dateStart, dateEnd, orderStatusArr);
   // console.log(orderIDArr);
+  // console.log(userGroupScan1);
   try {
     // // ## get Rep Company Current Production work in period
-    const currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodDate12C(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd);
+    let currentProductionZonePeriod = [];
+    if (userGroupScan1.groupScanID === '*' && userGroupScan1.userIDGroup.length === 0) {
+      currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodDate12C(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd);
+    } else if (userGroupScan1.userIDGroup.length > 0) {
+      currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodUserScanDate12C(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd, userIDGroup);
+    }
     // console.log(currentProductionZonePeriod);
 
     const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);

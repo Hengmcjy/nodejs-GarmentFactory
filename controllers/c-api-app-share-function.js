@@ -18,6 +18,7 @@ const Session3mn = require('../models/m-session3mn');
 const Session6mn = require('../models/m-session6mn');
 
 const User = require("../models/m-user");
+const UserGroupScan = require("../models/m-userGroupScan");
 const UserClass = require("../models/m-userClass");
 const MailSignup = require("../models/m-mailSignup");
 const Company = require("../models/m-company");
@@ -432,6 +433,49 @@ exports.getStaffsByQRCodes= async (qrCodes, type) => {
 //     lottoMainTypeID: 1,
 //     amount: 1} },
 // ]);
+
+// ShareFunc.getUserGroupScanAll(companyID);
+exports.getUserGroupScanAll= async (companyID, groupScanID) => {
+  const userGroupScan = await UserGroupScan.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"groupScanID":groupScanID},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        factoryID: 1,		
+        detail: 1,
+        open: 1,
+        seq: 1,
+        groupScanID: 1,	
+        userIDGroup: 1,
+    }	}
+  ]);
+  return userGroupScan;
+}
+
+exports.getUserGroupScan1= async (companyID, groupScanID) => {
+  const userGroupScan = await UserGroupScan.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"groupScanID":groupScanID},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        factoryID: 1,		
+        detail: 1,
+        open: 1,
+        seq: 1,
+        groupScanID: 1,	
+        userIDGroup: 1,
+    }	}
+  ]);
+  return userGroupScan;
+}
 
 exports.getCompanys= async (userID, page, limit) => {
   const userf = await User.findOne({ userID: userID });
@@ -8545,9 +8589,6 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
 }
 
 exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd) => {
-  // console.log('getProductionZonePeriodDate12C');
-  // console.log(companyID, productStatusArr, productionNodeStatusArr);
-  // console.log(dateStart, dateEnd);
   const productionPeriod = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -8555,20 +8596,10 @@ exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, pro
       {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: productStatusArr}},
 
-      // {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
-
       {"productionNode":  {$elemMatch: {
         "datetime": { $gte: dateStart, $lte : dateEnd}, 
         "status": {$in: productionNodeStatusArr},
       }}},
-
-      // {"subNodeFlow":  {$elemMatch: {
-      //   "factoryID": {$in: factoryIDArr}, 
-      //   "nodeID": {$in: nodeIDs}, 
-      //   // "qrCode": {$in: qrCodeArr}, 
-      //   "datetime": { $gte: dateStart, $lte : dateEnd}, 
-      //   // "datetime": { $lte : dateEnd} 
-      // }}},
 
     ] } },
     { $project: {			
@@ -8576,18 +8607,10 @@ exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, pro
         companyID: 1,
         // factoryID: 1,		
         orderID: 1,	
-        // forLoss: 1,
-        // bundleNo: 1,
-        // productID: 1,
-        // productBarcodeNo: 1,
         productBarcodeNoReal: 1,
         // targetPlace: 1,
         targetPlaceID: "$targetPlace.targetPlaceID",
         targetPlaceName: "$targetPlace.targetPlaceName",
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
         productionNode: 1,
     }	},
 
@@ -8597,20 +8620,13 @@ exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, pro
       companyID: 1,
       // factoryID: 1,		
       orderID: 1,	
-      // forLoss: 1,
-      // bundleNo: 1,
-      // productID: 1,
-      // productBarcodeNo: 1,
-      // productBarcodeNoReal: 1,
-      // targetPlace: 1,
+
       targetPlaceID: 1,
       targetPlaceName: 1,
       style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
       color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
       size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
+
       fromNode: "$productionNode.fromNode",
       // toNode: "$productionNode.toNode",
       status: "$productionNode.status",
@@ -8627,12 +8643,7 @@ exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, pro
       companyID: 1,
       // factoryID: 1,		
       orderID: 1,	
-      // forLoss: 1,
-      // bundleNo: 1,
-      // productID: 1,
-      // productBarcodeNo: 1,
-      // productBarcodeNoReal: 1,
-      // targetPlace: 1,
+
       targetPlaceID: 1,
       targetPlaceName: 1,
       style: 1,
@@ -8661,6 +8672,116 @@ exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, pro
     }}  
   ])
   .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+
+  // console.log(productionPeriod);
+  const productionPeriodM = await productionPeriod.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID,
+    // forLoss: fw._id.forLoss,
+    targetPlaceID: fw._id.targetPlaceID,
+    targetPlaceName: fw._id.targetPlaceName,
+    style: fw._id.style,
+    color: fw._id.color,
+    size: fw._id.size,
+    fromNode: fw._id.fromNode,
+    sumProductQty: fw.sumProductQty,
+  }));
+  // console.log(productionPeriodM);
+  return productionPeriodM;
+}
+
+exports.getProductionZonePeriodUserScanDate12C = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd, userIDGroup) => {
+  // console.log(userIDGroup);
+  const productionPeriod = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
+
+      {"productionNode":  {$elemMatch: {
+        "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: productionNodeStatusArr},
+        "createBy.userID": {$in: userIDGroup},
+      }}},
+
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        productBarcodeNoReal: 1,
+        // targetPlace: 1,
+        targetPlaceID: "$targetPlace.targetPlaceID",
+        targetPlaceName: "$targetPlace.targetPlaceName",
+        productionNode: 1,
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+      fromNode: "$productionNode.fromNode",
+      // toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      datetime: "$productionNode.datetime",
+      createBy: "$productionNode.createBy",
+      userID: "$productionNode.createBy.userID",
+    }},
+
+    { $match: { $and: [
+      {"datetime": { $gte: dateStart, $lte : dateEnd}},
+      {"status":{$in: productionNodeStatusArr}},
+      {"createBy.userID":{$in: userIDGroup}},
+      // {"userID":{$in: userIDGroup}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: 1,
+      color: 1,
+      size: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      fromNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+      // userID: 1
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        // forLoss: '$forLoss',
+        targetPlaceID: '$targetPlaceID',
+        targetPlaceName: '$targetPlaceName',
+        style: '$style',
+        color: '$color',
+        size: '$size',
+        fromNode: '$fromNode',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ])
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1 } );
+  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1, "productionNode.createBy.userID": 1 } );
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
