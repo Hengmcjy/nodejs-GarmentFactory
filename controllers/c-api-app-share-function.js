@@ -450,6 +450,7 @@ exports.getUserGroupScanAll= async (companyID, groupScanID) => {
         open: 1,
         seq: 1,
         groupScanID: 1,	
+        groupScanID2: 1,	
         userIDGroup: 1,
     }	}
   ]);
@@ -471,6 +472,7 @@ exports.getUserGroupScan1= async (companyID, groupScanID) => {
         open: 1,
         seq: 1,
         groupScanID: 1,	
+        groupScanID2: 1,	
         userIDGroup: 1,
     }	}
   ]);
@@ -606,6 +608,7 @@ exports.getFactoryInfo= async (factoryIDArr, companyID, page, limit) => {
         _id: 1,	
         factoryID: 1,
         companyID: 1,		
+        show: 1,
         fDescription: 1,	
         fInfo: 1,
     }	},
@@ -628,6 +631,7 @@ exports.getFactoryArrByCompanyID= async (companyID) => {
         _id: 1,	
         factoryID: 1,
         companyID: 1,		
+        show: 1,
         fDescription: 1,	
         fInfo: 1,
     }	},
@@ -1311,6 +1315,7 @@ exports.getFactory1Info= async (companyID, factoryID) => {
         _id: 1,	
         companyID: 1,		
         factoryID: 1,	
+        show: 1,
         fDescription: 1,	
         fInfo: 1,
         nodeStationSetting: 1,
@@ -8796,6 +8801,127 @@ exports.getProductionZonePeriodUserScanDate12C = async (companyID, productStatus
     fromNode: fw._id.fromNode,
     sumProductQty: fw.sumProductQty,
   }));
+  // console.log(productionPeriodM);
+  return productionPeriodM;
+}
+
+exports.getProductionBundleStateUserScanDate12C = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd, userIDGroup) => {
+  // console.log(userIDGroup);
+  const productionPeriod = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
+
+      {"productionNode":  {$elemMatch: {
+        "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: productionNodeStatusArr},
+        "createBy.userID": {$in: userIDGroup},
+      }}},
+
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        productCount: 1,
+        productBarcodeNoReal: 1,
+        // targetPlace: 1,
+        targetPlaceID: "$targetPlace.targetPlaceID",
+        targetPlaceName: "$targetPlace.targetPlaceName",
+        productionNode: 1,
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      bundleNo: 1,
+      productCount: 1,
+      orderID: 1,	
+
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+      fromNode: "$productionNode.fromNode",
+      // toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      datetime: "$productionNode.datetime",
+      createBy: "$productionNode.createBy",
+      userID: "$productionNode.createBy.userID",
+    }},
+
+    { $match: { $and: [
+      {"datetime": { $gte: dateStart, $lte : dateEnd}},
+      {"status":{$in: productionNodeStatusArr}},
+      {"createBy.userID":{$in: userIDGroup}},
+      // {"userID":{$in: userIDGroup}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,	
+      bundleNo: 1,
+      productCount: 1,
+      orderID: 1,	
+
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: 1,
+      color: 1,
+      size: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      fromNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+      userID: 1
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        bundleNo: '$bundleNo',
+        orderID: '$orderID',
+        productCount: '$productCount',
+        targetPlaceID: '$targetPlaceID',
+        targetPlaceName: '$targetPlaceName',
+        style: '$style',
+        color: '$color',
+        size: '$size',
+        fromNode: '$fromNode',
+        userID: '$userID',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ])
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1 } );
+  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1, "productionNode.createBy.userID": 1 } );
+
+  // console.log(productionPeriod);
+  const productionPeriodM = await productionPeriod.map(fw => ({
+    companyID: fw._id.companyID, 
+    bundleNo: fw._id.bundleNo,
+    orderID: fw._id.orderID,
+    productCount: fw._id.productCount,
+    targetPlaceID: fw._id.targetPlaceID,
+    targetPlaceName: fw._id.targetPlaceName,
+    style: fw._id.style,
+    color: fw._id.color,
+    size: fw._id.size,
+    fromNode: fw._id.fromNode,
+    userID: fw._id.userID,
+    sumProductQty: fw.sumProductQty,
+  }));
+  // console.log(orderIDArr);
   // console.log(productionPeriodM);
   return productionPeriodM;
 }

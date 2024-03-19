@@ -961,6 +961,7 @@ exports.gettestexplain1 = async (req, res, next) => {
         _id: 1,	
         companyID: 1,		
         factoryID: 1,	
+        show: 1,
         fDescription: 1,	
         fInfo: 1,
         nodeStationSetting: 1,

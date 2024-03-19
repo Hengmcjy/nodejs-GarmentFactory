@@ -305,6 +305,73 @@ exports.getRepCurrentProductionZonePeriodDate12 = async (req, res, next) => {
   }
 }
 
+// router.put("/noder/rep14/date12/productions/bundle/state/c", reportController.getRepCurrentProductionBundleStateDate12);
+exports.getRepCurrentProductionBundleStateDate12 = async (req, res, next) => {
+  // console.log('getRepCurrentProductionBundleStateDate12');
+  // const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const userID = data.userID;
+  const companyID = data.companyID;
+  const productStatusArr = JSON.parse(data.productStatusArr);
+  const productionNodeStatusArr = ['normal', 'complete'];
+  const orderStatusArr = JSON.parse(data.orderStatusArr);
+  const orderIDArr = data.orderIDArr;
+  const date12Arr = data.date12;
+  const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+  const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
+
+  const userGroupScan1 = data.userGroupScan1;
+  const userIDGroup = userGroupScan1.userIDGroup;
+
+  // console.log(companyID, userID, productStatusArr, productionNodeStatusArr);
+  // console.log(date12Arr, dateStart, dateEnd, orderStatusArr);
+  // console.log(orderIDArr);
+  // console.log(userGroupScan1);
+  try {
+    // // ## get Rep Company Current Production work in period
+    let currentProductionBundleState = [];
+    if (userGroupScan1.groupScanID === '*' && userGroupScan1.userIDGroup.length === 0) {
+      currentProductionBundleState = [];
+      // currentProductionBundleState = await ShareFunc.getProductionZonePeriodDate12C(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd);
+    } else if (userGroupScan1.userIDGroup.length > 0) {
+      currentProductionBundleState = await ShareFunc.getProductionBundleStateUserScanDate12C(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd, userIDGroup);
+    }
+    // console.log(currentProductionBundleState);
+
+    // const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
+    // console.log(orderStyleColorSize);
+
+    // const openArr = [true];
+    // const forLossArr = [true];
+    // // getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr)
+    // currentProductionZoneForLoss = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr);
+    // // console.log(currentProductionZoneForLoss);
+    
+    // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
+    // currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
+    // countCurrentProductAllDetailCFN = await ShareFunc.getCountCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      userID: userID,
+      token: '',
+      expiresIn: process.env.expiresIn,
+      currentProductionBundleState: currentProductionBundleState,
+      // orderStyleColorSize: orderStyleColorSize,
+      // currentProductionZoneForLoss: currentProductionZoneForLoss,
+      // currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
+    });
+  } catch (err) {
+    
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp009', 
+        mode:'errRepCurrentCompanyProductionZonePeroidAll', 
+        value: "error report current company production zone period all"
+      }
+    });
+  }
+}
+
 // // ## get node getRepCurrentProductQtyCFN
 // router.get("/noder/rep1/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName", nsController.getRepCurrentProductQtyCFN);
 exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
