@@ -19,8 +19,8 @@ const Order = require("../../models/m-order");
 const OrderProduction = require("../../models/m-orderProduction");
 const OrderProductionQueue = require("../../models/m-orderProductionQueue");
 const OrderProductionQueueList = require("../../models/m-orderProductionQueueList");
-// const BundleSetGroup = require("../../models/m-bundleSetGroup");
-const Bundlesetgroup = require("../../models/m-bundlesetgroup");
+const BundleSetGroup = require("../../models/m-bundleSetGroup");
+// const Bundlesetgroup = require("../../models/m-bundlesetgroup");
 
 moment.tz.setDefault('Asia/Bangkok');
 
