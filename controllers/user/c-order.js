@@ -19,6 +19,8 @@ const Order = require("../../models/m-order");
 const OrderProduction = require("../../models/m-orderProduction");
 const OrderProductionQueue = require("../../models/m-orderProductionQueue");
 const OrderProductionQueueList = require("../../models/m-orderProductionQueueList");
+// const BundleSetGroup = require("../../models/m-bundleSetGroup");
+const Bundlesetgroup = require("../../models/m-bundlesetgroup");
 
 moment.tz.setDefault('Asia/Bangkok');
 
@@ -817,25 +819,6 @@ exports.postOrderProductionQueueCreateNew = async (req, res, next) => {
       });
     }
 
-    // companyID: { type: String, required: true },
-    // factoryID: { type: String, required: true },  // ## โรงงานไหน
-    // orderID: { type: String, required: true}, // ## from orderID
-    // productID : {type: String, required: true},  
-    // queueInfo: [{   // ## 
-    //   productBarcode : {type: String},   // ##
-    //   queueDate : {type: Date},  // ## วันที่ queue
-    //   toNode : {type: String},
-    //   productCount : {type: Number},
-    //   numberFrom : {type: Number},
-    //   numberTo : {type: Number},
-    //   createBy: {
-    //     userID: {type: String},
-    //     userName: {type: String},
-    //   }
-    // }]
-
-
-    
     res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
@@ -2283,7 +2266,7 @@ exports.getOrderOursourceTracking = async (req, res, next) => {
 
 // router.put("/orderoutsourcetracking2/productionNode", checkAuth, checkUUID, orderController.upsertOrderProducctionNodeFlow);
 exports.upsertOrderProducctionNodeFlow = async (req, res, next) => {
-  console.log('upsertOrderProducctionNodeFlow');
+  // console.log('upsertOrderProducctionNodeFlow');
   // try {} catch (err) {}
   const data = req.body;
 
@@ -2397,7 +2380,244 @@ exports.upsertOrderProducctionNodeFlow = async (req, res, next) => {
 }
 
 
+// #############################################################################
+// ## bundle set for tracking ###########################################################################
 
+// // ##  getBundlesetgroups
+// router.get("/bundlesetgroup/getlist1/:companyID/:userID/:orderID/:seasonYear", checkAuth, checkUUID, orderController.getBundlesetgroups);
+exports.getBundlesetgroups = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  const orderID = req.params.orderID;
+  const seasonYear = req.params.seasonYear;
+  // console.log(companyID, orderID, seasonYear);
+  try {
+    // ## 
+    const bundleSetGroups = await ShareFunc.getBundlesetgroups(companyID, orderID, seasonYear);
+    // console.log(bundleSetGroups);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      bundleSetGroups: bundleSetGroups
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO029', 
+        mode:'errGetBundleGroupSetList', 
+        value: "error get bundle group set list"
+      }
+    });
+  }
+}
+
+
+
+// // ## /api/order/bundlesetgroup/createnew   postBundleSetGroupCreateNew
+// router.post("/bundlesetgroup/createnew", checkAuth, checkUUID, orderController.postBundleSetGroupCreateNew);
+exports.postBundleSetGroupCreateNew = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  // console.log('postBundleSetGroupCreateNew');
+
+  try {
+    // ##  
+    const uuid = uuidv4();
+    let bundleSetGroup = data.bundleSetGroup;
+    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    bundleSetGroup.datetime = current;
+
+    const companyID = bundleSetGroup.companyID;
+    const orderID = bundleSetGroup.orderID;
+    const seasonYear = bundleSetGroup.seasonYear;
+
+    // console.log(bundleSetGroup);
+
+    const bundleSetGroupUpsert = await Bundlesetgroup.updateOne({$and: [
+        {"companyID":companyID},
+        {"orderID":orderID}, 
+        {"uuid":uuid},
+      ]} , 
+      {
+        "seasonYear": bundleSetGroup.seasonYear,
+        "setName": bundleSetGroup.setName,
+        "groupName": bundleSetGroup.groupName,
+        "seq": bundleSetGroup.seq,
+        "completed": bundleSetGroup.completed,
+
+        "targetPlaceID": bundleSetGroup.targetPlaceID,
+        "color": bundleSetGroup.color,
+        "yarnLotID": bundleSetGroup.yarnLotID,
+        "bundleNoSet": bundleSetGroup.bundleNoSet,
+        "bundleNoQty": bundleSetGroup.bundleNoQty,
+        "datetime": bundleSetGroup.current,
+
+        "createBy": bundleSetGroup.createBy,
+      }, {upsert: true}); 
+
+    // ## get all bundlesetgroups
+    const bundleSetGroups = await ShareFunc.getBundlesetgroups(companyID, orderID, seasonYear);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      bundleSetGroups: bundleSetGroups
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO028', 
+        mode:'errEdit/postBundleGroupSet', 
+        value: "error edit/post bundle group set"
+      }
+    });
+  }
+}
+
+// // ## /api/order/bundlesetgroup/del  deleteBundleSetGroupDel
+// router.post("/bundlesetgroup/del", checkAuth, checkUUID, orderController.deleteBundleSetGroupDel);
+exports.deleteBundleSetGroupDel = async (req, res, next) => {
+  const data = req.body;
+  const userID = req.userData.tokenSet.userID;
+  // console.log('deleteBundleSetGroupDel');
+  // console.log(data);
+
+  let session = await mongoose.startSession();
+  // session.startTransaction();
+  // let session2 = await mongoose.startSession();
+  // session2.startTransaction();
+  // let session3 = await mongoose.startSession();
+  // session3.startTransaction();
+  try {
+    await session.withTransaction(async (session) => {
+      // ##  
+      const bundleSetGroup = data.bundleSetGroup;
+      const companyID = bundleSetGroup.companyID;
+      const orderID = bundleSetGroup.orderID;
+      const uuid = bundleSetGroup.uuid;
+      const seasonYear = bundleSetGroup.seasonYear;
+      // console.log(companyID, orderID, uuid, seasonYear);
+
+      // ## delete BundleSetGroup 1
+      const result3 = await Bundlesetgroup.deleteMany({$and: [
+        {"companyID":companyID}, 
+        {"orderID":orderID}, 
+        {"seasonYear":seasonYear}, 
+        {"uuid":uuid}, 
+        // {"productBarcodeNoReal":{$in: productBarcodeNoArr}},
+      ]}).session(session);
+        
+      await session.commitTransaction();
+      session.endSession();
+      
+      // ## get all bundlesetgroups
+      const bundleSetGroups = await ShareFunc.getBundlesetgroups(companyID, orderID, seasonYear);
+
+      await ShareFunc.upsertUserSession1hr(userID);
+      const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+      
+      res.status(200).json({
+        token: token,
+        expiresIn: process.env.expiresIn,
+        userID: userID,
+        success: true,
+        bundleSetGroups: bundleSetGroups
+        // queueListCount: queueListCount
+      });
+
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    // await session2.abortTransaction(); 
+    // session2.endSession();
+    // await session3.abortTransaction(); 
+    // session3.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'errO018', 
+        mode:'errCancelOrderProduction', 
+        value: "cancel Order Production error"
+      }
+    });
+  }  finally {
+    session.endSession();
+    // session2.endSession();
+    // session3.endSession();
+  }
+}
+
+// router.put("/bundlesetgroup/completed", checkAuth, checkUUID, orderController.editBundleSetGroupComplete);
+exports.editBundleSetGroupComplete = async (req, res, next) => {
+  console.log('editBundleSetGroupComplete');
+  // try {} catch (err) {}
+  const data = req.body;
+  const userID = req.userData.tokenSet.userID;
+
+  let session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async (session) => {
+      // ##  
+      const bundleSetGroup = data.bundleSetGroup;
+      const companyID = bundleSetGroup.companyID;
+      const orderID = bundleSetGroup.orderID;
+      const uuid = bundleSetGroup.uuid;
+      const seasonYear = bundleSetGroup.seasonYear;
+      const completed = !bundleSetGroup.completed;
+
+      const bundlesetgroupUpdate = await Bundlesetgroup.updateOne({$and: [
+        {"companyID":companyID},
+        {"orderID":orderID}, 
+        {"uuid":uuid}, 
+        {"seasonYear":seasonYear}, 
+      ]} , 
+      {
+        "completed": completed,
+      }).session(session); 
+
+      await session.commitTransaction();
+      session.endSession();
+
+      // ## get all bundlesetgroups
+      const bundleSetGroups = await ShareFunc.getBundlesetgroups(companyID, orderID, seasonYear);
+
+      await ShareFunc.upsertUserSession1hr(data.userID);
+      const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+      res.status(200).json({
+        token: token,
+        expiresIn: process.env.expiresIn,
+        userID: userID,
+        bundleSetGroups: bundleSetGroups
+      });
+
+    });
+
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'errO027', 
+        mode:'errEditOrderOutsourceTracking', 
+        value: "error edit order outsource tracking"
+      }
+    });
+  }
+}
 
 // ## order
 // #############################################################

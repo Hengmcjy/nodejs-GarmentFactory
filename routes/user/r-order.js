@@ -121,6 +121,20 @@ router.put("/orderoutsourcetracking2/productionNode", checkAuth, checkUUID, orde
 
 // ## for worker scan zone  for work station
 
+// #############################################################################
+// ## bundle set for tracking ###########################################################################
+
+// ##  getBundlesetgroups
+router.get("/bundlesetgroup/getlists/:companyID/:userID/:orderID/:seasonYear", checkAuth, checkUUID, orderController.getBundlesetgroups);
+
+// ## /api/order/bundlesetgroup/createnew   postBundleSetGroupCreateNew
+router.post("/bundlesetgroup/createnew", checkAuth, checkUUID, orderController.postBundleSetGroupCreateNew);
+
+// ## /api/order/bundlesetgroup/del  deleteBundleSetGroupDel
+router.post("/bundlesetgroup/del", checkAuth, checkUUID, orderController.deleteBundleSetGroupDel);
+
+router.put("/bundlesetgroup/completed", checkAuth, checkUUID, orderController.editBundleSetGroupComplete);
+
 
 // #############################################################################
 // ## view qrcode ###########################################################################

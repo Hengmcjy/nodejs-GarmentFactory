@@ -317,8 +317,15 @@ exports.getRepCurrentProductionBundleStateDate12 = async (req, res, next) => {
   const orderStatusArr = JSON.parse(data.orderStatusArr);
   const orderIDArr = data.orderIDArr;
   const date12Arr = data.date12;
+
   const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
   const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
+
+  // const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00-07:00'));
+  // const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59-07:00'));
+
+  // const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+00:00'));
+  // const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+00:00'));
 
   const userGroupScan1 = data.userGroupScan1;
   const userIDGroup = userGroupScan1.userIDGroup;
@@ -356,9 +363,190 @@ exports.getRepCurrentProductionBundleStateDate12 = async (req, res, next) => {
       token: '',
       expiresIn: process.env.expiresIn,
       currentProductionBundleState: currentProductionBundleState,
+      bundleStatePDF: [],
       // orderStyleColorSize: orderStyleColorSize,
       // currentProductionZoneForLoss: currentProductionZoneForLoss,
       // currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
+    });
+  } catch (err) {
+    
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp009', 
+        mode:'errRepCurrentCompanyProductionZonePeroidAll', 
+        value: "error report current company production zone period all"
+      }
+    });
+  }
+}
+
+exports.transformDataBundleStateStyle = async (currentProductionBundleState) => {
+  let bundleStatePDF = [];
+  const nodeIDNot = 'starterNode';
+
+  // ## no need to get fromNode = 'starterNode'
+  let currentProductionBundleStateF = currentProductionBundleState.filter(i=>i.fromNode !== nodeIDNot);
+
+  // ## sort data bundle
+  currentProductionBundleStateF.sort((a,b)=>{
+    return a.targetPlaceID >b.targetPlaceID?1:a.targetPlaceID <b.targetPlaceID?-1:0
+    || a.color >b.color?1:a.color <b.color?-1:0
+    || a.size >b.size?1:a.size <b.size?-1:0
+    || a.bundleNo >b.bundleNo?1:a.bundleNo <b.bundleNo?-1:0
+    || a.fromNode >b.fromNode?1:a.fromNode <b.fromNode?-1:0
+  });
+  // console.log('transformDataBundleStateStyle 1');
+  await this.asyncForEach(currentProductionBundleStateF , async (item) => {
+    // console.log('transformDataBundleStateStyle 11', item);
+    let bundleStateF = bundleStatePDF.filter(i=>
+      i.orderID == item.orderID
+      && i.bundleNo == item.bundleNo
+    );
+    // console.log('transformDataBundleStateStyle 2');
+    if (bundleStateF.length === 0) {
+      let bundleStatePDF1 = await ShareFunc.clrBundleStatePDF();
+      // console.log('transformDataBundleStateStyle 3');
+      bundleStatePDF1.companyID = item.companyID;
+      bundleStatePDF1.orderID = item.orderID;
+      bundleStatePDF1.targetPlaceID = item.targetPlaceID;
+      bundleStatePDF1.targetPlaceName = item.targetPlaceName;
+      // bundleStatePDF1.targetPlaceSeq = 0;
+      bundleStatePDF1.color = item.color;
+      bundleStatePDF1.colorName = '';
+      bundleStatePDF1.bundleNo = item.bundleNo;
+      bundleStatePDF1.size = item.size;
+      // bundleStatePDF1.sizeSeq = 0;
+      bundleStatePDF1.productCount = item.productCount;
+
+      let nodeGroupScanID2_1 = await ShareFunc.clrNodeGroupScanID2();
+      // console.log('transformDataBundleStateStyle 4');
+      nodeGroupScanID2_1.nodeID = item.fromNode;
+      nodeGroupScanID2_1.sumProductQty = item.sumProductQty;
+      // nodeGroupScanID2_1.userID = item.userID;
+      // nodeGroupScanID2_1.groupScanID2 = item.groupScanID2;
+      nodeGroupScanID2_1.status = item.productCount===item.sumProductQty?'done':'-'; // ## done= finished of this node,  '-'= not finished yet
+      bundleStatePDF1.nodeGroupScanID2 = [nodeGroupScanID2_1];
+
+      bundleStatePDF.push({...bundleStatePDF1});
+    } else { // ## bundleState1.length > 0
+      let nodeGroupScanID2_1 = await ShareFunc.clrNodeGroupScanID2();
+      // console.log('transformDataBundleStateStyle 5');
+      nodeGroupScanID2_1.nodeID = item.fromNode;
+      nodeGroupScanID2_1.sumProductQty = item.sumProductQty;
+      // nodeGroupScanID2_1.userID = item.userID;
+      // nodeGroupScanID2_1.groupScanID2 = item.groupScanID2;
+      nodeGroupScanID2_1.status = item.productCount===item.sumProductQty?'done':'-'; // ## done= finished of this node,  '-'= not finished yet
+      bundleStateF[0].nodeGroupScanID2.push(nodeGroupScanID2_1);
+    }
+  });
+  // console.log('transformDataBundleStateStyle 9');
+  return bundleStatePDF;
+}
+
+// // ## put/get  getRepCurrentProductionBundleState
+// router.put("/noder/rep15/productions/bundle/state/c", reportController.getRepCurrentProductionBundleState);
+exports.getRepCurrentProductionBundleState = async (req, res, next) => {
+  // console.log('getRepCurrentProductionBundleState');
+  // const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const userID = data.userID;
+  const companyID = data.companyID;
+  const productStatusArr = JSON.parse(data.productStatusArr);
+  const productionNodeStatusArr = ['normal', 'complete'];
+  const orderStatusArr = JSON.parse(data.orderStatusArr);
+  const orderIDArr = data.orderIDArr;
+  // const date12Arr = data.date12;
+
+  // const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+  // const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
+
+  // const userGroupScan1 = data.userGroupScan1;
+  // const userIDGroup = userGroupScan1.userIDGroup;
+
+  // console.log(companyID, userID, productStatusArr, productionNodeStatusArr);
+  // console.log(date12Arr, dateStart, dateEnd, orderStatusArr);
+  // console.log(orderStatusArr, orderIDArr);
+  // console.log(userGroupScan1);
+  try {
+    // ## get Rep Company Current Production Bundle State
+    const currentProductionBundleState = await ShareFunc.getProductionBundleStateUserScanC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
+
+    // ## transform data to --> BundleStatePDF object data
+    const bundleStatePDF = await this.transformDataBundleStateStyle(currentProductionBundleState);
+    // console.log(bundleStatePDF);
+
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      userID: userID,
+      token: '',
+      expiresIn: process.env.expiresIn,
+      currentProductionBundleState: [],
+      bundleStatePDF: bundleStatePDF,
+      // currentProductionZoneForLoss: currentProductionZoneForLoss,
+      // currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
+    });
+  } catch (err) {
+    
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp009', 
+        mode:'errRepCurrentCompanyProductionZonePeroidAll', 
+        value: "error report current company production zone period all"
+      }
+    });
+  }
+}
+
+// // ## put/get  getRepCurrentProductionBundleStateNo
+// router.put("/noder/rep15/productions/bundle/state/no/c", reportController.getRepCurrentProductionBundleStateNo);
+exports.getRepCurrentProductionBundleStateNo = async (req, res, next) => {
+  // console.log('getRepCurrentProductionBundleStateNo');
+  // const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const userID = data.userID;
+  const companyID = data.companyID;
+  const productStatusArr = JSON.parse(data.productStatusArr);
+  const productionNodeStatusArr = ['normal', 'complete'];
+  const orderStatusArr = JSON.parse(data.orderStatusArr);
+  const orderIDArr = data.orderIDArr;
+  const bundleSetGroup = data.bundleSetGroup;
+  const bundleNoSet = bundleSetGroup.bundleNoSet;
+
+  // const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+  // const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
+
+  // const userGroupScan1 = data.userGroupScan1;
+  // const userIDGroup = userGroupScan1.userIDGroup;
+
+  // console.log(companyID, userID, productStatusArr, productionNodeStatusArr);
+  // console.log(date12Arr, dateStart, dateEnd, orderStatusArr);
+  // console.log(orderStatusArr, orderIDArr);
+  // console.log(userGroupScan1);
+  // console.log(bundleNoSet);
+  try {
+
+    // ## get bundle no range
+    // genBundleNoFromRangeSetArr= async (bundleNoSet)
+    const bundleNos = await ShareFunc.genBundleNoFromRangeSetArr(bundleNoSet);
+    // console.log(bundleNos);
+
+    // ## get Rep Company  Production Bundle State by bundle no range
+    const currentProductionBundleState = await ShareFunc.getProductionBundleStateRangeUserScanC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, bundleNos);
+
+    // ## transform data to --> BundleStatePDF object data
+    const bundleStatePDF = await this.transformDataBundleStateStyle(currentProductionBundleState);
+    // console.log(bundleStatePDF);
+
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      userID: userID,
+      token: '',
+      expiresIn: process.env.expiresIn,
+      // currentProductionBundleState: [],
+      // bundleStatePDF: [],
+      currentProductionBundleState: [],
+      bundleStatePDF: bundleStatePDF,
+
     });
   } catch (err) {
     

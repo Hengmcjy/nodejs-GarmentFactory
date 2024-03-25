@@ -28,6 +28,7 @@ const Order = require("../models/m-order");
 const OrderProduction = require("../models/m-orderProduction");
 const OrderProductionQueue = require("../models/m-orderProductionQueue");
 const OrderProductionQueueList = require("../models/m-orderProductionQueueList");
+const Bundlesetgroup = require("../models/m-bundlesetgroup");
 const Yarn = require("../models/m-yarn");
 const YarnData = require("../models/m-yarnData");
 const YarnLotUsage = require("../models/m-yarnLotUsage");
@@ -1509,6 +1510,117 @@ exports.getProductImageProfiles= async (companyID, productIDs) => {
 
 // #################################################################################
 // ## order zone ####################################################################
+
+// ShareFunc.getBundlesetgroups(companyID, orderID, seasonYear);
+exports.getBundlesetgroups= async (companyID, orderID, seasonYear) => {
+  // limit = +limit; // ## change to number
+  const bundleSetGroups = await Bundlesetgroup.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      {"seasonYear":seasonYear},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        uuid: 1,
+        completed: 1,
+        groupName: 1,
+        seq: 1,
+        seasonYear: 1,
+        orderID: 1,
+        setName: 1,
+        color: 1,
+        targetPlaceID: 1,		
+        yarnLotID: 1,	
+        bundleNoSet: 1,
+        bundleNoQty: 1,		
+        datetime: 1,	
+        createBy: 1,
+
+    }	}
+  ]);
+  // console.log(bundleSetGroups);
+  return bundleSetGroups;
+}
+
+
+exports.validateBundleNoQtyAndCount= async (bundleNoSet) => {
+  if (bundleNoSet.trim() === '') { return -1; } // ## check empty data string
+
+  let correctFormat = true; // ## is character and is NaN  --> incorrect format
+  let bundleCount = 0;
+  const setArr = bundleNoSet.split(',');
+  await this.asyncForEach(setArr, async (item) => {
+    const dataArr = item.split('-');
+      // console.log(dataArr);
+      if (dataArr.length >= 3 || !correctFormat) {
+          correctFormat = false; // ## incorrect format
+      } else {
+        await this.asyncForEach2(dataArr, async (item2) => {
+          if (Number.isNaN(+item2)) {
+              // console.log(+item2, 'is nan');
+              correctFormat = false; // ## incorrect format
+          } else {
+              // console.log(+item2, 'is number');
+          }
+        });
+
+        if (dataArr.length === 2 && +dataArr[0] > +dataArr[1]) { // ##  '10-1' --> incorrect format
+            correctFormat = false; // ## incorrect format
+        }
+        if (correctFormat && dataArr.length === 1) {
+            if (+dataArr[0] <= 0) {
+                correctFormat = false; // ## incorrect format
+            } else {
+                bundleCount++;
+            }
+        } else if (correctFormat && dataArr.length === 2) {
+            if (dataArr[0].trim() === '') {
+                correctFormat = false; // ## incorrect format
+            } else {
+                const num1 = +dataArr[0];
+                const num2 = +dataArr[1];
+                const range = +dataArr[1] - +dataArr[0] + 1;
+                bundleCount = bundleCount + range;
+            }
+        }
+      }
+  });
+
+  // console.log( '8888');
+  if (!correctFormat) {
+      return -1;
+  }
+  // console.log( '9999');
+  return bundleCount;
+  
+}
+
+exports.genBundleNoFromRangeSetArr= async (bundleNoSet) => {
+  // console.log('genBundleNoFromRangeSetArr');
+  let bundleNos = [];
+  const dataRecord = await this.validateBundleNoQtyAndCount(bundleNoSet);
+  if (dataRecord === -1) { // ## -1 = incorrect data set
+    return [];
+  } else if (dataRecord > 0) {
+    // ## do here
+    const setArr = bundleNoSet.split(',');
+    await this.asyncForEach(setArr, async (item) => {
+      const dataArr = item.split('-');
+      if (dataArr.length === 1) {
+        bundleNos.push(+dataArr[0]);
+      } else if (dataArr.length === 2) {
+        const startNo = +dataArr[0];
+        const endNo = +dataArr[1];
+        for (let j = startNo; j <= endNo; j++) {
+          bundleNos.push(j);
+        }
+      }
+    });
+  }
+  return bundleNos;
+}
 
 exports.genProductBarcodeNoArr= async (productBarcode, numberFrom, numberTo) => {
 
@@ -8919,6 +9031,251 @@ exports.getProductionBundleStateUserScanDate12C = async (companyID, productStatu
     size: fw._id.size,
     fromNode: fw._id.fromNode,
     userID: fw._id.userID,
+    sumProductQty: fw.sumProductQty,
+  }));
+  // console.log(orderIDArr);
+  // console.log(productionPeriodM);
+  return productionPeriodM;
+}
+
+// const currentProductionBundleState = await ShareFunc.getProductionBundleStateUserScanC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
+exports.getProductionBundleStateUserScanC = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr) => {
+  // console.log(userIDGroup);
+  const productionPeriod = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
+      {"productStatus":{$in: productStatusArr}},
+
+      {"productionNode":  {$elemMatch: {
+        // "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: productionNodeStatusArr},
+        // "createBy.userID": {$in: userIDGroup},
+      }}},
+
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        productCount: 1,
+        productBarcodeNoReal: 1,
+        // targetPlace: 1,
+        targetPlaceID: "$targetPlace.targetPlaceID",
+        targetPlaceName: "$targetPlace.targetPlaceName",
+        productionNode: 1,
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      bundleNo: 1,
+      productCount: 1,
+      orderID: 1,	
+
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+      fromNode: "$productionNode.fromNode",
+      // toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+      // userID: "$productionNode.createBy.userID",
+    }},
+
+    { $match: { $and: [
+      // {"datetime": { $gte: dateStart, $lte : dateEnd}},
+      {"status":{$in: productionNodeStatusArr}},
+      // {"createBy.userID":{$in: userIDGroup}},
+      // {"userID":{$in: userIDGroup}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,	
+      bundleNo: 1,
+      productCount: 1,
+      orderID: 1,	
+
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: 1,
+      color: 1,
+      size: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      fromNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+      // userID: 1
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        bundleNo: '$bundleNo',
+        orderID: '$orderID',
+        productCount: '$productCount',
+        targetPlaceID: '$targetPlaceID',
+        targetPlaceName: '$targetPlaceName',
+        style: '$style',
+        color: '$color',
+        size: '$size',
+        fromNode: '$fromNode',
+        // userID: '$userID',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ])
+  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1, "productionNode.createBy.userID": 1 } );
+
+  // console.log(productionPeriod);
+  const productionPeriodM = await productionPeriod.map(fw => ({
+    companyID: fw._id.companyID, 
+    bundleNo: fw._id.bundleNo,
+    orderID: fw._id.orderID,
+    productCount: fw._id.productCount,
+    targetPlaceID: fw._id.targetPlaceID,
+    targetPlaceName: fw._id.targetPlaceName,
+    style: fw._id.style,
+    color: fw._id.color,
+    size: fw._id.size,
+    fromNode: fw._id.fromNode,
+    // userID: fw._id.userID,
+    sumProductQty: fw.sumProductQty,
+  }));
+  // console.log(orderIDArr);
+  // console.log(productionPeriodM);
+  return productionPeriodM;
+}
+
+exports.getProductionBundleStateRangeUserScanC = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr, bundleNos) => {
+  // console.log(userIDGroup);
+  const productionPeriod = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
+      {"bundleNo":{$in: bundleNos}},
+      {"productStatus":{$in: productStatusArr}},
+
+      {"productionNode":  {$elemMatch: {
+        // "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        "status": {$in: productionNodeStatusArr},
+        // "createBy.userID": {$in: userIDGroup},
+      }}},
+
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        productCount: 1,
+        productBarcodeNoReal: 1,
+        // targetPlace: 1,
+        targetPlaceID: "$targetPlace.targetPlaceID",
+        targetPlaceName: "$targetPlace.targetPlaceName",
+        productionNode: 1,
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      bundleNo: 1,
+      productCount: 1,
+      orderID: 1,	
+
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+      fromNode: "$productionNode.fromNode",
+      // toNode: "$productionNode.toNode",
+      status: "$productionNode.status",
+      datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+      // userID: "$productionNode.createBy.userID",
+    }},
+
+    { $match: { $and: [
+      // {"datetime": { $gte: dateStart, $lte : dateEnd}},
+      {"status":{$in: productionNodeStatusArr}},
+      // {"createBy.userID":{$in: userIDGroup}},
+      // {"userID":{$in: userIDGroup}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,	
+      bundleNo: 1,
+      productCount: 1,
+      orderID: 1,	
+
+      targetPlaceID: 1,
+      targetPlaceName: 1,
+      style: 1,
+      color: 1,
+      size: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      fromNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+      // userID: 1
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        bundleNo: '$bundleNo',
+        orderID: '$orderID',
+        productCount: '$productCount',
+        targetPlaceID: '$targetPlaceID',
+        targetPlaceName: '$targetPlaceName',
+        style: '$style',
+        color: '$color',
+        size: '$size',
+        fromNode: '$fromNode',
+        // userID: '$userID',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ])
+  .hint( { companyID: 1, orderID: 1, bundleNo: 1, productStatus: 1, "productionNode.status": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1 } );
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1, "productionNode.createBy.userID": 1 } );
+
+  // console.log(productionPeriod);
+  const productionPeriodM = await productionPeriod.map(fw => ({
+    companyID: fw._id.companyID, 
+    bundleNo: fw._id.bundleNo,
+    orderID: fw._id.orderID,
+    productCount: fw._id.productCount,
+    targetPlaceID: fw._id.targetPlaceID,
+    targetPlaceName: fw._id.targetPlaceName,
+    style: fw._id.style,
+    color: fw._id.color,
+    size: fw._id.size,
+    fromNode: fw._id.fromNode,
+    // userID: fw._id.userID,
     sumProductQty: fw.sumProductQty,
   }));
   // console.log(orderIDArr);
@@ -16377,4 +16734,45 @@ exports.getOrderProductionfilter01= async (companyID, factoryID, orderID, toNode
 }
 
 // ## report heng test ############################################################################
+// ###################################################################################################
+
+
+// ###################################################################################################
+// ## get clear data ############################################################################
+
+exports.clrBundleStatePDF= async () => {
+  const bundleStatePDF = {
+    companyID: '',  // ##
+    orderID: '',
+    targetPlaceID: '',
+    targetPlaceName: '',
+    targetPlaceSeq: 0,  // ##
+    color: '',
+    colorName: '',
+    colorSeq: 0,
+    bundleNo: 0,
+    size: '',
+    sizeSeq: 0,
+    nodeIDCurrent: '',
+    completed: false,
+    groupNamePDF: '',
+    groupScanID2: '',
+    nodeGroupScanID2: [],
+    productCount: 0,
+  };
+  return bundleStatePDF;
+}
+
+exports.clrNodeGroupScanID2= async () => {
+  const nodeGroupScanID2 = {
+    nodeID: '',  // ##
+    sumProductQty: 0,
+    userID: '',
+    groupScanID2: '',
+    status: '',
+  };
+  return nodeGroupScanID2;
+}
+
+// ## get clear data ############################################################################
 // ###################################################################################################

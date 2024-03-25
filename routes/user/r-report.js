@@ -36,6 +36,14 @@ router.put("/noder/rep12/date12/productions/zoneperiod/c", reportController.getR
 router.put("/noder/rep14/date12/productions/bundle/state/c", reportController.getRepCurrentProductionBundleStateDate12);
 // // ##
 
+// ## put/get  getRepCurrentProductionBundleState
+router.put("/noder/rep15/productions/bundle/state/c", reportController.getRepCurrentProductionBundleState);
+// // ##
+
+// ## put/get  getRepCurrentProductionBundleStateNo
+router.put("/noder/rep16/productions/bundle/state/no/c", reportController.getRepCurrentProductionBundleStateNo);
+// // ##
+
 // ## get node getRepCurrentProductions
 router.get("/noder/rep6/current/productions/cfn/:companyID/:factoryID/:nodeID/:productStatus/:page/:limit"
         , reportController.getRepCurrentProductions);
