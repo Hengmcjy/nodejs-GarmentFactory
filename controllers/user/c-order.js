@@ -2562,7 +2562,7 @@ exports.deleteBundleSetGroupDel = async (req, res, next) => {
 
 // router.put("/bundlesetgroup/completed", checkAuth, checkUUID, orderController.editBundleSetGroupComplete);
 exports.editBundleSetGroupComplete = async (req, res, next) => {
-  console.log('editBundleSetGroupComplete');
+  // console.log('editBundleSetGroupComplete');
   // try {} catch (err) {}
   const data = req.body;
   const userID = req.userData.tokenSet.userID;
@@ -2571,22 +2571,38 @@ exports.editBundleSetGroupComplete = async (req, res, next) => {
   try {
     await session.withTransaction(async (session) => {
       // ##  
-      const bundleSetGroup = data.bundleSetGroup;
-      const companyID = bundleSetGroup.companyID;
-      const orderID = bundleSetGroup.orderID;
-      const uuid = bundleSetGroup.uuid;
-      const seasonYear = bundleSetGroup.seasonYear;
-      const completed = !bundleSetGroup.completed;
+      const bundleSetGroup1 = data.bundleSetGroup;
+      const companyID = bundleSetGroup1.companyID;
+      const orderID = bundleSetGroup1.orderID;
+      const uuid = bundleSetGroup1.uuid;
+      const seasonYear = bundleSetGroup1.seasonYear;
+      const completed = !bundleSetGroup1.completed;
+      const seq = bundleSetGroup1.seq;
+      const mode = data.mode;  // ## complete, seq
 
-      const bundlesetgroupUpdate = await Bundlesetgroup.updateOne({$and: [
-        {"companyID":companyID},
-        {"orderID":orderID}, 
-        {"uuid":uuid}, 
-        {"seasonYear":seasonYear}, 
-      ]} , 
-      {
-        "completed": completed,
-      }).session(session); 
+      // console.log(mode, completed, seq);
+
+      if (mode === 'complete') {
+        const bundlesetgroupUpdate = await BundleSetGroup.updateOne({$and: [
+          {"companyID":companyID},
+          {"orderID":orderID}, 
+          {"uuid":uuid}, 
+          {"seasonYear":seasonYear}, 
+        ]} , 
+        {
+          "completed": completed,
+        }).session(session); 
+      } else if (mode === 'seq') {
+        const bundlesetgroupUpdate = await BundleSetGroup.updateOne({$and: [
+          {"companyID":companyID},
+          {"orderID":orderID}, 
+          {"uuid":uuid}, 
+          {"seasonYear":seasonYear}, 
+        ]} , 
+        {
+          "seq": +seq,
+        }).session(session); 
+      }
 
       await session.commitTransaction();
       session.endSession();

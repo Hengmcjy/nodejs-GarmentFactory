@@ -6861,6 +6861,128 @@ exports.getOrderProductReceiveOutsource01= async (companyID, productBarcodeNos) 
   return orderProduct.length>0?orderProduct[0]:null;
 }
 
+exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsource, status) => {
+  // const status = 'outsource';
+  const orderProductFacOutQTY = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+
+      {"productionNode":  {$elemMatch: {"isOutsource": isOutsource, "status": status }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
+
+      // {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
+      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
+
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        // productionNode: 1,
+        // productBarcodeNo: 1,
+        // productBarcodeNoReal: 1,
+        targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+        color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+        // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+        bundleNo: 1,
+        productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+
+    }	},
+    { $unwind: "$productionNode"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,
+      targetPlace: 1,
+      color: 1,
+      // size: 1,
+      bundleNo: 1,
+      productCount: 1,
+      // productBarcodeNoReal: 1,
+      factoryID: "$productionNode.factoryID",	
+      fromNode: "$productionNode.fromNode",
+      datetime: "$productionNode.datetime",
+      status: "$productionNode.status",
+      isOutsource: "$productionNode.isOutsource",
+      outsourceData: "$productionNode.outsourceData",
+      createBy: "$productionNode.createBy",
+    }	},
+    { $match: { $and: [
+      {"status":status},
+      {"isOutsource":isOutsource},
+    ] } },
+    { $unwind: "$outsourceData"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,
+      targetPlace: 1,
+      color: 1,
+      bundleNo: 1,
+      productCount: 1,
+      // productBarcodeNoReal: 1,
+      factoryID: 1,
+      fromNode: 1,
+      toFactoryID: "$outsourceData.factoryID",
+      fromFactoryID: "$outsourceData.fromFactoryID",
+      datetime: 1,
+      yyyymmdd: { $dateToString: { format: "%Y%m%d", date: "$datetime" } },
+      // mmdd: { $dateToString: { format: "%m%d", date: "$datetime" } },
+      yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
+      status: 1,
+      isOutsource: 1,
+      createBy: 1,
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        bundleNo: '$bundleNo',
+        productCount: '$productCount',
+        // productBarcodeNoReal: '$productBarcodeNoReal',
+        status: '$status',
+        factoryID: '$factoryID',
+        toFactoryID: '$toFactoryID',
+        fromFactoryID: '$fromFactoryID',
+        yyyymmdd: '$yyyymmdd',
+        createBy: '$createBy',
+      },
+      sumFactoryOutsQty: {$sum: 1} ,
+      // sumFactoryOutsQty: {$sum: '$productCount'} ,
+    }}   
+  ])
+  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1 } );
+
+  const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID, 
+    targetPlace: fw._id.targetPlace,
+    color: fw._id.color,
+    bundleNo: fw._id.bundleNo, 
+    productCount: fw._id.productCount, 
+    // productBarcodeNoReal: fw._id.productBarcodeNoReal, 
+    status: fw._id.status, 
+    factoryID: fw._id.factoryID,
+    toFactoryID: fw._id.toFactoryID,
+    fromFactoryID: fw._id.fromFactoryID,
+    yyyymmdd: fw._id.yyyymmdd,
+    createBy: fw._id.createBy,
+    sumFactoryOutsQty: fw.sumFactoryOutsQty,
+  }));
+
+  return orderProductFacOutQTYF;
+}
+
 // ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs)
 exports.getCurrentCompanyOrderOutsource= async (companyID, orderIDs) => {
   const orderProductFacOuts = await OrderProduction.aggregate([
@@ -6912,6 +7034,8 @@ const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
     
   return orderProductFacOutsF;
 }
+
+
 
 // ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
 exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {

@@ -1227,7 +1227,7 @@ exports.staffNodeLogin = async (req, res, next) => {
   const companyID = data.companyID;
   const factoryID = data.factoryID;
 
-  console.log(userID, userPass, companyID, factoryID);
+  // console.log(userID, userPass, companyID, factoryID);
 
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
 

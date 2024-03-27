@@ -560,6 +560,75 @@ exports.getRepCurrentProductionBundleStateNo = async (req, res, next) => {
   }
 }
 
+// router.put("/noder/rep17/productions/bundle/state/no/c2", reportController.getRepCurrentProductionBundleStateNo2);
+exports.getRepCurrentProductionBundleStateNo2 = async (req, res, next) => {
+  // console.log('getRepCurrentProductionBundleStateNo2');
+  // const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const userID = data.userID;
+  const companyID = data.companyID;
+  const productStatusArr = JSON.parse(data.productStatusArr);
+  const productionNodeStatusArr = ['normal', 'complete'];
+  const orderStatusArr = JSON.parse(data.orderStatusArr);
+  const orderIDArr = data.orderIDArr;
+  const bundleNos = data.bundleNos;
+  const productID = data.productID;
+  // const bundleSetGroup = data.bundleSetGroup;
+  // const bundleNoSet = bundleSetGroup.bundleNoSet;
+
+  // const dateStart = new Date(moment(date12Arr[0]).tz('Asia/Bangkok').format('YYYY/MM/DD 00:00:00+07:00'));
+  // const dateEnd = new Date(moment(date12Arr[1]).tz('Asia/Bangkok').format('YYYY/MM/DD 23:59:59+07:00'));
+
+  // const userGroupScan1 = data.userGroupScan1;
+  // const userIDGroup = userGroupScan1.userIDGroup;
+
+  // console.log(companyID, userID, productStatusArr, productionNodeStatusArr);
+  // console.log(date12Arr, dateStart, dateEnd, orderStatusArr);
+  // console.log(orderStatusArr, orderIDArr);
+  // console.log(userGroupScan1);
+  // console.log(bundleNos);
+  try {
+
+    // // ## get bundle no range
+    // // genBundleNoFromRangeSetArr= async (bundleNoSet)
+    // const bundleNos = await ShareFunc.genBundleNoFromRangeSetArr(bundleNoSet);
+    // // console.log(bundleNos);
+
+    // console.log(companyID, productID);
+    const product = await ShareFunc.getProduct(companyID, productID);
+    // console.log(product);
+
+    // ## get Rep Company  Production Bundle State by bundle no range
+    const currentProductionBundleState = await ShareFunc.getProductionBundleStateRangeUserScanC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, bundleNos);
+
+    // ## transform data to --> BundleStatePDF object data
+    const bundleStatePDF = await this.transformDataBundleStateStyle(currentProductionBundleState);
+    // console.log(bundleStatePDF);
+
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      userID: userID,
+      token: '',
+      expiresIn: process.env.expiresIn,
+      // currentProductionBundleState: [],
+      // bundleStatePDF: [],
+      currentProductionBundleState: [],
+      bundleStatePDF: bundleStatePDF,
+      product: product
+
+    });
+  } catch (err) {
+    
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp009', 
+        mode:'errRepCurrentCompanyProductionZonePeroidAll', 
+        value: "error report current company production zone period all"
+      }
+    });
+  }
+}
+
 // // ## get node getRepCurrentProductQtyCFN
 // router.get("/noder/rep1/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName", nsController.getRepCurrentProductQtyCFN);
 exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
@@ -1914,6 +1983,82 @@ exports.getRepCompanyOrderOutsource2 = async (req, res, next) => {
       // nodeStation: nodeStation,
       // nodeFlows: nodeFlows,
       // nodeFlow: nodeFlow
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp002', 
+        mode:'errRepCurrentCompanyOrder', 
+        value: "error report current company order"
+      }
+    });
+  }
+}
+
+// router.get("/cpn/rep14/current/order/state/:companyID/:ordertatus/:orderIDArr", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState);
+exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getRepCompanyOrderOutsourceState');
+
+  const companyID = req.params.companyID;
+  // const factoryID = req.params.factoryID;
+  // const nodeID = req.params.nodeID;
+  const orderStatusArr = JSON.parse(req.params.ordertatus);
+  const orderIDArr = JSON.parse(req.params.orderIDArr);
+  // const repListNameArr = JSON.parse(req.params.repListName);
+  // console.log(companyID, orderStatusArr);
+  // console.log(orderIDArr);
+
+  try {
+
+    const isOutsource = true;
+    // ## get outsource factory sent out
+    const status1 = 'outsource';  // ## sent out  outsource
+    const orderProductFacOut = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status1);
+    // console.log(orderProductFacOut);
+
+    // ## get outsource factory receive
+    const status2 = 'normal';  // ## receive
+    const orderProductFacReceive = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status2);
+    // console.log(orderProductFacReceive);
+
+
+    // orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
+    // // console.log(factoryOutsource);
+    // let outsourcefactoryID = [];
+    // await this.asyncForEach(orderProductFacOuts, async (item1) => {
+    //   outsourcefactoryID.push(item1.outsourcefactoryID);
+    // });
+    
+    // // ## get outsource factory qty
+    // orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+    // // ## get outsource factory qty remain
+    // orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
+    // // console.log(orderProductFacOutQTY);
+    // // console.log(orderProductFacOutRemainQTY);
+
+    // // ## style zone color size
+    // orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
+    // orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
+    // // console.log(orderProductFacOutStyleColorSizeQTY);
+
+    // console.log('0' || '1');
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn) || '';
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      orderIDArr: orderIDArr,
+      orderProductFacOut: orderProductFacOut,
+      orderProductFacReceive: orderProductFacReceive,
+
+      // currentOrderStyle: currentOrderStyle,
+      // outsourcefactoryID: outsourcefactoryID,
+      // orderProductFacOutQTY: orderProductFacOutQTY,
+      // orderProductFacOutRemainQTY: orderProductFacOutRemainQTY,
+      // orderProductFacOutStyleColorSizeQTY: orderProductFacOutStyleColorSizeQTY,
+      // orderProductFacOutStyleColorSizeRemainQTY: orderProductFacOutStyleColorSizeRemainQTY,
+
     });
   } catch (err) {
     console.log(err);

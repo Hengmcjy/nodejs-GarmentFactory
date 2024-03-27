@@ -44,6 +44,10 @@ router.put("/noder/rep15/productions/bundle/state/c", reportController.getRepCur
 router.put("/noder/rep16/productions/bundle/state/no/c", reportController.getRepCurrentProductionBundleStateNo);
 // // ##
 
+// ## put/get  getRepCurrentProductionBundleStateNo2
+router.put("/noder/rep17/productions/bundle/state/no/c2", reportController.getRepCurrentProductionBundleStateNo2);
+// // ##
+
 // ## get node getRepCurrentProductions
 router.get("/noder/rep6/current/productions/cfn/:companyID/:factoryID/:nodeID/:productStatus/:page/:limit"
         , reportController.getRepCurrentProductions);
@@ -104,11 +108,18 @@ router.get("/node/scan1/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:date
 
 router.get("/cpn/rep10/current/order/:companyID/:ordertatus/:orderIDArr", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsource);
 
+router.get("/cpn/rep14/current/order/state/:companyID/:ordertatus/:orderIDArr", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState);
+
 // // ## get node 
 // router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", 
 //         reportController.getRepCompanyOrderOutsource2);
-// // // ##
+
+// ##
 router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", reportController.getRepCompanyOrderOutsource2);
+
+// // ##
+// router.get("/node/outs/rep14/statet/CF/:companyID/:ordertatus/:orderIDArr", reportController.getRepCompanyOrderOutsourceState);
+
 
 // ## report outsource ############################################################################s
 // ###################################################################################################
