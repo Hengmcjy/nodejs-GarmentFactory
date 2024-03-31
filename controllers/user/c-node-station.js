@@ -3125,8 +3125,9 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
   const orderID = data.orderID;
   const productID = data.productID;
   let productionNode = data.productionNode;  // ## object
+  
   // const washingAndPressingMerge = data.washingAndPressingMerge;
-  // productionNode.datetime = current;
+  productionNode.datetime = current;
 
   let session = await mongoose.startSession();
   session.startTransaction();
