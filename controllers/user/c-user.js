@@ -832,12 +832,148 @@ exports.getTestTest5 = async (req, res, next) => {
   });
 }
 
-// // ## http://192.168.1.141:3968/api/user/test/test4
+// // ## http://192.168.1.36:3968/api/user/test/test4
 exports.getTestTest4 = async (req, res, next) => {
   // const blankRows = await ShareFunc.getBlankRows();
+  const companyID = 'c000001';
+  const orderID = 'DCA42A4A';
+  const orderIDArr = [orderID];
+  const productBarcode = 'DCA42A4A    UK-------24BL--------F---';
+  const productStatusArr = ['normal', 'problem', 'repaired', 'complete']; // normal , problem, complete
+  const productStatusArr2 = ['normal'];
+  // const productStatus = ['normal', 'problem', 'repaired', 'complete']; // normal , problem, complete
+  const orderStatus = ['open'];
+  const nodeIDArr = ['1.COMPUTER-KNITTING'];
+  const targetPlaceID = 'UK';
 
+  // const productionPeriod = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+  //     {"productStatus":{$in: productStatusArr}},
+
+  //     {"productionNode":  {$elemMatch: {"status": {$in: productStatusArr2} }}},
+
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,
+  //       // factoryID: 1,		
+  //       orderID: 1,	
+  //       // forLoss: 1,
+  //       // bundleNo: 1,
+  //       // productID: 1,
+  //       // productBarcodeNo: 1,
+  //       productBarcodeNoReal: 1,
+  //       // targetPlace: 1,
+  //       targetPlaceID: "$targetPlace.targetPlaceID",
+  //       targetPlaceName: "$targetPlace.targetPlaceName",
+  //       // productCount: 1,
+  //       // productionDate: 1,
+  //       // productStatus: 1,
+  //       // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+  //       productionNode: 1,
+  //   }	},
+
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     // factoryID: 1,		
+  //     orderID: 1,	
+  //     // forLoss: 1,
+  //     // bundleNo: 1,
+  //     // productID: 1,
+  //     // productBarcodeNo: 1,
+  //     productBarcodeNoReal: 1,
+  //     // targetPlace: 1,
+  //     targetPlaceID: 1,
+  //     targetPlaceName: 1,
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     // productCount: 1,
+  //     // productionDate: 1,
+  //     // productStatus: 1,
+  //     fromNode: "$productionNode.fromNode",
+  //     // toNode: "$productionNode.toNode",
+  //     status: "$productionNode.status",
+  //     // datetime: "$productionNode.datetime",
+  //     // createBy: "$productionNode.createBy",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"status":{$in: productStatusArr2}},
+
+  //     {"fromNode":{$in: nodeIDArr}},
+  //     {"targetPlaceID":targetPlaceID},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     // factoryID: 1,		
+  //     orderID: 1,	
+  //     // forLoss: 1,
+  //     // bundleNo: 1,
+  //     // productID: 1,
+  //     // productBarcodeNo: 1,
+  //     productBarcodeNoReal: 1,
+  //     // targetPlace: 1,
+  //     targetPlaceID: 1,
+  //     targetPlaceName: 1,
+  //     style: 1,
+  //     color: 1,
+  //     size: 1,
+  //     // productProblem: 1,
+  //     // fromNode: 1,
+  //     fromNode: 1,
+  //     // datetime: 1,
+  //     // createBy: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       productBarcodeNoReal: '$productBarcodeNoReal',
+  //       // forLoss: '$forLoss',
+  //       targetPlaceID: '$targetPlaceID',
+  //       targetPlaceName: '$targetPlaceName',
+  //       style: '$style',
+  //       color: '$color',
+  //       size: '$size',
+  //       fromNode: '$fromNode',
+  //   },
+  //     sumProductQty: {$sum: 1} ,
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+
+  // // console.log(productionPeriod);
+  // const productionPeriodM = await productionPeriod.map(fw => ({
+  //   companyID: fw._id.companyID, 
+  //   orderID: fw._id.orderID,
+  //   productBarcodeNoReal: fw._id.productBarcodeNoReal,
+  //   // forLoss: fw._id.forLoss,
+  //   targetPlaceID: fw._id.targetPlaceID,
+  //   targetPlaceName: fw._id.targetPlaceName,
+  //   style: fw._id.style,
+  //   color: fw._id.color,
+  //   size: fw._id.size,
+  //   fromNode: fw._id.fromNode,
+  //   sumProductQty: fw.sumProductQty,
+  // }));
+  // const sum1 = productionPeriodM.reduce((prev, cur) => {return prev + cur.sumProductQty;}, 0);
+  // console.log(productionPeriodM.length);
+  // console.log(sum1);
+
+  // await this.asyncForEach(productionPeriodM, async (item1) => {
+  //   if (item1.sumProductQty>1) {
+  //     console.log(item1);
+  //   }
+  // });
   return res.status(200).json({
-    // blankRows: blankRows,
+    // productionPeriodM: productionPeriodM,
     // targetPlaces: targetPlaces,
     // colors: colors,
     // sizes: sizes,

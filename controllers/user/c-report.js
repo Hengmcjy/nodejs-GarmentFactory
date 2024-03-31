@@ -568,7 +568,8 @@ exports.getRepCurrentProductionBundleStateNo2 = async (req, res, next) => {
   const userID = data.userID;
   const companyID = data.companyID;
   const productStatusArr = JSON.parse(data.productStatusArr);
-  const productionNodeStatusArr = ['normal', 'complete'];
+  // const productionNodeStatusArr = ['normal', 'complete']; // 
+  const productionNodeStatusArr = ['normal', 'complete', 'outsource']; // 'outsource'
   const orderStatusArr = JSON.parse(data.orderStatusArr);
   const orderIDArr = data.orderIDArr;
   const bundleNos = data.bundleNos;
