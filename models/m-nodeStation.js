@@ -12,6 +12,7 @@ const nodeStationSchema = mongoose.Schema({
     nodeType: {type: String, required: true},
     mustBundleScan: {type: Boolean, required: true},
     haveSubWorkflow: {type: Boolean, required: true},
+    scan1ForAll: {type: Boolean},
     location: {type: String},
     nodeDescription: {type: String},
     pic: [{type: String}],

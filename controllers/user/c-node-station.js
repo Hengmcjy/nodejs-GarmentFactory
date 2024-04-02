@@ -1308,11 +1308,13 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
   const nodeID = data.nodeID;
   const stationID = data.stationID;
   const mode = data.mode;
+  const scan1ForAll = data.scan1ForAll ? data.scan1ForAll:false; // ## y=สแกน1ตัวแล้วดึงทั้งหมด
   // console.log(mode , productBarcodeNo);
-  
+  // console.log(mode , scan1ForAll);
   // console.log(nodeID , productBarcodeNo, mode);
   try {
     await ShareFunc.upsertUserSession1hr(userID);
+    
 
     // ##  get data productBarcodeNo
     const orderProduction = await ShareFunc.getOrderProduct1(companyID, factoryID, productBarcodeNo);
@@ -1347,7 +1349,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
         let scanNode = undefined;
         let isNodeIDScanListSetting = false;
         // console.log(factory);
-        if (factory && mode === 'scan') {
+        if (factory && mode === 'scan' && scan1ForAll === false) {
           // console.log(mode,   '   scan + special');
           if (factory.nodeStationSetting) {
             // console.log(factory.nodeStationSetting,   '   factory.nodeStationFactory **********');
@@ -1369,6 +1371,40 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
                     nodeID: nodeID,
                     stationID: stationID,
                     orderProduction: orderProduction,
+                    orderProductions: orderProductions,
+                    success: true,
+                    mode: 'scan'
+                  });
+                }
+              }
+            }
+          }
+        } else if (factory && mode === 'scan' && scan1ForAll === true) {
+          // console.log('factory && mode === scan && scan1ForAll === true  1111');
+          if (factory.nodeStationSetting) {
+            // console.log('factory && mode === scan && scan1ForAll === true  22222');
+            nodeStationSetting = factory.nodeStationSetting;
+            if (nodeStationSetting.scanNode && nodeStationSetting.scanNode.length > 0) {
+              // console.log('factory && mode === scan && scan1ForAll === true  3333');
+              scanNode = nodeStationSetting.scanNode;
+              const scanNodeF = await scanNode.filter(i=>(i.nodeID == nodeID && i.stationID == stationID && i.active == true));
+              if (scanNodeF.length > 0) {
+                // console.log('factory && mode === scan && scan1ForAll === true  4444');
+                isNodeIDScanListSetting = true;
+                const nodeIDSetting = scanNodeF[0].nodeIDSetting;
+                const toNode = orderProduction.productionNode[0].toNode;
+                if (nodeIDSetting.includes(toNode)) {
+                  // console.log('factory && mode === scan && scan1ForAll === true  5555');
+                  return res.status(200).json({
+                    tokenNS: '',
+                    expiresIn: process.env.expiresIn,
+                    userID: userID,
+                    companyID: companyID,
+                    factoryID: factoryID,
+                    nodeID: nodeID,
+                    stationID: stationID,
+                    orderProduction: orderProduction,
+                    orderProductions: ['1111'],
                     success: true,
                     mode: 'scan'
                   });
@@ -1391,6 +1427,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             nodeID: nodeID,
             stationID: stationID,
             orderProduction: orderProduction,
+            orderProductions: [],
             success: true,
             mode: 'backfromrepair'
           });
@@ -1408,6 +1445,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             nodeID: nodeID,
             stationID: stationID,
             orderProduction: orderProduction,
+            orderProductions: [],
             success: true,
             mode: 'sendtorepair'
           });
@@ -1422,23 +1460,47 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             nodeID: nodeID,
             stationID: stationID,
             orderProduction: orderProduction,
+            orderProductions: [],
             success: true,
             mode: 'scan-receive-affiliate'
           });
 
         } else if (orderProduction.productionNode[0].toNode === nodeID && mode === 'scan') {
-          return res.status(200).json({
-            tokenNS: '',
-            expiresIn: process.env.expiresIn,
-            userID: userID,
-            companyID: companyID,
-            factoryID: factoryID,
-            nodeID: nodeID,
-            stationID: stationID,
-            orderProduction: orderProduction,
-            success: true,
-            mode: 'scan'
-          });
+          if (scan1ForAll === false) {
+            
+            return res.status(200).json({
+              tokenNS: '',
+              expiresIn: process.env.expiresIn,
+              userID: userID,
+              companyID: companyID,
+              factoryID: factoryID,
+              nodeID: nodeID,
+              stationID: stationID,
+              orderProduction: orderProduction,
+              orderProductions: [],
+              success: true,
+              mode: 'scan'
+            });
+          } else  {  // ## scan1ForAll === false   // ## y=สแกน1ตัวแล้วดึงทั้งหมด
+            // let orderProductions = [];
+            const bundleNo = +orderProduction.bundleNo;
+            // getOrderProductsByBundleNos= async (companyID, factoryID, bundleNos)
+            // ##  get data orderProductions
+            const orderProductions = await ShareFunc.getOrderProductsByBundleNos(companyID, factoryID, [bundleNo]);
+            return res.status(200).json({
+              tokenNS: '',
+              expiresIn: process.env.expiresIn,
+              userID: userID,
+              companyID: companyID,
+              factoryID: factoryID,
+              nodeID: nodeID,
+              stationID: stationID,
+              orderProduction: orderProduction,
+              orderProductions: orderProductions,  // ## scan1ForAll === false   // ## y=สแกน1ตัวแล้วดึงทั้งหมด
+              success: true,
+              mode: 'scan'
+            });
+          }
         } else {
           
           // ## check last node = nodeID  , current nodeID
