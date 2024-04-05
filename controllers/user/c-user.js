@@ -182,42 +182,53 @@ exports.getTestTest10 = async (req, res, next) => {
 
 }
 
-// // ## http://172.31.194.9:3968/api/user/test/test16
+// // ## http://192.168.1.36:3968/api/user/test/test16
 // router.get("/test/test16", userController.getTestTest16);  // delete all orderProduction , orderProductionQueueList , orderProductionQueue
 exports.getTestTest16 = async (req, res, next) => {
   const companyID = 'c000001';
   const orderIDs = 
-  [
-    '23FRAW-006', 'UR391',
-    'JBAD9A3A',   'GL-115B',
-    'GL-116B',    '23F-YM505',
-    '23F-BP1508', 'GL-92B',
-    'AA0Q4A3A',   'BA1OEA3A',
-    'DD0ISA3A',   'AA0Q1A3A',
-    'BA1O0A3A',   'AA0Q6A3A',
-    'BAI13A3A',   'BA1ODA3A',
-    'BA1NIA3A',   'AA0PKA3A',
-    'AA0PJA3A',   'BA1NWA3A',
-    'AA0PVA3A',   'BA1NUA3A'
-  ];
+  ['BA1OFA4S','DDE60A4S','BA1OOA4S','BA1ONA4S','DDB61A4S','DCB06A4S','AA0QFA4S','BA1OQA4S','BA1OGA4S',
+    'DBC33A4S','DCB07A4S','DCB08A4S','DAK15A4S','AA0QEA4S','BA1OPA4S','GL-115C','GL-115D','24S-BP1504',
+    '24S-BP1505','UR37-12B004','UR37-12B005','203-Y24','GL-26'];
+
+
+  // [
+  //   '23FRAW-006', 'UR391',
+  //   'JBAD9A3A',   'GL-115B',
+  //   'GL-116B',    '23F-YM505',
+  //   '23F-BP1508', 'GL-92B',
+  //   'AA0Q4A3A',   'BA1OEA3A',
+  //   'DD0ISA3A',   'AA0Q1A3A',
+  //   'BA1O0A3A',   'AA0Q6A3A',
+  //   'BAI13A3A',   'BA1ODA3A',
+  //   'BA1NIA3A',   'AA0PKA3A',
+  //   'AA0PJA3A',   'BA1NWA3A',
+  //   'AA0PVA3A',   'BA1NUA3A'
+  // ];
+
+  
 
   // // ## delete many orderProduction
   // const result01 = await OrderProduction.deleteMany({$and: [
   //   {"companyID":companyID}, 
   //   {"orderID":{$in: orderIDs}},
   // ]});
+  // console.log('OrderProduction deleted OK');
+
 
   // // ## delete many orderProductionQueueList
   // const result02 = await OrderProductionQueueList.deleteMany({$and: [
   //   {"companyID":companyID}, 
   //   {"orderID":{$in: orderIDs}},
   // ]});
+  // console.log('OrderProductionQueueList deleted OK');
 
   // // ## delete many orderProductionQueue
   // const result03 = await OrderProductionQueue.deleteMany({$and: [
   //   {"companyID":companyID}, 
   //   {"orderID":{$in: orderIDs}},
   // ]});
+  // console.log('OrderProductionQueue deleted OK');
 
 
   const result1 = 'OK';
@@ -640,6 +651,39 @@ exports.getTestTest11 = async (req, res, next) => {
   return res.end();
 }
 
+// // ## http://192.168.1.36:3968/api/user/test/test11_2
+// router.get("/test/test11_2", userController.getTestTest11_2); // ## cancel orderProduction by bundleNo(s)
+exports.getTestTest11_2 = async (req, res, next) => {
+  // // ## cancel orderProduction by bundleNo(s)
+  const companyID = 'c000001';
+  const orderID = 'DCA42A4A';
+  const bundleNo1 = 25583;
+  const bundleNo2 = 25606;
+  // const productBarcode = 'AA0QFA4S    UK-------24BK--------M---';
+  // const no1 = 0;
+  // const no2 = 467;
+  // const result = await ShareFunc.getDelOrderProduction2(companyID, orderID, productBarcode, no1, no2);
+
+  const result01 = await OrderProduction.deleteMany({$and: [
+    {"companyID":companyID}, 
+    {"orderID":orderID}, 
+    {"bundleNo": { $gte: bundleNo1}} , 
+      {"bundleNo": { $lte : bundleNo2}} ,
+    // {"orderID":{$in: orderIDs}},
+  ]});
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>cancel  order production  by product barcode</title><head>');
+  res.write('<body>');
+  res.write('<h1>cancel  order production  </h1></br>');
+  res.write('<h1>by product barcode</h1>');
+  res.write('<h1>'+result01+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 // // ## http://192.168.0.181:3968/api/user/test/test8
 // ## cancel queue order  by product barcode
 exports.getTestTest8 = async (req, res, next) => {
@@ -985,6 +1029,32 @@ exports.getTestTest4 = async (req, res, next) => {
     // outSourceLocationDepartment: outSourceLocationDepartment
     // updateQrCodeRealOrderProduction: updateQrCodeRealOrderProduction
   });
+}
+
+// http://192.168.1.36:3968/api/user/test/test4_2
+// router.get("/test/test4", userController.getTestTest4_2); // ## get orderiDs from all a season year
+exports.getTestTest4_2 = async (req, res, next) => {
+  console.log('getTestTest4_2');
+  const companyID = 'c000001';
+  const seasonYear = '2024'; // 2024 , 2024AW
+  const orderIDs = await ShareFunc.getOrderIDs(companyID, seasonYear);
+  console.log(orderIDs);
+
+  let orderArr = [];
+  await this.asyncForEach(orderIDs , async (item) => {
+    orderArr.push(item.orderID);
+  });
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>get orderiDs from all a season year</title><head>');
+  res.write('<body>');
+  res.write('<h1>get orderiDs from all a season year</h1></br>');
+  // res.write('<h1>add push to nodeID we need to</h1>');
+  res.write('<h1>'+orderArr+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
 }
 
 // // ## http://192.168.1.35:3968/api/user/test/test3

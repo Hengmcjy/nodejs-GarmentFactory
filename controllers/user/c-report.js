@@ -2024,26 +2024,6 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
     const orderProductFacReceive = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status2);
     // console.log(orderProductFacReceive);
 
-
-    // orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
-    // // console.log(factoryOutsource);
-    // let outsourcefactoryID = [];
-    // await this.asyncForEach(orderProductFacOuts, async (item1) => {
-    //   outsourcefactoryID.push(item1.outsourcefactoryID);
-    // });
-    
-    // // ## get outsource factory qty
-    // orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
-    // // ## get outsource factory qty remain
-    // orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
-    // // console.log(orderProductFacOutQTY);
-    // // console.log(orderProductFacOutRemainQTY);
-
-    // // ## style zone color size
-    // orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
-    // orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
-    // // console.log(orderProductFacOutStyleColorSizeQTY);
-
     // console.log('0' || '1');
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn) || '';
     res.status(200).json({
@@ -2053,12 +2033,55 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
       orderProductFacOut: orderProductFacOut,
       orderProductFacReceive: orderProductFacReceive,
 
-      // currentOrderStyle: currentOrderStyle,
-      // outsourcefactoryID: outsourcefactoryID,
-      // orderProductFacOutQTY: orderProductFacOutQTY,
-      // orderProductFacOutRemainQTY: orderProductFacOutRemainQTY,
-      // orderProductFacOutStyleColorSizeQTY: orderProductFacOutStyleColorSizeQTY,
-      // orderProductFacOutStyleColorSizeRemainQTY: orderProductFacOutStyleColorSizeRemainQTY,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp002', 
+        mode:'errRepCurrentCompanyOrder', 
+        value: "error report current company order"
+      }
+    });
+  }
+}
+
+// router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr", 
+// checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState2);
+exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getRepCompanyOrderOutsourceState2');
+
+  const companyID = req.params.companyID;
+  // const factoryID = req.params.factoryID;
+  // const nodeID = req.params.nodeID;
+  const orderStatusArr = JSON.parse(req.params.ordertatus);
+  const orderIDArr = JSON.parse(req.params.orderIDArr);
+  // const repListNameArr = JSON.parse(req.params.repListName);
+  // console.log(companyID, orderStatusArr);
+  // console.log(orderIDArr);
+
+  try {
+
+    const isOutsource = true;
+    // ## get outsource factory sent out
+    const status1 = 'outsource';  // ## sent out  outsource
+    const orderProductFacOut = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status1);
+    // console.log(orderProductFacOut);
+
+    // ## get outsource factory receive
+    const status2 = 'normal';  // ## receive
+    const orderProductFacReceive = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status2);
+    // console.log(orderProductFacReceive);
+
+    // console.log('0' || '1');
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn) || '';
+    res.status(200).json({
+      token: '',
+      expiresIn: process.env.expiresIn,
+      orderIDArr: orderIDArr,
+      orderProductFacOut: orderProductFacOut,
+      orderProductFacReceive: orderProductFacReceive,
 
     });
   } catch (err) {

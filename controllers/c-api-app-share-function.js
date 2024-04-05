@@ -6636,6 +6636,25 @@ exports.get1NodeStationLoginRequest= async (companyID, factoryID, nodeID, statio
   return nodeStationLoginRequest;
 }
 
+// getOrderIDs(companyID, season);
+exports.getOrderIDs= async (companyID, seasonYear) => {
+  const orderIDs = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":seasonYear},
+    ] } },
+    { $project: {	
+        _id: 0,	
+        orderID: 1,	
+    }	}
+  ]);
+  // console.log(orderIDs);
+  const orderIDsF = await orderIDs.map(fw => ({
+    orderID: fw.orderID, 
+  }));
+  return orderIDsF;
+}
+
 exports.getOrderProduct01= async (companyID, factoryID, productBarcodeNo) => {
   const orderProduct = await OrderProduction.aggregate([
     { $match: { $and: [
