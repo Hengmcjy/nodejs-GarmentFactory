@@ -1600,6 +1600,8 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
     // console.log(productBarcodeNos);
     // console.log(productionNode);
     // console.log(stationID);
+
+    
     
     // ## get flowseq
     // getNodeFlow1= async (companyID, factoryID, nodeFlowID)
@@ -1609,6 +1611,36 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
     // console.log(nodeflow);
     let flowSeq = nodeflow.flowSeq;
     flowSeq.sort((a,b)=>{ return a.seqNo >b.seqNo?1:a.seqNo <b.seqNo?-1:0 });
+
+    // ## check last nodeID for check error
+    const orderProduction1 = await ShareFunc.getOrderProduct01(companyID, factoryID, productBarcodeNos[0]);
+    let productionNodeX = [];
+    let fromNodeLast = '';
+    if (!orderProduction1) {
+      return res.status(501).json({
+        message: {
+          messageID: 'errns017', 
+          mode:'errEditNextNode', 
+          value: "err edit next node"
+        },
+        success: false
+      });
+    } else {
+      productionNodeX = orderProduction1.productionNode;
+      fromNodeLast = productionNodeX[productionNodeX.length - 1].fromNode;
+      const nodeIDF = productionNodeX.filter(i=>i.fromNode === productionNode.fromNode);
+      if (fromNodeLast === productionNode.fromNode || fromNodeLast === 'outsource' || nodeIDF.length > 0) {
+        // console.log('333');
+        return res.status(501).json({
+          message: {
+            messageID: 'errns017', 
+            mode:'errEditNextNode', 
+            value: "err edit next node"
+          },
+          success: false
+        });
+      }
+    }
 
     // ## check special case / for special setting for temp time (computer not ready to use in every node department)
     const productionNodeArr = 
@@ -1701,6 +1733,7 @@ exports.putOrderProductionNextNodeID = async (req, res, next) => {
 
     } else {
       // ##  edit next node productionNode
+      // console.log('edit next node productionNode');
       result1 = await OrderProduction.updateMany(
         {$and: [
           {"companyID":companyID},
