@@ -447,9 +447,13 @@ exports.getTestTest21 = async (req, res, next) => {
   const companyID = 'c000001';
   // const ver = 1;
   const notIn = ['outsource'];
-  // const nodeIDs = ['1.COMPUTER-KNITTING']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'
-  const nodeIDs = ['2.PANAL-INSPECTION']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'  3.LINKING  4.MENDING
+  const nodeIDs = ['1.COMPUTER-KNITTING']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'
+  // const nodeIDs = ['2.PANAL-INSPECTION']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'  3.LINKING  4.MENDING 5.WASHING 6.PRESSING 7.QC
+  // const nodeIDs = ['1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'];
   // const nodeIDs = ['3.LINKING', '4.MENDING'];
+  // const nodeIDs = ['5.WASHING', '6.PRESSING', '7.QC'];
+  // const nodeIDs = ['1.COMPUTER-KNITTING', '2.PANAL-INSPECTION', '3.LINKING', 
+  //                   '4.MENDING', '5.WASHING', '6.PRESSING', '7.QC'];
 
   const result1 = await OrderProduction.aggregate([
     { $match: { $and: [
@@ -522,7 +526,8 @@ exports.getTestTest21 = async (req, res, next) => {
     sumNodeID: fw.sumNodeID,
   }));
 
-  const result1FF = result1F.filter(i=>i.sumNodeID > 1);
+  let result1FF = result1F.filter(i=>i.sumNodeID > 1);
+  result1FF.sort((a,b)=>{ return a.bundleNo >b.bundleNo?1:a.bundleNo <b.bundleNo?-1:0 });
 
   console.log(result1FF);
   console.log(result1FF.length);
