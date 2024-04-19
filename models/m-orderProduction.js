@@ -30,6 +30,18 @@ const orderProductionSchema = mongoose.Schema({
   productCount : {type: Number},  
   productionDate : {type: Date, required: true},  // ## วันที่เริ่มต้นผลิต
   productStatus : {type: String},  
+  orLost : {
+    datetime : {type: Date},
+    odpLostID : {type: String},
+    lostGroupID : {type: String},
+    nodeID : [{type: String}],
+    note : {type: String},
+    createBy: {
+      userID: {type: String},
+      userName: {type: String},
+    },
+  },
+
   forLoss : {type: Boolean},  
   isOutsourceTracking : {type: Boolean},
   yarnLot: [{   // ## 

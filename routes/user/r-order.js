@@ -53,6 +53,12 @@ router.put("/update4/qrcode/replacement", checkAuth, checkUUID, orderController.
 router.put("/update5/setSubNodeFlowCost", checkAuth, checkUUID, orderController.putOrderSubNodeFlowCostUpdate);
 // router.put("/update5/setsubnodeflowcost", checkAuth, checkUUID, orderController.putOrderSubNodeFlowCostUpdate);
 
+
+router.get("/get/OrderLost/list/:companyID/:userID/:orderID",checkAuth, checkUUID, orderController.getOrderLostList);
+
+// putOrderLost
+router.put("/update/opd/lost/putOrderLost", checkAuth, checkUUID, orderController.putOrderLost);
+
 // // ## /api/order/orderProduction/createnew
 // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);
 

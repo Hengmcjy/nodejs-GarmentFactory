@@ -28,6 +28,10 @@ const Order = require("../models/m-order");
 const OrderProduction = require("../models/m-orderProduction");
 const OrderProductionQueue = require("../models/m-orderProductionQueue");
 const OrderProductionQueueList = require("../models/m-orderProductionQueueList");
+
+const OPDLost = require("../models/m-opdLost");
+const LostGroup = require("../models/m-lostGroup");
+
 const Bundlesetgroup = require("../models/m-bundleSetGroup");
 const Yarn = require("../models/m-yarn");
 const YarnData = require("../models/m-yarnData");
@@ -1510,6 +1514,52 @@ exports.getProductImageProfiles= async (companyID, productIDs) => {
 
 // #################################################################################
 // ## order zone ####################################################################
+
+// ## get opd lost list
+exports.getOPDLosts= async (companyID, show) => {
+  // limit = +limit; // ## change to number
+  // console.log('getOPDLosts');
+  // console.log(companyID, show);
+  const opdlosts = await OPDLost.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"show":show},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        opdLostID: 1,
+        opdLostName: 1,
+        lostGroupID: 1,
+        show: 1,
+        seq: 1,
+    }	}
+  ]);
+  // console.log(opdlosts);
+  return opdlosts;
+}
+
+// ## get lost group list
+exports.getLostGroups= async (companyID, show) => {
+  // limit = +limit; // ## change to number
+  const lostGroups = await LostGroup.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"show":show},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        lostGroupID: 1,
+        lostGroupName: 1,
+        opdLostName: 1,
+        show: 1,
+        seq: 1,
+    }	}
+  ]);
+  // console.log(lostGroups);
+  return lostGroups;
+}
 
 // ShareFunc.getBundlesetgroups(companyID, orderID, seasonYear);
 exports.getBundlesetgroups= async (companyID, orderID, seasonYear) => {
@@ -6685,6 +6735,41 @@ exports.getOrderProduct01= async (companyID, factoryID, productBarcodeNo) => {
   return orderProduct.length>0?orderProduct[0]:null;
 }
 
+exports.getOrderProductLostList= async (companyID, orderID, productStatus) => {
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      {"productStatus":productStatus},
+      // {"productBarcodeNo":productBarcodeNo},
+      // {"productBarcodeNoReal":{$in: productBarcodeNos}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        // factoryID: 1,		
+        // orderID: 1,	
+        // bundleNo: 1,
+        // bundleID: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productBarcodeNoReserve: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        productStatus: 1,
+        orLost: 1,
+        yarnLot: 1,
+        // outsourceData: 1,
+        // subNodeFlow: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	}
+  ]);
+  // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
+  // console.log(orderProduct);
+  return orderProduct;
+}
+
 exports.getOrderProductListByByORIDBunNo= async (companyID, orderID, bundleNo) => {
   const orderProduct = await OrderProduction.aggregate([
     { $match: { $and: [
@@ -6792,6 +6877,38 @@ exports.getOrderProductsByBundleNos= async (companyID, factoryID, bundleNos) => 
       // {"factoryID":factoryID},
       // {"productBarcodeNoReal":productBarcodeNo},
       {"bundleNo":{$in: bundleNos}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        bundleID: 1,
+        productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productBarcodeNoReserve: 1,
+        productCount: 1,
+        productionDate: 1,
+        productStatus: 1,
+        yarnLot: 1,
+        outsourceData: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	}
+  ]);
+  // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
+  // console.log(orderProducts);
+  return orderProducts;
+}
+
+exports.getOrderProductsByBundleIDs= async (companyID, factoryID, bundleIDs) => {
+  const orderProducts = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"productBarcodeNoReal":productBarcodeNo},
+      {"bundleID":{$in: bundleIDs}}
     ] } },
     { $project: {			
         _id: 1,	

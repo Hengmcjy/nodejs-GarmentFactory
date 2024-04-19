@@ -219,6 +219,10 @@ exports.getOrders = async (req, res, next) => {
     // console.log(orders);
     const ordersCount = await ShareFunc.getOrdersCount(companyID, status, seasonYearArr);
 
+    // ## get opd lost list and lost group list
+    const opdLosts = await ShareFunc.getOPDLosts(companyID, true);
+    const lostGroups = await ShareFunc.getLostGroups(companyID, true);
+    // console.log(opdLosts);
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
@@ -231,7 +235,9 @@ exports.getOrders = async (req, res, next) => {
       orders: orders,
       ordersCount: ordersCount,
       orderSeasonYears: orderSeasonYears,
-      seasonYear: seasonYear
+      seasonYear: seasonYear,
+      opdLosts: opdLosts,
+      lostGroups: lostGroups,
     });
 
   } catch (err) {
@@ -661,7 +667,153 @@ exports.putOrderSubNodeFlowCostUpdate = async (req, res, next) => {
   }
 }
 
+// router.get("/get/OrderLost/list/:companyID/:userID/:orderID", orderController.getOrderLostList);
+exports.getOrderLostList = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  const orderID = req.params.orderID;
+  // const userID = req.params.userID;
+  // const page = +req.params.page;
+  // const limit = +req.params.limit;
+  // const status = ['open'];
 
+  // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
+
+  // const test = uuidv5("Hello World", process.env.IOID); // ⇨ 'a572fa0f-9bfa-5103-9882-16394770ad11'
+  // console.log(test);
+  // console.log(uuidv4());
+
+  try {
+    // getOrderProductLostList= async (companyID, orderID, productStatus)
+    const productStatus = 'lost';
+    const orderProduct = await ShareFunc.getOrderProductLostList(companyID, orderID, productStatus);
+    // console.log(orders);
+    // const ordersCount = await ShareFunc.getOrdersCount(companyID, status);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      orderProduct: orderProduct,
+      // ordersCount: ordersCount
+      // factory: factory
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO025', 
+        mode:'errOrderSeasonYearsList', 
+        value: "error get Order season years list"
+      }
+    });
+  }
+}
+
+// putOrderLost
+// router.put("/update/opd/lost/putOrderLost", checkAuth, checkUUID, orderController.putOrderLost);
+exports.putOrderLost = async (req, res, next) => {
+  // console.log('putOrderLost');
+  // try {} catch (err) {}
+  const data = req.body;
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+
+  let session = await mongoose.startSession();
+
+  try {
+    await session.withTransaction(async (session) => {
+      // ##  create order 
+      const companyID = data.companyID;
+      const orderID = data.orderID;
+      const productBarcodeNoReal = data.productBarcodeNoReal;
+      const bundleNo = +data.bundleNo;
+      const bundleID = data.bundleID;
+      let orLost = data.orLost;
+      const mode = data.mode;  // ## set , unset
+      orLost.datetime = current;
+
+      
+
+      if (mode === 'set') {
+        const newuuid = uuidv4();
+        const orderUpdate1 = await OrderProduction.updateOne({$and: [
+            {"companyID":companyID},
+            {"orderID":orderID}, 
+            {"productBarcodeNoReal":productBarcodeNoReal}, 
+          ]} , 
+          {
+            "productStatus": "lost",
+            "productCount": 1,
+            "bundleID": newuuid,
+            // "orLost": orLost, 
+            $set: { "orLost" : orLost },
+          }).session(session); 
+      } else if (mode === 'unset') {
+        const orderUpdate2 = await OrderProduction.updateOne({$and: [
+          {"companyID":companyID},
+          {"orderID":orderID}, 
+          {"productBarcodeNoReal":productBarcodeNoReal}, 
+        ]} , 
+        {
+          "productStatus": "normal",
+          $unset: {orLost: ""},
+        }).session(session);
+      }
+
+      // ## get all product in a bundle / change productCount - 1  
+      const orderProducts = await ShareFunc.getOrderProductsByBundleIDs(companyID, '', [bundleID]);
+      const productBarcodeNoReals = Array.from(new Set(orderProducts.map((item) => item.productBarcodeNoReal)));
+      const productBarcodeNoReals2 = productBarcodeNoReals.filter(i=>i !== productBarcodeNoReal);
+      const productCount = orderProducts[0].productCount - 1;
+      // console.log(productBarcodeNoReals2, productCount, productBarcodeNoReals2.length);
+
+      result1 = await OrderProduction.updateMany(
+        {$and: [
+          {"companyID":companyID},
+          {"orderID":orderID}, 
+          {"productBarcodeNoReal":{$in: productBarcodeNoReals2}},
+        ]},
+        {
+          "productCount": productCount,
+        }).session(session); 
+
+
+        await session.commitTransaction();
+        session.endSession();
+    });
+
+    // ## get 1 order
+    // exports.getOrder= async (companyID, orderID) 
+    // const order = await ShareFunc.getOrder(companyID, orderID);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      success: true
+    });
+
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'errO019', 
+        mode:'errEditOrderSubNodeFlowCost', 
+        value: "error edit order subNodeFlowCost"
+      }
+    });
+  }
+}
 
 // // // ## /api/order/orderProduction/createnew
 // // router.post("/orderProduction/createnew", checkAuth, checkUUID, orderController.postOrderProductionCreateNew);

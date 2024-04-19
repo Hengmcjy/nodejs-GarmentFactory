@@ -174,6 +174,9 @@ router.get("/node/noscan1/rep/CFN/:companyID/:factoryIDArr/:nodeID/:orderIDsArr/
 // ## create company factory staff  createStaffCompanyFactory
 router.post("/stf/create/companyID/factory/staff", checkAuth, checkUUID, userController.createStaffCompanyFactory);
 
+// ## edit company factory staff  putEditStaffCompanyFactory
+router.post("/stf/edit/companyID/factory/staff", checkAuth, checkUUID, userController.putEditStaffCompanyFactory);
+
 // ## get staff1 company 
 router.get("/getstaff1/company/:userID", checkAuth, checkUUID, userController.getStaff1Company);
 

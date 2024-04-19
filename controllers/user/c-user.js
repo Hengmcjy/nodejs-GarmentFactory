@@ -447,11 +447,11 @@ exports.getTestTest21 = async (req, res, next) => {
   const companyID = 'c000001';
   // const ver = 1;
   const notIn = ['outsource'];
-  const nodeIDs = ['1.COMPUTER-KNITTING']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'
+  // const nodeIDs = ['1.COMPUTER-KNITTING']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'
   // const nodeIDs = ['2.PANAL-INSPECTION']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'  3.LINKING  4.MENDING 5.WASHING 6.PRESSING 7.QC
   // const nodeIDs = ['1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'];
   // const nodeIDs = ['3.LINKING', '4.MENDING'];
-  // const nodeIDs = ['5.WASHING', '6.PRESSING', '7.QC'];
+  const nodeIDs = ['5.WASHING', '6.PRESSING', '7.QC'];
   // const nodeIDs = ['1.COMPUTER-KNITTING', '2.PANAL-INSPECTION', '3.LINKING', 
   //                   '4.MENDING', '5.WASHING', '6.PRESSING', '7.QC'];
 
@@ -3939,6 +3939,113 @@ exports.createStaffCompanyFactory = async (req, res, next) => {
         messageID: 'erru010', 
         mode:'errCreateCompanyFactoryUser', 
         value: "error create company factory user!"
+      },
+      success: false,
+      user: {}
+    });
+  }
+}
+
+// // ## edit company factory staff  putEditStaffCompanyFactory
+// router.post("/stf/edit/companyID/factory/staff", checkAuth, checkUUID, userController.putEditStaffCompanyFactory);
+exports.putEditStaffCompanyFactory = async (req, res, next) => {
+  // try {  } catch (err) {}
+  // companyID userID page limit
+  // console.log(req.body);
+  // const factory = [];
+  // console.log('putEditStaffCompanyFactory');
+  const data = req.body;
+  const user = data.user;
+  const companyID = user.uFactory[0].companyID;
+  const factoryID = user.uFactory[0].factoryID;
+  const checkUserID = user.userID;
+  // const userClass = {userClassID: 'own', userClassName: 'owner'};
+  const createBy = data.createBy;
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const userID = req.userData.tokenSet.userID;
+  // console.log('companyID, factoryID, checkUserID')
+  // console.log(companyID, factoryID, checkUserID, userID)
+  // console.log(user)
+  try {
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    // console.log(companyID, factoryID, checkUserID, userID)
+    // exports.checkUserIDExisted= async (userID)
+    const isExist = await ShareFunc.checkUserIDExisted(companyID, factoryID, checkUserID);
+    if (!isExist) {
+      return res.status(422).json({
+        message: {
+          messageID: 'erru010-1', 
+          mode:'errEditCompanyFactoryUserExisted', 
+          value: "error edit company factory user existed"
+        },
+        success: false,
+        user: {}
+      });
+    } else {
+      // ## create user	
+      // console.log('1');
+      // ## start new user password
+      // let userPass = '';
+      // bcrypt.hash(process.env.NEWPASSWORD, 10).then(async (hash) => {
+        // userPass = hash;
+        // console.log('2');
+        const uInfo = {
+          userName : user.uInfo.userName,
+          // userPass : '',
+          // pic : '',
+          // tel : '',
+          // email : '',
+          // registDate : current,
+          // lastLogin : current
+        };
+        const type = user.type;  // u=user , s=staff/worker , us=userstaff
+        const qrCode = user.qrCode;
+        const status = user.status;
+        const state = user.state;  // ## staff = worker , user office
+        const uCompany = [];
+        const uFactory = user.uFactory;
+        // console.log(uFactory);
+  
+        const userUpsert = await User.updateOne({$and: [
+          {"userID":user.userID},
+        ]} , 
+        {
+          "uInfo.userName": uInfo.userName,
+          // "type": type,
+          // "qrCode": qrCode,
+          // "uCompany": uCompany,
+          // "uFactory": uFactory,
+          // "status": status,
+          // "state": state,
+          // "createBy": createBy,
+        }); 
+  
+        // ## get  user info
+        let userf = await User.findOne({ userID: user.userID});
+        userf.uInfo.userPass = '';
+        // console.log(userf);
+
+        res.status(200).json({
+          token: token,
+          expiresIn: process.env.expiresIn,
+          userID: userID,
+          user: userf,
+          message: {
+            messageID: 'complete', 
+            mode:'complete', 
+            value: "edit user/staff completed"
+          },
+          success: true
+        });
+      // });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: {
+        messageID: 'erru010-2', 
+        mode:'errEditCompanyFactoryUser', 
+        value: "error edit company factory user!"
       },
       success: false,
       user: {}
