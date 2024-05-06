@@ -28,6 +28,8 @@ const Order = require("../models/m-order");
 const OrderProduction = require("../models/m-orderProduction");
 const OrderProductionQueue = require("../models/m-orderProductionQueue");
 const OrderProductionQueueList = require("../models/m-orderProductionQueueList");
+const SubNodeFlowType = require("../models/m-subNodeFlowType");
+
 
 const OPDLost = require("../models/m-opdLost");
 const LostGroup = require("../models/m-lostGroup");
@@ -819,9 +821,9 @@ exports.editLangData= async (languageID) => {
 
 // ## signupSendMail  send mail
 exports.signupSendMail= async (email, uuid) => {
-  
+  const emailFactory = 'go.garment.mail@gmail.com';
   // ## test send mail ( nodemailer )
-  let transporter =  nodemailer.createTransport({
+  let transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.EMAILSENDER,
@@ -835,7 +837,7 @@ exports.signupSendMail= async (email, uuid) => {
   // รายละเอียดอีเมล
   transporter.sendMail({
     from: process.env.EMAILSENDER,    // ผู้ส่ง
-    to: email,// ผู้รับ
+    to: email,// ผู้รับ / to: "bar@example.com, baz@example.com", // list of receivers
     subject: "comfirm email [KOJ Garment system]",                      // หัวข้อ
     // text: "There is a new article. It's about sending emails, check it out!", // plain text body
     html: `
@@ -846,10 +848,10 @@ exports.signupSendMail= async (email, uuid) => {
       </div>
       <div style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:14px;color:rgba(0,0,0,0.87);line-height:20px;padding-top:20px;text-align:left">
               Google received a request to use 
-              <a style="font-weight:bold">heng067@gmail.com</a> 
+              <a style="font-weight:bold">${email}</a> 
               as a recovery email for
               Google Account 
-              <a style="font-weight:bold">go.garment.mail@gmail.com</a>
+              <a style="font-weight:bold">${emailFactory}</a>
               .<br><br>
               Use this code to finish setting
               up this recovery email:
@@ -862,7 +864,7 @@ exports.signupSendMail= async (email, uuid) => {
               expire in 24 hours.
               <br><br>
               If you don’t recognize 
-              <a style="font-weight:bold">go.garment.mail@gmail.com</a>
+              <a style="font-weight:bold">${emailFactory}</a>
               , you
               can safely ignore this email.
           </div>
@@ -1594,6 +1596,26 @@ exports.getBundlesetgroups= async (companyID, orderID, seasonYear) => {
   return bundleSetGroups;
 }
 
+exports.getSubNodeFlowTypeList= async (companyID) => {
+  // limit = +limit; // ## change to number
+  // const subNodeFlowTypes = await ShareFunc.getSubNodeFlowTypeList(companyID);
+  const subNodeFlowTypes = await SubNodeFlowType.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"orderID":orderID},
+      // {"seasonYear":seasonYear},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        seq: 1,
+        subNodeFlowTypeID: 1,
+        subNodeFlowTypeName: 1,
+    }	}
+  ]);
+  // console.log(subNodeFlowTypes);
+  return subNodeFlowTypes;
+}
 
 exports.validateBundleNoQtyAndCount= async (bundleNoSet) => {
   if (bundleNoSet.trim() === '') { return -1; } // ## check empty data string
@@ -6870,6 +6892,8 @@ exports.getCOrderProduct1= async (companyID, productBarcodeNos) => {
   return orderProduct.length>0?orderProduct:[];
 }
 
+
+
 exports.getOrderProductsByBundleNos= async (companyID, factoryID, bundleNos) => {
   const orderProducts = await OrderProduction.aggregate([
     { $match: { $and: [
@@ -7028,6 +7052,60 @@ exports.getOrderProductReceiveOutsource01= async (companyID, productBarcodeNos) 
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct.length>0?orderProduct[0]:null;
+}
+
+exports.getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) => {
+  // {"datetime": { $gte: dateStart, $lte : dateEnd}},
+
+  const bundleNoList = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: [orderID]}},
+      {"bundleNo": { $gte: bunNoStart, $lte : bunNoEnd}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        bundleNo: 1,
+        productCount: 1,
+        targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+        color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+        size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+        yarnLot: 1,
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        bundleNo: '$bundleNo',
+        productCount: '$productCount',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+        yarnLot: '$yarnLot',
+      },
+      // sumFactoryOutsQty: {$sum: 1} ,
+      // sumFactoryOutsQty: {$sum: '$productCount'} ,
+    }}   
+  ])
+  .hint( { companyID: 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
+
+  const bundleNoListF = await bundleNoList.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID, 
+    bundleNo: fw._id.bundleNo, 
+    productCount: fw._id.productCount, 
+    targetPlace: fw._id.targetPlace, 
+    color: fw._id.color, 
+    size: fw._id.size,
+    yarnLot: fw._id.yarnLot,
+  }));
+
+  // this.orderIDs = Array.from(new Set(this.currentCompanyOrder.map((item: any) => item.orderID)));
+  // const bundleNoListN = Array.from(new Set(bundleNoListF.map((item) => item.bundleNo))).sort();
+
+  return bundleNoListF;
 }
 
 exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsource, status) => {
@@ -15326,6 +15404,8 @@ exports.getOrderProductionQueueByOrderIDProductBarcode= async (companyID, orderI
   // console.log(queueInfo);
   return queueInfo;
 }
+
+
 
 exports.getOrderProductionByProductBarcode= async (companyID, orderID, productBarcode) => {
   const orderProductionList = await OrderProduction.aggregate([

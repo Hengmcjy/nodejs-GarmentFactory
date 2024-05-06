@@ -75,6 +75,9 @@ router.put("/usage/list", checkAuth, checkUUID, yarnController.getYarnUsage);
 // ## getYarnUsageCF
 router.put("/usage/list2", checkAuth, checkUUID, yarnController.getYarnUsageCF);
 
+// ## editYarnUsageNewFacSendTo
+router.put("/usage/edit/sendto/newFac", checkAuth, checkUUID, yarnController.editYarnUsageNewFacSendTo);
+
 // ## putYarnUsageTransfersDate
 router.put("/edit/usage/transfer/date", checkAuth, checkUUID, yarnController.putYarnUsageTransfersDate); 
 

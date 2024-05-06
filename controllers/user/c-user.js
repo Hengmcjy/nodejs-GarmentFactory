@@ -449,9 +449,9 @@ exports.getTestTest21 = async (req, res, next) => {
   const notIn = ['outsource'];
   // const nodeIDs = ['1.COMPUTER-KNITTING']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'
   // const nodeIDs = ['2.PANAL-INSPECTION']; // '1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'  3.LINKING  4.MENDING 5.WASHING 6.PRESSING 7.QC
-  // const nodeIDs = ['1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'];
+  const nodeIDs = ['1.COMPUTER-KNITTING', '2.PANAL-INSPECTION'];
   // const nodeIDs = ['3.LINKING', '4.MENDING'];
-  const nodeIDs = ['5.WASHING', '6.PRESSING', '7.QC'];
+  // const nodeIDs = ['5.WASHING', '6.PRESSING', '7.QC'];
   // const nodeIDs = ['1.COMPUTER-KNITTING', '2.PANAL-INSPECTION', '3.LINKING', 
   //                   '4.MENDING', '5.WASHING', '6.PRESSING', '7.QC'];
 
@@ -649,18 +649,18 @@ exports.getTestTest20 = async (req, res, next) => {
 // router.get("/test/orderProductionQueue/01", userController.getOrderProductionQueue01);  // ##  update orderProductionQueue insert queueInfo
 exports.getOrderProductionQueue01 = async (req, res, next) => {
   const companyID = 'c000001';
-  const orderID = 'BA1P5A4A';
+  const orderID = 'DCA42A4A';
   const ver = 2;
   // const productID = 'AAD05A4A    ';
 
-  const factory = 'f000001';
-  const productBarcode = 'BA1P5A4A    JAPN-----24OM--------S---';
-  const bundleNoFrom = 12821;
-  const bundleNoTo = 12821;  // 
-  const startNo = 193;
-  const endNo = 200;
-  const productCount = 8;
-  const yarnLot = [{yarnLotID: '2315-574B'}];
+  const factory = 'f000003';
+  const productBarcode = 'DCA42A4A    JAPN-----24BK--------F---';
+  const bundleNoFrom = 25645;
+  const bundleNoTo = 26635;  // 
+  const startNo = 1;
+  const endNo = 11892;
+  const productCount = 12;
+  const yarnLot = [{yarnLotID: 'D23166171-1'}];
   const queueDate = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const isOutsource = false;
   const forLoss = false;
@@ -674,7 +674,7 @@ exports.getOrderProductionQueue01 = async (req, res, next) => {
   // let startNo0 = startNo;
   let startNo1 = startNo; // ## number start each bundle
   let endNo1 = 0;
-  // ## ceate numberFrom , numberTo
+  // ## create numberFrom , numberTo
   for (let i = bundleNoFrom; i <= bundleNoTo; i++) {
     endNo1 = startNo + (round * productCount) - 1;
     let queueInfo1 = {
@@ -738,6 +738,71 @@ exports.getOrderProductionQueue01 = async (req, res, next) => {
   res.write('</html>');
   return res.end();
 
+}
+
+// ## http://192.168.1.36:3968/api/user/test/orderProductionQueue/02
+// router.get("/test/orderProductionQueue/02", userController.getOrderProductionQueue02);  // ## delete element by bundleNo
+exports.getOrderProductionQueue02 = async (req, res, next) => {
+  // ## delete element by bundleNo   /  1 by 1
+  const companyID = 'c000001';
+  const orderID = 'DCA42A4A';
+  const ver = 2;
+  // const productID = 'AAD05A4A    ';
+
+  // const factory = 'f000003';
+  const productBarcode = 'DCA42A4A    JAPN-----24BK--------F---'; // DCA42A4A    JAPN-----24BK--------F---
+  const bundleNoFrom = 26637;
+  const bundleNoTo = 26644;  // 36962
+  const bundleNo = 26637;
+
+  // const startNo = 1;
+  // const endNo = 12000;
+  // const productCount = 12;
+  // const yarnLot = [{yarnLotID: 'D23166171-1'}];
+  // const queueDate = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  // const isOutsource = false;
+  // const forLoss = false;
+  // const forLossQty = 0;
+  // const toNode = '1.COMPUTER-KNITTING';
+
+  // //  ## update orderProductionQueue / delete array 1 element 
+  // const result2 = await OrderProductionQueue.updateOne(
+  //   {$and: [
+  //     {"companyID":companyID},
+  //     {"orderID":orderID},
+  //     {"ver":ver},
+  //   ]}, 
+  //   {
+  //     $pull: { queueInfo: {                // ## delete n element for this condition
+  //       productBarcode: productBarcode, 
+  //       // isOutsource: isOutsource,
+  //       bundleNo: { $gte: bundleNo},
+
+  //       // bundleNo: { $gte: bundleNoFrom},   // ## numberFrom ===>  >= numberFrom  && <= numberTo
+  //       // bundleNo: { $lte : bundleNoTo},
+
+  //       // numberTo: { $gte: numberFrom},   // ## numberTo ===>  >= numberFrom  && <= numberTo
+  //       // numberTo: { $lte : numberTo},
+
+  //       // bundleNo: { $gte: bundleNoFrom},   // ## bundleNo ===>  >= bundleNoFrom  && <= bundleNoTo
+  //       // bundleNo: { $lte : bundleNoTo},
+        
+  //     } }  
+  //   },
+  //   {upsert: true});
+
+    console.log('OK delete element for orderProductionQueue by bundleNo ');
+    res.setHeader('Content-Type', 'text/html');
+    res.write('<html>');
+    res.write('<head><title>OK delete element for orderProductionQueue by bundleNo </title><head>');
+    res.write('<body>');
+    res.write('<h1>OK delete element for orderProductionQueue by bundleNo    </h1></br>');
+    res.write('<h1>'+ ' OK '+'</h1></br>');
+    // res.write(queueInfo);
+    // res.write('<h1>'+queueInfo+'</h1>');
+    res.write('</body>');
+    res.write('</html>');
+    return res.end();
 }
 
 // // ## http://192.168.1.35:3968/api/user/test/test14

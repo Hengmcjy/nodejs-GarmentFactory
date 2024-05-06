@@ -58,7 +58,64 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## mail
 
+// ## http://192.168.1.36:3968/api/user/test/mail/test1
+exports.postSignupSendMail2 = async (req, res, next) => {
+  // try {} catch (err) {}
+  // const data = req.body;
+  // const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
 
+  try {
+    // ## 
+    const uuid = uuidv4();
+    const email = 'heng067@gmail.com';
+
+    // ##  signup SendMail()
+    const signupSendMail = await ShareFunc.signupSendMail(email, uuid);
+
+    
+    // console.log(uuid);
+    
+    // // ## create mail signup lifetime 60 mn 
+    // const mailSignupUpsert = await MailSignup.updateOne({$and: [
+    //   {"email":email},
+    // ]} , 
+    // {$set:{
+    //   "uuid": uuid,
+    //   "createdAt": new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'))
+    // }}, {upsert: true}); 
+
+    // res.status(200).json({
+    //   message: {
+    //     messageID: 'complete', 
+    //     mode:'complete', 
+    //     value: "send email completed"
+    //   },
+    //   success: true
+    // });
+    console.log('OK test sent email');
+    res.setHeader('Content-Type', 'text/html');
+    res.write('<html>');
+    res.write('<head><title>test sent email</title><head>');
+    res.write('<body>');
+    res.write('<h1>    </h1></br>');
+    res.write('<h1>  </h1>');
+    res.write('<h1>'+ ' OK '+'</h1>');
+    res.write('</body>');
+    res.write('</html>');
+    return res.end();
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errml001', 
+        mode:'errSendMailSignup', 
+        value: "error send mail signup"
+      },
+      success: false
+    });
+  }
+}
 
 // // ## send mail when user signup
 // router.post("/signup/sendmail", mailController.postSignupSendMail);

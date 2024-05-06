@@ -2,6 +2,7 @@ const express = require("express");
 const Multer = require("multer");
 const { Storage } = require("@google-cloud/storage");
 
+const mailController = require("../../controllers/user/c-mail");
 const reportController = require("../../controllers/user/c-report");
 const userController = require("../../controllers/user/c-user");
 const checkAuth = require('../../middleware/check-auth');
@@ -59,12 +60,21 @@ router.get("/test/test20", userController.getTestTest20);  // ##  update ver for
 
 // ## updateOne - push  , orderProductionQueue-> queueInfo
 router.get("/test/orderProductionQueue/01", userController.getOrderProductionQueue01);  // ##  update orderProductionQueue insert queueInfo
+router.get("/test/orderProductionQueue/02", userController.getOrderProductionQueue02);  // ## delete element by bundleNo
 
 // ## test order queue
 router.get("/test/orderqueue/test1", userController.getOrderQueueTest1);
 
 // ## test get mongodb version
 router.get("/test/get/monogdbver/getver", userController.getMonogoDbver1);
+
+
+// ## mail
+// ## http://192.168.1.36:3968/api/user/test/mail/test1
+router.get("/test/mail/test1", mailController.postSignupSendMail2);
+
+// ## test
+// ###########################################################
 
 
 // ## general info / starting data

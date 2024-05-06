@@ -86,6 +86,7 @@ const orderSchema = mongoose.Schema({
       nodeID : {type: String},
       subNodeID : {type: String},
       cost : {type: mongoose.Types.Decimal128},
+      subNodeFlowTypeID : {type: String},
     }],
   },
   createBy: {

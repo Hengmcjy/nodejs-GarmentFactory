@@ -2077,6 +2077,105 @@ exports.getYarnUsageCF = async (req, res, next) => {
   }
 }
 
+// router.put("/usage/edit/sendto/newFac", checkAuth, checkUUID, yarnController.editYarnUsageNewFacSendTo);
+exports.editYarnUsageNewFacSendTo = async (req, res, next) => {
+  // try {} catch (err) {}
+  const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;   // ## main factory 
+  const toFactoryID = data.toFactoryID; 
+  const customerID = data.customerID;
+  const yarnSeasonID = data.yarnSeasonID;// 2024SS
+  const season = yarnSeasonID.substr(0, 4);  // 2024
+  const yarnID = data.yarnID;
+  const yarnColorID = data.yarnColorID;
+  const yarnDataUUID = data.yarnDataUUID;
+  const status = data.status;
+  const yuUUID = data.yuUUID;
+  const invoiceID = data.invoiceID;
+  const usageMode = data.usageMode;
+  const yarnLotID = data.yarnLotID;
+
+  const newFacIDSendTo = data.newFacIDSendTo;
+
+  // console.log('editYarnUsageNewFacSendTo');
+  // console.log(newFacIDSendTo);
+  // console.log(companyID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status, toFactoryID);
+  // console.log(yuUUID, invoiceID, usageMode, yarnLotID);
+
+  let session = await mongoose.startSession();
+  try {
+
+    // ## edit new factoryID send to
+    await session.withTransaction(async (session) => {
+
+      const yarnLotUsageUpdate = await YarnLotUsage.updateOne(
+        {$and: [
+          {"companyID":companyID},
+          // {"factoryID":factoryID},
+          // {"customerID":customerID},
+          {"yarnID":yarnID},
+          {"yarnColorID":yarnColorID},
+          {"yarnSeasonID":yarnSeasonID},
+        ]},
+        {$set: {"yarnUsage.$[elem].usageInfo.toFactoryID" : newFacIDSendTo}},
+        {
+          multi: true,
+          arrayFilters: [  
+            {
+              "elem.yuUUID": yuUUID ,
+              "elem.invoiceID": invoiceID , 
+              "elem.usageMode": usageMode , 
+              "elem.yarnLotID": yarnLotID , 
+              // "elem.yarnLotUUID": yarnLotUUID , 
+              // "elem.toFactoryID": toFactoryID , 
+            },
+            // {
+            //   "elem2.yarnLotUUID": yarnLotUUID,
+            //   "elem2.yarnLotID": yarnLotID,
+            // }
+          ]
+        }).session(session);
+
+        await session.commitTransaction();
+        session.endSession();
+    });
+
+    // ## get yarn usage
+    const yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+  // console.log(yarnLotUsageList);
+
+
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      yarnLotUsageList: yarnLotUsageList,
+      // yarnsCount: yarnsCount,
+      // yarnPlans: yarnPlans,
+      // yarnPlansCount: yarnPlansCount,
+      // productImageProfiles: productImageProfiles,
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'erry008', 
+        mode:'errYarnUsage', 
+        value: "error get yarn usage"
+      }
+    });
+  }
+}
+
 // router.put("/edot/usage/transfer/date", checkAuth, checkUUID, yarnController.putYarnUsageTransfersDate); 
 exports.putYarnUsageTransfersDate = async (req, res, next) => {
   // console.log('putEditYarnLotIDDevide');

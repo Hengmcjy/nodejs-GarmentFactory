@@ -53,6 +53,9 @@ router.put("/update4/qrcode/replacement", checkAuth, checkUUID, orderController.
 router.put("/update5/setSubNodeFlowCost", checkAuth, checkUUID, orderController.putOrderSubNodeFlowCostUpdate);
 // router.put("/update5/setsubnodeflowcost", checkAuth, checkUUID, orderController.putOrderSubNodeFlowCostUpdate);
 
+// getSubNodeFlowTypeList
+router.get("/get/Order/SubNodeFlowType/list/:companyID/:userID",checkAuth, checkUUID, orderController.getSubNodeFlowTypeList);
+
 
 router.get("/get/OrderLost/list/:companyID/:userID/:orderID",checkAuth, checkUUID, orderController.getOrderLostList);
 

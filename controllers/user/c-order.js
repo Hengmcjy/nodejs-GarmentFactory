@@ -373,6 +373,8 @@ exports.postOrderCreateNew = async (req, res, next) => {
     const customerOR = data.order.customerOR;
     const createBy = data.order.createBy;
 
+    console.log(companyID, factoryID, ver, orderID, seasonYear, createBy, customerOR);
+
     const orderUpsert = await Order.updateOne({$and: [
         {"companyID":companyID},
         {"orderID":orderID}, 
@@ -392,6 +394,8 @@ exports.postOrderCreateNew = async (req, res, next) => {
         "productOR": productOR,
         "createBy": createBy,
       }, {upsert: true}); 
+
+    console.log(orderUpsert);
 
     // ## get 1 order
     // exports.getOrder= async (companyID, orderID) 
@@ -667,6 +671,43 @@ exports.putOrderSubNodeFlowCostUpdate = async (req, res, next) => {
   }
 }
 
+// router.get("/get/Order/SubNodeFlowType/list/:companyID/:userID",checkAuth, checkUUID, orderController.getSubNodeFlowTypeList);
+exports.getSubNodeFlowTypeList = async (req, res, next) => {
+  // try {} catch (err) {}
+  const companyID = req.params.companyID;
+  const userID = req.params.userID;
+  // console.log(test);
+
+  try {
+
+    const subNodeFlowTypes = await ShareFunc.getSubNodeFlowTypeList(companyID);
+    // console.log(subNodeFlowTypes);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      subNodeFlowTypes: subNodeFlowTypes,
+      // ordersCount: ordersCount
+      // factory: factory
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO025', 
+        mode:'errgetSubNodeFlowTypeList', 
+        value: "error get SubNodeFlowType List"
+      }
+    });
+  }
+}
+
 // router.get("/get/OrderLost/list/:companyID/:userID/:orderID", orderController.getOrderLostList);
 exports.getOrderLostList = async (req, res, next) => {
   // try {} catch (err) {}
@@ -709,8 +750,8 @@ exports.getOrderLostList = async (req, res, next) => {
     return res.status(501).json({
       message: {
         messageID: 'errO025', 
-        mode:'errOrderSeasonYearsList', 
-        value: "error get Order season years list"
+        mode:'errgetOrderLostList', 
+        value: "error get Order Lost List"
       }
     });
   }
@@ -1988,7 +2029,7 @@ exports.getProductionQueueCount = async (req, res, next) => {
   // const limit = +req.params.limit;  // ## records we need to get
   const userID = req.userData.tokenSet.userID;
   // console.log('getProductionQueueCount');
-  // console.log(companyID, orderID, startNo, endNo);
+  console.log(companyID, orderID, startNo, endNo);
   try {
 
     // ## get count production queues
@@ -2046,6 +2087,10 @@ exports.getProductionQueueList = async (req, res, next) => {
     const orderProductionQueue = await ShareFunc.getProductionQueueListByBundleNo(companyID, orderID, startNo, endNo);
     // console.log(orderProductionQueue);
 
+    // getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) 
+    const orderBundleList = await ShareFunc.getOrderBundleNoList(companyID, orderID, startNo, endNo);
+    // console.log(orderBundleList);
+
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -2056,7 +2101,7 @@ exports.getProductionQueueList = async (req, res, next) => {
       userID: userID,
       totalProductionQueueByBundleNo: totalProductionQueueByBundleNo,
       orderProductionQueue: orderProductionQueue,
-      // sumProductionQueueByBarcode: sumProductionQueueByBarcode,
+      orderBundleList: orderBundleList,
     });
 
   } catch (err) {
