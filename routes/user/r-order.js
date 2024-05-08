@@ -32,6 +32,9 @@ router.get("/getlist2/:companyID/:userID/:orderids", orderController.getOrdersBy
 // ## get order list /api/order/getlist3/:companyID/:userID/:orderids  getOrdersZoneStyleSizeByOrderIDs
 router.get("/getlist3/:companyID/:userID/:orderids/:orderStatus", checkAuth, checkUUID, orderController.getOrdersZoneStyleSizeByOrderIDs);
 
+// ## get order list /api/order/getlist3/:companyID/:userID/:orderids  getOrdersZoneStyleSizeByOrderIDs
+router.get("/getlist3-1/:companyID/:userID/:orderids/:orderStatus", orderController.getOrdersZoneStyleSizeByOrderIDs);
+
 // ## /api/order/creataenew
 router.post("/createnew", checkAuth, checkUUID, orderController.postOrderCreateNew);
 

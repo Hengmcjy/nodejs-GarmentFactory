@@ -97,13 +97,14 @@ exports.stfGetNodeFlow = async (req, res, next) => {
   const factoryID = req.params.factoryID;
   const nodeFlowID = req.params.nodeFlowID;
   // const userID = req.userData.tokenSet.userID;
-  // console.log('getNodeFlows');
   const status = ['a','c'];
-
   
+  // console.log('getNodeFlows');
+  // console.log(companyID, factoryID, nodeFlowID);
   try {
     // ## get node flow 1 page
     const nodeFlow = await ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
+    // console.log(nodeFlow);
 
     // const subNodeFlow = await ShareFunc.getSubNodeFlow(companyID);
     const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
@@ -1007,6 +1008,9 @@ exports.getDataNodeStationLogin = async (req, res, next) => {
     const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
     // console.log(subNodeflow);
 
+    // ## get 
+    const userGroupScan = await ShareFunc.getUserGroupScanAll(companyID);
+
     // await ShareFunc.upsertUserSession1hr(userID);
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -1019,7 +1023,8 @@ exports.getDataNodeStationLogin = async (req, res, next) => {
       nodeStations: nodeStations,
       nodeFlows: nodeFlows,
       nodeFlow: nodeFlow,
-      subNodeflowC: subNodeflowC
+      subNodeflowC: subNodeflowC,
+      userGroupScan: userGroupScan,
     });
   } catch (err) {
     return res.status(501).json({
@@ -1081,6 +1086,9 @@ exports.getDataNodeStation = async (req, res, next) => {
     const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
     // console.log(subNodeflow);
 
+    // ## get 
+    const userGroupScan = await ShareFunc.getUserGroupScanAll(companyID);
+
     // await ShareFunc.upsertUserSession1hr(userID);
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -1093,7 +1101,8 @@ exports.getDataNodeStation = async (req, res, next) => {
       nodeStations: nodeStations,
       nodeFlows: nodeFlows,
       nodeFlow: nodeFlow,
-      subNodeflowC: subNodeflowC
+      subNodeflowC: subNodeflowC,
+      userGroupScan: userGroupScan,
     });
   } catch (err) {
     return res.status(501).json({

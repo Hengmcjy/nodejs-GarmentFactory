@@ -326,12 +326,12 @@ exports.getOrdersZoneStyleSizeByOrderIDs = async (req, res, next) => {
     // console.log(orders);
     // const ordersCount = await ShareFunc.getOrdersCount(companyID);
 
-    await ShareFunc.upsertUserSession1hr(userID);
+    // await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
-    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
 
     res.status(200).json({
-      token: token,
+      token: '',
       expiresIn: process.env.expiresIn,
       userID: userID,
       orders: orders,
