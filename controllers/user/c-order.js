@@ -310,11 +310,12 @@ exports.getOrdersZoneStyleSizeByOrderIDs = async (req, res, next) => {
   const userID = req.params.userID;
   const orderIDs = JSON.parse(req.params.orderids);
   const orderStatusArr = JSON.parse(req.params.orderStatus);
+  const mode = req.params.mode;
 
   // const MY_NAMESPACE = "a572fa0f-9bfa-5103-9882-16394770ad11";
 
   // const test = uuidv5("Hello World", process.env.IOID); // ⇨ 'a572fa0f-9bfa-5103-9882-16394770ad11'
-  // console.log(test);
+  // console.log(userID);
   // console.log(uuidv4());
 
   try {
@@ -326,12 +327,15 @@ exports.getOrdersZoneStyleSizeByOrderIDs = async (req, res, next) => {
     // console.log(orders);
     // const ordersCount = await ShareFunc.getOrdersCount(companyID);
 
-    // await ShareFunc.upsertUserSession1hr(userID);
-    // console.log(req.userData.tokenSet);
-    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    let token = '';
+    if (!mode) {
+      await ShareFunc.upsertUserSession1hr(userID);
+      // console.log(req.userData.tokenSet);
+      token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    }
 
     res.status(200).json({
-      token: '',
+      token: token,
       expiresIn: process.env.expiresIn,
       userID: userID,
       orders: orders,
