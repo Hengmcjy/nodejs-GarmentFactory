@@ -280,6 +280,9 @@ exports.getYarnPlansList1 = async (req, res, next) => {
     // console.log(companyID, factoryID, customerID, yarnSeasonID, uuidArr, type);
     // console.log(yarnPlanDateGroup, yarnPlanDateGroup.length);
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
     // const dateDetail = await ShareFunc.showMongoDBDateDetail(companyID);
     // console.log(dateDetail);
 
@@ -293,7 +296,9 @@ exports.getYarnPlansList1 = async (req, res, next) => {
       userID: userID,
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
       dateDetail: undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+      yarns: yarns,
+      yarnsCount: yarnsCount,
     });
   } catch (err) {
     console.log(err);
@@ -341,6 +346,9 @@ exports.getYarnPlansInvoiceList2 = async (req, res, next) => {
     // console.log(yarnIDs);
     const yarnPlans = await ShareFunc.getYarnPlanMainListByYarnIDs(companyID, factoryID, customerID, yarnSeasonID, yarnIDs, status);
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
     // await this.asyncForEach(yarnData, async (item1) => {
     //   await this.asyncForEach2(item1.yarnDataInfo.packageInfo, async (item2) => {
     //     await this.asyncForEach3(item2.yarnBoxInfo, async (item3) => {
@@ -369,6 +377,9 @@ exports.getYarnPlansInvoiceList2 = async (req, res, next) => {
       userID: userID,
       yarnInvoiceList: yarnInvoiceList,
       yarnPlans: yarnPlans,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
 
     });
   } catch (err) {
@@ -415,6 +426,8 @@ exports.getYarPlansList = async (req, res, next) => {
     });
     const productImageProfiles = await ShareFunc.getProductImageProfiles(companyID, productIDs);
 
+ 
+
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -428,6 +441,9 @@ exports.getYarPlansList = async (req, res, next) => {
       yarnPlans: yarnPlans,
       yarnPlansCount: yarnPlansCount,
       productImageProfiles: productImageProfiles,
+
+      // yarns: yarns,
+      // yarnsCount: yarnsCount,
     });
   } catch (err) {
     console.log(err);
@@ -826,6 +842,9 @@ exports.putYarnPlanDataInfo = async (req, res, next) => {
       }).session(session);
     }
 
+    const yarns = await ShareFunc.getYarnCuss(companyID, customerID);
+    const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID);
+
 
 
     await ShareFunc.upsertUserSession1hr(userID);
@@ -849,7 +868,10 @@ exports.putYarnPlanDataInfo = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
       
     });
   } catch (err) {
@@ -936,6 +958,9 @@ exports.putAddYarnPackingList1 = async (req, res, next) => {
       }).session(session);
     } 
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -957,7 +982,10 @@ exports.putAddYarnPackingList1 = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
       
     });
   } catch (err) {
@@ -1053,6 +1081,9 @@ exports.putCancelYarnPackingList1 = async (req, res, next) => {
       }
     } 
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
@@ -1077,7 +1108,10 @@ exports.putCancelYarnPackingList1 = async (req, res, next) => {
       success: true,
       message: {},
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
       
     });
   } catch (err) {
@@ -1198,6 +1232,9 @@ exports.putYarnDataInfoDatetime = async (req, res, next) => {
     // } 
     
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
 
     await ShareFunc.upsertUserSession1hr(userID);
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -1221,7 +1258,10 @@ exports.putYarnDataInfoDatetime = async (req, res, next) => {
       success: true,
       message: {},
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
       
     });
   } catch (err) {
@@ -1338,6 +1378,9 @@ exports.putDelYarnPackingList1 = async (req, res, next) => {
         companyID, factoryID, customerID, yarnSeasonID, uuidArr, type1
     );
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
     res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
@@ -1345,7 +1388,10 @@ exports.putDelYarnPackingList1 = async (req, res, next) => {
       success: true,
       message: {},
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
       
     });
   } catch (err) {
@@ -1489,6 +1535,9 @@ exports.putAddYarnLotID1 = async (req, res, next) => {
         companyID, factoryID, customerID, yarnSeasonID, uuidArr, type1
     );
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
     res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
@@ -1496,7 +1545,10 @@ exports.putAddYarnLotID1 = async (req, res, next) => {
       success: true,
       message: {},
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
       
     });
   } catch (err) {
@@ -1644,6 +1696,9 @@ exports.putEditYarnLotID1 = async (req, res, next) => {
         companyID, factoryID, customerID, yarnSeasonID, uuidArr, type1
     );
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
     res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
@@ -1651,7 +1706,10 @@ exports.putEditYarnLotID1 = async (req, res, next) => {
       success: true,
       message: {},
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
       
     });
   } catch (err) {
@@ -1934,6 +1992,9 @@ exports.putEditYarnLotIDState2 = async (req, res, next) => {
         companyID, factoryID, customerID, yarnSeasonID, uuidArr, type1
     );
 
+    const yarns = await ShareFunc.getYarns(companyID, yarnSeasonID);
+    const yarnsCount = await ShareFunc.getYarnsCount(companyID, yarnSeasonID);
+
     res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
@@ -1941,7 +2002,10 @@ exports.putEditYarnLotIDState2 = async (req, res, next) => {
       success: true,
       message: {},
       yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
-      yarnPlanDateGroup: yarnPlanDateGroup
+      yarnPlanDateGroup: yarnPlanDateGroup,
+
+      yarns: yarns,
+      yarnsCount: yarnsCount,
       
     });
   } catch (err) {
