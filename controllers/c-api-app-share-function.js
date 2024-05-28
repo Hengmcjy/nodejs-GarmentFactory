@@ -1880,7 +1880,7 @@ exports.getOrder= async (companyID, orderID) => {
         orderColor: 1,
         productOR: 1,	
         createBy: 1,
-
+        orderSetting: 1,
     }	}
   ]);
   // console.log(order);
@@ -1912,6 +1912,7 @@ exports.getOrdersByOrderIDsAll= async (companyID, orderIDs) => {
         orderColor: 1,
         productOR: 1,
         createBy: 1,
+        orderSetting: 1,
     }	},
     { $sort: { _id: -1 } }
   ]);
@@ -2067,6 +2068,7 @@ exports.getOrders= async (companyID, statusArr, page, limit, seasonYearArr) => {
         orderColor: 1,
         productOR: 1,
         createBy: 1,
+        orderSetting: 1,
     }	},
     { $sort: { _id: -1 } },
     { $skip: (page-1) *  limit},
@@ -2735,7 +2737,7 @@ exports.getProductionQueueListByBundleNoXXX= async (companyID, orderID, startNo,
       productBarcode: 1,
       // queueDate: "$queueInfo.queueDate",
       // bundleNo: 1,
-      // productCount: 1,
+      productCount: 1,
       yarnLot: 1,
       numberFrom: 1,
       numberTo: 1,
@@ -7054,6 +7056,54 @@ exports.getOrderProductReceiveOutsource01= async (companyID, productBarcodeNos) 
   return orderProduct.length>0?orderProduct[0]:null;
 }
 
+exports.getOrderBarcodeNoList= async (companyID, orderID, bundleNo) => {
+  // {"datetime": { $gte: dateStart, $lte : dateEnd}},
+
+  const bundleNoList = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: [orderID]}},
+      {"bundleNo":bundleNo},
+      // {"bundleNo": { $gte: bunNoStart, $lte : bunNoEnd}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        bundleNo: 1,
+        // productCount: 1,
+        // productBarcodeNo: 1,
+        no: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit ] }},
+        // productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+        // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+        // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+        // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+        // yarnLot: 1,
+        // forLoss: 1,
+    }	},  
+  ])
+  .hint( { companyID: 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
+  // console.log(bundleNoList);
+  const bundleNoListF = await bundleNoList.map(fw => ({
+    companyID: fw.companyID, 
+    orderID: fw.orderID, 
+    // productBarcode: fw._id.productBarcode, 
+    bundleNo: fw.bundleNo,
+    no: fw.no, 
+    // targetPlace: fw._id.targetPlace, 
+    // color: fw._id.color, 
+    // size: fw._id.size,
+    // yarnLot: fw._id.yarnLot,
+    // forLoss: fw._id.forLoss,
+  }));
+  bundleNoListF.sort((a,b)=>{return a.no >b.no?1:a.no <b.no?-1:0});  // ## asc
+
+  // this.orderIDs = Array.from(new Set(this.currentCompanyOrder.map((item: any) => item.orderID)));
+  // const bundleNoListN = Array.from(new Set(bundleNoListF.map((item) => item.bundleNo))).sort();
+
+  return bundleNoListF;
+}
+
 exports.getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) => {
   // {"datetime": { $gte: dateStart, $lte : dateEnd}},
 
@@ -7069,21 +7119,25 @@ exports.getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) =
         orderID: 1,	
         bundleNo: 1,
         productCount: 1,
+        productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
         targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
         color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
         size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
         yarnLot: 1,
+        forLoss: 1,
     }	},
     { $group: {			
       _id: { 
         companyID: '$companyID',
         orderID: '$orderID',
+        productBarcode: '$productBarcode',
         bundleNo: '$bundleNo',
         productCount: '$productCount',
         targetPlace: '$targetPlace',
         color: '$color',
         size: '$size',
         yarnLot: '$yarnLot',
+        forLoss: '$forLoss',
       },
       // sumFactoryOutsQty: {$sum: 1} ,
       // sumFactoryOutsQty: {$sum: '$productCount'} ,
@@ -7094,13 +7148,16 @@ exports.getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) =
   const bundleNoListF = await bundleNoList.map(fw => ({
     companyID: fw._id.companyID, 
     orderID: fw._id.orderID, 
-    bundleNo: fw._id.bundleNo, 
+    productBarcode: fw._id.productBarcode, 
+    bundleNo: fw._id.bundleNo,
     productCount: fw._id.productCount, 
     targetPlace: fw._id.targetPlace, 
     color: fw._id.color, 
     size: fw._id.size,
     yarnLot: fw._id.yarnLot,
+    forLoss: fw._id.forLoss,
   }));
+  
 
   // this.orderIDs = Array.from(new Set(this.currentCompanyOrder.map((item: any) => item.orderID)));
   // const bundleNoListN = Array.from(new Set(bundleNoListF.map((item) => item.bundleNo))).sort();

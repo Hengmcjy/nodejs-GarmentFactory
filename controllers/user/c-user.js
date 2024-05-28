@@ -649,18 +649,20 @@ exports.getTestTest20 = async (req, res, next) => {
 // router.get("/test/orderProductionQueue/01", userController.getOrderProductionQueue01);  // ##  update orderProductionQueue insert queueInfo
 exports.getOrderProductionQueue01 = async (req, res, next) => {
   const companyID = 'c000001';
-  const orderID = 'DCA42A4A';
+  // 121649  121649	JAPN  DN   S  97  -  102    6
+
+  const orderID = 'AAORLA4A';
   const ver = 2;
   // const productID = 'AAD05A4A    ';
 
-  const factory = 'f000003';
-  const productBarcode = 'DCA42A4A    JAPN-----24BK--------F---';
-  const bundleNoFrom = 25645;
-  const bundleNoTo = 26635;  // 
-  const startNo = 1;
-  const endNo = 11892;
-  const productCount = 12;
-  const yarnLot = [{yarnLotID: 'D23166171-1'}];
+  const factoryID = 'f00003';
+  const productBarcode = 'AAORLA4A    JAPN-----24DN--------S---';
+  const bundleNoFrom = 121649;
+  const bundleNoTo = 121649;  // 
+  const startNo = 97;
+  const endNo = 102;
+  const productCount = 6;
+  const yarnLot = [{yarnLotID: 'ZY2409-111B x ZY2409-125'}];
   const queueDate = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const isOutsource = false;
   const forLoss = false;
@@ -679,7 +681,7 @@ exports.getOrderProductionQueue01 = async (req, res, next) => {
     endNo1 = startNo + (round * productCount) - 1;
     let queueInfo1 = {
       productBarcode: productBarcode,
-      factory: factory,
+      factoryID: factoryID,
       queueDate: queueDate,
       isOutsource: isOutsource,
       forLoss: forLoss,
@@ -721,6 +723,22 @@ exports.getOrderProductionQueue01 = async (req, res, next) => {
   //   },
   //   {upsert: true});
 
+
+
+
+// //  ##  delete element 1
+//   const result6 = await OrderProductionQueue.updateOne(
+//     {$and: [
+//       {"companyID":companyID},
+//       {"orderID":orderID},
+//       {"ver":ver},
+//     ]}, 
+//     {
+//       // "forLossQty": forLossQty,
+//       // $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
+//       $pop: { queueInfo: -1 }
+//     },
+//     {upsert: true});
 
 
   // console.log(queueInfo);

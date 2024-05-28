@@ -377,7 +377,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
     const customerOR = data.order.customerOR;
     const createBy = data.order.createBy;
 
-    console.log(companyID, factoryID, ver, orderID, seasonYear, createBy, customerOR);
+    // console.log(companyID, factoryID, ver, orderID, seasonYear, createBy, customerOR);
 
     const orderUpsert = await Order.updateOne({$and: [
         {"companyID":companyID},
@@ -399,7 +399,7 @@ exports.postOrderCreateNew = async (req, res, next) => {
         "createBy": createBy,
       }, {upsert: true}); 
 
-    console.log(orderUpsert);
+    // console.log(orderUpsert);
 
     // ## get 1 order
     // exports.getOrder= async (companyID, orderID) 
@@ -484,6 +484,67 @@ exports.putOrderUpdate = async (req, res, next) => {
   }
 }
 
+// router.put("/update/setting/maxqty", checkAuth, checkUUID, orderController.putOrderMaxQTYUpdate);
+exports.putOrderMaxQTYUpdate = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  // console.log('putOrderMaxQTYUpdate');
+
+  // return '';
+  try {
+    // ##  create order 
+    const companyID = data.order.companyID;
+    const orderID = data.order.orderID;
+    const seasonYear = data.seasonYear;
+    // const orderDetail = data.order.orderDetail;
+    // const orderDate = new Date(moment(data.order.orderDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    // const deliveryDate = new Date(moment(data.order.deliveryDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    // const productOR = data.order.productOR;
+    const qtyMaxView = data.qtyMaxView;
+    // const customerOR = data.order.customerOR;
+    // console.log(productOR);
+    const orderUpdate = await Order.updateOne({$and: [
+        {"companyID":companyID},
+        {"orderID":orderID}, 
+        {"seasonYear":seasonYear},
+      ]} , 
+      {
+        $set: { "orderSetting.qtyMaxView" : qtyMaxView },
+        // "orderDetail": orderDetail,
+        // "orderDate": orderDate,
+        // "deliveryDate": deliveryDate,
+        // // "customerOR": customerOR,   // ## not allow to update customerOR , it can set at the new create only
+        // // "productOR": productOR,
+        // "productOR.productORDetail": productOR.productORDetail,
+        // $push: {"productOR.productORInfo": productOR.productORInfo},
+      }); 
+
+    // ## get 1 order
+    // exports.getOrder= async (companyID, orderID) 
+    const order = await ShareFunc.getOrder(companyID, orderID);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      order: order
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO004', 
+        mode:'errEditOrder', 
+        value: "error edit order"
+      }
+    });
+
+  }
+}
+
 // // ## /api/order/update2/setzone
 // router.put("/update2/setzone", checkAuth, checkUUID, orderController.putOrderZoneUpdate);
 exports.putOrderZoneUpdate = async (req, res, next) => {
@@ -533,7 +594,7 @@ exports.putOrderZoneUpdate = async (req, res, next) => {
 // router.put("/update3/setcolor", checkAuth, checkUUID, orderController.putOrderColorUpdate);
 exports.putOrderColorUpdate = async (req, res, next) => {
   // try {} catch (err) {}
-  console.log('putOrderColorUpdate');
+  // console.log('putOrderColorUpdate');
   const data = req.body;
 
   try {
@@ -548,6 +609,53 @@ exports.putOrderColorUpdate = async (req, res, next) => {
       ]} , 
       {
         "orderColor": orderColor,
+      }); 
+
+    // ## get 1 order
+    // exports.getOrder= async (companyID, orderID) 
+    const order = await ShareFunc.getOrder(companyID, orderID);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      order: order
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO011', 
+        mode:'errEditOrderColor', 
+        value: "error edit order color"
+      }
+    });
+  }
+}
+
+// router.put("/update3/setmaxqtyview", checkAuth, checkUUID, orderController.updateOrderMaxQtyView);
+exports.updateOrderMaxQtyView = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('updateOrderMaxQtyView');
+  const data = req.body;
+
+  try {
+    // ##  create order 
+    const companyID = data.companyID;
+    const orderID = data.orderID;
+    const seasonYear = data.seasonYear;
+    const qtyMaxView = data.qtyMaxView;
+    // console.log(companyID, orderID, seasonYear, qtyMaxView)
+    const orderUpdate = await Order.updateOne({$and: [
+        {"companyID":companyID},
+        {"orderID":orderID}, 
+        {"seasonYear":seasonYear}, 
+      ]} , 
+      {
+        "orderSetting.qtyMaxView": qtyMaxView,
       }); 
 
     // ## get 1 order
@@ -1388,6 +1496,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       outsourceData.datetime = current;
 
       const createBy = data.createBy;
+      let productCount = +bundleItems;
 
       await ShareFunc.upsertUserSession1hr(userID);
       const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
@@ -1636,6 +1745,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         queueDate: current,
         forLoss: forLoss,
         forLossQty: forLossQty,
+        productCount: +bundleItems,
         toNode: isOutsource ? txtOutsource: toNode1,
         numberFrom: numberFrom1,
         numberTo: numberTo1,
@@ -2033,12 +2143,22 @@ exports.getProductionQueueCount = async (req, res, next) => {
   // const limit = +req.params.limit;  // ## records we need to get
   const userID = req.userData.tokenSet.userID;
   // console.log('getProductionQueueCount');
-  console.log(companyID, orderID, startNo, endNo);
+  // console.log(companyID, orderID, startNo, endNo);
   try {
 
     // ## get count production queues
-    const totalProductionQueueByBundleNo = await ShareFunc.getProductionQueueCountByBundleNo(companyID, orderID, startNo, endNo);
+    // const totalProductionQueueByBundleNo = await ShareFunc.getProductionQueueCountByBundleNo(companyID, orderID, startNo, endNo);
     // console.log(totalProductionQueueByBundleNo);
+
+    const orderBundleList = await ShareFunc.getOrderBundleNoList(companyID, orderID, startNo, endNo);
+    // console.log(orderBundleList, orderBundleList.length);
+    const sumProductionQueueByBundleNo = Array.from(new Set(orderBundleList.map((item) => item.bundleNo))).sort();
+    // console.log(sumProductionQueueByBundleNo, sumProductionQueueByBundleNo.length);
+    const totalProductionQueueByBundleNo = {
+      companyID, orderID,
+      countProductionQueueByBundleNo: sumProductionQueueByBundleNo.length,
+      sumProductionQueueByBundleNo: orderBundleList.length,
+    };
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);
@@ -2066,6 +2186,11 @@ exports.getProductionQueueCount = async (req, res, next) => {
   }
 }
 
+exports.findOrderBundleList= async (bundleNo, orderBundleList) => {
+  const orderBundleList1 = orderBundleList.filter(i=>i.bundleNo==bundleNo);
+  return orderBundleList1.length>0?orderBundleList1[0]:{};
+}
+
 // // ## get list productionqueue by bundleno
 // router.get("/get/orderProductionQueue2/getlists/:companyID/:orderID/:startNo/:endNo", 
 //       checkAuth, checkUUID, orderController.getProductionQueueList);
@@ -2086,14 +2211,43 @@ exports.getProductionQueueList = async (req, res, next) => {
   try {
 
     // ## get count production queues
-    const totalProductionQueueByBundleNo = await ShareFunc.getProductionQueueCountByBundleNo(companyID, orderID, startNo, endNo);
-    // console.log(totalProductionQueueByBundleNo);
-    const orderProductionQueue = await ShareFunc.getProductionQueueListByBundleNo(companyID, orderID, startNo, endNo);
+    // const totalProductionQueueByBundleNo = await ShareFunc.getProductionQueueCountByBundleNo(companyID, orderID, startNo, endNo);
+    // // console.log(totalProductionQueueByBundleNo);
+    const orderBundleList = await ShareFunc.getOrderBundleNoList(companyID, orderID, startNo, endNo);
+    // console.log(orderBundleList, orderBundleList.length);
+    const sumProductionQueueByBundleNo = Array.from(new Set(orderBundleList.map((item) => item.bundleNo))).sort();
+    // console.log(sumProductionQueueByBundleNo, sumProductionQueueByBundleNo.length);
+    const totalProductionQueueByBundleNo = {
+      companyID, orderID,
+      countProductionQueueByBundleNo: sumProductionQueueByBundleNo.length,
+      sumProductionQueueByBundleNo: orderBundleList.length,
+    };
+
+    // const orderProductionQueue = await ShareFunc.getProductionQueueListByBundleNo(companyID, orderID, startNo, endNo);
+    // console.log(orderProductionQueue);
+    let orderProductionQueue = [];
+    await this.asyncForEach(sumProductionQueueByBundleNo, async (item1) => {
+      const orderBundleList1 = await this.findOrderBundleList(item1, orderBundleList);
+      const bundleBarcodeList = await ShareFunc.getOrderBarcodeNoList(companyID, orderID, item1);
+      // console.log('--------------------------------',bundleBarcodeList);
+      let orderProductionQueue1 = {
+        companyID: companyID,
+        orderID: orderID,
+        productBarcode: orderBundleList1.productBarcode,
+        bundleNo: item1,
+        productCount: orderBundleList1.productCount,
+        yarnLot: orderBundleList1.yarnLot,
+        numberFrom: +bundleBarcodeList[0].no,
+        numberTo: +bundleBarcodeList[bundleBarcodeList.length-1].no,
+        forLossQty: orderBundleList1.forLoss?orderBundleList1.productCount:0,
+      };
+      orderProductionQueue.push(orderProductionQueue1);
+    });
     // console.log(orderProductionQueue);
 
-    // getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) 
-    const orderBundleList = await ShareFunc.getOrderBundleNoList(companyID, orderID, startNo, endNo);
-    // console.log(orderBundleList);
+    // // getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) 
+    // const orderBundleList = await ShareFunc.getOrderBundleNoList(companyID, orderID, startNo, endNo);
+    // // console.log(orderBundleList);
 
     await ShareFunc.upsertUserSession1hr(userID);
     // console.log(req.userData.tokenSet);

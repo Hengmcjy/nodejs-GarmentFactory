@@ -43,11 +43,17 @@ router.post("/createnew", checkAuth, checkUUID, orderController.postOrderCreateN
 // ## /api/order/update
 router.put("/update", checkAuth, checkUUID, orderController.putOrderUpdate);
 
+// ## /api/order/update/setting/maxqty
+router.put("/update/setting/maxqty", checkAuth, checkUUID, orderController.putOrderMaxQTYUpdate);
+
 // ## /api/order/update2/setzone
 router.put("/update2/setzone", checkAuth, checkUUID, orderController.putOrderZoneUpdate);
 
 // ## /api/order/update2/setcolor
 router.put("/update3/setcolor", checkAuth, checkUUID, orderController.putOrderColorUpdate);
+
+// ## /api/order/update3/setmaxqtyview   updateOrderMaxQtyView
+router.put("/update3/setmaxqtyview", checkAuth, checkUUID, orderController.updateOrderMaxQtyView);
 
 // ## /api/order/update4/qrcode/replacement
 router.put("/update4/qrcode/replacement", checkAuth, checkUUID, orderController.putOrderProductionQrcodeReplacement);

@@ -93,8 +93,17 @@ const orderSchema = mongoose.Schema({
     userID: {type: String},
     userName: {type: String},
   },
+  orderSetting: {
+    qtyMaxView: [{
+      zcs: {type: String}, // ## colorID ; size ; zone
+      maxQty : {type: Number},
+    }],
+  },
+
 });				
 
 orderSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model("Order", orderSchema);
+
+						

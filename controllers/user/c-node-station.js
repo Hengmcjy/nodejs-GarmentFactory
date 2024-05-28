@@ -768,7 +768,7 @@ exports.getNodeStationLoginRequest = async (req, res, next) => {
 
   try {
     // get company array of userID  spu, adm, own, pnr, mng, acc, stf, gst  exports.getUserCompanyLists= async (userClassIDArr)
-    const userClassIDArr = ['own', 'pnr', 'mng'];
+    const userClassIDArr = ['spu','adm','own', 'pnr', 'mng'];
     // const companyLists = await ShareFunc.getUserCompanyLists(userClassIDArr);
     // let companyIDArr = [];
     // await this.asyncForEach(companyLists, async (item) => {
