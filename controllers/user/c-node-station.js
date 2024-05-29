@@ -3249,6 +3249,25 @@ exports.putOutsourceOrderProductionSendOut = async (req, res, next) => {
       outsourceDataF = orderProduct.outsourceData.filter(i=>(i.factoryID === productionNode.outsourceData[0].factoryID));
     }
 
+
+    // ## check last element must not to be 'toNode === 'outsource''
+    if (orderProduct && orderProduct.productionNode) {
+      const productionNode = orderProduct.productionNode;  // last element
+      if (productionNode[productionNode.length - 1].toNode === 'outsource') {
+        await session.abortTransaction(); 
+        session.endSession();
+        return res.status(501).json({
+          message: {
+            messageID: 'errns023', 
+            mode:'errEditNextNodeOutsource', 
+            value: "err edit next node outsource"
+          },
+          success: false
+        });
+      }
+    }
+    
+
     if (outsourceDataF.length === 0 || !orderProduct.outsourceData) {
       const outsourceData1 = productionNode.outsourceData[0];
       // console.log(outsourceData1);
