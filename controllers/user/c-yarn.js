@@ -2429,6 +2429,7 @@ exports.getYarnLotCFInfo = async (req, res, next) => {
   const yarnSeasonID = data.yarnSeasonID;// 2024SS
   const season = yarnSeasonID.substr(0, 4);  // 2024
   const yarnID = data.yarnID;
+  const uuid = data.uuid;
   const type = data.type;  // ## ['receive'] 
   const state = data.state;  // ## verified
   const weightVerified = data.weightVerified;  // ## true
@@ -2439,7 +2440,7 @@ exports.getYarnLotCFInfo = async (req, res, next) => {
   // console.log('weightVerified = ' + weightVerified);
   try {
     // ## get yarn usage                             (companyID, factoryID, yarnSeasonID, yarnID, type, state, weightVerified)
-    const yarnData = await ShareFunc.getYarnLotInfoCF(companyID, factoryID, yarnSeasonID, yarnID, type, state, weightVerified);
+    const yarnData = await ShareFunc.getYarnLotInfoCF(companyID, factoryID, yarnSeasonID, yarnID, uuid, type, state, weightVerified);
     // console.log(yarnData);
     // yarnLotInfo: yarnLotInfo,
 

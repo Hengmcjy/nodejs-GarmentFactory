@@ -4505,13 +4505,14 @@ exports.getCFYarnStock= async (companyID, factoryIDs, customerID, yarnSeasonID, 
 }
 
 // getYarnLotInfoCF(companyID, factoryID, yarnSeasonID, yarnID, type);
-exports.getYarnLotInfoCF= async (companyID, factoryID, yarnSeasonID, yarnID, type, state, weightVerified) => {
+exports.getYarnLotInfoCF= async (companyID, factoryID, yarnSeasonID, yarnID, uuid, type, state, weightVerified) => {
   //  console.log(companyID, factoryID, yarnSeasonID, yarnID, type, state);
   const yarnData = await YarnData.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       {"yarnSeasonID":yarnSeasonID},
       {"yarnID":yarnID},
+      {"uuid":uuid},
       // {"status":{$in: status}},
     ] } },
     { $project: {			
