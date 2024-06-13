@@ -23,7 +23,7 @@ router.get("/noder/rep7/current/productions/period/c/:companyID/:productStatus/:
 // // ##
 
 // ## get node getRepCurrentProductions
-router.get("/noder/rep8/current/productions/zoneperiod/c/:companyID/:productStatus/:orderStatus/:orderIDArr"
+router.get("/noder/rep8/current/productions/zoneperiod/c/:companyID/:productStatus/:orderStatus/:orderIDArr/:seasonYear"
         , reportController.getRepCurrentProductionZonePeriod);
 // // ##
 

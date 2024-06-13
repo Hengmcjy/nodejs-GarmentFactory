@@ -14,6 +14,7 @@ require('dotenv').config({ path: './config.env' });
 // const ddos = new Ddos({burst:10, limit:15});
 
 // ## declare routes
+const scheduleUserRoutes = require("./routes/user/r-schedule");
 const userUserRoutes = require("./routes/user/r-user");
 const mailUserRoutes = require("./routes/user/r-mail");
 const productUserRoutes = require("./routes/user/r-product");
@@ -102,6 +103,9 @@ mongoose
   });
 
 //## route user   
+
+
+app.use("/api/schedule", scheduleUserRoutes);
 app.use("/api/user", userUserRoutes);
 app.use("/api/mail", mailUserRoutes);
 app.use("/api/product", productUserRoutes);

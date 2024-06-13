@@ -149,10 +149,13 @@ exports.getRepCurrentProductionPeriod = async (req, res, next) => {
     // ## get Rep Company Current Production work in period
     currentProductionPeriod = await ShareFunc.getProductionPeriodC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
     // console.log(currentProductionPeriod);
+    // console.log('1');
 
     orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
+    // console.log('2');
                                               //   getCurrentCompanyOrderZoneStyleSize
     currentCompanyOrderStyleSize = await ShareFunc.getCurrentCompanyOrderStyleSize(companyID, orderStatusArr, orderIDArr);
+    // console.log('3');
 
     const openArr = [true];
     const forLossArr = [true];
@@ -189,6 +192,7 @@ exports.getRepCurrentProductionPeriod = async (req, res, next) => {
 // router.get("/noder/rep8/current/productions/zoneperiod/c/:companyID/:productStatus/:orderStatus"
 //         , reportController.getRepCurrentProductionZonePeriod);
 exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
+  // console.log('getRepCurrentProductionZonePeriod');
   const companyID = req.params.companyID;
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
@@ -199,13 +203,21 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
   const productionNodeStatusArr = ['normal', 'complete'];
   const orderStatusArr = JSON.parse(req.params.orderStatus);
   const orderIDArr = JSON.parse(req.params.orderIDArr);
+  const seasonYear = req.params.seasonYear;
   // console.log(companyID, productStatusArr, productionNodeStatusArr);
   try {
     // ## get Rep Company Current Production work in period
-    currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
+    // const currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
+    
+    // exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName)
+    const sName = 'auto_getProductionZonePeriodC';
+    const currentProductionZonePeriod = await ShareFunc.get_auto_getProductionZonePeriodC(companyID, seasonYear, sName);
+    
     // console.log(currentProductionPeriod);
+    // console.log('getRepCurrentProductionZonePeriod 1');
 
-    orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
+    const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
+    // console.log('getRepCurrentProductionZonePeriod 2');
     // currentCompanyOrderZoneStyleSize = await ShareFunc.getCurrentCompanyOrderZoneStyleSize(companyID, orderStatusArr);
 
     const openArr = [true];
@@ -213,6 +225,7 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
     // getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr)
     currentProductionZoneForLoss = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr);
     // console.log(currentProductionZoneForLoss);
+    // console.log('getRepCurrentProductionZonePeriod 3');
     
     // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
     // currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
@@ -270,6 +283,10 @@ exports.getRepCurrentProductionZonePeriodDate12 = async (req, res, next) => {
       currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodUserScanDate12C(companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd, userIDGroup);
     }
     // console.log(currentProductionZonePeriod);
+
+    // exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName)
+    // const currentProductionZonePeriod = await ShareFunc.get_auto_getProductionZonePeriodC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
+    
 
     const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
     // console.log(orderStyleColorSize);

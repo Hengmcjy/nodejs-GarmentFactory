@@ -17,6 +17,9 @@ const Session1mn = require('../models/m-session1mn');
 const Session3mn = require('../models/m-session3mn');
 const Session6mn = require('../models/m-session6mn');
 
+const Schedule = require("../models/m-schedule");
+const Dtproductionzoneperiodc = require("../models/m-dt-productionzoneperiodc");
+
 const User = require("../models/m-user");
 const UserGroupScan = require("../models/m-userGroupScan");
 const UserClass = require("../models/m-userClass");
@@ -927,6 +930,62 @@ exports.unsetCreateAtUsers= async (userID) => {
 
 // ## email zone ####################################################################
 // #################################################################################
+
+// #######################################################################################################
+// ## schedule
+
+exports.getScheduleData= async () => {
+  const sStatus = 'on';
+  const scheduleData = await Schedule.aggregate([
+    { $match: { $and: [
+      {"sStatus":sStatus},
+      // {"factoryID":factoryID},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        seasonYear: 1,	
+        companyID: 1,		
+        factoryID: 1,	
+        sGroup: 1,
+        sName: 1,	
+        sStatus: 1,	
+        sMode: 1,
+        sDatetimeDiff: 1,
+        lastDatetime: 1,
+        sDatetime: 1,
+    }	}
+  ]);
+  // console.log(scheduleData);
+  return scheduleData;
+}
+
+exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName) => {
+  const data = await Dtproductionzoneperiodc.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":seasonYear},
+      {"sName":sName},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        data: 1,	
+        // companyID: 1,		
+        // factoryID: 1,	
+        // sGroup: 1,
+        // sName: 1,	
+        // sStatus: 1,	
+        // sMode: 1,
+        // sDatetimeDiff: 1,
+        // lastDatetime: 1,
+        // sDatetime: 1,
+    }	}
+  ]);
+  // console.log(data);
+  return data[0].data;
+}
+
+// ## schedule
+// #######################################################################################################
 
 // #################################################################################
 // ## image google  ####################################################################
@@ -2040,6 +2099,39 @@ exports.getOrdersFromNode= async (companyID, statusArr, page, limit) => {
   ]);
   // console.log(orders);
   return orders;
+}
+
+// ## get orderIDs by seasonYear
+exports.getOrderIDsBySeasonYear= async (companyID, orderStatus, seasonYearArr) => {
+  // limit = +limit; // ## change to number
+  const orderIDs = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderStatus":{$in: orderStatus}},
+      {"seasonYear":{$in: seasonYearArr}}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        orderID: 1,
+        // seasonYear: 1,
+        // ver: 1,
+        // companyID: 1,
+        // factoryID: 1,
+        // bundleNo: 1,
+        // orderStatus: 1,
+        // orderDetail: 1,		
+        // orderDate: 1,	
+        // deliveryDate: 1,
+        // customerOR: 1,		
+        // orderTargetPlace: 1,
+        // orderColor: 1,
+        // productOR: 1,
+        // createBy: 1,
+        // orderSetting: 1,
+    }	}
+  ]);
+  // console.log(orderIDs);
+  return orderIDs;
 }
 		
 // ## get orders
