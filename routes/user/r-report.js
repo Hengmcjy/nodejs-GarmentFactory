@@ -89,7 +89,7 @@ router.get("/node/rep11/cn/current/productqty/:companyID/:factoryIDArr/:ordertat
 // // ##
 
 // ## get node getRepCurrentProductionOverview
-router.get("/node/rep9/current/productqty/com/:companyID/:factoryIDArr/:ordertatus/:productStatus/:orderIDArr", checkAuth, checkUUID, 
+router.get("/node/rep9/current/productqty/com/:companyID/:factoryIDArr/:ordertatus/:productStatus/:orderIDArr/:seasonYear", checkAuth, checkUUID, 
         reportController.getRepCurrentProductionOverview);
 // // ##
 

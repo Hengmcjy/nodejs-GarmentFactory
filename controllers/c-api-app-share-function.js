@@ -19,6 +19,8 @@ const Session6mn = require('../models/m-session6mn');
 
 const Schedule = require("../models/m-schedule");
 const Dtproductionzoneperiodc = require("../models/m-dt-productionzoneperiodc");
+const Dtcurrentcfactoryorder = require("../models/m-dt-currentcfactoryorder");
+const Dtcurrentproductqtyall = require("../models/m-dt-currentproductqtyall");
 
 const User = require("../models/m-user");
 const UserGroupScan = require("../models/m-userGroupScan");
@@ -952,6 +954,7 @@ exports.getScheduleData= async () => {
         sMode: 1,
         sDatetimeDiff: 1,
         lastDatetime: 1,
+        sNote: 1, 
         sDatetime: 1,
     }	}
   ]);
@@ -965,6 +968,59 @@ exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName) 
       {"companyID":companyID},
       {"seasonYear":seasonYear},
       {"sName":sName},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        data: 1,	
+        // companyID: 1,		
+        // factoryID: 1,	
+        // sGroup: 1,
+        // sName: 1,	
+        // sStatus: 1,	
+        // sMode: 1,
+        // sDatetimeDiff: 1,
+        // lastDatetime: 1,
+        // sDatetime: 1,
+    }	}
+  ]);
+  // console.log(data);
+  return data[0].data;
+}
+
+// const Dtcurrentcfactoryorder = require("../models/m-dt-currentcfactoryorder");
+exports.get_auto_getCurrentCFactoryOrder= async (companyID, seasonYear, sName) => {
+  const data = await Dtcurrentcfactoryorder.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":seasonYear},
+      {"sName":sName},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        data: 1,	
+        // companyID: 1,		
+        // factoryID: 1,	
+        // sGroup: 1,
+        // sName: 1,	
+        // sStatus: 1,	
+        // sMode: 1,
+        // sDatetimeDiff: 1,
+        // lastDatetime: 1,
+        // sDatetime: 1,
+    }	}
+  ]);
+  // console.log(data);
+  return data[0].data;
+}
+
+// const Dtcurrentproductqtyall = require("../models/m-dt-currentproductqtyall");
+exports.get_auto_getCompanyCurrentProductQtyAll= async (companyID, seasonYear, sName, sNote) => {
+  const data = await Dtcurrentproductqtyall.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":seasonYear},
+      {"sName":sName},
+      {"sNote":sNote},
     ] } },
     { $project: {			
         _id: 0,	

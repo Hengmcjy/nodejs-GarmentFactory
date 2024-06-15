@@ -16,6 +16,8 @@ const Customer = require("../../models/m-customer");
 
 const Schedule = require("../../models/m-schedule");
 const Dtproductionzoneperiodc = require("../../models/m-dt-productionzoneperiodc");
+const Dtcurrentcfactoryorder = require("../../models/m-dt-currentcfactoryorder");
+const Dtcurrentproductqtyall = require("../../models/m-dt-currentproductqtyall");
 
 
 moment.tz.setDefault('Asia/Bangkok');
@@ -142,7 +144,7 @@ exports.getSchedule = async () => {
       // console.log('everyHourGroup');
       // console.log(everyHourGroup[0].sDatetimeDiff, everyHourGroup[0].sDatetime);
       await this.asyncForEach(everyHourGroup, async (item1) => {
-        await auto_getProductionZonePeriodC(item1);
+        await getDataTemp(item1);
       });
     }
 
@@ -156,7 +158,30 @@ exports.getSchedule = async () => {
   }
 }
 
+async function getDataTemp(scheduleData) {
+
+  if (scheduleData.sName === 'auto_getProductionZonePeriodC') {// ## report no.21
+    await auto_getProductionZonePeriodC(scheduleData);
+    return true;
+
+  } else if (scheduleData.sName === 'auto_getCurrentCFactoryOrder') {// ## report no.1
+    await auto_getCurrentCFactoryOrder(scheduleData);
+    return true;
+  } else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_No_C') {// ## report no.1 / noComplete
+    await auto_getCompanyCurrentProductQtyAll(scheduleData);
+    return true;
+  } else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_C') {// ## report no.1 /completed
+    await auto_getCompanyCurrentProductQtyAll(scheduleData);
+    return true;
+
+
+  } else {
+    return true;
+  }
+}
+
 // ## auto getRepCurrentProductionZonePeriod
+// ## if (scheduleData.sName === 'auto_getProductionZonePeriodC') {// ## report no.21
 async function auto_getProductionZonePeriodC(scheduleData) {
   // console.log('scheduleData' , scheduleData);
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
@@ -171,6 +196,7 @@ async function auto_getProductionZonePeriodC(scheduleData) {
   const sName = scheduleData.sName;
   const sMode = scheduleData.sMode;
   const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const sNote = scheduleData.sNote;
   const mm = scheduleData.sDatetime[0].mm;
   const lastDatetime = current;
   // console.log(companyID, orderStatus, seasonYearArr);
@@ -218,6 +244,7 @@ async function auto_getProductionZonePeriodC(scheduleData) {
         {"sGroup":sGroup}, 
         {"sStatus":sStatus}, 
         {"sName":sName}, 
+        {"sNote":sNote},
         {"sMode":sMode}, 
         {"sDatetimeDiff":sDatetimeDiff}, 
         // {"sDatetime":scheduleData.sDatetime}, 
@@ -236,6 +263,7 @@ async function auto_getProductionZonePeriodC(scheduleData) {
         {"sGroup":sGroup}, 
         // {"sStatus":sStatus}, 
         {"sName":sName}, 
+        {"sNote":sNote},
         {"sMode":sMode}, 
         {"sDatetimeDiff":sDatetimeDiff}, 
         // {"sDatetime":scheduleData.sDatetime}, 
@@ -245,14 +273,225 @@ async function auto_getProductionZonePeriodC(scheduleData) {
         "data": currentProductionZonePeriod,
       }, {upsert: true}); 
       // console.log(dtproductionzoneperiodcUpsert);
-
-
-
     }
   } catch (err) {
     console.error(err);
   }
 }
+
+// const Dtcurrentcfactoryorder = require("../../models/m-dt-currentcfactoryorder");
+
+// else if (scheduleData.sName === 'auto_getCurrentCFactoryOrder') {// ## report no.1
+async function auto_getCurrentCFactoryOrder(scheduleData) {
+  // console.log('scheduleData' , scheduleData);
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const mm1 = current.getMinutes();
+
+  const seasonYear = scheduleData.seasonYear;
+  const seasonYearArr = [scheduleData.seasonYear];
+  const companyID = scheduleData.companyID;
+  const factoryID = scheduleData.factoryID;
+  const sGroup = scheduleData.sGroup;
+  const sStatus = scheduleData.sStatus;
+  const sName = scheduleData.sName;
+  const sMode = scheduleData.sMode;
+  const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const sNote = scheduleData.sNote;
+  const mm = scheduleData.sDatetime[0].mm;
+  const lastDatetime = current;
+  // console.log(companyID, orderStatus, seasonYearArr);
+
+  // ## check period for >= sDatetimeDiff
+  // const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const lastDatetime1 = new Date(moment(scheduleData.lastDatetime).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const mm2 = lastDatetime.getMinutes();
+
+  const dateDiff = moment(current).diff(moment(lastDatetime1), 'days');
+  const dateDiff2 = moment(current).diff(moment(lastDatetime1), 'hours');
+  const dateDiff3 = moment(current).diff(moment(lastDatetime1), 'minutes');
+
+  // console.log('lastDatetime1 = ' , lastDatetime1, mm2);
+  // console.log('now = ' , current, mm);
+  // console.log('dateDiff = ' , dateDiff, dateDiff2, dateDiff3);
+  try {
+    if (dateDiff3 >= sDatetimeDiff  || mm1 === +mm) {
+      // console.log('auto_getCurrentCFactoryOrder start ');
+      // ##  const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDArr);
+      // ## get season for report  // 2024AW  2024SS
+
+      
+      // getOrderIDsBySeasonYear= async (companyID, orderStatus, seasonYearArr)
+      const orderStatus = ['open'];
+      // console.log(companyID, orderStatus, seasonYearArr);
+      const orderIDs1 = await ShareFunc.getOrderIDsBySeasonYear(companyID, orderStatus, seasonYearArr);
+      const orderIDs = Array.from(new Set(orderIDs1.map((item) => item.orderID)));
+      // console.log('orderIDs = ' , orderIDs);
+      
+      // const productStatusArr = ['normal', 'problem', 'repaired', 'complete'];
+      // const productionNodeStatusArr = ['normal', 'complete'];
+      // const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDArr);
+      const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDs);
+      // console.log(currentFactoryOrder);
+      // console.log('currentFactoryOrder ok ');
+
+      
+
+      // ## update  Schedule>  lastDatetime
+      const scheduleUpsert = await Schedule.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "sDatetime": scheduleData.sDatetime,
+      }, {upsert: true}); 
+      // console.log(scheduleUpsert);
+
+      // ## update dtcurrentcfactoryorder > lastDatetime, data
+      const dtcurrentcfactoryorderUpsert  = await Dtcurrentcfactoryorder.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        // {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "data": currentFactoryOrder,
+      }, {upsert: true}); 
+      // console.log(dtproductionzoneperiodcUpsert);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
+// const Dtcurrentproductqtyall = require("../../models/m-dt-currentproductqtyall");
+// else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_C') {// ## report no.1
+// else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_No_C') {// ## report no.1
+async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
+  // console.log('scheduleData' , scheduleData);
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const mm1 = current.getMinutes();
+
+  const seasonYear = scheduleData.seasonYear;
+  const seasonYearArr = [scheduleData.seasonYear];
+  const companyID = scheduleData.companyID;
+  const factoryID = scheduleData.factoryID;
+  const sGroup = scheduleData.sGroup;
+  const sStatus = scheduleData.sStatus;
+  const sName = scheduleData.sName;
+  const sMode = scheduleData.sMode;
+  const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const sNote = scheduleData.sNote;
+  const mm = scheduleData.sDatetime[0].mm;
+  const lastDatetime = current;
+  // console.log(companyID, orderStatus, seasonYearArr);
+
+  // ## check period for >= sDatetimeDiff
+  // const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const lastDatetime1 = new Date(moment(scheduleData.lastDatetime).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const mm2 = lastDatetime.getMinutes();
+
+  const dateDiff = moment(current).diff(moment(lastDatetime1), 'days');
+  const dateDiff2 = moment(current).diff(moment(lastDatetime1), 'hours');
+  const dateDiff3 = moment(current).diff(moment(lastDatetime1), 'minutes');
+
+  // console.log('lastDatetime1 = ' , lastDatetime1, mm2);
+  // console.log('now = ' , current, mm);
+  // console.log('dateDiff = ' , dateDiff, dateDiff2, dateDiff3);
+  try {
+    if (dateDiff3 >= sDatetimeDiff  || mm1 === +mm) {
+      // console.log('auto_getCurrentCFactoryOrder start ');
+      // ##  const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDArr);
+      // ## get season for report  // 2024AW  2024SS
+
+      
+      // getOrderIDsBySeasonYear= async (companyID, orderStatus, seasonYearArr)
+      const orderStatus = ['open'];
+      // console.log(companyID, orderStatus, seasonYearArr);
+      const orderIDs1 = await ShareFunc.getOrderIDsBySeasonYear(companyID, orderStatus, seasonYearArr);
+      const orderIDs = Array.from(new Set(orderIDs1.map((item) => item.orderID)));
+      // console.log('orderIDs = ' , orderIDs);
+      
+      const productStatusNoCompleteArr = ['normal', 'problem', 'repaired'];
+      const productStatusCompletedArr = ['complete'];
+      const factoryIDArr = []; // ## no need to use
+      let companyCurrentProductQty = [];
+      if (sNote === 'noComplete') { // ## noComplete
+        companyCurrentProductQty= await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusNoCompleteArr, orderIDs);
+      } else if (sNote === 'completed') { // ##  completed
+        companyCurrentProductQty= await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompletedArr, orderIDs);
+      }else {
+        return fasle;
+      }
+      // companyCurrentProductQtyCompleteAll
+      // companyCurrentProductQtyAll = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDs);
+      // console.log(companyCurrentProductQty);
+      // console.log('companyCurrentProductQty ok ');
+
+      
+
+      // ## update  Schedule>  lastDatetime
+      const scheduleUpsert = await Schedule.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "sDatetime": scheduleData.sDatetime,
+      }, {upsert: true}); 
+      // console.log(scheduleUpsert);
+
+      // ## update dtcurrentproductqtyall > lastDatetime, data
+      const dtcurrentproductqtyallUpsert  = await Dtcurrentproductqtyall.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        // {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "data": companyCurrentProductQty,
+      }, {upsert: true}); 
+      // console.log(dtproductionzoneperiodcUpsert);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
+
+
 
 
 // ## schedule

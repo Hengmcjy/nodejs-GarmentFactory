@@ -1017,11 +1017,12 @@ exports.getRepCurrentProductionOverview = async (req, res, next) => {
   // console.log('getRepCurrentProductionOverview');
   const companyID = req.params.companyID;
   const factoryIDArr = JSON.parse(req.params.factoryIDArr);
-  const productStatusArr = JSON.parse(req.params.productStatus);
+  const productStatusArr = JSON.parse(req.params.productStatus); // ['normal', 'problem', 'repaired'];
   const orderStatusArr = JSON.parse(req.params.ordertatus);
   const productStatusCompleteArr = ['complete'];
   const orderIDArr = JSON.parse(req.params.orderIDArr);
-  // console.log(orderIDArr);
+  const seasonYear = req.params.seasonYear;
+  // console.log(seasonYear , orderIDArr);
 
   try {
     // console.log('0');
@@ -1031,13 +1032,37 @@ exports.getRepCurrentProductionOverview = async (req, res, next) => {
     const currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr, orderIDArr);
     // console.log('1');
 
-    // ## get factory relate to
-    const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDArr);
-    // console.log('1');
 
-    let companyCurrentProductQtyAllF = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
-    const companyCurrentProductQtyCompleteAll = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
+
+
+    // // ## get factory relate to   /  OrderProduction.aggregate
+    // const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDArr);
     // console.log('2');
+
+    // //   OrderProduction.aggregate
+    // let companyCurrentProductQtyAllF = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    // console.log('3');
+
+    // //   OrderProduction.aggregate
+    // const companyCurrentProductQtyCompleteAll = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
+    // console.log('4');
+
+    // ## get factory relate to   /  OrderProduction.aggregate
+    // get_auto_getCurrentCFactoryOrder= async (companyID, seasonYear, sName)
+    const sName1 = 'auto_getCurrentCFactoryOrder';
+    const currentFactoryOrder = await ShareFunc.get_auto_getCurrentCFactoryOrder(companyID, seasonYear, sName1);
+    // console.log('2');
+
+    const sName2 = 'auto_getCompanyCurrentProductQtyAll_No_C';
+    const sNote2 = 'noComplete';
+    // get_auto_getCompanyCurrentProductQtyAll= async (companyID, seasonYear, sName, sNote)
+    let companyCurrentProductQtyAllF = await ShareFunc.get_auto_getCompanyCurrentProductQtyAll(companyID, seasonYear, sName2, sNote2);
+    // console.log('3');
+
+    const sName3 = 'auto_getCompanyCurrentProductQtyAll_C';
+    const sNote3 = 'completed';
+    const companyCurrentProductQtyCompleteAll = await ShareFunc.get_auto_getCompanyCurrentProductQtyAll(companyID, seasonYear, sName3, sNote3);
+    // console.log('4');
 
     const companyCurrentProductQtyAllFF = await companyCurrentProductQtyAllF.map(  (fw) => ({
       companyID: fw.companyID, 

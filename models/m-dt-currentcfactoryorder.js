@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
 
-// ## dt = data temp
-const dtproductionzoneperiodcSchema = mongoose.Schema({
+// ## dt = data temp  currentcfactoryorder
+const dtcurrentcfactoryorderSchema = mongoose.Schema({
   seasonYear: {type: String}, // ## 2024AW  2024SS …
   companyID: {type: String},
   factoryID: { type: String },
@@ -16,16 +16,10 @@ const dtproductionzoneperiodcSchema = mongoose.Schema({
   data: [{   // ## 
     companyID: {type: String},  // ## 
     orderID: {type: String},  // ## 
-    targetPlaceID: {type: String},  // ## 
-    targetPlaceName: {type: String},  // ## 
-    style: {type: String},  // ## 
-    color: {type: String},  // ## 
-    size: {type: String},  // ## 
-    fromNode: {type: String},  // ## 
-    sumProductQty : {type: Number},
+    factoryID: {type: String},  // ## 
   }],
 });
 
-dtproductionzoneperiodcSchema.plugin(uniqueValidator);
+dtcurrentcfactoryorderSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model("Dtproductionzoneperiodc", dtproductionzoneperiodcSchema);
+module.exports = mongoose.model("DtcurrentcfactoryorderSchema", dtcurrentcfactoryorderSchema);
