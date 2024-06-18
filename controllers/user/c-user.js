@@ -823,6 +823,97 @@ exports.getOrderProductionQueue02 = async (req, res, next) => {
     return res.end();
 }
 
+
+// ## http://192.168.1.36:3968/api/user/test/orderProductionQueuelist/01
+// router.get("/test/orderProductionQueuelist/01", userController.getOrderProductionQueueList01);  // ## update ver
+exports.getOrderProductionQueueList01 = async (req, res, next) => {
+  // ## delete element by bundleNo   /  1 by 1
+  const companyID = 'c000001';
+  const orderID = 'JBAD9A4S';
+  const orderIDnin = ['JBAD9A4S'];
+  const ver = 2;
+  // const productID = 'AAD05A4A    ';  
+
+  // const factory = 'f000003';
+  // const productBarcode = 'DCA42A4A    JAPN-----24BK--------F---'; // DCA42A4A    JAPN-----24BK--------F---
+  // const bundleNoFrom = 26637;
+  // const bundleNoTo = 26644;  // 36962
+  // const bundleNo = 26637;
+
+  // const startNo = 1;
+  // const endNo = 12000;
+  // const productCount = 12;
+  // const yarnLot = [{yarnLotID: 'D23166171-1'}];
+  // const queueDate = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  // const isOutsource = false;
+  // const forLoss = false;
+  // const forLossQty = 0;
+  // const toNode = '1.COMPUTER-KNITTING';  
+
+
+  result1 = await OrderProductionQueueList.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"orderID":orderID},
+      {"orderID":{$nin: orderIDnin}},
+      // {"productID":productID},
+      // {"productBarcodeNoReal":{$in: productBarcodeNos}}
+      // {"productBarcodeNo":{$in: productBarcodeNos}}
+    ]}, 
+    {$set: { 
+          "ver": ver
+        }}, 
+    // {
+    //   // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+    //   // $push: {productionNode: {$each: productionNodeArr}},
+    //   // $inc: {productCount: -1},
+    //   // "productCount": 1,
+    //   "ver": ver
+    // }
+  );
+
+
+  // //  ## update orderProductionQueue / delete array 1 element 
+  // const result2 = await OrderProductionQueue.updateOne(
+  //   {$and: [
+  //     {"companyID":companyID},
+  //     {"orderID":orderID},
+  //     {"ver":ver},
+  //   ]}, 
+  //   {
+  //     $pull: { queueInfo: {                // ## delete n element for this condition
+  //       productBarcode: productBarcode, 
+  //       // isOutsource: isOutsource,
+  //       bundleNo: { $gte: bundleNo},
+
+  //       // bundleNo: { $gte: bundleNoFrom},   // ## numberFrom ===>  >= numberFrom  && <= numberTo
+  //       // bundleNo: { $lte : bundleNoTo},
+
+  //       // numberTo: { $gte: numberFrom},   // ## numberTo ===>  >= numberFrom  && <= numberTo
+  //       // numberTo: { $lte : numberTo},
+
+  //       // bundleNo: { $gte: bundleNoFrom},   // ## bundleNo ===>  >= bundleNoFrom  && <= bundleNoTo
+  //       // bundleNo: { $lte : bundleNoTo},
+        
+  //     } }  
+  //   },
+  //   {upsert: true});
+
+    console.log('OK update ver for orderProductionQueueList ');
+    res.setHeader('Content-Type', 'text/html');
+    res.write('<html>');
+    res.write('<head><title>OK OK update ver for orderProductionQueueList </title><head>');
+    res.write('<body>');
+    res.write('<h1>OK OK update ver for orderProductionQueueList    </h1></br>');
+    res.write('<h1>'+ ' OK '+'</h1></br>');
+    // res.write(queueInfo);
+    // res.write('<h1>'+queueInfo+'</h1>');
+    res.write('</body>');
+    res.write('</html>');
+    return res.end();
+}
+
 // // ## http://192.168.1.35:3968/api/user/test/test14
 // ## ## cancel orderProduction , queue (all) 100%
 exports.getTestTest14 = async (req, res, next) => {

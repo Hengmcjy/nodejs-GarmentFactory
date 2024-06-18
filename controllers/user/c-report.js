@@ -1914,22 +1914,31 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
 
     orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
     // console.log(factoryOutsource);
+    // console.log('1');
+
     let outsourcefactoryID = [];
     await this.asyncForEach(orderProductFacOuts, async (item1) => {
       outsourcefactoryID.push(item1.outsourcefactoryID);
     });
+    // console.log('1.1');
+    // console.log(companyID, orderIDs);
     
     // ## get outsource factory qty
     orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+    // console.log('2');
+
     // ## get outsource factory qty remain
     orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
     // console.log(orderProductFacOutQTY);
     // console.log(orderProductFacOutRemainQTY);
+    // console.log('3');
 
     // ## style zone color size
     orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
+    // console.log('4');
     orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
     // console.log(orderProductFacOutStyleColorSizeQTY);
+    // console.log('5');
 
     // console.log('0' || '1');
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn) || '';

@@ -62,6 +62,8 @@ router.get("/test/test20", userController.getTestTest20);  // ##  update ver for
 router.get("/test/orderProductionQueue/01", userController.getOrderProductionQueue01);  // ##  update orderProductionQueue insert queueInfo
 router.get("/test/orderProductionQueue/02", userController.getOrderProductionQueue02);  // ## delete element by bundleNo
 
+router.get("/test/orderProductionQueuelist/01", userController.getOrderProductionQueueList01);  // ## update ver
+
 // ## test order queue
 router.get("/test/orderqueue/test1", userController.getOrderQueueTest1);
 

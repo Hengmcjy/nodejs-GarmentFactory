@@ -1486,10 +1486,11 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       
       const orderID = data.orderID;
       const productID = data.productID;
+      const seasonYear = data.seasonYear;
       const ver = +data.ver;
       const productBarcode = data.productBarcode;
       const targetPlace = data.targetPlace;
-      let queueInfo = data.queueInfo;  // array
+      let queueInfo = data.queueInfo;  // array 
       const qty = data.qty;
       const orderQty = data.orderQty; // full order zone qty
       const forLoss = data.forLoss;
@@ -1714,6 +1715,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               });
             }
             // ## edit queueInfo to OrderProductionQueue.queueInfo
+            queueInfo = []; // ## no need to add element to queueInfo 18-6-2024up.
             const result5 = await OrderProductionQueue.updateOne(
               {$and: [
                 {"companyID":companyID},
@@ -1758,6 +1760,8 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         companyID: companyID,
         orderID: orderID,
         productID: productID,
+        seasonYear: seasonYear,
+        ver: +ver,
         factoryID: factoryID,
         productBarcode: productBarcode,
         isOutsource: isOutsource,
@@ -2359,11 +2363,13 @@ exports.getProductionQueue = async (req, res, next) => {
 //             checkAuth, checkUUID, orderController.getLastNoOrderProductionBarcode);
 exports.getLastNoOrderProductionBarcode = async (req, res, next) => {
   // try {} catch (err) {}
+  // console.log('getLastNoOrderProductionBarcode');
   const companyID = req.params.companyID;
   const ver = +req.params.ver;
   // const factoryID = req.params.factoryID;
   const orderID = req.params.orderID;
   const productID = req.params.productID;
+  // const seasonYear = req.params.seasonYear;
   const productBarcode = req.params.productBarcode;
   // const page = +req.params.page;
   // const limit = +req.params.limit;  // ## records we need to get
@@ -2374,6 +2380,7 @@ exports.getLastNoOrderProductionBarcode = async (req, res, next) => {
 
     // ## get last running number order production  by barcodeNo
     const runningNo = await ShareFunc.getLastRunningNoOrderProduction(companyID, orderID, productID, productBarcode);
+    // console.log(runningNo);
 
     // ## get last bundleNo
     const lastBundleNo = await ShareFunc.getLastBundleNoOrderProduction(companyID, ver);

@@ -2373,6 +2373,8 @@ exports.getOrderQueueList= async (companyID, orderID, productBarcode, page, limi
     { $project: {			
       _id: 1,	
       orderID: 1,
+      seasonYear: 1,
+      ver: 1,
       companyID: 1,
       factoryID: 1,
       productID: 1,
@@ -2422,6 +2424,8 @@ exports.getOrderQueueSetList= async (companyID, orderID, page, limit) => {
     { $project: {			
       _id: 1,	
       orderID: 1,
+      seasonYear: 1,
+      ver: 1,
       companyID: 1,
       factoryID: 1,
       productID: 1,
@@ -2461,7 +2465,7 @@ exports.getOrderQueueSetListCount= async (companyID, orderID) => {
 // ShareFunc.getLastBundleNoOrderProduction(companyID, ver);
 exports.getLastBundleNoOrderProduction= async (companyID, ver) => {
   // ver = 1;
-  const maxBundleNoF = await OrderProduction.aggregate([
+  const maxBundleNoF = await OrderProductionQueueList.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       {"ver": ver},
@@ -2470,20 +2474,43 @@ exports.getLastBundleNoOrderProduction= async (companyID, ver) => {
     { $project: {			
         _id: 0,	
         companyID: 1,
-        ver: 1,
-        bundleNo: 1,
+        // ver: 1,
+        bundleNoTo: 1,
     }	},
 
     { $group: {			
       _id: { 
         companyID: '$companyID',
-        ver: '$ver',
+        // ver: '$ver',
       },
-      maxBundleNo: { $max: "$bundleNo" }
+      maxBundleNo: { $max: "$bundleNoTo" }
     }}  
-  ]).hint( { companyID: 1, ver: 1 } );
-  console.log('ver= ', ver);
-  console.log(maxBundleNoF);
+  ]).hint( { companyID: 1, bundleNoTo: 1 } );
+
+  // const maxBundleNoF = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"ver": ver},
+  //     // {$expr: { $eq: [{ $substr: ["$productBarcodeNoReal", 0, 37] }, productBarcode] }}
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,
+  //       ver: 1,
+  //       bundleNo: 1,
+  //   }	},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       ver: '$ver',
+  //     },
+  //     maxBundleNo: { $max: "$bundleNo" }
+  //   }}  
+  // ]).hint( { companyID: 1, ver: 1 } );
+
+  // console.log('ver= ', ver);
+  // console.log(maxBundleNoF);
   return maxBundleNoF.length > 0 ? +maxBundleNoF[0].maxBundleNo : 0;
 }
 
@@ -2517,7 +2544,7 @@ exports.getLastRunningNoOrderProduction= async (companyID, orderID, productID, p
     }	},
     { $sort: { barcodeNo: -1 } },
     { $limit: 1 }
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productBarcodeNoReal: 1 } );
   // console.log(orderProduction);
 
   let runningNo = 0;
@@ -2555,7 +2582,7 @@ exports.getTotalProductionQueue= async (companyID, orderID, productID) => {
       countProductionQueueAll: {$sum: 1} ,
       sumProductionQueueAll: {$sum:  '$productCount'} ,
     }	},
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, productBarcodeNoReal: 1 } );
 
   // console.log(totalProductionQueueByBarcode);
   return totalProductionQueueAll.length>0?totalProductionQueueAll:[];
@@ -2882,6 +2909,8 @@ exports.getProductionQueueListByBundleNoXXX= async (companyID, orderID, startNo,
     { $project: { 
       companyID: 1,
       orderID: 1,
+      seasonYear: 1,
+      ver: 1,
       productBarcode: 1,
       // queueDate: "$queueInfo.queueDate",
       // bundleNo: 1,
@@ -3470,7 +3499,7 @@ exports.checkExistOrderProductionByBarcodeNo= async (companyID, factoryID, order
         productBarcodeNoReal: 1,
     }	},
     { $limit: 1 }
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "factoryID": 1, "productBarcodeNoReal": 1} );
   // console.log(existed);
   return existed.length>0?true:false;
 }
@@ -6902,7 +6931,7 @@ exports.getOrderProduct01= async (companyID, factoryID, productBarcodeNo) => {
         yarnLot: 1,
         productionNode: 1 ,  
     }	}
-  ]);
+  ]).hint( {"companyID" : 1, "productBarcodeNoReal": 1} );
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct.length>0?orderProduct[0]:null;
@@ -6937,7 +6966,7 @@ exports.getOrderProductLostList= async (companyID, orderID, productStatus) => {
         // subNodeFlow: 1,
         // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	}
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "productStatus": 1, "open": 1, "forLoss": 1} );
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct;
@@ -6971,7 +7000,7 @@ exports.getOrderProductListByByORIDBunNo= async (companyID, orderID, bundleNo) =
         subNodeFlow: 1,
         productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	}
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "bundleNo": 1, "bundleID": 1} );
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct.length>0?orderProduct:[];
@@ -7006,7 +7035,7 @@ exports.getOrderProductListByByORIDBunNo2= async (companyID, orderID, bundleNo, 
         subNodeFlow: 1,
         productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	}
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "bundleNo": 1, "bundleID": 1} );
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct.length>0?orderProduct:[];
@@ -7135,7 +7164,7 @@ exports.getOrderProduct1= async (companyID, factoryID, productBarcodeNo) => {
         outsourceData: 1,
         productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	}
-  ]);
+  ]).hint( {"companyID" : 1, "productBarcodeNoReal": 1} );
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct.length>0?orderProduct[0]:null;
@@ -7167,7 +7196,7 @@ exports.getOrderProductReceiveOutsource= async (companyID, productBarcodeNo) => 
         outsourceData: 1,
         productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	}
-  ]);
+  ]).hint( {"companyID" : 1, "productBarcodeNoReal": 1} );
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct.length>0?orderProduct[0]:null;
@@ -7199,7 +7228,7 @@ exports.getOrderProductReceiveOutsource01= async (companyID, productBarcodeNos) 
         outsourceData: 1,
         productionNode: 1,  // ## 
     }	}
-  ]);
+  ]).hint( {"companyID" : 1, "productBarcodeNoReal": 1} );
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct.length>0?orderProduct[0]:null;
@@ -7477,7 +7506,7 @@ exports.getCurrentCompanyOrderOutsource= async (companyID, orderIDs) => {
       }
     }}  
  
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "productionNode.isOutsource": 1, "productionNode.status": 1} );
 
 // // console.log(orderProductFacOuts);
 const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
@@ -7528,7 +7557,7 @@ exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {
       },
       sumFactoryOutsQty: {$sum: 1} ,
     }}   
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
     companyID: fw._id.companyID, 
@@ -7594,7 +7623,7 @@ exports.getCurrentCompanyOrderOutsourceRemianQTY= async (companyID, orderIDs) =>
       },
       sumFactoryOutsQty: {$sum: 1} ,
     }}   
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "productionNode.isOutsource": 1, "productionNode.status": 1} );
   // .hint( { companyID: 1, orderID: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
@@ -7652,7 +7681,7 @@ exports.getCurrentCompanyOrderStyleColorSizeOutsourceQTY= async (companyID, orde
       // sumProductQty: {$sum:  '$amount'} ,
     }} ,
  
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
 
   const result = await orderProductFacOutQTY.map(fw => ({
     companyID: fw._id.companyID, 
@@ -7741,7 +7770,7 @@ exports.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY= async (companyID
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }} ,  
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "productionNode.isOutsource": 1, "productionNode.status": 1} );
 
   const result = await orderProductFacOutQTY.map(fw => ({
     companyID: fw._id.companyID, 
@@ -7785,7 +7814,7 @@ exports.getOrderProductByOrderID1= async (companyID, factoryID, orderID, product
         yarnLot: 1,
         productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	}
-  ]);
+  ]).hint( {"companyID" : 1, "factoryID": 1, "orderID": 1, "productBarcodeNoReal": 1} );
   // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
   // console.log(orderProduct);
   return orderProduct.length>0?orderProduct[0]:null;
@@ -7891,7 +7920,7 @@ exports.getMaxProductIDRunningNo = async (companyID, productBarcode) => {
       maxNo: { $max : "$no" } ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
-  ]);
+  ]).hint( {"companyID" : 1, "productBarcodeNoReal": 1} );
   // console.log(orderProductRep);
 
   // const orderProductRepF = await orderProductRep.map(fw => ({
@@ -8978,7 +9007,7 @@ exports.getProductionZoneForLossQTYC = async (companyID, productStatusArr, produ
     },
       sumProductQty: {$sum: 1} ,
     }}  
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "productStatus": 1, "open": 1, "forLoss": 1} );
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -9037,7 +9066,7 @@ exports.getProductionForLossQTYC = async (companyID, productStatusArr, productio
     },
       sumProductQty: {$sum: 1} ,
     }}  
-  ]);
+  ]).hint( {"companyID" : 1, "orderID": 1, "productStatus": 1, "open": 1, "forLoss": 1} );
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -14940,7 +14969,7 @@ exports.updateQrCodeRealOrderProduction= async () => {
       productBarcodeNo: 1,
       
   }	},
-  ]);
+  ]).hint( {"companyID" : 1, "productBarcodeNoReal": 1} );
   // console.log(orderProduction);
 
   await this.asyncForEach(orderProduction , async (item) => {

@@ -6,6 +6,8 @@ const orderProductionQueueListSchema = mongoose.Schema({
   companyID: { type: String, required: true },
   orderID: { type: String, required: true}, // ## from orderID
   productID : {type: String, required: true},  
+  seasonYear : {type: String},
+  ver : {type: Number},
   factoryID : {type: String},
   productBarcode : {type: String},
   isOutsource : {type: Boolean},
