@@ -3499,7 +3499,7 @@ exports.checkExistOrderProductionByBarcodeNo= async (companyID, factoryID, order
         productBarcodeNoReal: 1,
     }	},
     { $limit: 1 }
-  ]).hint( {"companyID" : 1, "orderID": 1, "factoryID": 1, "productBarcodeNoReal": 1} );
+  ]).hint( {"companyID" : 1, "factoryID": 1, "orderID": 1, "productBarcodeNoReal": 1} );
   // console.log(existed);
   return existed.length>0?true:false;
 }

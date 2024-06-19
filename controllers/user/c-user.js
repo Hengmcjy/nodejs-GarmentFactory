@@ -851,54 +851,20 @@ exports.getOrderProductionQueueList01 = async (req, res, next) => {
   // const toNode = '1.COMPUTER-KNITTING';  
 
 
-  result1 = await OrderProductionQueueList.updateMany(
-    {$and: [
-      {"companyID":companyID},
-      // {"factoryID":factoryID},
-      // {"orderID":orderID},
-      {"orderID":{$nin: orderIDnin}},
-      // {"productID":productID},
-      // {"productBarcodeNoReal":{$in: productBarcodeNos}}
-      // {"productBarcodeNo":{$in: productBarcodeNos}}
-    ]}, 
-    {$set: { 
-          "ver": ver
-        }}, 
-    // {
-    //   // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
-    //   // $push: {productionNode: {$each: productionNodeArr}},
-    //   // $inc: {productCount: -1},
-    //   // "productCount": 1,
-    //   "ver": ver
-    // }
-  );
-
-
-  // //  ## update orderProductionQueue / delete array 1 element 
-  // const result2 = await OrderProductionQueue.updateOne(
+  // result1 = await OrderProductionQueueList.updateMany(
   //   {$and: [
   //     {"companyID":companyID},
-  //     {"orderID":orderID},
-  //     {"ver":ver},
+  //     // {"factoryID":factoryID},
+  //     // {"orderID":orderID},
+  //     {"orderID":{$nin: orderIDnin}},
+  //     // {"productID":productID},
+  //     // {"productBarcodeNoReal":{$in: productBarcodeNos}}
+  //     // {"productBarcodeNo":{$in: productBarcodeNos}}
   //   ]}, 
-  //   {
-  //     $pull: { queueInfo: {                // ## delete n element for this condition
-  //       productBarcode: productBarcode, 
-  //       // isOutsource: isOutsource,
-  //       bundleNo: { $gte: bundleNo},
-
-  //       // bundleNo: { $gte: bundleNoFrom},   // ## numberFrom ===>  >= numberFrom  && <= numberTo
-  //       // bundleNo: { $lte : bundleNoTo},
-
-  //       // numberTo: { $gte: numberFrom},   // ## numberTo ===>  >= numberFrom  && <= numberTo
-  //       // numberTo: { $lte : numberTo},
-
-  //       // bundleNo: { $gte: bundleNoFrom},   // ## bundleNo ===>  >= bundleNoFrom  && <= bundleNoTo
-  //       // bundleNo: { $lte : bundleNoTo},
-        
-  //     } }  
-  //   },
-  //   {upsert: true});
+  //   {$set: { 
+  //         "ver": ver
+  //   }});
+  
 
     console.log('OK update ver for orderProductionQueueList ');
     res.setHeader('Content-Type', 'text/html');

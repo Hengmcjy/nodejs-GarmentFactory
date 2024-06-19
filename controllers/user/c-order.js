@@ -1683,16 +1683,17 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
               // j++;
               x++;
             });
+            // console.log('2222');
             // console.log(orderProductionArr);
             // console.log('orderProductionArr size = ', Buffer.byteLength(orderProductionArr));
             const result3 = await OrderProduction.insertMany(orderProductionArr, { session: session });
-            // console.log('1111');
+            // console.log('3333');
 
             // ## gen queueInfo
             const queueInfo = await this.createQueueInfo(item1, productBarcodeNoUUID, current, 
                           factoryID, isOutsource, forLoss, forLossQty,
                           toNode, yarnLot, createBy);
-            // console.log('222222');
+            // console.log('444');
 
             // ## err for create queueInfo array
             if (queueInfo.length === 0) {
@@ -1714,22 +1715,24 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
                 success: false
               });
             }
-            // ## edit queueInfo to OrderProductionQueue.queueInfo
-            queueInfo = []; // ## no need to add element to queueInfo 18-6-2024up.
-            const result5 = await OrderProductionQueue.updateOne(
-              {$and: [
-                {"companyID":companyID},
-                {"orderID":orderID},
-                {"ver":ver},
-              ]}, 
-              {
-                // "forLossQty": forLossQty,
-                $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
-              },
-              {upsert: true}).session(session);
-            // console.log('3333333');
+
+            // // ## edit queueInfo to OrderProductionQueue.queueInfo
+            // queueInfo = []; // ## no need to add element to queueInfo 18-6-2024up.
+            // const result5 = await OrderProductionQueue.updateOne(
+            //   {$and: [
+            //     {"companyID":companyID},
+            //     {"orderID":orderID},
+            //     {"ver":ver},
+            //   ]}, 
+            //   {
+            //     // "forLossQty": forLossQty,
+            //     $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first
+            //   },
+            //   {upsert: true}).session(session);
+            // console.log('5555');
 
         } else {  // ## err --> had Order Production  BarcodeNo , existed
+          // console.log('666');
             await session.abortTransaction(); 
             session.endSession();
             // await session2.abortTransaction(); 
@@ -1753,7 +1756,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
 
       });
 
-      // console.log('yyyy');
+      // console.log('7777');
 
       // ## insert one orderProductionQueueList
       const orderProductionQueueList1 = [{
@@ -1781,7 +1784,7 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       // console.log(companyID, current, userID, logID, note);
       const insertone = await OrderProductionQueueList.insertMany(orderProductionQueueList1, { session: session });
 
-      // console.log('zzzzz');
+      // console.log('8888');
 
       // ## edit order if qty > orderQty ----> forLoss case
       if (forLossQty > 0) {
