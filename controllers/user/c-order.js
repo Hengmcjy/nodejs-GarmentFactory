@@ -2300,6 +2300,81 @@ exports.getProductionQueueList = async (req, res, next) => {
   }
 }
 
+// // ## get all size each orderIDs  getOrderIDsSizes
+// router.get("/get/orderProductionQueuelist/getsizes/:companyID/:orderIDs", 
+//   checkAuth, checkUUID, orderController.getOrderIDsSizes);
+exports.getOrderIDsSizes = async (req, res, next) => {
+  // try {} catch (err) {}
+  console.log('getOrderIDsSizes');
+  const companyID = req.params.companyID;
+  const orderIDs = JSON.parse(req.params.orderIDs);
+  const userID = req.userData.tokenSet.userID;
+  console.log(companyID, orderIDs);
+  try {
+
+    // // ## get count production queues
+    // // const totalProductionQueueByBundleNo = await ShareFunc.getProductionQueueCountByBundleNo(companyID, orderID, startNo, endNo);
+    // // // console.log(totalProductionQueueByBundleNo);
+    // const orderBundleList = await ShareFunc.getOrderBundleNoList(companyID, orderID, startNo, endNo);
+    // // console.log(orderBundleList, orderBundleList.length);
+    // const sumProductionQueueByBundleNo = Array.from(new Set(orderBundleList.map((item) => item.bundleNo))).sort();
+    // // console.log(sumProductionQueueByBundleNo, sumProductionQueueByBundleNo.length);
+    // const totalProductionQueueByBundleNo = {
+    //   companyID, orderID,
+    //   countProductionQueueByBundleNo: sumProductionQueueByBundleNo.length,
+    //   sumProductionQueueByBundleNo: orderBundleList.length,
+    // };
+
+    // // const orderProductionQueue = await ShareFunc.getProductionQueueListByBundleNo(companyID, orderID, startNo, endNo);
+    // // console.log(orderProductionQueue);
+    // let orderProductionQueue = [];
+    // await this.asyncForEach(sumProductionQueueByBundleNo, async (item1) => {
+    //   const orderBundleList1 = await this.findOrderBundleList(item1, orderBundleList);
+    //   const bundleBarcodeList = await ShareFunc.getOrderBarcodeNoList(companyID, orderID, item1);
+    //   // console.log('--------------------------------',bundleBarcodeList);
+    //   let orderProductionQueue1 = {
+    //     companyID: companyID,
+    //     orderID: orderID,
+    //     productBarcode: orderBundleList1.productBarcode,
+    //     bundleNo: item1,
+    //     productCount: orderBundleList1.productCount,
+    //     yarnLot: orderBundleList1.yarnLot,
+    //     numberFrom: +bundleBarcodeList[0].no,
+    //     numberTo: +bundleBarcodeList[bundleBarcodeList.length-1].no,
+    //     forLossQty: orderBundleList1.forLoss?orderBundleList1.productCount:0,
+    //   };
+    //   orderProductionQueue.push(orderProductionQueue1);
+    // });
+    // // console.log(orderProductionQueue);
+
+    // // getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) 
+    // const orderBundleList = await ShareFunc.getOrderBundleNoList(companyID, orderID, startNo, endNo);
+    // // console.log(orderBundleList);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      // totalProductionQueueByBundleNo: totalProductionQueueByBundleNo,
+      // orderProductionQueue: orderProductionQueue,
+      // orderBundleList: orderBundleList,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO020', 
+        mode:'errGetSizeOrderProductionQueueListByOrderIDs', 
+        value: "error get sizes Order Production queue list by orderID"
+      }
+    });
+  }
+}
 
 // // ## get last n record production queue 
 // router.get("/lastProduction/getlists/:companyID/:orderID/:productID/:page/:limit", 

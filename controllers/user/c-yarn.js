@@ -394,6 +394,75 @@ exports.getYarnPlansInvoiceList2 = async (req, res, next) => {
   }
 }
 
+// // getYarnStatData
+// router.get("/yarnplan/statdata1/:companyID/:orderIDs", checkAuth, checkUUID, yarnController.getYarnStatData);
+exports.getYarnStatData = async (req, res, next) => {
+  // try {} catch (err) {}
+  console.log('getYarnStatData');
+  const userID = req.userData.tokenSet.userID;
+  const companyID = req.params.companyID;
+  const orderIDs = JSON.parse(req.params.orderIDs);
+  // const factoryID = req.params.factoryID;
+  // const customerID = req.params.customerID;
+  // const setName = req.params.setName;
+  // const yarnSeasonID = req.params.yarnSeason;  // 2024SS
+  // const season = yarnSeasonID.substr(0, 4);  // 2024
+  // const status = ['open'];
+  console.log(companyID, orderIDs);
+  try {
+
+    // ## 
+
+    // ## get order sum qty group by zone and color
+
+
+
+    
+    // const yarns = await ShareFunc.getYarnCuss(companyID, customerID, yarnSeasonID);
+    // const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID, yarnSeasonID);
+    // // console.log(yarns, yarnsCount, 'getYarPlansList');
+
+    // const yarnPlans = await ShareFunc.getYarnPlanMainLists(companyID, factoryID, customerID, yarnSeasonID, status);
+    // const yarnPlansCount = await ShareFunc.getYarnPlanMainCount(companyID, factoryID, customerID, yarnSeasonID, status);
+    // // console.log(yarnPlans, yarnPlansCount, 'getYarPlansList');
+
+    // let productIDs = [];
+    // await this.asyncForEach(orderIDs, async (item1) => {
+    //   productIDs.push(await ShareFunc.setBackStrLen(process.env.productIDLen, item1, ' '));
+    // });
+    // const productImageProfiles = await ShareFunc.getProductImageProfiles(companyID, productIDs);
+
+ 
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      // yarns: yarns,
+      // yarnsCount: yarnsCount,
+      // yarnPlans: yarnPlans,
+      // yarnPlansCount: yarnPlansCount,
+      // productImageProfiles: productImageProfiles,
+
+      // yarns: yarns,
+      // yarnsCount: yarnsCount,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'erry004', 
+        mode:'errgetYarnstatdata', 
+        value: "error get yarn stat data"
+      }
+    });
+  }
+}
+
 // // ## get yarn plan list /api/yarn/yarnplan/list/main/:companyID/:factoryID/:customerID/:setName/:yarnSeason getYarPlansList
 // router.get("/yarnplan/list/main/:companyID/:factoryID/:customerID/:setName/:yarnSeason", checkAuth, checkUUID, yarnController.getYarPlansList);
 exports.getYarPlansList = async (req, res, next) => {

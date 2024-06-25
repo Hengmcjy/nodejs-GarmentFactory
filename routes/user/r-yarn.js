@@ -27,6 +27,9 @@ router.get("/getinfo1/:companyID/:factoryID/:customerID/:setName/:yarnSeason", c
 // #############################################################################
 // ## yarn plan ###########################################################################
 
+// getYarnStatData
+router.get("/yarnplan/statdata1/:companyID/:orderIDs", checkAuth, checkUUID, yarnController.getYarnStatData);
+
 // ## get yarn plan list /api/yarn/yarnplan/list/:companyID/:factoryID/:customerID/:setName/:yarnSeason getYarPlansList
 router.get("/yarnplan/list/main/:companyID/:factoryID/:customerID/:setName/:yarnSeason/:orderIDs", 
   checkAuth, checkUUID, yarnController.getYarPlansList);

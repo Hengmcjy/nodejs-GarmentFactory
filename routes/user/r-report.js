@@ -108,9 +108,9 @@ router.get("/node/scan1/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:date
 
 router.get("/cpn/rep10/current/order/:companyID/:ordertatus/:orderIDArr", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsource);
 
-router.get("/cpn/rep14/current/order/state/:companyID/:ordertatus/:orderIDArr", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState);
+router.get("/cpn/rep14/current/order/state/:companyID/:ordertatus/:orderIDArr/:seasonYear", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState);
 
-router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr", reportController.getRepCompanyOrderOutsourceState2);
+router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr/:seasonYear", reportController.getRepCompanyOrderOutsourceState2);
 // // ## get node 
 // router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", 
 //         reportController.getRepCompanyOrderOutsource2);

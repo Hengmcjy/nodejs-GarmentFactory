@@ -21,6 +21,9 @@ const Schedule = require("../models/m-schedule");
 const Dtproductionzoneperiodc = require("../models/m-dt-productionzoneperiodc");
 const Dtcurrentcfactoryorder = require("../models/m-dt-currentcfactoryorder");
 const Dtcurrentproductqtyall = require("../models/m-dt-currentproductqtyall");
+const Dtorderoutsourcefac = require("../models/m-dt-currentcompanyorderoutsourcefac");
+
+
 
 const User = require("../models/m-user");
 const UserGroupScan = require("../models/m-userGroupScan");
@@ -984,6 +987,32 @@ exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName) 
     }	}
   ]);
   // console.log(data);
+  return data[0].data;
+}
+
+exports.get_auto_getCurrentCompanyOrderOutsourceFac= async (companyID, seasonYear, sName) => {
+  console.log(companyID, seasonYear, sName);
+  const data = await Dtorderoutsourcefac.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":seasonYear},
+      {"sName":sName},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        data: 1,	
+        // companyID: 1,		
+        // factoryID: 1,	
+        // sGroup: 1,
+        // sName: 1,	
+        // sStatus: 1,	
+        // sMode: 1,
+        // sDatetimeDiff: 1,
+        // lastDatetime: 1,
+        // sDatetime: 1,
+    }	}
+  ]);
+  console.log(data);
   return data[0].data;
 }
 
@@ -2001,6 +2030,8 @@ exports.getOrder= async (companyID, orderID) => {
   // console.log(order);
   return order[0]?order[0]:{};
 }
+
+
 
 // ShareFunc.getOrdersByOrderIDs(companyID, orderIDs);
 exports.getOrdersByOrderIDsAll= async (companyID, orderIDs) => {
@@ -5758,6 +5789,7 @@ exports.getYarnPlanMainList= async (companyID, factoryID, customerID, yarnSeason
         orderID: 1,
         colorS: 1,
         yarnDataInfo: 1,
+        yarnStatCal: 1,
         yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
         mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
     }	},
@@ -6888,6 +6920,24 @@ exports.get1NodeStationLoginRequest= async (companyID, factoryID, nodeID, statio
   return nodeStationLoginRequest;
 }
 
+exports.getOrdersBySeasonYear= async (companyID, seasonYear) => {
+  const orderIDs = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":seasonYear},
+    ] } },
+    { $project: {	
+        _id: 0,	
+        orderID: 1,	
+    }	}
+  ]);
+  // console.log(orderIDs);
+  const orderIDsF = await orderIDs.map(fw => ({
+    orderID: fw.orderID, 
+  }));
+  return orderIDsF;
+}
+
 // getOrderIDs(companyID, season);
 exports.getOrderIDs= async (companyID, seasonYear) => {
   const orderIDs = await Order.aggregate([
@@ -7350,7 +7400,10 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
 
-      {"productionNode":  {$elemMatch: {"isOutsource": isOutsource, "status": status }}},
+      // {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
+      {"productionNode":  {$elemMatch: {"isOutsource": isOutsource, "status": {$in: status} }}},
+
+      // {"productionNode":  {$elemMatch: {"isOutsource": isOutsource, "status": status }}},
       // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
       // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
 
@@ -7394,10 +7447,11 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
       status: "$productionNode.status",
       isOutsource: "$productionNode.isOutsource",
       outsourceData: "$productionNode.outsourceData",
-      createBy: "$productionNode.createBy",
+      // createBy: "$productionNode.createBy",
     }	},
     { $match: { $and: [
-      {"status":status},
+      // {"status":status},
+      {"status":{$in: status}},
       {"isOutsource":isOutsource},
     ] } },
     { $unwind: "$outsourceData"},
@@ -7421,7 +7475,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
       dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime", timezone : process.env.timezone } },
       status: 1,
       isOutsource: 1,
-      createBy: 1,
+      // createBy: 1,
     }	},
     { $group: {			
       _id: { 
@@ -7437,7 +7491,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
         toFactoryID: '$toFactoryID',
         fromFactoryID: '$fromFactoryID',
         yyyymmdd: '$yyyymmdd',
-        createBy: '$createBy',
+        // createBy: '$createBy',
       },
       sumFactoryOutsQty: {$sum: 1} ,
       // sumFactoryOutsQty: {$sum: '$productCount'} ,
@@ -7458,7 +7512,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
     toFactoryID: fw._id.toFactoryID,
     fromFactoryID: fw._id.fromFactoryID,
     yyyymmdd: fw._id.yyyymmdd,
-    createBy: fw._id.createBy,
+    // createBy: fw._id.createBy,
     sumFactoryOutsQty: fw.sumFactoryOutsQty,
   }));
 

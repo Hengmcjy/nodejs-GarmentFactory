@@ -35,6 +35,8 @@ router.get("/test/test2", userController.getTestTest2);
 router.get("/test/test3", userController.getTestTest3);
 router.get("/test/test4", userController.getTestTest4);
 router.get("/test/test4_2", userController.getTestTest4_2); // ## get orderiDs from all a season
+router.get("/test/test4_3", userController.getTestTest4_3); // ## get all qty orderProduction by productBarcode
+router.get("/test/test4_4", userController.getTestTest4_4); // ## get all qty orderProduction 
 router.get("/test/test5", userController.getTestTest5); // ## add productionNode to orderProduction
 router.get("/test/test5_1", userController.getTestTest5_1); // ## add productionNode to orderProduction @ position nodeID
 router.get("/test/test6", userController.getTestTest6); // ## ## update orderProduction / edit bundleNo

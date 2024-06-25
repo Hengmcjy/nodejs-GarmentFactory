@@ -108,6 +108,10 @@ router.get("/get/orderProductionQueue1/getcount/:companyID/:orderID/:startNo/:en
 router.get("/get/orderProductionQueue2/getlists/:companyID/:orderID/:startNo/:endNo", 
       checkAuth, checkUUID, orderController.getProductionQueueList);
 
+// ## get all size each orderIDs  getOrderIDsSizes
+router.get("/get/orderProductionQueuelist/getsizes/:companyID/:orderIDs", 
+      checkAuth, checkUUID, orderController.getOrderIDsSizes);
+
 // ## get last n record production queue 
 router.get("/lastProduction/getlists/:companyID/:orderID/:productID/:page/:limit", 
             checkAuth, checkUUID, orderController.getProductionQueue);

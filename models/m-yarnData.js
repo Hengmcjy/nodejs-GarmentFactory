@@ -76,6 +76,24 @@ const yarnDataSchema = mongoose.Schema({
       yarnSupplierID: {type: String},
     }
   }],
+  yarnStatCal: [{
+    seq: {type: Number},
+    setName: {type: String},
+    color: {
+      colorID: {type: String},
+      colorName: {type: String},
+      colorValue: {type: String},
+      colorCode: {type: String},
+    },
+    mainZoneYarn: [{
+      seq: {type: Number},
+      orderID: {type: String},
+      sizeStr: {type: String},  // ##  xs - 2xl
+      targetPlaceID : {type: String},
+      targetPlaceName : {type: String},
+      productWeight: {type: mongoose.Types.Decimal128},
+    }],
+  }],
 });
 
 yarnDataSchema.plugin(uniqueValidator);

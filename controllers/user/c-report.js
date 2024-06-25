@@ -2054,6 +2054,7 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
   // console.log('getRepCompanyOrderOutsourceState');
 
   const companyID = req.params.companyID;
+  const seasonYear = req.params.seasonYear;
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
@@ -2065,15 +2066,34 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
   try {
 
     const isOutsource = true;
+    const status = ['outsource', 'normal'];
+    // ## get outsource factory sent out & factory receive
+    const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+
+    // // ## get data from dtcurrentcompanyorderoutsourcefac
+    // const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
+    // const orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
+
+
     // ## get outsource factory sent out
     const status1 = 'outsource';  // ## sent out  outsource
-    const orderProductFacOut = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status1);
+    const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
     // console.log(orderProductFacOut);
 
     // ## get outsource factory receive
-    const status2 = 'normal';  // ## receive
-    const orderProductFacReceive = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status2);
+    const status2 = 'normal';  // ## sent out  outsource
+    const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
     // console.log(orderProductFacReceive);
+
+    // // ## get outsource factory sent out
+    // const status1 = 'outsource';  // ## sent out  outsource
+    // const orderProductFacOut = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status1);
+    // // console.log(orderProductFacOut);
+
+    // // ## get outsource factory receive
+    // const status2 = 'normal';  // ## receive
+    // const orderProductFacReceive = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status2);
+    // // console.log(orderProductFacReceive);
 
     // console.log('0' || '1');
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn) || '';
@@ -2104,6 +2124,7 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
   // console.log('getRepCompanyOrderOutsourceState2');
 
   const companyID = req.params.companyID;
+  const seasonYear = req.params.seasonYear;
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
@@ -2114,16 +2135,35 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
 
   try {
 
-    const isOutsource = true;
+    // const isOutsource = true;
+    // const status = ['outsource', 'normal'];
+    // // ## get outsource factory sent out & factory receive
+    // const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+
+    // ## get data from dtcurrentcompanyorderoutsourcefac
+    const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
+    const orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
+
+
     // ## get outsource factory sent out
     const status1 = 'outsource';  // ## sent out  outsource
-    const orderProductFacOut = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status1);
-    // console.log(orderProductFacOut);
+    const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
+    console.log(orderProductFacOut);
 
     // ## get outsource factory receive
-    const status2 = 'normal';  // ## receive
-    const orderProductFacReceive = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status2);
-    // console.log(orderProductFacReceive);
+    const status2 = 'normal';  // ## sent out  outsource
+    const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
+    console.log(orderProductFacReceive);
+
+    // // ## get outsource factory sent out
+    // const status1 = 'outsource';  // ## sent out  outsource
+    // const orderProductFacOut = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status1);
+    // // console.log(orderProductFacOut);
+
+    // // ## get outsource factory receive
+    // const status2 = 'normal';  // ## receive
+    // const orderProductFacReceive = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status2);
+    // // console.log(orderProductFacReceive);
 
     // console.log('0' || '1');
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn) || '';

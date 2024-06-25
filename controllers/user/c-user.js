@@ -1340,6 +1340,105 @@ exports.getTestTest4_2 = async (req, res, next) => {
   return res.end();
 }
 
+// ## http://192.168.1.36:3968/api/user/test/test4_3
+// router.get("/test/test4_3", userController.getTestTest4_3); // ## get all qty orderProduction by productBarcode
+exports.getTestTest4_3 = async (req, res, next) => {
+  console.log('getTestTest4_3');
+  const companyID = 'c000001';
+  const orderID = 'AAD05A4A';
+  const productBarcode = 'AAD05A4A    JAPN-----24OM--------XL--';
+  const seasonYear = '2024'; // 2024 , 2024AW
+  const ver = 2;
+  // const orderIDs = await ShareFunc.getOrderIDs(companyID, seasonYear);
+  // console.log(orderIDs);
+
+  const result = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"orderID":{$in: orderIDArr}},
+      // {"productStatus":{$in: productStatusArr}},
+      // {"open":{$in: openArr}},
+      // {"forLoss":{$in: forLossArr}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        // productBarcodeNoReal: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+        // productionNode: 1,
+        productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+        // style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+        // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+        // countryID: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.countryIDPos, +process.env.countryIDDigit ] }},
+        // year: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.yearPos, +process.env.yearDigit ] }},
+        // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+        // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+    }	},
+
+    { $match: { $and: [
+      {"productBarcode":productBarcode},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,	
+      orderID: 1,	
+      productBarcode: 1,
+  }	},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        productBarcode: '$style',
+        // targetPlace: '$targetPlace',
+        // color: '$color',
+        // size: '$size',
+        // fromNode: '$fromNode',
+    },
+      sumProductQty: {$sum: 1} ,
+    }}  
+  ]);
+  console.log(result)
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>get orderiDs from all a season year</title><head>');
+  res.write('<body>');
+  res.write('<h1>get orderiDs from all a season year</h1></br>');
+  // res.write('<h1>add push to nodeID we need to</h1>');
+  res.write('<h1> record count = '+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
+// ## http://192.168.1.36:3968/api/user/test/test4_4
+// router.get("/test/test4_4", userController.getTestTest4_4); // ## get all qty orderProduction
+exports.getTestTest4_4 = async (req, res, next) => {
+  const companyID = 'c000001';
+  rows = await OrderProduction.countDocuments({$and: [
+    {"companyID":companyID}
+  ]});
+  console.log('rows ==>> ' ,rows)
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>all row OrderProduction</title><head>');
+  res.write('<body>');
+  // res.write('<h1>get orderiDs from all a season year</h1></br>');
+  // res.write('<h1>add push to nodeID we need to</h1>');
+  res.write('<h1> rows count = '+rows+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 // // ## http://192.168.1.35:3968/api/user/test/test3
 // ## update multi langs here
 exports.getTestTest3 = async (req, res, next) => {

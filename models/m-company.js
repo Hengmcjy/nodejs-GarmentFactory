@@ -3,6 +3,7 @@ const uniqueValidator = require("mongoose-unique-validator");
 
 const companySchema = mongoose.Schema({
   companyID: { type: String, required: true, unique: true },
+  seasonYear: {type: String},
   cDescription: {type: String},
   cInfo: {
     companyName: {type: String, required: true},
