@@ -2065,14 +2065,14 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
 
   try {
 
-    const isOutsource = true;
-    const status = ['outsource', 'normal'];
-    // ## get outsource factory sent out & factory receive
-    const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+    // const isOutsource = true;
+    // const status = ['outsource', 'normal'];
+    // // ## get outsource factory sent out & factory receive
+    // const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
 
-    // // ## get data from dtcurrentcompanyorderoutsourcefac
-    // const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
-    // const orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
+    // ## get data from dtcurrentcompanyorderoutsourcefac
+    const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
+    const orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
 
 
     // ## get outsource factory sent out
