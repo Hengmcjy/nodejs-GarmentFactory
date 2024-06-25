@@ -79,7 +79,7 @@ router.get("/node/rep4/current/productqty/all/cf/:companyID/:factoryIDArr/:produ
 // ##
 
 // ## get node getRepCurrentProductQtyCom
-router.get("/node/rep3/current/productqty/com/:companyID/:factoryIDArr/:ordertatus/:productStatus/:orderIDArr", checkAuth, checkUUID, 
+router.get("/node/rep3/current/productqty/com/:companyID/:factoryIDArr/:ordertatus/:productStatus/:orderIDArr/:seasonYear", checkAuth, checkUUID, 
         reportController.getRepCurrentProductQtyCom);
 // // ##
 
@@ -106,7 +106,11 @@ router.get("/node/scan1/rep/CF/staff/:companyID/:factoryIDArr/:orderIDsArr/:date
 // ###################################################################################################
 // ## report outsource ############################################################################
 
-router.get("/cpn/rep10/current/order/:companyID/:ordertatus/:orderIDArr", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsource);
+router.get("/cpn/rep10/current/order/:companyID/:ordertatus/:orderIDArr/:seasonYear"
+        , checkAuth, checkUUID, reportController.getRepCompanyOrderOutsource);
+
+// ##
+router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", reportController.getRepCompanyOrderOutsource2);
 
 router.get("/cpn/rep14/current/order/state/:companyID/:ordertatus/:orderIDArr/:seasonYear", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState);
 
@@ -115,8 +119,7 @@ router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr/
 // router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", 
 //         reportController.getRepCompanyOrderOutsource2);
 
-// ##
-router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", reportController.getRepCompanyOrderOutsource2);
+
 
 // // ##
 // router.get("/node/outs/rep14/statet/CF/:companyID/:ordertatus/:orderIDArr", reportController.getRepCompanyOrderOutsourceState);

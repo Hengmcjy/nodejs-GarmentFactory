@@ -1214,13 +1214,15 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
   // ## CF = /:companyID/:factoryID
   // console.log('getRepCurrentProductQtyCom');
   const companyID = req.params.companyID;
+  const seasonYear = req.params.seasonYear;
   // const factoryIDArr = JSON.parse(req.params.factoryIDArr);
   // const nodeID = req.params.nodeID;
   const factoryIDArr = JSON.parse(req.params.factoryIDArr);
-  const productStatusArr = JSON.parse(req.params.productStatus);
-  const orderStatusArr = JSON.parse(req.params.ordertatus);
+  const productStatusArr = JSON.parse(req.params.productStatus); // ['normal', 'problem', 'repaired'];
+  const orderStatusArr = JSON.parse(req.params.ordertatus); // ['open'];
   const productStatusCompleteArr = ['complete'];
   const orderIDArr = JSON.parse(req.params.orderIDArr);
+
   // const repListNameArr = JSON.parse(req.params.repListName);
   // console.log(companyID, factoryIDArr, productStatusArr, orderStatusArr);
   // console.log(orderIDArr);
@@ -1234,7 +1236,7 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     // exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr)
     let companyCurrentProductQtyAllF = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
     const companyCurrentProductQtyCompleteAll = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
-    // console.log('2');
+    // console.log('2' , companyCurrentProductQtyAllF.length, companyCurrentProductQtyCompleteAll.length);
 
     const companyCurrentProductQtyAllFF = await companyCurrentProductQtyAllF.map(  (fw) => ({
       companyID: fw.companyID, 
@@ -1244,7 +1246,7 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
       countQty: fw.countQty,
       completeQty:  this.findCompleteQty(companyCurrentProductQtyCompleteAll, fw.companyID, fw.orderID, fw.productID, fw.style),
     }));
-    // console.log('3');
+    // console.log('3', companyCurrentProductQtyAllFF.length);
     const companyCurrentProductQtyAll = await companyCurrentProductQtyAllFF.map(  (fw) => ({
       companyID: fw.companyID, 
       orderID: fw.orderID,
@@ -1255,7 +1257,8 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
       remainQty: 0
       // remainQty: fw.countQty - fw.completeQty
     }));
-    // console.log('4');
+    // console.log('4' , companyCurrentProductQtyAll.length);
+
 
     // console.log(companyCurrentProductQtyAll);
     const currentCompanyOrderCountry = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr, orderIDArr);
@@ -1268,9 +1271,9 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     
     // getComFCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr)
     const currentCompanyProductQtyZoneAll = await ShareFunc.getComCurrentProductQtyZoneAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
-    // console.log('7');
+    // console.log('7', currentCompanyProductQtyZoneAll.length);
     const currentCompanyProductQtyZoneCompleteAll = await ShareFunc.getComCurrentProductQtyZoneAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
-    // console.log('8');
+    // console.log('8', currentCompanyProductQtyZoneCompleteAll.length);
 
     // ## get Rep C Current company Production  all
     // ## for check error    currentProductListAllC
@@ -1278,9 +1281,9 @@ exports.getRepCurrentProductQtyCom = async (req, res, next) => {
     const currentProductListAllC = []
     // console.log('9');
     const currentProductQtyAllC = await ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
-    // console.log('10');
+    // console.log('10', currentProductQtyAllC.length);
     const currentProductQtyAllCompleteC = await ShareFunc.getCCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompleteArr, orderIDArr);
-    // console.log('11');
+    // console.log('11', currentProductQtyAllCompleteC.length);
 
     // // ##  for country
     // const currentCompanyProductQtyCountryAll = await ShareFunc.getComCurrentProductQtyCountryAll(companyID, factoryIDArr, productStatusArr, orderIDArr);
@@ -1888,20 +1891,21 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
   // console.log('getRepCompanyOrderOutsource');
 
   const companyID = req.params.companyID;
+  const seasonYear = req.params.seasonYear;
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
   const orderIDArr = JSON.parse(req.params.orderIDArr);
   // const repListNameArr = JSON.parse(req.params.repListName);
   // console.log(companyID, orderStatusArr);
-
+  
   try {
 
     // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
     // currentCompanyOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
     // orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
     currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr, orderIDArr);
-
+    // console.log('0000');
     // #################################
     // ## outsource
 
@@ -1911,33 +1915,74 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
       orderIDs.push(item1.orderID);
     });
     // console.log(orderIDs);
+    // console.log('1111');
 
-    orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
-    // console.log(factoryOutsource);
+
+    // ## get data from dtCompanyOrderOutsource
+    // get_auto_getCompanyOrderOutsource= async (companyID, seasonYear, sName)
+    const sName = 'auto_getCompanyOrderOutsource';
+    // console.log(companyID, seasonYear, sName);
+    const orderProductFacOut = await ShareFunc.get_auto_getCompanyOrderOutsource(companyID, seasonYear, sName);
+    // console.log(orderProductFacOut);
+    let orderProductFacOuts;
+    let outsourcefactoryID = [];
+    let orderProductFacOutQTY;
+    let orderProductFacOutRemainQTY;
+    let orderProductFacOutStyleColorSizeQTY;
+    let orderProductFacOutStyleColorSizeRemainQTY;
+
+    if (orderProductFacOut) {
+      orderProductFacOuts = orderProductFacOut.data1;
+      await this.asyncForEach(orderProductFacOuts, async (item1) => {
+        outsourcefactoryID.push(item1.outsourcefactoryID);
+      });
+      orderProductFacOutQTY = orderProductFacOut.data2;
+      orderProductFacOutRemainQTY = orderProductFacOut.data3;
+      orderProductFacOutStyleColorSizeQTY = orderProductFacOut.data4;
+      orderProductFacOutStyleColorSizeRemainQTY = orderProductFacOut.data5;
+
+
+    } else {
+      return res.status(501).json({
+        message: {
+          messageID: 'errrp002', 
+          mode:'errRepCurrentCompanyOrder', 
+          value: "error report current company order"
+        }
+      });
+    }
+
+
+
+
+
+
+    // orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
+    // // console.log(factoryOutsource);
     // console.log('1');
 
-    let outsourcefactoryID = [];
-    await this.asyncForEach(orderProductFacOuts, async (item1) => {
-      outsourcefactoryID.push(item1.outsourcefactoryID);
-    });
-    // console.log('1.1');
-    // console.log(companyID, orderIDs);
+    // let outsourcefactoryID = [];
+    // await this.asyncForEach(orderProductFacOuts, async (item1) => {
+    //   outsourcefactoryID.push(item1.outsourcefactoryID);
+    // });
+    // // console.log('1.1');
+    // // console.log(companyID, orderIDs);
     
-    // ## get outsource factory qty
-    orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+    // // ## get outsource factory qty
+    // orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
     // console.log('2');
 
-    // ## get outsource factory qty remain
-    orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
-    // console.log(orderProductFacOutQTY);
-    // console.log(orderProductFacOutRemainQTY);
+    // // ## get outsource factory qty remain
+    // orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
+    // // console.log(orderProductFacOutQTY);
+    // // console.log(orderProductFacOutRemainQTY);
     // console.log('3');
 
-    // ## style zone color size
-    orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
+    // // ## style zone color size
+    // orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
     // console.log('4');
-    orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
-    // console.log(orderProductFacOutStyleColorSizeQTY);
+    // orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
+    // // console.log(orderProductFacOutStyleColorSizeQTY);
     // console.log('5');
 
     // console.log('0' || '1');
@@ -1975,6 +2020,7 @@ exports.getRepCompanyOrderOutsource2 = async (req, res, next) => {
   // console.log('getRepCompanyOrderOutsource');
 
   const companyID = req.params.companyID;
+  const seasonYear = req.params.seasonYear;
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
@@ -2148,12 +2194,12 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
     // ## get outsource factory sent out
     const status1 = 'outsource';  // ## sent out  outsource
     const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
-    console.log(orderProductFacOut);
+    // console.log(orderProductFacOut);
 
     // ## get outsource factory receive
     const status2 = 'normal';  // ## sent out  outsource
     const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
-    console.log(orderProductFacReceive);
+    // console.log(orderProductFacReceive);
 
     // // ## get outsource factory sent out
     // const status1 = 'outsource';  // ## sent out  outsource

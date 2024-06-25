@@ -12,6 +12,7 @@ const scheduleSchema = mongoose.Schema({
   sMode: {type: String}, // ## 1, everyDay, everyHour, every15mn, every30mn  /   1= 1time  
   sDatetimeDiff : {type: Number}, // ## everyDay=1440 , everyHour=60 , every15mn=15 , every30mn= 30
   sNote: {type: String}, 
+  sState: {type: String}, // ## normal, running = still calculating...
   lastDatetime : {type: Date},  // ## วันที่ล่าสุดที่อัพเดต
   sDatetime: [{   // ## 
     yyyy: {type: String},  // ## 'yyyy'

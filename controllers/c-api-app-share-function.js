@@ -22,7 +22,7 @@ const Dtproductionzoneperiodc = require("../models/m-dt-productionzoneperiodc");
 const Dtcurrentcfactoryorder = require("../models/m-dt-currentcfactoryorder");
 const Dtcurrentproductqtyall = require("../models/m-dt-currentproductqtyall");
 const Dtorderoutsourcefac = require("../models/m-dt-currentcompanyorderoutsourcefac");
-
+const Dtcompanyorderoutsource = require("../models/m-dt-companyorderoutsource");
 
 
 const User = require("../models/m-user");
@@ -958,6 +958,7 @@ exports.getScheduleData= async () => {
         sDatetimeDiff: 1,
         lastDatetime: 1,
         sNote: 1, 
+        sState: 1,
         sDatetime: 1,
     }	}
   ]);
@@ -990,8 +991,39 @@ exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName) 
   return data[0].data;
 }
 
+// auto_getCompanyOrderOutsource
+exports.get_auto_getCompanyOrderOutsource= async (companyID, seasonYear, sName) => {
+  // console.log(companyID, seasonYear, sName);
+  const data = await Dtcompanyorderoutsource.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":seasonYear},
+      {"sName":sName},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        data1: 1,	
+        data2: 1,	
+        data3: 1,	
+        data4: 1,	
+        data5: 1,	
+        // companyID: 1,		
+        // factoryID: 1,	
+        // sGroup: 1,
+        // sName: 1,	
+        // sStatus: 1,	
+        // sMode: 1,
+        // sDatetimeDiff: 1,
+        // lastDatetime: 1,
+        // sDatetime: 1,
+    }	}
+  ]);
+  // console.log(data);
+  return data.length>0? data[0] : undefined;
+}
+
 exports.get_auto_getCurrentCompanyOrderOutsourceFac= async (companyID, seasonYear, sName) => {
-  console.log(companyID, seasonYear, sName);
+  // console.log(companyID, seasonYear, sName);
   const data = await Dtorderoutsourcefac.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -1012,7 +1044,7 @@ exports.get_auto_getCurrentCompanyOrderOutsourceFac= async (companyID, seasonYea
         // sDatetime: 1,
     }	}
   ]);
-  console.log(data);
+  // console.log(data);
   return data[0].data;
 }
 

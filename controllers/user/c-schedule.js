@@ -19,6 +19,8 @@ const Dtproductionzoneperiodc = require("../../models/m-dt-productionzoneperiodc
 const Dtcurrentcfactoryorder = require("../../models/m-dt-currentcfactoryorder");
 const Dtcurrentproductqtyall = require("../../models/m-dt-currentproductqtyall");
 const Dtorderoutsourcefac = require("../../models/m-dt-currentcompanyorderoutsourcefac");
+const Dtcompanyorderoutsource = require("../../models/m-dt-companyorderoutsource");
+
 
 
 moment.tz.setDefault('Asia/Bangkok');
@@ -82,6 +84,43 @@ setInterval(async() => {
 // #######################################################################################################
 // ## schedule
 
+// exports.checkTimeMN = async () => {
+
+//   return false;
+// }
+
+async function updateScheduleDataSState(scheduleData, sState) {
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const seasonYear = scheduleData.seasonYear;
+  // const seasonYearArr = [scheduleData.seasonYear];
+  const companyID = scheduleData.companyID;
+  const factoryID = scheduleData.factoryID;
+  const sGroup = scheduleData.sGroup;
+  const sStatus = scheduleData.sStatus;
+  const sName = scheduleData.sName;
+  const sMode = scheduleData.sMode;
+  const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const sNote = scheduleData.sNote;
+
+  const scheduleUpsert = await Schedule.updateOne({$and: [
+    {"seasonYear":seasonYear},
+    {"companyID":companyID},
+    {"factoryID":factoryID}, 
+    {"sGroup":sGroup}, 
+    {"sStatus":sStatus}, 
+    {"sName":sName}, 
+    {"sNote":sNote},
+    {"sMode":sMode}, 
+    {"sDatetimeDiff":sDatetimeDiff}, 
+    // {"sDatetime":scheduleData.sDatetime}, 
+  ]} , 
+  {
+    "lastDatetime": current,
+    "sState": sState,
+  }, {upsert: true}); 
+  return true;
+}
+
 exports.getSchedule = async () => {
 // async function getSchedule() {
 // async function getSchedule() {
@@ -123,6 +162,8 @@ exports.getSchedule = async () => {
 
   // // ## get data from schedule
   const scheduleData = await ShareFunc.getScheduleData();
+  // console.log(scheduleData);
+  // console.log('------------------------------------scheduleData----------------------------------------------');
   // console.log(scheduleData, scheduleData[0].sDatetime);
 
   // if ((scheduleData.length > 0 && i <= 1) || i == 21) {
@@ -143,7 +184,6 @@ exports.getSchedule = async () => {
 
     if (everyHourGroup.length > 0) {
       // console.log('everyHourGroup');
-      // console.log(everyHourGroup[0].sDatetimeDiff, everyHourGroup[0].sDatetime);
       await this.asyncForEach(everyHourGroup, async (item1) => {
         await getDataTempEveryHour(item1);
       });
@@ -164,18 +204,22 @@ exports.getSchedule = async () => {
 
 async function getDataTempEvery30mn(scheduleData) {
   // ## report no.35 send out and receive report
-  if (scheduleData.sName === 'auto_getCurrentCompanyOrderOutsourceFac') {// ## report no.35
-    await auto_getCurrentCompanyOrderOutsourceFac(scheduleData);
-    return true;
-
-  } else {
-    return true;
+  if (scheduleData.sState === 'normal') {
+    if (scheduleData.sName === 'auto_getCurrentCompanyOrderOutsourceFac') {// ## report no.35
+      await auto_getCurrentCompanyOrderOutsourceFac(scheduleData);
+      return true;
+    } else if (scheduleData.sName === 'auto_getCompanyOrderOutsource') {// ## report no.31 overall
+      await auto_getCompanyOrderOutsource(scheduleData);
+      return true;
+    } else {
+      return true;
+    }
   }
 }
 
-async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
+async function auto_getCompanyOrderOutsource(scheduleData) {
   // console.log('scheduleData' , scheduleData);
-  console.log('auto_getCurrentCompanyOrderOutsourceFac' , ' every 30 mn');
+  // console.log('auto_getCompanyOrderOutsource' , ' every 30 mn');
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const mm1 = current.getMinutes();
 
@@ -189,7 +233,7 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
   const sMode = scheduleData.sMode;
   const sDatetimeDiff = scheduleData.sDatetimeDiff;
   const sNote = scheduleData.sNote;
-  const mm = scheduleData.sDatetime[0].mm;
+  const mm = +scheduleData.sDatetime[0].mm;
   const lastDatetime = current;
   // console.log(companyID, seasonYear);
 
@@ -203,17 +247,32 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
   const dateDiff3 = moment(current).diff(moment(lastDatetime1), 'minutes');
 
   try {
-    if (dateDiff3 >= sDatetimeDiff  || mm1 === +mm) {
+
+    // console.log('timing ',  mm1 , mm);
+    let isTimeing = false;
+    const sDatetimeF = scheduleData.sDatetime.filter(i=> +i.mm === +mm1);
+    if (sDatetimeF.length > 0) { isTimeing = true; }
+    
+    if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
+      // ## update state to running
+      const result1 = await updateScheduleDataSState(scheduleData, 'running');
+      // console.log('auto_getCompanyOrderOutsource update running    +++++++++++++++++++++++');
+
       // ## get orderIDs
       const orders = await ShareFunc.getOrdersBySeasonYear(companyID, seasonYear);
       const orderIDArr = Array.from(new Set(orders.map((item) => item.orderID)));
       // console.log(orderIDArr);
 
-      const isOutsource = true;
-      const status = ['outsource', 'normal'];
-      // ## get outsource factory sent out & factory receive
-      const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+      const orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDArr);
 
+      const orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDArr);
+
+      const orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDArr);
+
+      const orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDArr);
+    
+      const orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDArr);
+    
       // ## update  Schedule>  lastDatetime
       const scheduleUpsert = await Schedule.updateOne({$and: [
         {"seasonYear":seasonYear},
@@ -229,6 +288,109 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
       ]} , 
       {
         "lastDatetime": current,
+        "sState": "normal",
+        "sDatetime": scheduleData.sDatetime,
+      }, {upsert: true}); 
+      // console.log(scheduleUpsert);
+
+      // ## update ProductionZonePeriodC > lastDatetime, data
+      const dtorderoutsourcefacUpsert  = await Dtcompanyorderoutsource.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        // {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "data1": orderProductFacOuts,
+        "data2": orderProductFacOutQTY,
+        "data3": orderProductFacOutRemainQTY,
+        "data4": orderProductFacOutStyleColorSizeQTY,
+        "data5": orderProductFacOutStyleColorSizeRemainQTY,
+      }, {upsert: true}); 
+      // console.log(dtorderoutsourcefacUpsert);
+
+      // console.error(mm1,'updated auto_getCompanyOrderOutsource');
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
+  // console.log('scheduleData' , scheduleData);
+  // console.log('auto_getCurrentCompanyOrderOutsourceFac' , ' every 30 mn');
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const mm1 = current.getMinutes();
+
+  const seasonYear = scheduleData.seasonYear;
+  const seasonYearArr = [scheduleData.seasonYear];
+  const companyID = scheduleData.companyID;
+  const factoryID = scheduleData.factoryID;
+  const sGroup = scheduleData.sGroup;
+  const sStatus = scheduleData.sStatus;
+  const sName = scheduleData.sName;
+  const sMode = scheduleData.sMode;
+  const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const sNote = scheduleData.sNote;
+  const mm = +scheduleData.sDatetime[0].mm;
+  const lastDatetime = current;
+  // console.log(companyID, seasonYear);
+
+  // ## check period for >= sDatetimeDiff
+  // const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const lastDatetime1 = new Date(moment(scheduleData.lastDatetime).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const mm2 = lastDatetime.getMinutes();
+
+  const dateDiff = moment(current).diff(moment(lastDatetime1), 'days');
+  const dateDiff2 = moment(current).diff(moment(lastDatetime1), 'hours');
+  const dateDiff3 = moment(current).diff(moment(lastDatetime1), 'minutes');
+
+  try {
+    
+    // console.log('fac timing ',  mm1 , mm);
+    let isTimeing = false;
+    const sDatetimeF = scheduleData.sDatetime.filter(i=> +i.mm === +mm1);
+    // console.log('sDatetimeF.length ',  sDatetimeF.length);
+    if (sDatetimeF.length > 0) { isTimeing = true; }
+    
+    if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
+      // ## update state to running
+      const result1 = await updateScheduleDataSState(scheduleData, 'running');
+      // console.log('auto_getCurrentCompanyOrderOutsourceFac update running    +++++++++++++++++++++++');
+
+      // ## get orderIDs
+      const orders = await ShareFunc.getOrdersBySeasonYear(companyID, seasonYear);
+      const orderIDArr = Array.from(new Set(orders.map((item) => item.orderID)));
+      // console.log(orderIDArr);
+      
+      const isOutsource = true;
+      const status = ['outsource', 'normal'];
+      // ## get outsource factory sent out & factory receive
+      const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+      
+      // ## update  Schedule>  lastDatetime
+      const scheduleUpsert = await Schedule.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "sState": "normal",
         "sDatetime": scheduleData.sDatetime,
       }, {upsert: true}); 
       // console.log(scheduleUpsert);
@@ -252,7 +414,7 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
       }, {upsert: true}); 
       // console.log(dtorderoutsourcefacUpsert);
 
-      // console.error('updated auto_getCurrentCompanyOrderOutsourceFac');
+      // console.error(mm1,'updated auto_getCurrentCompanyOrderOutsourceFac');
     }
   } catch (err) {
     console.error(err);
@@ -261,23 +423,22 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
 
 async function getDataTempEveryHour(scheduleData) {
 
-  if (scheduleData.sName === 'auto_getProductionZonePeriodC') {// ## report no.21
-    await auto_getProductionZonePeriodC(scheduleData);
-    return true;
-
-  } else if (scheduleData.sName === 'auto_getCurrentCFactoryOrder') {// ## report no.1
-    await auto_getCurrentCFactoryOrder(scheduleData);
-    return true;
-  } else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_No_C') {// ## report no.1 / noComplete
-    await auto_getCompanyCurrentProductQtyAll(scheduleData);
-    return true;
-  } else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_C') {// ## report no.1 /completed
-    await auto_getCompanyCurrentProductQtyAll(scheduleData);
-    return true;
-
-
-  } else {
-    return true;
+  if (scheduleData.sState === 'normal') {
+    if (scheduleData.sName === 'auto_getProductionZonePeriodC') {// ## report no.21
+      await auto_getProductionZonePeriodC(scheduleData);
+      return true;
+    } else if (scheduleData.sName === 'auto_getCurrentCFactoryOrder') {// ## report no.1
+      await auto_getCurrentCFactoryOrder(scheduleData);
+      return true;
+    } else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_No_C') {// ## report no.1 / noComplete
+      await auto_getCompanyCurrentProductQtyAll(scheduleData);
+      return true;
+    } else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_C') {// ## report no.1 /completed
+      await auto_getCompanyCurrentProductQtyAll(scheduleData);
+      return true;
+    } else {
+      return true;
+    }
   }
 }
 
@@ -287,6 +448,7 @@ async function getDataTempEveryHour(scheduleData) {
 // ## if (scheduleData.sName === 'auto_getProductionZonePeriodC') {// ## report no.21
 async function auto_getProductionZonePeriodC(scheduleData) {
   // console.log('scheduleData' , scheduleData);
+  // console.log('auto_getProductionZonePeriodC' , ' every 1 hr');
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const mm1 = current.getMinutes();
 
@@ -300,7 +462,7 @@ async function auto_getProductionZonePeriodC(scheduleData) {
   const sMode = scheduleData.sMode;
   const sDatetimeDiff = scheduleData.sDatetimeDiff;
   const sNote = scheduleData.sNote;
-  const mm = scheduleData.sDatetime[0].mm;
+  const mm = +scheduleData.sDatetime[0].mm;
   const lastDatetime = current;
   // console.log(companyID, orderStatus, seasonYearArr);
 
@@ -317,7 +479,16 @@ async function auto_getProductionZonePeriodC(scheduleData) {
   // console.log('now = ' , current, mm);
   // console.log('dateDiff = ' , dateDiff, dateDiff2, dateDiff3);
   try {
-    if (dateDiff3 >= sDatetimeDiff  || mm1 === +mm) {
+    
+    let isTimeing = false;
+    const sDatetimeF = scheduleData.sDatetime.filter(i=> +i.mm === +mm1);
+    if (sDatetimeF.length > 0) { isTimeing = true; }
+    
+    if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
+      // ## update state to running
+      const result1 = await updateScheduleDataSState(scheduleData, 'running');
+      // console.log('auto_getProductionZonePeriodC update running    +++++++++++++++++++++++');
+
       // console.log('currentProductionZonePeriod start ');
       // ##  getRepCurrentProductionZonePeriod
       // ## get season for report  // 2024AW  2024SS
@@ -336,9 +507,9 @@ async function auto_getProductionZonePeriodC(scheduleData) {
       const currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodC(companyID, productStatusArr, productionNodeStatusArr, orderIDs);
       // console.log(currentProductionZonePeriod);
       // console.log('currentProductionZonePeriod ok ');
-
       
-
+      
+      
       // ## update  Schedule>  lastDatetime
       const scheduleUpsert = await Schedule.updateOne({$and: [
         {"seasonYear":seasonYear},
@@ -354,6 +525,7 @@ async function auto_getProductionZonePeriodC(scheduleData) {
       ]} , 
       {
         "lastDatetime": current,
+        "sState": "normal",
         "sDatetime": scheduleData.sDatetime,
       }, {upsert: true}); 
       // console.log(scheduleUpsert);
@@ -376,6 +548,8 @@ async function auto_getProductionZonePeriodC(scheduleData) {
         "data": currentProductionZonePeriod,
       }, {upsert: true}); 
       // console.log(dtproductionzoneperiodcUpsert);
+
+      // console.error(mm1,'updated auto_getProductionZonePeriodC');
     }
   } catch (err) {
     console.error(err);
@@ -387,6 +561,7 @@ async function auto_getProductionZonePeriodC(scheduleData) {
 // else if (scheduleData.sName === 'auto_getCurrentCFactoryOrder') {// ## report no.1
 async function auto_getCurrentCFactoryOrder(scheduleData) {
   // console.log('scheduleData' , scheduleData);
+  // console.log('auto_getCurrentCFactoryOrder' , ' every 1 hr');
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const mm1 = current.getMinutes();
 
@@ -400,7 +575,7 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
   const sMode = scheduleData.sMode;
   const sDatetimeDiff = scheduleData.sDatetimeDiff;
   const sNote = scheduleData.sNote;
-  const mm = scheduleData.sDatetime[0].mm;
+  const mm = +scheduleData.sDatetime[0].mm;
   const lastDatetime = current;
   // console.log(companyID, orderStatus, seasonYearArr);
 
@@ -417,11 +592,20 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
   // console.log('now = ' , current, mm);
   // console.log('dateDiff = ' , dateDiff, dateDiff2, dateDiff3);
   try {
-    if (dateDiff3 >= sDatetimeDiff  || mm1 === +mm) {
+    
+    let isTimeing = false;
+    const sDatetimeF = scheduleData.sDatetime.filter(i=> +i.mm === +mm1);
+    if (sDatetimeF.length > 0) { isTimeing = true; }
+    
+    if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
+      // ## update state to running
+      const result1 = await updateScheduleDataSState(scheduleData, 'running');
+      // console.log('auto_getCurrentCFactoryOrder update running    +++++++++++++++++++++++');
+
       // console.log('auto_getCurrentCFactoryOrder start ');
       // ##  const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDArr);
       // ## get season for report  // 2024AW  2024SS
-
+      
       
       // getOrderIDsBySeasonYear= async (companyID, orderStatus, seasonYearArr)
       const orderStatus = ['open'];
@@ -436,9 +620,9 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
       const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDs);
       // console.log(currentFactoryOrder);
       // console.log('currentFactoryOrder ok ');
-
       
-
+      
+      
       // ## update  Schedule>  lastDatetime
       const scheduleUpsert = await Schedule.updateOne({$and: [
         {"seasonYear":seasonYear},
@@ -454,6 +638,7 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
       ]} , 
       {
         "lastDatetime": current,
+        "sState": "normal",
         "sDatetime": scheduleData.sDatetime,
       }, {upsert: true}); 
       // console.log(scheduleUpsert);
@@ -476,6 +661,8 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
         "data": currentFactoryOrder,
       }, {upsert: true}); 
       // console.log(dtproductionzoneperiodcUpsert);
+
+      // console.error(mm1,'updated auto_getCurrentCFactoryOrder');
     }
   } catch (err) {
     console.error(err);
@@ -488,6 +675,7 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
 // else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_No_C') {// ## report no.1
 async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
   // console.log('scheduleData' , scheduleData);
+  // console.log('auto_getCompanyCurrentProductQtyAll' , ' every 1 hr');
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const mm1 = current.getMinutes();
 
@@ -501,7 +689,7 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
   const sMode = scheduleData.sMode;
   const sDatetimeDiff = scheduleData.sDatetimeDiff;
   const sNote = scheduleData.sNote;
-  const mm = scheduleData.sDatetime[0].mm;
+  const mm = +scheduleData.sDatetime[0].mm;
   const lastDatetime = current;
   // console.log(companyID, orderStatus, seasonYearArr);
 
@@ -518,7 +706,16 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
   // console.log('now = ' , current, mm);
   // console.log('dateDiff = ' , dateDiff, dateDiff2, dateDiff3);
   try {
-    if (dateDiff3 >= sDatetimeDiff  || mm1 === +mm) {
+    
+    let isTimeing = false;
+    const sDatetimeF = scheduleData.sDatetime.filter(i=> +i.mm === +mm1);
+    if (sDatetimeF.length > 0) { isTimeing = true; }
+    
+    if (dateDiff3 >= sDatetimeDiff  || mm1 === isTimeing) {
+      // ## update state to running
+      const result1 = await updateScheduleDataSState(scheduleData, 'running');
+      // console.log('auto_getCompanyCurrentProductQtyAll update running    +++++++++++++++++++++++');
+
       // console.log('auto_getCurrentCFactoryOrder start ');
       // ##  const currentFactoryOrder = await ShareFunc.getCurrentCFactoryOrder(companyID, orderIDArr);
       // ## get season for report  // 2024AW  2024SS
@@ -564,6 +761,7 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
       ]} , 
       {
         "lastDatetime": current,
+        "sState": "normal",
         "sDatetime": scheduleData.sDatetime,
       }, {upsert: true}); 
       // console.log(scheduleUpsert);
@@ -586,6 +784,8 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
         "data": companyCurrentProductQty,
       }, {upsert: true}); 
       // console.log(dtproductionzoneperiodcUpsert);
+
+      // console.error(seasonYear, sNote, mm1,'updated auto_getCompanyCurrentProductQtyAll');
     }
   } catch (err) {
     console.error(err);
