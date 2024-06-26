@@ -7168,6 +7168,7 @@ exports.getOrderProductsByBundleNos= async (companyID, factoryID, bundleNos, bun
     { $match: { $and: [
       {"companyID":companyID},
       // {"factoryID":factoryID},
+      {"bundleID":bundleID},
       // {"productBarcodeNoReal":productBarcodeNo},
       {"bundleNo":{$in: bundleNos}}
     ] } },
