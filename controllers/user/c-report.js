@@ -691,12 +691,8 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
                 // 'allTotalProduct',
                 // 'getRepCFNCurrentProductQtyByOrderID',
                 // 'getRepCFNCurrentProductQtyByOrderIDProductID',
-                // 'getRepCFNCurrentProductBundleList',
                 // 'getAllOrderAndProductFromOrderProduction',
-                // 'getRepCFNProductState',  // ## style-targetPlace-year-5color-size-sex-#####    /   8  4  2  10  3  1  99999
-                // 'getRepCFNCurrentProductAllDetail',
-                // 'getRepCFNCurrentProductAllRepairCount',
-                // 'getRepCFNCurrentProductAllProblemCount',
+                // 'getRepCFNProductState',  
 
     // allTotalProduct
     // console.log(' 0 - allTotalProduct');
@@ -720,6 +716,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       // ## get Rep CFN Current Product Qty by orderID
       orderProductQtyByOrderIDRep = await ShareFunc.getRepCFNCurrentProductQtyByOrderID(companyID, factoryID, nodeID, productStatusArr);
       // console.log(orderProductQtyByOrderIDRep);
+      // console.log(' 2 - getRepCFNCurrentProductQtyByOrderID');
     }
 
     //  getRepCFNCurrentProductQtyByOrderIDProductID
@@ -728,6 +725,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       // ## get Rep CFN Current Product Qty by orderID productID
       orderProductQtyByOrderIDProductIDRep = await ShareFunc.getRepCFNCurrentProductQtyByOrderIDProductID(companyID, factoryID, nodeID, productStatusArr);
       // console.log(orderProductQtyByOrderIDProductIDRep);
+      // console.log(' 3 - getRepCFNCurrentProductQtyByOrderIDProductID');
     }
 
     // console.log(' 4 - getRepCFNCurrentProductBundleList');
@@ -770,6 +768,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       // // console.log(productStateSize);
       productStateStyleTargetPlaceColorSize = await ShareFunc.getRepCFNProductStateStyleTargetPlaceColorSize(companyID, factoryID, nodeID, productStatusArr);
       // console.log(productStateStyleTargetPlaceColorSize);
+      // console.log(' 6---- - getRepCFNProductState');
     }
 
     // console.log(' 7 - getRepCFNCurrentProductionQueueCFN');
@@ -2017,18 +2016,23 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
 
 exports.getRepCompanyOrderOutsource2 = async (req, res, next) => {
   // try {} catch (err) {}
-  // console.log('getRepCompanyOrderOutsource');
+  // console.log('getRepCompanyOrderOutsource2');
 
   const companyID = req.params.companyID;
-  const seasonYear = req.params.seasonYear;
+  let seasonYear = req.params.seasonYear;
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
   const orderIDArr = JSON.parse(req.params.orderIDArr);
   // const repListNameArr = JSON.parse(req.params.repListName);
   // console.log(companyID, orderStatusArr);
-
+  // console.log(seasonYear, orderIDArr);
   try {
+
+    const seasonYear1 = await ShareFunc.getCompanyCurrentSeasonYear(companyID);
+    if (seasonYear === 'last') {
+      seasonYear = seasonYear1;
+    } 
 
     // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
     // currentCompanyOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
@@ -2037,6 +2041,51 @@ exports.getRepCompanyOrderOutsource2 = async (req, res, next) => {
 
     // #################################
     // ## outsource
+
+    // // ## get orderIDs  
+    // let orderIDs = [];
+    // await this.asyncForEach(currentOrderStyle, async (item1) => {
+    //   orderIDs.push(item1.orderID);
+    // });
+    // // console.log(orderIDs);
+    // // console.log('1111');
+
+    // // ## get data from dtCompanyOrderOutsource
+    // // get_auto_getCompanyOrderOutsource= async (companyID, seasonYear, sName)
+    // const sName = 'auto_getCompanyOrderOutsource';
+    // // console.log(companyID, seasonYear, sName);
+    // const orderProductFacOut = await ShareFunc.get_auto_getCompanyOrderOutsource(companyID, seasonYear, sName);
+    // // console.log(orderProductFacOut);
+    // let orderProductFacOuts;
+    // let outsourcefactoryID = [];
+    // let orderProductFacOutQTY;
+    // let orderProductFacOutRemainQTY;
+    // let orderProductFacOutStyleColorSizeQTY;
+    // let orderProductFacOutStyleColorSizeRemainQTY;
+
+    // if (orderProductFacOut) {
+    //   orderProductFacOuts = orderProductFacOut.data1;
+    //   await this.asyncForEach(orderProductFacOuts, async (item1) => {
+    //     outsourcefactoryID.push(item1.outsourcefactoryID);
+    //   });
+    //   orderProductFacOutQTY = orderProductFacOut.data2;
+    //   orderProductFacOutRemainQTY = orderProductFacOut.data3;
+    //   orderProductFacOutStyleColorSizeQTY = orderProductFacOut.data4;
+    //   orderProductFacOutStyleColorSizeRemainQTY = orderProductFacOut.data5;
+
+
+    // } else {
+    //   return res.status(501).json({
+    //     message: {
+    //       messageID: 'errrp002', 
+    //       mode:'errRepCurrentCompanyOrder', 
+    //       value: "error report current company order"
+    //     }
+    //   });
+    // }
+
+
+
 
     // ## get orderIDs  
     let orderIDs = [];
@@ -2170,7 +2219,7 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
   // console.log('getRepCompanyOrderOutsourceState2');
 
   const companyID = req.params.companyID;
-  const seasonYear = req.params.seasonYear;
+  let seasonYear = req.params.seasonYear;
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
@@ -2180,6 +2229,11 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
   // console.log(orderIDArr);
 
   try {
+    // getCompanyCurrentSeasonYear= async (companyID)
+    const seasonYear1 = await ShareFunc.getCompanyCurrentSeasonYear(companyID);
+    if (seasonYear === 'last') {
+      seasonYear = seasonYear1;
+    } 
 
     // const isOutsource = true;
     // const status = ['outsource', 'normal'];

@@ -1471,6 +1471,12 @@ exports.getCompanyImageProfile= async (companyID) => {
   return company?company.cInfo.pic:'';
 }
 
+// ## get company current seasonYear
+exports.getCompanyCurrentSeasonYear= async (companyID) => {
+  const company = await Company.findOne({$and: [ {"companyID":companyID} ]});
+  return company?company.seasonYear:'';
+}
+
 // ## edit image profile company
 exports.editCompanyImageProfile= async (companyID, imageCompanyProfile) => {
   // console.log(companyID, productID, imageProfile);
