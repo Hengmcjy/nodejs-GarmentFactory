@@ -15,6 +15,12 @@ const Factory = require("../../models/m-factory");
 const Customer = require("../../models/m-customer");
 const OrderProduction = require("../../models/m-orderProduction");
 
+const Dtproductionzoneperiodc = require("../../models/m-dt-productionzoneperiodc");
+const Dtcurrentcfactoryorder = require("../../models/m-dt-currentcfactoryorder");
+const Dtcurrentproductqtyall = require("../../models/m-dt-currentproductqtyall");
+const Dtorderoutsourcefac = require("../../models/m-dt-currentcompanyorderoutsourcefac");
+const Dtcompanyorderoutsource = require("../../models/m-dt-companyorderoutsource");
+
 moment.tz.setDefault('Asia/Bangkok');
 
 
@@ -1888,9 +1894,10 @@ exports.getRepSubNodeStaffScanDate12Overall = async (req, res, next) => {
 exports.getRepCompanyOrderOutsource = async (req, res, next) => {
   // try {} catch (err) {}
   // console.log('getRepCompanyOrderOutsource');
-
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const companyID = req.params.companyID;
   const seasonYear = req.params.seasonYear;
+  const type = req.params.type;  // ## type = 'dt' , 'refresh' 
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
@@ -1916,13 +1923,6 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
     // console.log(orderIDs);
     // console.log('1111');
 
-
-    // ## get data from dtCompanyOrderOutsource
-    // get_auto_getCompanyOrderOutsource= async (companyID, seasonYear, sName)
-    const sName = 'auto_getCompanyOrderOutsource';
-    // console.log(companyID, seasonYear, sName);
-    const orderProductFacOut = await ShareFunc.get_auto_getCompanyOrderOutsource(companyID, seasonYear, sName);
-    // console.log(orderProductFacOut);
     let orderProductFacOuts;
     let outsourcefactoryID = [];
     let orderProductFacOutQTY;
@@ -1930,59 +1930,93 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
     let orderProductFacOutStyleColorSizeQTY;
     let orderProductFacOutStyleColorSizeRemainQTY;
 
-    if (orderProductFacOut) {
-      orderProductFacOuts = orderProductFacOut.data1;
+    if (type === 'refresh') {
+      
+      orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
+      // console.log(orderProductFacOuts);
+      // console.log('1');
+
+      // let outsourcefactoryID = [];
       await this.asyncForEach(orderProductFacOuts, async (item1) => {
         outsourcefactoryID.push(item1.outsourcefactoryID);
       });
-      orderProductFacOutQTY = orderProductFacOut.data2;
-      orderProductFacOutRemainQTY = orderProductFacOut.data3;
-      orderProductFacOutStyleColorSizeQTY = orderProductFacOut.data4;
-      orderProductFacOutStyleColorSizeRemainQTY = orderProductFacOut.data5;
+      // console.log('1.1');
+      // console.log(companyID, orderIDs);
+      
+      // ## get outsource factory qty
+      orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+      // console.log('2');
 
+      // ## get outsource factory qty remain
+      orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
+      // console.log(orderProductFacOutQTY);
+      // console.log(orderProductFacOutRemainQTY);
+      // console.log('3');
 
-    } else {
-      return res.status(501).json({
-        message: {
-          messageID: 'errrp002', 
-          mode:'errRepCurrentCompanyOrder', 
-          value: "error report current company order"
-        }
-      });
+      // ## style zone color size
+      orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
+      // console.log('4');
+      orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
+      // console.log(orderProductFacOutStyleColorSizeQTY);
+      // console.log('5');
+
+      // ##
+      // ## update ProductionZonePeriodC > lastDatetime, data
+      const sGroup = 'report';
+      const sName = 'auto_getCompanyOrderOutsource';
+      const sNote = '';
+      const sMode = 'every30mn';
+      const sDatetimeDiff = 30;
+      const dtorderoutsourcefacUpsert  = await Dtcompanyorderoutsource.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        // {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        // {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "data1": orderProductFacOuts,
+        "data2": orderProductFacOutQTY,
+        "data3": orderProductFacOutRemainQTY,
+        "data4": orderProductFacOutStyleColorSizeQTY,
+        "data5": orderProductFacOutStyleColorSizeRemainQTY,
+      }, {upsert: true}); 
+
+    } else if (type === 'dt') {
+      
+      // ## get data from dtCompanyOrderOutsource
+      // get_auto_getCompanyOrderOutsource= async (companyID, seasonYear, sName)
+      const sName = 'auto_getCompanyOrderOutsource';
+      // console.log(companyID, seasonYear, sName);
+      const orderProductFacOut = await ShareFunc.get_auto_getCompanyOrderOutsource(companyID, seasonYear, sName);
+      // console.log(orderProductFacOut);
+      
+      if (orderProductFacOut) {
+        orderProductFacOuts = orderProductFacOut.data1;
+        await this.asyncForEach(orderProductFacOuts, async (item1) => {
+          outsourcefactoryID.push(item1.outsourcefactoryID);
+        });
+        orderProductFacOutQTY = orderProductFacOut.data2;
+        orderProductFacOutRemainQTY = orderProductFacOut.data3;
+        orderProductFacOutStyleColorSizeQTY = orderProductFacOut.data4;
+        orderProductFacOutStyleColorSizeRemainQTY = orderProductFacOut.data5;
+  
+      } else {
+        return res.status(501).json({
+          message: {
+            messageID: 'errrp002', 
+            mode:'errRepCurrentCompanyOrder', 
+            value: "error report current company order"
+          }
+        });
+      }
     }
-
-
-
-
-
-
-    // orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
-    // // console.log(factoryOutsource);
-    // console.log('1');
-
-    // let outsourcefactoryID = [];
-    // await this.asyncForEach(orderProductFacOuts, async (item1) => {
-    //   outsourcefactoryID.push(item1.outsourcefactoryID);
-    // });
-    // // console.log('1.1');
-    // // console.log(companyID, orderIDs);
-    
-    // // ## get outsource factory qty
-    // orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
-    // console.log('2');
-
-    // // ## get outsource factory qty remain
-    // orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
-    // // console.log(orderProductFacOutQTY);
-    // // console.log(orderProductFacOutRemainQTY);
-    // console.log('3');
-
-    // // ## style zone color size
-    // orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
-    // console.log('4');
-    // orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
-    // // console.log(orderProductFacOutStyleColorSizeQTY);
-    // console.log('5');
 
     // console.log('0' || '1');
     const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn) || '';
@@ -2148,8 +2182,10 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
   // try {} catch (err) {}
   // console.log('getRepCompanyOrderOutsourceState');
 
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const companyID = req.params.companyID;
   const seasonYear = req.params.seasonYear;
+  const type = req.params.type;  // ## type = 'dt' , 'refresh' 
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
@@ -2160,14 +2196,42 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
 
   try {
 
-    // const isOutsource = true;
-    // const status = ['outsource', 'normal'];
-    // // ## get outsource factory sent out & factory receive
-    // const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+    let orderProduct = [];
+    if (type === 'refresh') {
 
-    // ## get data from dtcurrentcompanyorderoutsourcefac
-    const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
-    const orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
+      const isOutsource = true;
+      const status = ['outsource', 'normal'];
+      // ## get outsource factory sent out & factory receive
+      orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+
+      // ## update ProductionZonePeriodC > lastDatetime, data
+      const sGroup = 'report';
+      const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
+      const sNote = '';
+      const sMode = 'every30mn';
+      const sDatetimeDiff = 30;
+      const dtorderoutsourcefacUpsert  = await Dtorderoutsourcefac.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        // {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        // {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "data": orderProduct,
+      }, {upsert: true}); 
+    } else if (type === 'dt') {
+      // ## get data from dtcurrentcompanyorderoutsourcefac
+      const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
+      orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
+    }
+
 
 
     // ## get outsource factory sent out
@@ -2218,8 +2282,10 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
   // try {} catch (err) {}
   // console.log('getRepCompanyOrderOutsourceState2');
 
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const companyID = req.params.companyID;
   let seasonYear = req.params.seasonYear;
+  const type = req.params.type;  // ## type = 'dt' , 'refresh' 
   // const factoryID = req.params.factoryID;
   // const nodeID = req.params.nodeID;
   const orderStatusArr = JSON.parse(req.params.ordertatus);
@@ -2235,15 +2301,41 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
       seasonYear = seasonYear1;
     } 
 
-    // const isOutsource = true;
-    // const status = ['outsource', 'normal'];
-    // // ## get outsource factory sent out & factory receive
-    // const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+    let orderProduct = [];
+    if (type === 'refresh') {
+      const isOutsource = true;
+      const status = ['outsource', 'normal'];
+      // ## get outsource factory sent out & factory receive
+      orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+    
+      // ## update ProductionZonePeriodC > lastDatetime, data
+      const sGroup = 'report';
+      const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
+      const sNote = '';
+      const sMode = 'every30mn';
+      const sDatetimeDiff = 30;
+      const dtorderoutsourcefacUpsert  = await Dtorderoutsourcefac.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        // {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        // {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "data": orderProduct,
+      }, {upsert: true}); 
 
-    // ## get data from dtcurrentcompanyorderoutsourcefac
-    const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
-    const orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
-
+    } else if (type === 'dt') {
+      // ## get data from dtcurrentcompanyorderoutsourcefac
+      const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
+      orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
+    }
 
     // ## get outsource factory sent out
     const status1 = 'outsource';  // ## sent out  outsource

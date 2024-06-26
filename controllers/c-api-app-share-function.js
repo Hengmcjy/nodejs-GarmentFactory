@@ -3507,38 +3507,39 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
 exports.checkBundleNoExisted= async (companyID, orderID, productBarcode, bundleNos, ver) => {
   const orderIDs = [orderID];
   // console.log(bundleNos);
-  const OrderProductionQueueRow = await OrderProductionQueue.aggregate([
+  const OrderProductionRow = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       {"ver":ver},
       // {"orderID":{$in: orderIDs}},
+      {"bundleNo":{$in: bundleNos}},
     ] } },
     { $unwind: "$queueInfo"},
     { $project: {		
       _id: 1,	
       companyID: 1,	
-      orderID: 1,	
+      // orderID: 1,	
       // productBarcodeNo: 1,	
       // productBarcode: "$queueInfo.productBarcode",	
-      bundleNo: "$queueInfo.bundleNo",	
-      // toNode: "$queueInfo.toNode",	
-    }	},
-    { $match: { $and: [
-      // {"productBarcode":productBarcode},
-      {"bundleNo":{$in: bundleNos}},
-    ] } },
-    { $project: {		
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
-      // productBarcodeNo: 1,	
-      // productBarcode: 1,	
       bundleNo: 1,	
       // toNode: "$queueInfo.toNode",	
     }	},
-  ]);
-  // console.log(OrderProductionQueueRow);
-  if (OrderProductionQueueRow.length > 0) {
+    // { $match: { $and: [
+    //   // {"productBarcode":productBarcode},
+    //   {"bundleNo":{$in: bundleNos}},
+    // ] } },
+    // { $project: {		
+    //   _id: 1,	
+    //   companyID: 1,	
+    //   orderID: 1,	
+    //   // productBarcodeNo: 1,	
+    //   // productBarcode: 1,	
+    //   bundleNo: 1,	
+    //   // toNode: "$queueInfo.toNode",	
+    // }	},
+  ]).hint( {"companyID" : 1, "ver": 1, "bundleNo": 1} );
+  // console.log(OrderProductionRow);
+  if (OrderProductionRow.length > 0) {
     return true; // ## existed
   } else {
     return false; // ## not existed
