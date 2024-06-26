@@ -2042,76 +2042,76 @@ exports.getRepCompanyOrderOutsource2 = async (req, res, next) => {
     // #################################
     // ## outsource
 
-    // // ## get orderIDs  
-    // let orderIDs = [];
-    // await this.asyncForEach(currentOrderStyle, async (item1) => {
-    //   orderIDs.push(item1.orderID);
-    // });
-    // // console.log(orderIDs);
-    // // console.log('1111');
-
-    // // ## get data from dtCompanyOrderOutsource
-    // // get_auto_getCompanyOrderOutsource= async (companyID, seasonYear, sName)
-    // const sName = 'auto_getCompanyOrderOutsource';
-    // // console.log(companyID, seasonYear, sName);
-    // const orderProductFacOut = await ShareFunc.get_auto_getCompanyOrderOutsource(companyID, seasonYear, sName);
-    // // console.log(orderProductFacOut);
-    // let orderProductFacOuts;
-    // let outsourcefactoryID = [];
-    // let orderProductFacOutQTY;
-    // let orderProductFacOutRemainQTY;
-    // let orderProductFacOutStyleColorSizeQTY;
-    // let orderProductFacOutStyleColorSizeRemainQTY;
-
-    // if (orderProductFacOut) {
-    //   orderProductFacOuts = orderProductFacOut.data1;
-    //   await this.asyncForEach(orderProductFacOuts, async (item1) => {
-    //     outsourcefactoryID.push(item1.outsourcefactoryID);
-    //   });
-    //   orderProductFacOutQTY = orderProductFacOut.data2;
-    //   orderProductFacOutRemainQTY = orderProductFacOut.data3;
-    //   orderProductFacOutStyleColorSizeQTY = orderProductFacOut.data4;
-    //   orderProductFacOutStyleColorSizeRemainQTY = orderProductFacOut.data5;
-
-
-    // } else {
-    //   return res.status(501).json({
-    //     message: {
-    //       messageID: 'errrp002', 
-    //       mode:'errRepCurrentCompanyOrder', 
-    //       value: "error report current company order"
-    //     }
-    //   });
-    // }
-
-
-
-
     // ## get orderIDs  
     let orderIDs = [];
     await this.asyncForEach(currentOrderStyle, async (item1) => {
       orderIDs.push(item1.orderID);
     });
     // console.log(orderIDs);
+    // console.log('1111');
 
-    orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
-    // console.log(factoryOutsource);
+    // ## get data from dtCompanyOrderOutsource
+    // get_auto_getCompanyOrderOutsource= async (companyID, seasonYear, sName)
+    const sName = 'auto_getCompanyOrderOutsource';
+    // console.log(companyID, seasonYear, sName);
+    const orderProductFacOut = await ShareFunc.get_auto_getCompanyOrderOutsource(companyID, seasonYear, sName);
+    // console.log(orderProductFacOut);
+    let orderProductFacOuts;
     let outsourcefactoryID = [];
-    await this.asyncForEach(orderProductFacOuts, async (item1) => {
-      outsourcefactoryID.push(item1.outsourcefactoryID);
-    });
-    
-    // ## get outsource factory qty
-    orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
-    // ## get outsource factory qty remain
-    orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
-    // console.log(orderProductFacOutQTY);
-    // console.log(orderProductFacOutRemainQTY);
+    let orderProductFacOutQTY;
+    let orderProductFacOutRemainQTY;
+    let orderProductFacOutStyleColorSizeQTY;
+    let orderProductFacOutStyleColorSizeRemainQTY;
 
-    // ## style zone color size
-    orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
-    orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
-    // console.log(orderProductFacOutStyleColorSizeQTY);
+    if (orderProductFacOut) {
+      orderProductFacOuts = orderProductFacOut.data1;
+      await this.asyncForEach(orderProductFacOuts, async (item1) => {
+        outsourcefactoryID.push(item1.outsourcefactoryID);
+      });
+      orderProductFacOutQTY = orderProductFacOut.data2;
+      orderProductFacOutRemainQTY = orderProductFacOut.data3;
+      orderProductFacOutStyleColorSizeQTY = orderProductFacOut.data4;
+      orderProductFacOutStyleColorSizeRemainQTY = orderProductFacOut.data5;
+
+
+    } else {
+      return res.status(501).json({
+        message: {
+          messageID: 'errrp002', 
+          mode:'errRepCurrentCompanyOrder', 
+          value: "error report current company order"
+        }
+      });
+    }
+
+
+
+
+    // // ## get orderIDs  
+    // let orderIDs = [];
+    // await this.asyncForEach(currentOrderStyle, async (item1) => {
+    //   orderIDs.push(item1.orderID);
+    // });
+    // // console.log(orderIDs);
+
+    // orderProductFacOuts = await ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs);
+    // // console.log(factoryOutsource);
+    // let outsourcefactoryID = [];
+    // await this.asyncForEach(orderProductFacOuts, async (item1) => {
+    //   outsourcefactoryID.push(item1.outsourcefactoryID);
+    // });
+    
+    // // ## get outsource factory qty
+    // orderProductFacOutQTY = await ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
+    // // ## get outsource factory qty remain
+    // orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
+    // // console.log(orderProductFacOutQTY);
+    // // console.log(orderProductFacOutRemainQTY);
+
+    // // ## style zone color size
+    // orderProductFacOutStyleColorSizeQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
+    // orderProductFacOutStyleColorSizeRemainQTY = await ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
+    // // console.log(orderProductFacOutStyleColorSizeQTY);
 
     // console.log('0' || '1');
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn) || '';
