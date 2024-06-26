@@ -49,6 +49,7 @@ router.get("/test/test10", userController.getTestTest10); // ## cancel queue ord
 router.get("/test/test12", userController.getTestTest12); // ## edit orderProduction forloss --> normal
 router.get("/test/test16", userController.getTestTest16);  // delete all orderProduction , orderProductionQueueList , orderProductionQueue
 
+
 router.get("/test/test14", userController.getTestTest14); // ## cancel orderProduction , queue (all) 100%
 
 router.get("/test/test15", userController.getTestTest15);  // ## view group qty orderProduction / productBarcode
@@ -56,6 +57,8 @@ router.get("/test/test17", userController.getTestTest17);  // ##  update ver for
 router.get("/test/test18", userController.getTestTest18);  // ##  update ver for order all
 router.get("/test/test21", userController.getTestTest21);  // ##  get duplicate fromNode from orderProduction
 router.get("/test/test22", userController.getTestTest22);  // ##  delete orderProduction.productionNode array index
+router.get("/test/test22_1", userController.getTestTest22_1);  // ##  delete orderProduction.productionNode @ last elemnt
+router.get("/test/test23", userController.getTestTest23);  // ## view group qty orderProduction bundle more than 12
 
 router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
 router.get("/test/test20", userController.getTestTest20);  // ##  update ver for orderProductionQueue = queueInfo --> []

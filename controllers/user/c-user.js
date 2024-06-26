@@ -583,6 +583,93 @@ exports.getTestTest22 = async (req, res, next) => {
     });
 }
 
+// ## http://192.168.1.36:3968/api/user/test/test22_1
+// router.get("/test/test22_1", userController.getTestTest22_1);  
+// ##  delete orderProduction.productionNode @ last elemnt
+exports.getTestTest22_1 = async (req, res, next) => {
+  console.log('delete orderProduction.productionNode @ last element');
+  const companyID = 'c000001';
+  const orderID = 'BA1P5A4A';
+  const bundleNos = [143329, 143330, 143331, 143332, 143333, 143334, 143335, 143336, 143337, 143338, 143339, 
+    143340, 143341, 143342, 143343, 143344, 143345, 143346, 143347, 143348, 143349, 143350,, 143351, 143352
+  ];
+    
+    result0 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID":companyID} , 
+        {"orderID":orderID} , 
+        {"bundleNo":{$in: bundleNos}},
+      ]}, 
+      {
+        $pop: { productionNode: 1 },  // ## delete last element of productionNode
+        // $pop: { outsourceData: 1 }
+      },
+    );
+    console.log('delete last element of productionNode');
+
+    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>delete last element of productionNode</title><head>');
+  res.write('<body>');
+  res.write('<h1>delete last element of productionNode  </h1></br>');
+  res.write('<h1></h1>');
+  res.write('<h1>'+ ' OK '+current+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+}
+
+// ## http://192.168.1.36:3968/api/user/test/test23
+// router.get("/test/test23", userController.getTestTest23);  // ## view group qty orderProduction bundle more than 12
+exports.getTestTest23 = async (req, res, next) => {
+  console.log('getTestTest23');
+  const companyID = 'c000001';
+
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"productBarcodeNoReal":productBarcodeNo},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        bundleNo: 1,
+    }	},
+    { $group: {			
+      _id: { 
+        bundleNo: '$bundleNo',
+        // orderID: '$orderID',
+        // outsourcefactoryID: '$outsourcefactoryID',
+      },
+      sumQTY: {$sum: 1} ,
+    }}  
+  ]).hint( {"companyID" : 1, "productBarcodeNoReal": 1} );
+
+  // console.log(orderProduct);
+
+  const orderProductF = await orderProduct.map(fw => ({
+    // orderID: fw._id.orderID, 
+    bundleNo: fw._id.bundleNo,
+    sumQTY: fw.sumQTY,
+  }));
+
+  let orderProductFF = orderProductF.filter(i=>i.sumQTY > 12);
+  orderProductFF.sort((a,b)=>{ return a.bundleNo >b.bundleNo?1:a.bundleNo <b.bundleNo?-1:0 });
+  console.log(orderProductFF);
+  console.log(orderProductFF.length);
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>view group qty orderProduction bundle more than 12</title><head>');
+  res.write('<body>');
+  res.write('<h1>view group qty orderProduction bundle more than 12  </h1></br>');
+  res.write('<h1></h1>');
+  res.write('<h1>'+ ' OK '+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+}
+
 // ## http://192.168.1.35:3968/api/user/test/test19
 // router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
 exports.getTestTest19 = async (req, res, next) => {

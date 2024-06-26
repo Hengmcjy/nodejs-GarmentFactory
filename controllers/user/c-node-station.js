@@ -1493,9 +1493,10 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
           } else  {  // ## scan1ForAll === false   // ## y=สแกน1ตัวแล้วดึงทั้งหมด
             // let orderProductions = [];
             const bundleNo = +orderProduction.bundleNo;
+            const bundleID = orderProduction.bundleID;
             // getOrderProductsByBundleNos= async (companyID, factoryID, bundleNos)
             // ##  get data orderProductions
-            const orderProductions = await ShareFunc.getOrderProductsByBundleNos(companyID, factoryID, [bundleNo]);
+            const orderProductions = await ShareFunc.getOrderProductsByBundleNos(companyID, factoryID, [bundleNo], bundleID);
             return res.status(200).json({
               tokenNS: '',
               expiresIn: process.env.expiresIn,
@@ -2272,6 +2273,7 @@ exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
   const companyID = req.params.companyID;
   const orderID = req.params.orderID;
   const bundleNo = +req.params.bundleNo;
+  // const bundleID = req.params.bundleID;
 
   // console.log(companyID, orderID, bundleNo);
   try {

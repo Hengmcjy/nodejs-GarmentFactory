@@ -7163,7 +7163,7 @@ exports.getCOrderProduct1= async (companyID, productBarcodeNos) => {
 
 
 
-exports.getOrderProductsByBundleNos= async (companyID, factoryID, bundleNos) => {
+exports.getOrderProductsByBundleNos= async (companyID, factoryID, bundleNos, bundleID) => {
   const orderProducts = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
