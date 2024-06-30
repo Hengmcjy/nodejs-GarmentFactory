@@ -451,9 +451,9 @@ exports.putOrderUpdate = async (req, res, next) => {
     await this.asyncForEach(productORInfo, async (item1) => {
       const idx = productORInfo1.findIndex( fi =>(
         fi.productBarcode === item1.productBarcode
-        && fi.targetPlace === item1.targetPlace
-        && fi.productColor === item1.productColor
-        && fi.productSize === item1.productSize
+        // && fi.targetPlace === item1.targetPlace
+        // && fi.productColor === item1.productColor
+        // && fi.productSize === item1.productSize
       ));
       if (idx < 0) {
         productORInfo1.push(item1);

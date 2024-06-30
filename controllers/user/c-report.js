@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 const io = require('../../socket');
 
 const ShareFunc = require("../c-api-app-share-function");
+const ScheduleFunc = require("../user/c-schedule");
 
 const User = require("../../models/m-user");
 const MailSignup = require("../../models/m-mailSignup");
@@ -15,6 +16,7 @@ const Factory = require("../../models/m-factory");
 const Customer = require("../../models/m-customer");
 const OrderProduction = require("../../models/m-orderProduction");
 
+const Schedule = require("../../models/m-schedule");
 const Dtproductionzoneperiodc = require("../../models/m-dt-productionzoneperiodc");
 const Dtcurrentcfactoryorder = require("../../models/m-dt-currentcfactoryorder");
 const Dtcurrentproductqtyall = require("../../models/m-dt-currentproductqtyall");
@@ -2199,6 +2201,18 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
     let orderProduct = [];
     if (type === 'refresh') {
 
+      // ## update record to state = 'running'
+      const scheduleData = {
+        seasonYear: seasonYear,	
+        companyID: companyID,			
+        sGroup: 'report',
+        sName: 'auto_getCurrentCompanyOrderOutsourceFac',	
+        sMode: 'every30mn',
+        sDatetimeDiff: 30,
+        sNote: '', 
+      };
+      const result1 = await ScheduleFunc.updateScheduleDataSState(scheduleData, 'running');
+
       const isOutsource = true;
       const status = ['outsource', 'normal'];
       // ## get outsource factory sent out & factory receive
@@ -2226,6 +2240,26 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
         "lastDatetime": current,
         "data": orderProduct,
       }, {upsert: true}); 
+
+      // ## update record to state = 'normal'
+      const scheduleUpsert = await Schedule.updateOne({$and: [
+        {"seasonYear":seasonYear},
+        {"companyID":companyID},
+        // {"factoryID":factoryID}, 
+        {"sGroup":sGroup}, 
+        // {"sStatus":sStatus}, 
+        {"sName":sName}, 
+        {"sNote":sNote},
+        {"sMode":sMode}, 
+        {"sDatetimeDiff":sDatetimeDiff}, 
+        // {"sDatetime":scheduleData.sDatetime}, 
+      ]} , 
+      {
+        "lastDatetime": current,
+        "sState": "normal",
+        // "sDatetime": scheduleData.sDatetime,
+      }, {upsert: true}); 
+
     } else if (type === 'dt') {
       // ## get data from dtcurrentcompanyorderoutsourcefac
       const sName = 'auto_getCurrentCompanyOrderOutsourceFac';

@@ -89,6 +89,11 @@ setInterval(async() => {
 //   return false;
 // }
 
+exports.updateScheduleDataSState = async (scheduleData, sState) => {
+  const result1 = await updateScheduleDataSState(scheduleData, sState);
+}
+
+// exports.updateScheduleDataSState = async (scheduleData, sState) => {
 async function updateScheduleDataSState(scheduleData, sState) {
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const seasonYear = scheduleData.seasonYear;
@@ -105,9 +110,9 @@ async function updateScheduleDataSState(scheduleData, sState) {
   const scheduleUpsert = await Schedule.updateOne({$and: [
     {"seasonYear":seasonYear},
     {"companyID":companyID},
-    {"factoryID":factoryID}, 
+    // {"factoryID":factoryID}, 
     {"sGroup":sGroup}, 
-    {"sStatus":sStatus}, 
+    // {"sStatus":sStatus}, 
     {"sName":sName}, 
     {"sNote":sNote},
     {"sMode":sMode}, 
@@ -118,6 +123,54 @@ async function updateScheduleDataSState(scheduleData, sState) {
     "lastDatetime": current,
     "sState": sState,
   }, {upsert: true}); 
+  return true;
+}
+
+// ## clear all sState = 'normal' in case minutes total over 
+async function clearSStateToNormal(scheduleData) {
+  const seasonYear = scheduleData.seasonYear;
+  // const seasonYearArr = [scheduleData.seasonYear];
+  const companyID = scheduleData.companyID;
+  // const factoryID = scheduleData.factoryID;
+  const sGroup = scheduleData.sGroup;
+  // const sStatus = scheduleData.sStatus;
+  const sName = scheduleData.sName;
+  const sMode = scheduleData.sMode;
+  const sDatetimeDiff = scheduleData.sDatetimeDiff;
+  const sNote = scheduleData.sNote;
+  // const mm = +scheduleData.sDatetime[0].mm;
+  // const lastDatetime = current;
+
+  // ## clear all sState = 'normal' in case minutes total over 
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  // const hour1Daymn = 1440; // minute
+  const hour3mn = 180; // minute
+  const hour2mn = 120; // minute
+  const hour1_30mn = 90; // minute
+
+  const lastDatetime1 = new Date(moment(scheduleData.lastDatetime).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const dateDiff3 = moment(current).diff(moment(lastDatetime1), 'minutes');
+
+  if (dateDiff3 > hour1_30mn) {
+    // ## update  Schedule>  lastDatetime
+    const scheduleUpsert = await Schedule.updateOne({$and: [
+      {"seasonYear":seasonYear},
+      {"companyID":companyID},
+      // {"factoryID":factoryID}, 
+      {"sGroup":sGroup}, 
+      // {"sStatus":sStatus}, 
+      {"sName":sName}, 
+      {"sNote":sNote},
+      {"sMode":sMode}, 
+      {"sDatetimeDiff":sDatetimeDiff}, 
+      // {"sDatetime":scheduleData.sDatetime}, 
+    ]} , 
+    {
+      // "lastDatetime": current,
+      "sState": "normal",
+      // "sDatetime": scheduleData.sDatetime,
+    }, {upsert: true}); 
+  }
   return true;
 }
 
@@ -166,6 +219,8 @@ exports.getSchedule = async () => {
   // console.log('------------------------------------scheduleData----------------------------------------------');
   // console.log(scheduleData, scheduleData[0].sDatetime);
 
+  
+
   // if ((scheduleData.length > 0 && i <= 1) || i == 21) {
   if ( scheduleData.length > 0 ) {
     const time1Group = scheduleData.filter(i=>i.sMode === '1');
@@ -183,8 +238,9 @@ exports.getSchedule = async () => {
     }
 
     if (everyHourGroup.length > 0) {
-      // console.log('everyHourGroup');
+      // console.log('everyHourGroup'); function clearSStateToNormal(scheduleData)
       await this.asyncForEach(everyHourGroup, async (item1) => {
+        await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
         await getDataTempEveryHour(item1);
       });
     }
@@ -192,14 +248,19 @@ exports.getSchedule = async () => {
     if (every30mnGroup.length > 0) {
       // console.log('every30mnGroup');
       await this.asyncForEach(every30mnGroup, async (item1) => {
+        await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
         await getDataTempEvery30mn(item1);
       });
     }
 
     if (every15mnGroup.length > 0) {
-      console.log('every15mnGroup');
+      // console.log('every15mnGroup');
+      await this.asyncForEach(every15mnGroup, async (item1) => {
+        await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
+      });
     }
   }
+  return true;
 }
 
 async function getDataTempEvery30mn(scheduleData) {
@@ -215,6 +276,7 @@ async function getDataTempEvery30mn(scheduleData) {
       return true;
     }
   }
+  return true;
 }
 
 async function auto_getCompanyOrderOutsource(scheduleData) {
@@ -318,6 +380,7 @@ async function auto_getCompanyOrderOutsource(scheduleData) {
 
       // console.error(mm1,'updated auto_getCompanyOrderOutsource');
     }
+    return true;
   } catch (err) {
     console.error(err);
   }
@@ -416,6 +479,7 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
 
       // console.error(mm1,'updated auto_getCurrentCompanyOrderOutsourceFac');
     }
+    return true;
   } catch (err) {
     console.error(err);
   }
@@ -440,6 +504,7 @@ async function getDataTempEveryHour(scheduleData) {
       return true;
     }
   }
+  return true;
 }
 
 
@@ -551,6 +616,7 @@ async function auto_getProductionZonePeriodC(scheduleData) {
 
       // console.error(mm1,'updated auto_getProductionZonePeriodC');
     }
+    return true;
   } catch (err) {
     console.error(err);
   }
@@ -664,6 +730,7 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
 
       // console.error(mm1,'updated auto_getCurrentCFactoryOrder');
     }
+    return true;
   } catch (err) {
     console.error(err);
   }
@@ -787,6 +854,7 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
 
       // console.error(seasonYear, sNote, mm1,'updated auto_getCompanyCurrentProductQtyAll');
     }
+    return true;
   } catch (err) {
     console.error(err);
   }

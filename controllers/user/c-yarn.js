@@ -402,6 +402,7 @@ exports.getYarnStatData = async (req, res, next) => {
   const userID = req.userData.tokenSet.userID;
   const companyID = req.params.companyID;
   const orderIDs = JSON.parse(req.params.orderIDs);
+  const orderStatusArr = ['open'];
   // const factoryID = req.params.factoryID;
   // const customerID = req.params.customerID;
   // const setName = req.params.setName;
@@ -414,7 +415,7 @@ exports.getYarnStatData = async (req, res, next) => {
     // ## 
 
     // ## get order sum qty group by zone and color
-
+    currentCompanyOrderZoneStyleSize = await ShareFunc.getCurrentCompanyOrderZoneStyleSize(companyID, orderStatusArr, orderIDs);
 
 
     
@@ -442,7 +443,7 @@ exports.getYarnStatData = async (req, res, next) => {
       token: token,
       expiresIn: process.env.expiresIn,
       userID: userID,
-      // yarns: yarns,
+      currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
       // yarnsCount: yarnsCount,
       // yarnPlans: yarnPlans,
       // yarnPlansCount: yarnPlansCount,
