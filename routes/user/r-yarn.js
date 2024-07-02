@@ -27,8 +27,8 @@ router.get("/getinfo1/:companyID/:factoryID/:customerID/:setName/:yarnSeason", c
 // #############################################################################
 // ## yarn plan ###########################################################################
 
-// getYarnStatData
-router.get("/yarnplan/statdata1/:companyID/:orderIDs", checkAuth, checkUUID, yarnController.getYarnStatData);
+// getYarnStatData  yarnID, uuid, yaerSeason
+router.put("/yarnplan/statdata1", checkAuth, checkUUID, yarnController.getYarnStatData);
 
 // ## get yarn plan list /api/yarn/yarnplan/list/:companyID/:factoryID/:customerID/:setName/:yarnSeason getYarPlansList
 router.get("/yarnplan/list/main/:companyID/:factoryID/:customerID/:setName/:yarnSeason/:orderIDs", 
@@ -45,6 +45,9 @@ router.post("/yarnplan/createnew", checkAuth, checkUUID, yarnController.postYarn
 
 // ## /api/yarn/yarnplan/edit/maindata   putYarnPlan
 router.put("/yarnplan/edit/maindata", checkAuth, checkUUID, yarnController.putYarnPlan);
+
+// ## /api/yarn/yarnplan/edit/stat   putYarnPlanStat
+router.put("/yarnplan/edit/stat", checkAuth, checkUUID, yarnController.putYarnPlanStat);
 
 // ## /api/yarn/yarnplan/yarnDataInfo    putYarnPlanDataInfo
 router.put("/yarnplan/yarnDataInfo", checkAuth, checkUUID, yarnController.putYarnPlanDataInfo);
@@ -104,6 +107,8 @@ router.put("/yarnlot/CF/rep/transfer1/yarn1", checkAuth, checkUUID, yarnControll
 
 // ## get yarn current stock /api/yarn/yarnlot/CF/rep/fac/remain getYarnRemainCF
 router.put("/yarnlot/CF/rep/fac/remain", checkAuth, checkUUID, yarnController.getYarnRemainCF);
+
+
 
 
 module.exports = router;

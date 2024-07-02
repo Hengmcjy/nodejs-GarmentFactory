@@ -3685,6 +3685,7 @@ exports.getYarnPlanDataInfo2= async (companyID, factoryID, customerID, yarnSeaso
         uuid: 1,
         yarnID: 1,		
         yarnDataInfo: 1,
+        
     }	},
     { $unwind: "$yarnDataInfo" },
     { $project: { _id: 0, 
@@ -6102,6 +6103,59 @@ exports.getYarnPlanMainLists= async (companyID, factoryID, customerID, yarnSeaso
   ]);
   // console.log(yarns);
   return yarnData;
+}
+
+exports.getYarnPlanStat= async (companyID, yarnID, uuid, yarnSeasonID) => {
+  // limit = +limit; // ## change to number
+  const yarnData = await YarnData.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"yarnID":yarnID},
+      {"uuid":uuid},
+      {"yarnSeasonID":yarnSeasonID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        // customerID: 1,	
+        yarnSeasonID: 1,
+        // status: 1,
+        uuid: 1,
+        // datetime: 1,
+        // editDate: 1,
+        yarnID: 1,		
+        // orderID: 1,
+        // colorS: 1,
+        // yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+        // mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+        // yarnDataInfo: 1
+        yarnStatCal: 1,
+    }	},
+    // { $sort: { datetime: 1 } }
+  ]);
+  // console.log(yarnData);
+
+
+  if (yarnData.length>0) {
+    if (yarnData[0].yarnStatCal && yarnData[0].yarnStatCal.length>0) {
+      await this.asyncForEach(yarnData, async (item1) => {
+        // console.log('5555', item1);
+        // item1.coneWeight = parseFloat(item1.coneWeight);
+        // item1.boxWeight = parseFloat(item1.boxWeight);
+        await this.asyncForEach2(item1.yarnStatCal, async (item2) => {
+          await this.asyncForEach3(item2.mainZoneYarn, async (item3) => {
+            item3.pcWeight = parseFloat(item3.pcWeight);
+            item3.totalWeight = parseFloat(item3.totalWeight);
+          });
+        });
+      });
+      return yarnData[0].yarnStatCal;
+    }
+  }
+
+  return [];
 }
 
 // ShareFunc.getYarnCussCount(companyID, customerID);

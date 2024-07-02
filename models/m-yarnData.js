@@ -86,12 +86,21 @@ const yarnDataSchema = mongoose.Schema({
       colorCode: {type: String},
     },
     mainZoneYarn: [{
+      color: {
+        colorID: {type: String},
+        colorName: {type: String},
+        colorValue: {type: String},
+        colorCode: {type: String},
+      },
       seq: {type: Number},
+      seqCut: {type: Number},
       orderID: {type: String},
       sizeStr: {type: String},  // ##  xs - 2xl
       targetPlaceID : {type: String},
       targetPlaceName : {type: String},
-      productWeight: {type: mongoose.Types.Decimal128},
+      orderQty: {type: Number},
+      pcWeight: {type: mongoose.Types.Decimal128}, // ##  weight average
+      totalWeight: {type: mongoose.Types.Decimal128}, // ##
     }],
   }],
 });

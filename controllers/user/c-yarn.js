@@ -398,10 +398,14 @@ exports.getYarnPlansInvoiceList2 = async (req, res, next) => {
 // router.get("/yarnplan/statdata1/:companyID/:orderIDs", checkAuth, checkUUID, yarnController.getYarnStatData);
 exports.getYarnStatData = async (req, res, next) => {
   // try {} catch (err) {}
-  console.log('getYarnStatData');
+  // console.log('getYarnStatData');
+  const data = req.body;
   const userID = req.userData.tokenSet.userID;
-  const companyID = req.params.companyID;
-  const orderIDs = JSON.parse(req.params.orderIDs);
+  const companyID = data.companyID;
+  const yarnID = data.yarnID;
+  const uuid = data.uuid;
+  const yarnSeasonID = data.yarnSeason;
+  const orderIDs = data.orderIDs
   const orderStatusArr = ['open'];
   // const factoryID = req.params.factoryID;
   // const customerID = req.params.customerID;
@@ -409,7 +413,7 @@ exports.getYarnStatData = async (req, res, next) => {
   // const yarnSeasonID = req.params.yarnSeason;  // 2024SS
   // const season = yarnSeasonID.substr(0, 4);  // 2024
   // const status = ['open'];
-  console.log(companyID, orderIDs);
+  // console.log(companyID, orderIDs, yarnID, uuid, yarnSeasonID);
   try {
 
     // ## 
@@ -417,7 +421,8 @@ exports.getYarnStatData = async (req, res, next) => {
     // ## get order sum qty group by zone and color
     currentCompanyOrderZoneStyleSize = await ShareFunc.getCurrentCompanyOrderZoneStyleSize(companyID, orderStatusArr, orderIDs);
 
-
+    // ## get yarnStatCal  getYarnPlanStat= async (companyID, yarnID, uuid, yarnSeasonID)
+    yarnStatCal = await ShareFunc.getYarnPlanStat(companyID, yarnID, uuid, yarnSeasonID);
     
     // const yarns = await ShareFunc.getYarnCuss(companyID, customerID, yarnSeasonID);
     // const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID, yarnSeasonID);
@@ -444,7 +449,7 @@ exports.getYarnStatData = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: userID,
       currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
-      // yarnsCount: yarnsCount,
+      yarnStatCal: yarnStatCal,
       // yarnPlans: yarnPlans,
       // yarnPlansCount: yarnPlansCount,
       // productImageProfiles: productImageProfiles,
@@ -813,6 +818,85 @@ exports.putYarnPlan = async (req, res, next) => {
         messageID: 'erry003', 
         mode:'errYarnPlanCreateNew', 
         value: "error yarn plan create new"
+      }
+    });
+  }  finally {
+    session.endSession();
+  }
+}
+
+// // ## /api/yarn/yarnplan/edit/stat   putYarnPlanStat
+// router.put("/yarnplan/edit/stat", checkAuth, checkUUID, yarnController.putYarnPlanStat);
+exports.putYarnPlanStat = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  const userID = req.userData.tokenSet.userID;
+
+  const companyID = data.companyID;
+  const yarnStatCal = data.yarnStatCal;
+  
+  const yarnID = data.yarnID;
+  const uuid = data.uuid;
+  const yarnSeasonID = data.yarnSeason;  // ## 2023AW,  2024SS
+  // const orderID = data.orderID; // ##  array 
+  // const colorS = data.colorS;
+  // const yarnData = [];
+  // const status = 'open';
+
+  // console.log('putYarnPlan');
+  // console.log(userID,    companyID,    factoryID,    customerID,    uuid,    yarnSeasonID,    yarnID,    orderID,    colorS);
+  // console.log(companyID, yarnSeasonID, yarnID, uuid);
+  // console.log(orderID, colorS);
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+
+  let session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+
+    const yarnDataUpdate = await YarnData.updateOne({$and: [
+        {"companyID":companyID},
+        {"yarnSeasonID":yarnSeasonID}, 
+        {"yarnID":yarnID}, 
+        {"uuid":uuid}, 
+      ]} , 
+      {
+        "yarnStatCal": yarnStatCal,
+        "editDate": current,
+      }).session(session);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    // const status1 = ['open'];
+    // const yarnPlans = await ShareFunc.getYarnPlanMainLists(companyID, factoryID, customerID, yarnSeasonID, status1);
+    // const yarnPlansCount = await ShareFunc.getYarnPlanMainCount(companyID, factoryID, customerID, yarnSeasonID, status1);
+
+    // const yarns = await ShareFunc.getYarnCuss(companyID, customerID);
+    // const yarnsCount = await ShareFunc.getYarnCussCount(companyID, customerID);
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      // yarns: yarns,
+      // yarnsCount: yarnsCount,
+      // yarnPlans: yarnPlans,
+      // yarnPlansCount: yarnPlansCount,
+      
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'erry003', 
+        mode:'errPutYarnPlanStat', 
+        value: "error put yarn plan stat"
       }
     });
   }  finally {
