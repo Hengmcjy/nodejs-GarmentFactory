@@ -670,6 +670,58 @@ exports.getTestTest23 = async (req, res, next) => {
   res.write('</html>');
 }
 
+
+// ## http://192.168.1.36:3968/api/user/test/test23_1
+// router.get("/test/test23", userController.getTestTest23_1);  // ## view group qty orderProduction bundleID more than 12
+exports.getTestTest23_1 = async (req, res, next) => {
+  console.log('getTestTest23');
+  const companyID = 'c000001';
+
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"productBarcodeNoReal":productBarcodeNo},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        bundleID: 1,
+    }	},
+    { $group: {			
+      _id: { 
+        bundleID: '$bundleID',
+        // orderID: '$orderID',
+        // outsourcefactoryID: '$outsourcefactoryID',
+      },
+      sumQTY: {$sum: 1} ,
+    }}  
+  ]).hint( {"companyID" : 1, "productBarcodeNoReal": 1} );
+
+  // console.log(orderProduct);
+
+  const orderProductF = await orderProduct.map(fw => ({
+    // orderID: fw._id.orderID, 
+    bundleID: fw._id.bundleID,
+    sumQTY: fw.sumQTY,
+  }));
+
+  let orderProductFF = orderProductF.filter(i=>i.sumQTY > 12);
+  orderProductFF.sort((a,b)=>{ return a.bundleID >b.bundleID?1:a.bundleID <b.bundleID?-1:0 });
+  console.log(orderProductFF);
+  console.log(orderProductFF.length);
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>view group qty orderProduction bundle more than 12</title><head>');
+  res.write('<body>');
+  res.write('<h1>view group qty orderProduction bundle more than 12  </h1></br>');
+  res.write('<h1></h1>');
+  res.write('<h1>'+ ' OK '+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+}
+
 // ## http://192.168.1.35:3968/api/user/test/test19
 // router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
 exports.getTestTest19 = async (req, res, next) => {

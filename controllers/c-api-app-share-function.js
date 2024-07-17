@@ -11,6 +11,8 @@ const XLSX = require("xlsx");
 const { v5: uuidv5 } = require('uuid');
 const { v4: uuidv4, fromString  } = require('uuid');
 
+const Authorize = require('../models/m-authorize');
+
 const Session1hr = require('../models/m-session1hrs');  // check this for current login
 const Session1ys = require('../models/m-session1ys');
 const Session1mn = require('../models/m-session1mn');

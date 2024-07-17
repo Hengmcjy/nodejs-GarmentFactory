@@ -59,6 +59,7 @@ router.get("/test/test21", userController.getTestTest21);  // ##  get duplicate 
 router.get("/test/test22", userController.getTestTest22);  // ##  delete orderProduction.productionNode array index
 router.get("/test/test22_1", userController.getTestTest22_1);  // ##  delete orderProduction.productionNode @ last elemnt
 router.get("/test/test23", userController.getTestTest23);  // ## view group qty orderProduction bundle more than 12
+router.get("/test/test23", userController.getTestTest23_1);  // ## view group qty orderProduction bundleID more than 12
 
 router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
 router.get("/test/test20", userController.getTestTest20);  // ##  update ver for orderProductionQueue = queueInfo --> []
@@ -259,21 +260,25 @@ const multerGCS = Multer({
     
 // ## go.garment.com@gmail.com
 let projectId = "mystorage-371212"; // Get this from Google Cloud
-let keyFilename = './'+'mykey.json'; // Get this from Google Cloud -> Credentials -> Service Accounts
+let keyFilename = './'+'newkey.json'; // Get this from Google Cloud -> Credentials -> Service Accounts
 const storageGCG = new Storage({
   projectId,
   // keyFilename,
-  credentials: {
+  credentials: 
+  {
+    
     "type": "service_account",
     "project_id": "mystorage-371212",
-    "private_key_id": "a51f9201a6aaabd6caff7b0bf582b3b0e13ced01",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC4t4nkl1lsmmEL\n8T+uqCbJVD3ziVPVKxLdtYG0XovO61Wt7/6UCmwaERylFT1WQ/tQANOP/a8pTPYt\nvdb0D+MR5SEn0+owv1tpoLsVdIDtx3Q0P7A4r6YUGwzNikDgeCrVEXw9OYxMJOtm\nzmo96Xp7L/dViisoTSKua+rMI6MBoRCZbbafmOgiz3R+55ejHU/kyrmK8Yh0DwGV\nbDiTsHoZQrJJrqVbgkXCTppDgjJLeRTVNq/UjP2LJpWwJuHVRAlmeBgthOffd8m7\n53tHZoKLErjgo1Dr1Q6gk7AelgaFZTt3nBRJierR/OPpMB6kspRfAlLN3X6IBhBm\nTZib4z5BAgMBAAECggEABvNRCvru8Hk2oZ5oSQgmvXigBCPstZ6zTQhhYwoTtKuC\nQ9M9/xANVUXDkCqmbjKMqEv/qfFfv+wXb00vY2udnbTDdJ4yt7bbl7Pmlj4WA9x3\ncOfcl6V0WFlUN/+1xTyAUBgiVqNttgfFm860jLPWWgBKDDvwt8l/PpTs9tV4cr0u\nO6rV1CF9KXOYV69x3ogBFnLzwOP6Fnk9dJP+jPEyVNJ9pIifGL2UE13SaGl5UGsC\nSDIStvtl12+AH78d/2f0EK9GercwWI5xvqFl7GfxRRPw6po+XEsH58I0lYhNcp3n\nehdncdDE+c3Kf/n6HT4TIuj6Ia6HNHPPJRcqbBeNKQKBgQD7LT+R95gyAFH2BLOM\nnKA1zmdkHkYz26LDRdBH8llkl/UtYVr1/7Au/vOBi8O0gUTz2DPXnPqhOEAjeZxH\naOBvdIUWDBp8f8xwDh/F9PffPOWA7nrG/KEGy+L5ZAfd2rKHFur9vbPYdAV1ZYzm\nQ/QJCbio3871QAF5tCt9O0tKuwKBgQC8Q5UtRrK359ybaWhpFNPtm+LLKdepDS1X\nPqQgs6MmUhY+NYkVKRckk2fI90oK/DUYJKFf5Lfa40RWeDqx1J8JX292MW/qQhrQ\nHtD+bQWdLalgypblBoUw27ztkY+31Om3E8ePQbE9fka2YErDW/MIorg4FW/R2Qqm\nzA3Pds/hMwKBgEbOo6wXe00lL/XFr4QFJ1jjvdvIeQvnb8PSq3uMw0yLVe+cEVNl\n6Bnnf2fWqa35/yEqorq2oyTNwa7+emLbGuHwnA/yC4lrUYuJP8XDYBkLhrtI/02X\nLCHJWkvpuhn9q/RPLqGnV8q+Mke8//Jt156woeDhbutORtwzQUtFat0/AoGBAKdN\nZ8RUj33fDq0NfzvixnLhlSn2hTA2BZUCldh5ywLC8AFYkfm8ClT2qcRt/d7FQmmy\nI7aUCs76KECvl3lw+ePaa7MdO9dx52IMAK4ZNGP5sAvT/USKBtLkc4CrWoyDKS8I\n5M7qEhgTn8Nyzv3NOKzz7cHpSvWxa0XPEHbNnu8BAoGAIAQ4j6OYZHTYvvz5BBbP\nBJujyR4s1HRfGb0pAoErIEMyJ0MrmZLtLM4c4JAr/q/Q8cyDL/T/1pcdAgYX2vCr\nV8aflkDBJN+p/IG8C2oacdwpwM3+oZqkrOIfNAT7NKy74ghovZpD5mZT4c7pYrHS\nX0XNSDHsB6VWE9OMkuddu68=\n-----END PRIVATE KEY-----\n",
+    "private_key_id": "b5a26b9feada14038bde21767a7b0b9757113d37",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDKrWIftkWKoAdt\n4W4YYplH818wbcm7URtHRmlbYSL3Ox6p/gsWMPlj3xdXdjYr8d3GvUZYsAUy4g+E\nZ0+pwEpWqhhNKVdCXcXoj8enaRupGVO+3pwL5JQLZ4vNbyRIgPVx9sNpe4kSab8f\nyqjMWB7DDtC8owpNHDtjdfwLWgyzKDRsmn5HIKUCEBeCiP1C2RNcGQcyJ+Qt9lS2\nw243Ub2x2SmQjVkvVGOcCnFBUyfsxj5u9pZ4Cru5AZ6t29hAi9M3OjQ69caD+9c0\nZVorb8n/xJedMHyAGUWBS0QfqENJCH0UOvlJq4NvvJcTTrf7uns2rVuMsM4xeuLC\nIjt2sarNAgMBAAECggEAY06MHyywq0lZCopj5vfc0gfZ8sFAkJMfkg9ajSctukTR\n9AohhYiOkdRcPAMUbPjQKVJRdyAcE//3CXGTc4HgCtHCIYCpnD+VOqvEcG9MWdEq\nmwG5JQylS2c7dXfJJ+tkGCiIPBWHJqoAt0OV7LYasImAVoVuhTTZlpTXX/qJ8XfX\nfZvIvAKiL4Rk0qAKhdzVe8+bCSkofOpw6y0tVe3iCXa0FBTFEfR868jxbES/LHT7\nWlPQK2iNPTmnKH9i2EjQcXrL6MgTx2KEe7EGOWAxDO6mIjylAD/osvACPLN7KA0F\nqg2noH7j3FXfr8li4kcD8qF3DwaINfTlfZs52MnHwwKBgQD/EUw61NeCTgZjdW5r\nHpBvtNpDeoQjyOspKfO8/dNnOrxuVgmQN0MrgP5GnEXRgBSTpx7+QUrnIgUqWYUz\najDsLWSXgpBK2whq15zkYcFSxldXlKCAQ0V4Wpq7P5viFaVqVT6ZGO+GO/bzczOf\nc4LJiH9SEhkKrwETYv+4KByX1wKBgQDLaw5/t9MOsyPw8V+d+i36Nut63XRPyFF7\ngapVmFJDewxwlhzi6KkVP7mNgrPSbEMkSWrXb5DLC3okMw7c/wxLaQt1HBTIo9mr\nimZpEaW9nz4N1lbWqVBmToRkHho2bvlU+okp6xOwStuTFfRipgbIXkBDlaFAtJ3C\n3f675Mgt+wKBgQDO2ptktsoTve1GaazjqITgYt4DjW9uifnUh1ZI9dylQiggnxvg\nXkDWHiWY5BFnJqUJXaYv8ompSpi/0JvKp5sHXoTOrq8QVfPMmhF90Z1z4LBisYE8\no9HKGkiUBLEJuB5PTtSWWned+DF9G/dIn+f4Qv9mcpDmbijELSxPkBAoPwKBgGep\nuQvRLBeTpz9EYovpUMDwd/R3Iqz90rh0Dc/s/g8xh9dgSHxCQNh5TyAUeXtEfLrj\nRzVev5UZ1jbYZjytJSDQ+WvG0bil92l58FKfEa2el0sJ7dsbEcPxQ3qZ9JXE2/84\nZeocyD3RCDDewVn8bfxyO6G1gSWuZa9G3mf2YSU9AoGBANkCC1jTaCs9YK9IwSLs\nom1sfbA/b1NDvF0Hyz/YtQyem+egVtUoFddRl0pCm78ynm/PbJUOk+a54qbkEO4I\n4key2LGMFgxOpT/311yMfP7otp3cSvNfy/0VFOEovG2owjjj89Lta3wE3RfKN6XF\nQ3C9s4nTNmtA0pROrZBtpylG\n-----END PRIVATE KEY-----\n",
     "client_email": "mystorageimage2@mystorage-371212.iam.gserviceaccount.com",
     "client_id": "102661079380883436477",
     "auth_uri": "https://accounts.google.com/o/oauth2/auth",
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mystorageimage2%40mystorage-371212.iam.gserviceaccount.com"
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mystorageimage2%40mystorage-371212.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+    
   }
 });
 
@@ -364,14 +369,20 @@ router.post('/update/upload/images/gcs',
         if (req.file) {
           const companyID = mydatajson.companyID;
           const subfolder =  mydatajson.subfolder;
-          // console.log("File found, trying to upload...");
+          // console.log("File found, trying to upload...  000");
           // const blob = bucket.file(req.file.originalname);
           const blob = bucket.file(subfolder + req.imageData.imageName+'.jpg');
-          const blobStream = blob.createWriteStream({ resumable: false });
+          // console.log("File found, trying to upload...  111");
+          const blobStream = blob.createWriteStream();
+          // const blobStream = blob.createWriteStream({ resumable: false });
+          // console.log("File found, trying to upload...  222");
+          // console.log(blobStream);
           blobStream.on("finish", async () => {
-            
+            // console.log("111111111111111111111111111111111");
+            // console.log(mydatajson);
             // ## edte image product profile
             if (mydatajson.callfrom === 'productEditImageProfile') {
+              // console.log("mydatajson.callfrom === 'productEditImageProfile'");
               const productID = mydatajson.product.productID;
 
               const oldImage = await ShareFunc.getProductImageProfile(companyID, productID); // ## delete image old @ google storage
