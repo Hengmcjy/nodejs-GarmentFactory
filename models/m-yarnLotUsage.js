@@ -7,6 +7,7 @@ const yarnLotUsageSchema = mongoose.Schema({
   customerID: {type: String},
   yarnSeasonID: {type: String},
   yarnID: {type: String},
+  uuid: {type: String},
   yarnDataUUID: {type: String},
   yarnColorID: {type: String},
   // receiveDate: {type: Date},

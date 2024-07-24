@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const moment = require('moment-timezone');
 
+// const Synology = require("synology");
+
 const io = require('../../socket');
 
 const ShareFunc = require("../c-api-app-share-function");
@@ -1578,9 +1580,10 @@ exports.getTestTest4_4 = async (req, res, next) => {
   return res.end();
 }
 
-// // ## http://192.168.1.35:3968/api/user/test/test3
+
+// // ## http://192.168.1.36:3968/api/user/langu/update
 // ## update multi langs here
-exports.getTestTest3 = async (req, res, next) => {
+exports.languageUpdate = async (req, res, next) => {
 
   // // read xlsx file
   // // import xlsx file
@@ -2724,6 +2727,38 @@ exports.getMonogoDbver1 = async (req, res, next) => {
   res.write('<h1>get version  </h1></br>');
   res.write('<h1>.....................</h1>');
   res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
+// router.get("/test/nas/connect", userController.nasConnect);
+exports.nasConnect = async (req, res, next) => {
+
+  // var Synology = require('synology');
+
+  // var syno = new Synology({
+  //   host    : 'localhost',
+  //   user    : 'mylogin',
+  //   password: 'mypassword'
+  // });
+  // console.log('1111');
+  // syno.fileStation.upload({
+  //   file: fs.createReadStream(path.join(__dirname, 'foo.txt')),
+  //   dest_folder_path: '/home'
+  // }, function(err, data) {
+  //   if (err) throw err;
+  //   console.log(data);
+  // });
+
+  // const result = await ShareFunc.getMongoDBVer1();
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title> nasConnect </title><head>');
+  res.write('<body>');
+  res.write('<h1>nasConnect  </h1></br>');
+  res.write('<h1>.....................</h1>');
+  // res.write('<h1>'+result+'</h1>');
   res.write('</body>');
   res.write('</html>');
   return res.end();

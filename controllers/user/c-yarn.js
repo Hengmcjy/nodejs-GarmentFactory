@@ -2053,6 +2053,8 @@ exports.putEditYarnLotIDState2 = async (req, res, next) => {
                   {"customerID":customerID},
                   {"yarnSeasonID":yarnSeasonID},
                   {"yarnID":yarnID},
+                  {"yarnDataUUID":yarnDataUUID},
+                  {"uuid":uuid},
                   {"yarnColorID":yarnColorID},
                   // {"status":status1},
                 ]}, 
@@ -2195,37 +2197,62 @@ exports.getYarnUsage = async (req, res, next) => {
   const yarnSeasonID = data.yarnSeasonID;// 2024SS
   const season = yarnSeasonID.substr(0, 4);  // 2024
   const yarnID = data.yarnID;
+  const uuid = data.uuid;
   const yarnColorID = data.yarnColorID;
   const yarnDataUUID = data.yarnDataUUID;
   const status = data.status;
   
-
   // console.log('getYarnUsage');
   // console.log(yarnColorID);
   // console.log(companyID, factoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+
+  await ShareFunc.upsertUserSession1hr(userID);
+  // console.log(req.userData.tokenSet);
+  const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
   try {
+    
     // ## get yarn usage
     const yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    // console.log('000');
+    return res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      yarnLotUsageList: yarnLotUsageList,
+    });
+
+    // // ## get yarn usage
+    // const oldYearSeason = ['2024AW'];  // ## old version
+    // let yarnLotUsageList = [];
+    // if (oldYearSeason.includes(yarnSeasonID)){
+
+    //   yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    //   // console.log('000');
+    //   return res.status(200).json({
+    //     token: token,
+    //     expiresIn: process.env.expiresIn,
+    //     userID: userID,
+    //     yarnLotUsageList: yarnLotUsageList,
+    //   });
+
+    // } else {  // ## new version
+    //   yarnLotUsageList = await ShareFunc.getYarnUsageV2(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, uuid, yarnColorID, yarnDataUUID, status);
+      
+    //   return res.status(200).json({
+    //     token: token,
+    //     expiresIn: process.env.expiresIn,
+    //     userID: userID,
+    //     yarnLotUsageList: yarnLotUsageList,
+    //   });
+    // }
+    // // console.log('111');
 
     // let productIDs = [];
     // await this.asyncForEach(orderIDs, async (item1) => {
     //   productIDs.push(await ShareFunc.setBackStrLen(process.env.productIDLen, item1, ' '));
     // });
 
-    await ShareFunc.upsertUserSession1hr(userID);
-    // console.log(req.userData.tokenSet);
-    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-
-    res.status(200).json({
-      token: token,
-      expiresIn: process.env.expiresIn,
-      userID: userID,
-      yarnLotUsageList: yarnLotUsageList,
-      // yarnsCount: yarnsCount,
-      // yarnPlans: yarnPlans,
-      // yarnPlansCount: yarnPlansCount,
-      // productImageProfiles: productImageProfiles,
-    });
   } catch (err) {
     console.log(err);
     return res.status(501).json({
@@ -2251,38 +2278,53 @@ exports.getYarnUsageCF = async (req, res, next) => {
   const yarnSeasonID = data.yarnSeasonID;// 2024SS
   const season = yarnSeasonID.substr(0, 4);  // 2024
   const yarnID = data.yarnID;
+  const uuid = data.uuid;
   const yarnColorID = data.yarnColorID;
   const yarnDataUUID = data.yarnDataUUID;
   const status = data.status;
   
-
   // console.log('getYarnUsageCF');
   // console.log(yarnColorID);
   // console.log(companyID, setfactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+
+  await ShareFunc.upsertUserSession1hr(userID);
+  // console.log(req.userData.tokenSet);
+  const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
   try {
     // ## get yarn usage
     const yarnLotUsageList = await ShareFunc.getYarnUsageCF(companyID, [setfactoryID], customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
-    // console.log(yarnLotUsageList);
-
-    // let productIDs = [];
-    // await this.asyncForEach(orderIDs, async (item1) => {
-    //   productIDs.push(await ShareFunc.setBackStrLen(process.env.productIDLen, item1, ' '));
-    // });
-
-    await ShareFunc.upsertUserSession1hr(userID);
-    // console.log(req.userData.tokenSet);
-    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-
-    res.status(200).json({
+    // // console.log(yarnLotUsageList);
+    return res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
       userID: userID,
       yarnLotUsageList: yarnLotUsageList,
-      // yarnsCount: yarnsCount,
-      // yarnPlans: yarnPlans,
-      // yarnPlansCount: yarnPlansCount,
-      // productImageProfiles: productImageProfiles,
     });
+
+    // // ## get yarn usage
+    // const oldYearSeason = ['2024AW'];  // ## old version
+    // let yarnLotUsageList = [];
+    // if (oldYearSeason.includes(yarnSeasonID)){
+    //   yarnLotUsageList = await ShareFunc.getYarnUsageCF(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    //   return res.status(200).json({
+    //     token: token,
+    //     expiresIn: process.env.expiresIn,
+    //     userID: userID,
+    //     yarnLotUsageList: yarnLotUsageList,
+    //   });
+    // } else {
+    //   yarnLotUsageList = await ShareFunc.getYarnUsageCFV2(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, uuid, yarnColorID, yarnDataUUID, status);
+      
+    //   return res.status(200).json({
+    //     token: token,
+    //     expiresIn: process.env.expiresIn,
+    //     userID: userID,
+    //     yarnLotUsageList: yarnLotUsageList,
+    //   });
+    // }
+    // console.log(yarnLotUsageList);
+    
   } catch (err) {
     console.log(err);
     return res.status(501).json({
@@ -2332,7 +2374,7 @@ exports.editYarnUsageNewFacSendTo = async (req, res, next) => {
         {$and: [
           {"companyID":companyID},
           // {"factoryID":factoryID},
-          // {"customerID":customerID},
+          // {"yarnDataUUID":yarnDataUUID},
           {"yarnID":yarnID},
           {"yarnColorID":yarnColorID},
           {"yarnSeasonID":yarnSeasonID},
@@ -2441,7 +2483,7 @@ exports.putYarnUsageTransfersDate = async (req, res, next) => {
         {$and: [
           {"companyID":companyID},
           // {"factoryID":factoryID},
-          // {"customerID":customerID},
+          // {"yarnDataUUID":yarnDataUUID},
           {"yarnID":yarnID},
           {"yarnColorID":yarnColorID},
           {"yarnSeasonID":yarnSeasonID},
@@ -3075,8 +3117,10 @@ exports.putYarnLotTransferCF = async (req, res, next) => {
             {"customerID":customerID},
             {"yarnSeasonID":yarnSeasonID},
             {"yarnID":yarnID},
+            {"yarnDataUUID":yarnDataUUID},
+            {"uuid":uuid},
             {"yarnColorID":yarnColorID},
-            // {"status":status1},
+            // {"status":status1}, 
           ]}, 
           {
             // $push: {queueInfo: {$each:queueInfo,  $position: 0}}  // ## add new element at the first

@@ -32,7 +32,7 @@ router.get("/test/arrayobject/testAO1", userController.getOA1);
 
 router.get("/test/test", userController.getTestTest);
 router.get("/test/test2", userController.getTestTest2);
-router.get("/test/test3", userController.getTestTest3);
+
 router.get("/test/test4", userController.getTestTest4);
 router.get("/test/test4_2", userController.getTestTest4_2); // ## get orderiDs from all a season
 router.get("/test/test4_3", userController.getTestTest4_3); // ## get all qty orderProduction by productBarcode
@@ -76,6 +76,9 @@ router.get("/test/orderqueue/test1", userController.getOrderQueueTest1);
 // ## test get mongodb version
 router.get("/test/get/monogdbver/getver", userController.getMonogoDbver1);
 
+// ## test nas
+// ## http://192.168.1.36:3968/api/user/test/nas/connect
+router.get("/test/nas/connect", userController.nasConnect);
 
 // ## mail
 // ## http://192.168.1.36:3968/api/user/test/mail/test1
@@ -83,6 +86,9 @@ router.get("/test/mail/test1", mailController.postSignupSendMail2);
 
 // ## test
 // ###########################################################
+
+// ## update language 
+router.get("/langu/update", userController.languageUpdate);
 
 
 // ## general info / starting data
