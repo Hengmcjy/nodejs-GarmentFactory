@@ -2445,8 +2445,10 @@ exports.putYarnUsageTransfersDate = async (req, res, next) => {
   const yarnSeasonID = data.yarnSeasonID;// 2024SS
   const season = yarnSeasonID.substr(0, 4);  // 2024 
   const yarnID = data.yarnID;
+  // const uuid = data.uuid;
   const yarnColorID = data.yarnColorID;
   const mode = data.mode; // ##  'yarn-packaging-list-stock-card'   'fac-lot'
+  // const yarnDataUUID = data.yarnDataUUID;
 
   const invoiceID = data.invoiceID;
   const yuUUID = data.yuUUID;
@@ -2469,6 +2471,10 @@ exports.putYarnUsageTransfersDate = async (req, res, next) => {
   // console.log(type);
   // console.log(companyID, yarnDataUUID, uuid, yarnSeasonID);
   // console.log(yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, factoryIDBox);
+  // console.log(uuid);
+
+  // console.log(companyID, yarnDataUUID, yarnSeasonID);
+  // console.log(yarnID, yarnColorID, yarnLotID);
   // console.log(setfactoryID, factoryID, toFactoryID, customerID, yarnDataUUID, status);
   // console.log( mode, yuUUID, yarnLotID, invoiceID, usageMode, datetime);
 
@@ -2479,36 +2485,99 @@ exports.putYarnUsageTransfersDate = async (req, res, next) => {
   try {
     await session.withTransaction(async (session) => {
 
-      const yarnLotUsageUpdate = await YarnLotUsage.updateOne(
-        {$and: [
-          {"companyID":companyID},
-          // {"factoryID":factoryID},
-          // {"yarnDataUUID":yarnDataUUID},
-          {"yarnID":yarnID},
-          {"yarnColorID":yarnColorID},
-          {"yarnSeasonID":yarnSeasonID},
-        ]},
-        {$set: {"yarnUsage.$[elem].datetimeIssue" : datetime}},
-        {
-          multi: true,
-          arrayFilters: [  
-            {
-              "elem.yuUUID": yuUUID ,
-              "elem.invoiceID": invoiceID , 
-              "elem.usageMode": usageMode , 
-              "elem.yarnLotID": yarnLotID , 
-              // "elem.yarnLotUUID": yarnLotUUID , 
-              // "elem.toFactoryID": toFactoryID , 
-            },
-            // {
-            //   "elem2.yarnLotUUID": yarnLotUUID,
-            //   "elem2.yarnLotID": yarnLotID,
-            // }
-          ]
-        }).session(session);
+      const oldYearSeason = ['2024AW'];  // ## old version
+      if (oldYearSeason.includes(yarnSeasonID)) {
+        const yarnLotUsageUpdate = await YarnLotUsage.updateOne(
+          {$and: [
+            {"companyID":companyID},
+            // {"factoryID":factoryID},
+            // {"yarnDataUUID":yarnDataUUID},
+            {"yarnID":yarnID},
+            {"yarnColorID":yarnColorID},
+            {"yarnSeasonID":yarnSeasonID},
+          ]},
+          {$set: {"yarnUsage.$[elem].datetimeIssue" : datetime}},
+          {
+            multi: true,
+            arrayFilters: [  
+              {
+                "elem.yuUUID": yuUUID ,
+                "elem.invoiceID": invoiceID , 
+                "elem.usageMode": usageMode , 
+                "elem.yarnLotID": yarnLotID , 
+                // "elem.yarnLotUUID": yarnLotUUID , 
+                // "elem.toFactoryID": toFactoryID , 
+              },
+              // {
+              //   "elem2.yarnLotUUID": yarnLotUUID,
+              //   "elem2.yarnLotID": yarnLotID,
+              // }
+            ]
+          }).session(session);
+          await session.commitTransaction();
+          session.endSession();
+      } else { // ## new version
+        const yarnLotUsageUpdate = await YarnLotUsage.updateOne(
+          {$and: [
+            {"companyID":companyID},
+            // {"factoryID":factoryID},
+            {"yarnDataUUID":yarnDataUUID},
+            {"yarnID":yarnID},
+            {"yarnColorID":yarnColorID},
+            {"yarnSeasonID":yarnSeasonID},
+          ]},
+          {$set: {"yarnUsage.$[elem].datetimeIssue" : datetime}},
+          {
+            multi: true,
+            arrayFilters: [  
+              {
+                "elem.yuUUID": yuUUID ,
+                "elem.invoiceID": invoiceID , 
+                "elem.usageMode": usageMode , 
+                "elem.yarnLotID": yarnLotID , 
+                // "elem.yarnLotUUID": yarnLotUUID , 
+                // "elem.toFactoryID": toFactoryID , 
+              },
+              // {
+              //   "elem2.yarnLotUUID": yarnLotUUID,
+              //   "elem2.yarnLotID": yarnLotID,
+              // }
+            ]
+          }).session(session);
+          await session.commitTransaction();
+          session.endSession();
+      }
 
-        await session.commitTransaction();
-        session.endSession();
+      // const yarnLotUsageUpdate = await YarnLotUsage.updateOne(
+      //   {$and: [
+      //     {"companyID":companyID},
+      //     // {"factoryID":factoryID},
+      //     {"yarnDataUUID":yarnDataUUID},
+      //     {"yarnID":yarnID},
+      //     {"yarnColorID":yarnColorID},
+      //     {"yarnSeasonID":yarnSeasonID},
+      //   ]},
+      //   {$set: {"yarnUsage.$[elem].datetimeIssue" : datetime}},
+      //   {
+      //     multi: true,
+      //     arrayFilters: [  
+      //       {
+      //         "elem.yuUUID": yuUUID ,
+      //         "elem.invoiceID": invoiceID , 
+      //         "elem.usageMode": usageMode , 
+      //         "elem.yarnLotID": yarnLotID , 
+      //         // "elem.yarnLotUUID": yarnLotUUID , 
+      //         // "elem.toFactoryID": toFactoryID , 
+      //       },
+      //       // {
+      //       //   "elem2.yarnLotUUID": yarnLotUUID,
+      //       //   "elem2.yarnLotID": yarnLotID,
+      //       // }
+      //     ]
+      //   }).session(session);
+        // console.log(yarnLotUsageUpdate);
+        // await session.commitTransaction();
+        // session.endSession();
     });
 
     // const yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
