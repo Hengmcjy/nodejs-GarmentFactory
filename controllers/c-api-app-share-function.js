@@ -5716,6 +5716,7 @@ exports.getYarnUsageCFV1= async (companyID, setfactoryID, customerID, yarnSeason
 }
 
 exports.getYarnUsageV2= async (companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status) => {
+  // console.log(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
   const yarnLotUsage = await YarnLotUsage.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -5725,7 +5726,7 @@ exports.getYarnUsageV2= async (companyID, factoryID, toFactoryID, customerID, ya
       {"yarnID":yarnID},
       // {"uuid":uuid},
       {"yarnColorID":yarnColorID},
-      {"yarnDataUUID":yarnDataUUID},
+      // {"yarnDataUUID":yarnDataUUID},
       {"status":{$in: status}},
     ] } },
     { $project: {			
@@ -5887,7 +5888,7 @@ exports.getYarnUsageCFV2= async (companyID, setfactoryID, customerID, yarnSeason
       {"yarnID":yarnID},
       // {"uuid":uuid},
       {"yarnColorID":yarnColorID},
-      {"yarnDataUUID":yarnDataUUID},
+      // {"yarnDataUUID":yarnDataUUID},
       {"status":{$in: status}},
     ] } },
     { $project: {			
