@@ -373,11 +373,29 @@ exports.postOrderCreateNew = async (req, res, next) => {
     const orderDetail = data.order.orderDetail;
     const orderDate = new Date(moment(data.order.orderDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     const deliveryDate = new Date(moment(data.order.deliveryDate).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-    const productOR = data.order.productOR;
+    let productOR = data.order.productOR;
     const customerOR = data.order.customerOR;
     const createBy = data.order.createBy;
 
     // console.log(companyID, factoryID, ver, orderID, seasonYear, createBy, customerOR);
+
+    // ## check productORInfo / delete for duplicate record
+    const productORInfo = [...productOR.productORInfo];
+    let productORInfo1 = [];
+    await this.asyncForEach(productORInfo, async (item1) => {
+      const idx = productORInfo1.findIndex( fi =>(
+        fi.productBarcode === item1.productBarcode
+        // && fi.targetPlace === item1.targetPlace
+        // && fi.productColor === item1.productColor
+        // && fi.productSize === item1.productSize
+      ));
+      if (idx < 0) {
+        productORInfo1.push(item1);
+      } else {
+        productORInfo1[idx] = item1;
+      }
+    });
+    productOR.productORInfo = productORInfo1;
 
     const orderUpsert = await Order.updateOne({$and: [
         {"companyID":companyID},

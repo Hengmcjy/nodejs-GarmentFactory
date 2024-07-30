@@ -70,11 +70,21 @@ const intervalMinute60 = 60;   //check every 60 mn
 
 // let i = 0;
 
-// ## 1 minutes for loop check
-setInterval(async() => {
-  await this.getSchedule();
-  // console.log('auto schedule');
-},1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
+// const time1Group = scheduleData.filter(i=>i.sMode === '1');
+// const everyDayGroup = scheduleData.filter(i=>i.sMode === 'everyDay');
+// const everyHourGroup = scheduleData.filter(i=>i.sMode === 'everyHour');
+// const every30mnGroup = scheduleData.filter(i=>i.sMode === 'every30mn');
+// const every15mnGroup = scheduleData.filter(i=>i.sMode === 'every15mn');
+
+// // ## 1 minutes for loop check
+// let isQueryNow = false;
+// setInterval(async() => {
+//   if (!isQueryNow) { 
+//     // isQueryNow = true;
+//     await this.getSchedule(); 
+//   }
+//   // console.log('auto schedule');
+// },1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
 
 
 // ## main scheduler #################################

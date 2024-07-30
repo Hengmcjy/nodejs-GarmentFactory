@@ -2473,10 +2473,10 @@ exports.putYarnUsageTransfersDate = async (req, res, next) => {
   // console.log(yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, factoryIDBox);
   // console.log(uuid);
 
-  // console.log(companyID, yarnDataUUID, yarnSeasonID);
-  // console.log(yarnID, yarnColorID, yarnLotID);
-  // console.log(setfactoryID, factoryID, toFactoryID, customerID, yarnDataUUID, status);
-  // console.log( mode, yuUUID, yarnLotID, invoiceID, usageMode, datetime);
+  console.log(companyID, yarnDataUUID, yarnSeasonID);
+  console.log(yarnID, yarnColorID, yarnLotID);
+  console.log(setfactoryID, factoryID, toFactoryID, customerID, yarnDataUUID, status);
+  console.log( mode, yuUUID, yarnLotID, invoiceID, usageMode, datetime);
 
   let session = await mongoose.startSession();
   // let session2 = await mongoose.startSession();
