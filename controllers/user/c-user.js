@@ -621,7 +621,7 @@ exports.getTestTest22_1 = async (req, res, next) => {
   res.write('</html>');
 }
 
-// ## http://192.168.1.36:3968/api/user/test/test23
+// ## http://172.31.99.173:3968/api/user/test/test23
 // router.get("/test/test23", userController.getTestTest23);  // ## view group qty orderProduction bundle more than 12
 exports.getTestTest23 = async (req, res, next) => {
   console.log('getTestTest23');
@@ -673,10 +673,10 @@ exports.getTestTest23 = async (req, res, next) => {
 }
 
 
-// ## http://192.168.1.36:3968/api/user/test/test23_1
+// ## http://172.31.99.173:3968/api/user/test/test23_1
 // router.get("/test/test23", userController.getTestTest23_1);  // ## view group qty orderProduction bundleID more than 12
 exports.getTestTest23_1 = async (req, res, next) => {
-  console.log('getTestTest23');
+  console.log('getTestTest23_1');
   const companyID = 'c000001';
 
   const orderProduct = await OrderProduction.aggregate([

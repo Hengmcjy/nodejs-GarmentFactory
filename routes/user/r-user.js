@@ -59,7 +59,7 @@ router.get("/test/test21", userController.getTestTest21);  // ##  get duplicate 
 router.get("/test/test22", userController.getTestTest22);  // ##  delete orderProduction.productionNode array index
 router.get("/test/test22_1", userController.getTestTest22_1);  // ##  delete orderProduction.productionNode @ last elemnt
 router.get("/test/test23", userController.getTestTest23);  // ## view group qty orderProduction bundle more than 12
-router.get("/test/test23", userController.getTestTest23_1);  // ## view group qty orderProduction bundleID more than 12
+router.get("/test/test23_1", userController.getTestTest23_1);  // ## view group qty orderProduction bundleID more than 12
 
 router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
 router.get("/test/test20", userController.getTestTest20);  // ##  update ver for orderProductionQueue = queueInfo --> []

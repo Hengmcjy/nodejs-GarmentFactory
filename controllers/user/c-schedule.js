@@ -76,15 +76,20 @@ const intervalMinute60 = 60;   //check every 60 mn
 // const every30mnGroup = scheduleData.filter(i=>i.sMode === 'every30mn');
 // const every15mnGroup = scheduleData.filter(i=>i.sMode === 'every15mn');
 
-// // ## 1 minutes for loop check
-// let isQueryNow = false;
-// setInterval(async() => {
-//   if (!isQueryNow) { 
-//     // isQueryNow = true;
-//     await this.getSchedule(); 
-//   }
-//   // console.log('auto schedule');
-// },1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
+// ## 1 minutes for loop check
+let isQuery_time1Group = false;
+let isQuery_everyDayGroup = false;
+let isQuery_everyHourGroup = false;
+let isQuery_every30mnGroup = false;
+let isQuery_every15mnGroup = false;
+setInterval(async() => {
+  // console.log(isQuery_time1Group, isQuery_everyDayGroup, isQuery_everyHourGroup, isQuery_every30mnGroup, isQuery_every15mnGroup);
+  if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
+    // isQueryNow = true;
+    await this.getSchedule(); 
+  }
+  // console.log('auto schedule');
+},1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
 
 
 // ## main scheduler #################################
@@ -143,7 +148,7 @@ async function clearSStateToNormal(scheduleData) {
   const companyID = scheduleData.companyID;
   // const factoryID = scheduleData.factoryID;
   const sGroup = scheduleData.sGroup;
-  // const sStatus = scheduleData.sStatus;
+  const sStatus = scheduleData.sStatus;
   const sName = scheduleData.sName;
   const sMode = scheduleData.sMode;
   const sDatetimeDiff = scheduleData.sDatetimeDiff;
@@ -161,7 +166,7 @@ async function clearSStateToNormal(scheduleData) {
   const lastDatetime1 = new Date(moment(scheduleData.lastDatetime).tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const dateDiff3 = moment(current).diff(moment(lastDatetime1), 'minutes');
 
-  if (dateDiff3 > hour1_30mn) {
+  if (dateDiff3 > hour1_30mn && sStatus !== 'normal') {
     // ## update  Schedule>  lastDatetime
     const scheduleUpsert = await Schedule.updateOne({$and: [
       {"seasonYear":seasonYear},
@@ -230,6 +235,11 @@ exports.getSchedule = async () => {
   // console.log(scheduleData, scheduleData[0].sDatetime);
 
   
+  //   let isQuery_time1Group = false;
+  // let isQuery_everyDayGroup = false;
+  // let isQuery_everyHourGroup = false;
+  // let isQuery_every30mnGroup = false;
+  // let isQuery_every15mnGroup = false;
 
   // if ((scheduleData.length > 0 && i <= 1) || i == 21) {
   if ( scheduleData.length > 0 ) {
@@ -240,35 +250,46 @@ exports.getSchedule = async () => {
     const every15mnGroup = scheduleData.filter(i=>i.sMode === 'every15mn');
 
     if (time1Group.length > 0) {
-      console.log('time1Group');
+      isQuery_time1Group = true;
+      // console.log('time1Group');
+      isQuery_time1Group = false;
     }
 
     if (everyDayGroup.length > 0) {
-      console.log('everyDayGroup');
+      isQuery_everyDayGroup = true;
+      isQuery_everyDayGroup = false;
+      // console.log('everyDayGroup');
     }
 
     if (everyHourGroup.length > 0) {
       // console.log('everyHourGroup'); function clearSStateToNormal(scheduleData)
+      isQuery_everyHourGroup = true;
       await this.asyncForEach(everyHourGroup, async (item1) => {
         await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
         await getDataTempEveryHour(item1);
       });
+      isQuery_everyHourGroup = false;
     }
 
     if (every30mnGroup.length > 0) {
       // console.log('every30mnGroup');
+      isQuery_every30mnGroup = true;
       await this.asyncForEach(every30mnGroup, async (item1) => {
         await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
         await getDataTempEvery30mn(item1);
       });
+      isQuery_every30mnGroup = false;
     }
 
     if (every15mnGroup.length > 0) {
       // console.log('every15mnGroup');
+      isQuery_every15mnGroup = true;
       await this.asyncForEach(every15mnGroup, async (item1) => {
         await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
       });
+      isQuery_every15mnGroup = false;
     }
+    // console.log('finished loop update report ' , current);
   }
   return true;
 }

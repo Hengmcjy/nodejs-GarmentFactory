@@ -1557,10 +1557,6 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
       if (bundleNoExisted) {
         await session.abortTransaction(); 
         session.endSession();
-        // await session2.abortTransaction(); 
-        // session2.endSession();
-        // await session3.abortTransaction(); 
-        // session3.endSession();
         return res.status(422).json({
           message: {
             messageID: 'errO007-2-1', 
@@ -1704,6 +1700,22 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
             // console.log('2222');
             // console.log(orderProductionArr);
             // console.log('orderProductionArr size = ', Buffer.byteLength(orderProductionArr));
+            const bundleNoExisted2 = await ShareFunc.checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos, ver);
+            if (bundleNoExisted2) {
+              await session.abortTransaction(); 
+              session.endSession();
+              return res.status(422).json({
+                message: {
+                  messageID: 'errO007-2-1', 
+                  mode:'errCreateOrderProductionsListQueueBybundleNoExisted', 
+                  value: "create Order Productions list Queue error by bundleNo Existed"
+                },
+                token: token,
+                expiresIn: process.env.expiresIn,
+                userID: data.userID,
+                success: false
+              });
+            }
             const result3 = await OrderProduction.insertMany(orderProductionArr, { session: session });
             // console.log('3333');
 
@@ -1800,6 +1812,22 @@ exports.postOrderProductionQueuesCreateNew = async (req, res, next) => {
         createBy: createBy
       }];
       // console.log(companyID, current, userID, logID, note);
+      const bundleNoExisted3 = await ShareFunc.checkBundleNoExisted(companyID, orderID, productBarcode, bundleNos, ver);
+      if (bundleNoExisted3) {
+        await session.abortTransaction(); 
+        session.endSession();
+        return res.status(422).json({
+          message: {
+            messageID: 'errO007-2-1', 
+            mode:'errCreateOrderProductionsListQueueBybundleNoExisted', 
+            value: "create Order Productions list Queue error by bundleNo Existed"
+          },
+          token: token,
+          expiresIn: process.env.expiresIn,
+          userID: data.userID,
+          success: false
+        });
+      }
       const insertone = await OrderProductionQueueList.insertMany(orderProductionQueueList1, { session: session });
 
       // console.log('8888');
