@@ -115,7 +115,11 @@ app.use("/api/cus", cusRoutes);
 app.use("/api/ns", nsRoutes);
 app.use("/api/rep", repRoutes);
 
-
+// // ## test downloading logging
+// app.get("/dl/log", async (req, res) => {
+//   res.download("logging.txt");
+  
+// });
 
 app.get('/500', errorController.get500);
 

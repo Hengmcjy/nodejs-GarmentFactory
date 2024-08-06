@@ -82,14 +82,15 @@ let isQuery_everyDayGroup = false;
 let isQuery_everyHourGroup = false;
 let isQuery_every30mnGroup = false;
 let isQuery_every15mnGroup = false;
-// setInterval(async() => {
-//   // console.log(isQuery_time1Group, isQuery_everyDayGroup, isQuery_everyHourGroup, isQuery_every30mnGroup, isQuery_every15mnGroup);
-//   if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
-//     // isQueryNow = true;
-//     await this.getSchedule(); 
-//   }
-//   // console.log('auto schedule');
-// },1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
+setInterval(async() => {
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  // console.log(current, isQuery_time1Group, isQuery_everyDayGroup, isQuery_everyHourGroup, isQuery_every30mnGroup, isQuery_every15mnGroup);
+  if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
+    // isQueryNow = true;
+    await this.getSchedule(); 
+  }
+  // console.log('auto schedule');
+},1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
 
 
 // ## main scheduler #################################
@@ -262,7 +263,7 @@ exports.getSchedule = async () => {
     }
 
     if (everyHourGroup.length > 0) {
-      // console.log('everyHourGroup'); function clearSStateToNormal(scheduleData)
+      // console.log('everyHourGroup');
       isQuery_everyHourGroup = true;
       await this.asyncForEach(everyHourGroup, async (item1) => {
         await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
@@ -284,12 +285,15 @@ exports.getSchedule = async () => {
     if (every15mnGroup.length > 0) {
       // console.log('every15mnGroup');
       isQuery_every15mnGroup = true;
-      await this.asyncForEach(every15mnGroup, async (item1) => {
-        await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
-      });
+      // await this.asyncForEach(every15mnGroup, async (item1) => {
+      //   await clearSStateToNormal(item1); // ## clear all sState = 'normal' in case minutes total over 
+      // });
       isQuery_every15mnGroup = false;
     }
-    // console.log('finished loop update report ' , current);
+
+    // const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    // console.log('finished loop update report ' , current2);
+    // console.log('---------------------------------------------------------------');
   }
   return true;
 }
@@ -298,16 +302,18 @@ async function getDataTempEvery30mn(scheduleData) {
   // ## report no.35 send out and receive report
   if (scheduleData.sState === 'normal') {
     if (scheduleData.sName === 'auto_getCurrentCompanyOrderOutsourceFac') {// ## report no.35
+      
       await auto_getCurrentCompanyOrderOutsourceFac(scheduleData);
-      return true;
+      // return true;
     } else if (scheduleData.sName === 'auto_getCompanyOrderOutsource') {// ## report no.31 overall
+      
       await auto_getCompanyOrderOutsource(scheduleData);
-      return true;
+      // return true;
     } else {
-      return true;
+      // return true;
     }
   }
-  return true;
+  // return true;
 }
 
 async function auto_getCompanyOrderOutsource(scheduleData) {
@@ -347,6 +353,9 @@ async function auto_getCompanyOrderOutsource(scheduleData) {
     if (sDatetimeF.length > 0) { isTimeing = true; }
     
     if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
+      // console.log('[ ..  *** dateDiff3 = ', dateDiff3 +  ' / sDatetimeDiff = ', sDatetimeDiff + ' / isTimeing = ' + isTimeing+ ' mn = '+mm1);
+      // console.log(scheduleData.seasonYear+' '+' 30mn  '  + scheduleData.sName);
+
       // ## update state to running
       const result1 = await updateScheduleDataSState(scheduleData, 'running');
       // console.log('auto_getCompanyOrderOutsource update running    +++++++++++++++++++++++');
@@ -409,9 +418,11 @@ async function auto_getCompanyOrderOutsource(scheduleData) {
       }, {upsert: true}); 
       // console.log(dtorderoutsourcefacUpsert);
 
-      // console.error(mm1,'updated auto_getCompanyOrderOutsource');
+      // // console.error(mm1,'updated auto_getCompanyOrderOutsource');
+      // const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+      // console.log(scheduleData.seasonYear+' '+' EveryHour ' + scheduleData.sName +' / '+ current2+'done! ........]');
     }
-    return true;
+    // return true;
   } catch (err) {
     console.error(err);
   }
@@ -455,6 +466,9 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
     if (sDatetimeF.length > 0) { isTimeing = true; }
     
     if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
+      // console.log('[ .. *** dateDiff3 = ', dateDiff3 +  ' / sDatetimeDiff = ', sDatetimeDiff + ' / isTimeing = ' + isTimeing+ ' mn = '+mm1);
+      // console.log(scheduleData.seasonYear+' '+' 30mn ' + scheduleData.sName);
+
       // ## update state to running
       const result1 = await updateScheduleDataSState(scheduleData, 'running');
       // console.log('auto_getCurrentCompanyOrderOutsourceFac update running    +++++++++++++++++++++++');
@@ -508,9 +522,11 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
       }, {upsert: true}); 
       // console.log(dtorderoutsourcefacUpsert);
 
-      // console.error(mm1,'updated auto_getCurrentCompanyOrderOutsourceFac');
+      // // console.error(mm1,'updated auto_getCurrentCompanyOrderOutsourceFac');
+      // const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+      // console.log(scheduleData.seasonYear+' '+' EveryHour ' + scheduleData.sName +' / '+ current2+'done! ......... ]');
     }
-    return true;
+    // return true;
   } catch (err) {
     console.error(err);
   }
@@ -520,22 +536,26 @@ async function getDataTempEveryHour(scheduleData) {
 
   if (scheduleData.sState === 'normal') {
     if (scheduleData.sName === 'auto_getProductionZonePeriodC') {// ## report no.21
+      
       await auto_getProductionZonePeriodC(scheduleData);
-      return true;
+      // return true;
     } else if (scheduleData.sName === 'auto_getCurrentCFactoryOrder') {// ## report no.1
+      
       await auto_getCurrentCFactoryOrder(scheduleData);
-      return true;
+      // return true;
     } else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_No_C') {// ## report no.1 / noComplete
+      
       await auto_getCompanyCurrentProductQtyAll(scheduleData);
-      return true;
+      // return true;
     } else if (scheduleData.sName === 'auto_getCompanyCurrentProductQtyAll_C') {// ## report no.1 /completed
+      
       await auto_getCompanyCurrentProductQtyAll(scheduleData);
-      return true;
+      // return true;
     } else {
-      return true;
+      // return true;
     }
   }
-  return true;
+  // return true;
 }
 
 
@@ -581,6 +601,9 @@ async function auto_getProductionZonePeriodC(scheduleData) {
     if (sDatetimeF.length > 0) { isTimeing = true; }
     
     if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
+      // console.log('[ .. *** dateDiff3 = ', dateDiff3 +  ' / sDatetimeDiff = ', sDatetimeDiff + ' / isTimeing = ' + isTimeing+ ' mn = '+mm1);
+      // console.log(scheduleData.seasonYear+' '+' EveryHour ' + scheduleData.sName);
+
       // ## update state to running
       const result1 = await updateScheduleDataSState(scheduleData, 'running');
       // console.log('auto_getProductionZonePeriodC update running    +++++++++++++++++++++++');
@@ -645,9 +668,11 @@ async function auto_getProductionZonePeriodC(scheduleData) {
       }, {upsert: true}); 
       // console.log(dtproductionzoneperiodcUpsert);
 
-      // console.error(mm1,'updated auto_getProductionZonePeriodC');
+      // // console.error(mm1,'updated auto_getProductionZonePeriodC');
+      // const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+      // console.log(scheduleData.seasonYear+' '+' EveryHour ' + scheduleData.sName +' / '+ current2+'done! ..... ] ');
     }
-    return true;
+    // return true;
   } catch (err) {
     console.error(err);
   }
@@ -695,6 +720,9 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
     if (sDatetimeF.length > 0) { isTimeing = true; }
     
     if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
+      // console.log(' [ .. *** dateDiff3 = ', dateDiff3 +  ' / sDatetimeDiff = ', sDatetimeDiff + ' / isTimeing = ' + isTimeing+ ' mn = '+mm1);
+      // console.log(scheduleData.seasonYear+' '+' EveryHour  ' + scheduleData.sName);
+
       // ## update state to running
       const result1 = await updateScheduleDataSState(scheduleData, 'running');
       // console.log('auto_getCurrentCFactoryOrder update running    +++++++++++++++++++++++');
@@ -759,9 +787,11 @@ async function auto_getCurrentCFactoryOrder(scheduleData) {
       }, {upsert: true}); 
       // console.log(dtproductionzoneperiodcUpsert);
 
-      // console.error(mm1,'updated auto_getCurrentCFactoryOrder');
+      // // console.error(mm1,'updated auto_getCurrentCFactoryOrder');
+      // const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+      // console.log(scheduleData.seasonYear+' '+' EveryHour ' + scheduleData.sName +' / '+ current2+'done! ........]');
     }
-    return true;
+    // return true;
   } catch (err) {
     console.error(err);
   }
@@ -810,6 +840,9 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
     if (sDatetimeF.length > 0) { isTimeing = true; }
     
     if (dateDiff3 >= sDatetimeDiff  || mm1 === isTimeing) {
+      // console.log('[ ..  *** dateDiff3 = ', dateDiff3 +  ' / sDatetimeDiff = ', sDatetimeDiff + ' / isTimeing = ' + isTimeing + ' mn = '+mm1);
+      // console.log(scheduleData.seasonYear+' '+' EveryHour --> ' + scheduleData.sName);
+
       // ## update state to running
       const result1 = await updateScheduleDataSState(scheduleData, 'running');
       // console.log('auto_getCompanyCurrentProductQtyAll update running    +++++++++++++++++++++++');
@@ -835,7 +868,7 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
       } else if (sNote === 'completed') { // ##  completed
         companyCurrentProductQty= await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusCompletedArr, orderIDs);
       }else {
-        return fasle;
+        return false;
       }
       // companyCurrentProductQtyCompleteAll
       // companyCurrentProductQtyAll = await ShareFunc.getCompanyCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr, orderIDs);
@@ -883,9 +916,11 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
       }, {upsert: true}); 
       // console.log(dtproductionzoneperiodcUpsert);
 
-      // console.error(seasonYear, sNote, mm1,'updated auto_getCompanyCurrentProductQtyAll');
+      // // console.error(seasonYear, sNote, mm1,'updated auto_getCompanyCurrentProductQtyAll');
+      // const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+      // console.log(scheduleData.seasonYear+' '+' EveryHour ' + scheduleData.sName +' / '+ current2+'done!  ........ ]');
     }
-    return true;
+    // return true;
   } catch (err) {
     console.error(err);
   }

@@ -58,6 +58,7 @@ router.get("/test/test18", userController.getTestTest18);  // ##  update ver for
 router.get("/test/test21", userController.getTestTest21);  // ##  get duplicate fromNode from orderProduction
 router.get("/test/test22", userController.getTestTest22);  // ##  delete orderProduction.productionNode array index
 router.get("/test/test22_1", userController.getTestTest22_1);  // ##  delete orderProduction.productionNode @ last elemnt
+router.get("/test/test22_2", userController.getTestTest22_2);  // ##  delete orderProduction.productionNode @ last elemnt by productBarcodeNoReal(s)
 router.get("/test/test23", userController.getTestTest23);  // ## view group qty orderProduction bundle more than 12
 router.get("/test/test23_1", userController.getTestTest23_1);  // ## view group qty orderProduction bundleID more than 12
 
@@ -80,9 +81,16 @@ router.get("/test/get/monogdbver/getver", userController.getMonogoDbver1);
 // ## http://192.168.1.36:3968/api/user/test/nas/connect
 router.get("/test/nas/connect", userController.nasConnect);
 
+
+// ## download file text
+router.get("/test/download/text", userController.downloadtext);
+router.get("/test/download/getlist", userController.fileNameLists);
+
 // ## mail
 // ## http://192.168.1.36:3968/api/user/test/mail/test1
 router.get("/test/mail/test1", mailController.postSignupSendMail2);
+
+
 
 // ## test
 // ###########################################################

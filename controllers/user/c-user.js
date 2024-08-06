@@ -3,6 +3,8 @@ const ObjectId = mongoose.Types.ObjectId;
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const moment = require('moment-timezone');
+const fs=require('fs');
+const path = require("path");
 
 // const Synology = require("synology");
 
@@ -589,6 +591,7 @@ exports.getTestTest22 = async (req, res, next) => {
 // router.get("/test/test22_1", userController.getTestTest22_1);  
 // ##  delete orderProduction.productionNode @ last elemnt
 exports.getTestTest22_1 = async (req, res, next) => {
+
   console.log('delete orderProduction.productionNode @ last element');
   const companyID = 'c000001';
   const orderID = 'BA1P5A4A';
@@ -611,6 +614,158 @@ exports.getTestTest22_1 = async (req, res, next) => {
 
     const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
     res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>delete last element of productionNode</title><head>');
+  res.write('<body>');
+  res.write('<h1>delete last element of productionNode  </h1></br>');
+  res.write('<h1></h1>');
+  res.write('<h1>'+ ' OK '+current+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+
+
+}
+
+// ## http://192.168.1.36:3968/api/user/test/test22_2
+// router.get("/test/test22_2", userController.getTestTest22_2);  
+// // ##  delete orderProduction.productionNode @ last elemnt by productBarcodeNoReal(s)
+exports.getTestTest22_2 = async (req, res, next) => {
+  
+  console.log('delete orderProduction.productionNode @ last element');
+  const companyID = 'c000001';
+  const orderIDs = ['DCA42A4A'];
+  const productBarcodes = [
+    'DCA42A4A    ASIA-----24GR--------F---', 
+    'DCA42A4A    UK-------24GR--------F---',
+    'DCA42A4A    JAPN-----24GR--------F---',
+    'DCA42A4A    SGHI-----24GR--------F---'
+  ];
+  const toNode = 'outsource';
+  const fromNode = 'outsource';
+  const factoryIDOut = 'f000014';
+
+  const tofactoryID = 'f000014';
+  const fromFactoryID = 'f000003';
+
+  const datetime1 = new Date(moment().tz('Asia/Bangkok').format('2024/07/01 00:00:00+07:00'));
+  const datetime2 = new Date(moment().tz('Asia/Bangkok').format('2024/08/02 23:59:59+07:00'));
+
+  const orderProductRep = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"factoryID":{$in: factoryIDArr}},
+      // {"productStatus":{$in: productStatus}},
+      {"orderID":{$in: orderIDs}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        // orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcode: 1,
+      datetime: "$productionNode.datetime",
+      factoryIDOut: "$productionNode.factoryID",
+      fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      outsourceData: "$productionNode.outsourceData",
+    }},
+
+    { $match: { $and: [
+      // {"datetime": { $gte: datetime1, $lte : datetime2}} , 
+      {"factoryIDOut":factoryIDOut},
+      {"toNode":toNode},
+      {"fromNode":fromNode},
+      // {"productBarcode":productBarcode},
+      {"productBarcode":{$in: productBarcodes}},
+      // {"factoryID":{$in: factoryIDArr}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,	
+      productBarcodeNoReal: 1,
+      outsourceDataLast: { $slice: [ "$outsourceData", -1]  },  // ## get last 1 element
+    }},
+
+    { $unwind: "$outsourceDataLast" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,	
+      productBarcodeNoReal: 1,
+      tofactoryID: "$outsourceDataLast.factoryID",
+      fromFactoryID: "$outsourceDataLast.fromFactoryID",
+    }},
+
+    { $match: { $and: [
+      {"tofactoryID":tofactoryID},
+      {"fromFactoryID":fromFactoryID},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      // companyID: 1,	
+      productBarcodeNoReal: 1,
+      // tofactoryID: "$outsourceDataLast.tofactoryID",
+      // fromFactoryID: "$outsourceDataLast.fromFactoryID",
+    }},
+
+    // { $group: {			
+    //   _id: { 
+    //     productBarcodeNoReal: '$productBarcodeNoReal',
+    //     // factoryID: '$factoryID',
+    //     // productID: '$productID',
+    //     // style: '$style',
+    //     // targetPlace: '$targetPlace',
+    //     // color: '$color',
+    //     // size: '$size',
+    //     // productID: '$productID',
+    //     // bundleNo: '$bundleNo',
+    //     // mode: '$mode',
+    //   },
+    //   countQty: {$sum: 1} ,
+    //   // sumProductQty: {$sum:  '$amount'} ,
+    // }}  
+  ]);
+  console.log(orderProductRep);
+  console.log('len = '+orderProductRep.length);
+
+  const productBarcodeNoReals =  Array.from(new Set(orderProductRep.map((item) => item.productBarcodeNoReal)));
+  console.log(productBarcodeNoReals);
+  
+  // result0 = await OrderProduction.updateMany(
+  //   {$and: [
+  //     {"companyID":companyID} , 
+  //     // {"orderID":orderID} , 
+  //     {"orderID":{$in: orderIDs}},
+  //     // {"bundleNo":{$in: bundleNos}},
+  //     {"productBarcodeNoReal":{$in: productBarcodeNoReals}},
+  //   ]}, 
+  //   {
+  //     $pop: { productionNode: 1 },  // ## delete last element of productionNode
+  //     // $pop: { outsourceData: 1 }
+  //   },
+  // );
+  // console.log('delete last element of productionNode, qty = ' + productBarcodeNoReals.length);
+
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  res.setHeader('Content-Type', 'text/html');
   res.write('<html>');
   res.write('<head><title>delete last element of productionNode</title><head>');
   res.write('<body>');
@@ -2762,6 +2917,98 @@ exports.nasConnect = async (req, res, next) => {
   res.write('</body>');
   res.write('</html>');
   return res.end();
+}
+
+
+
+// ## http://192.168.1.36:3968/api/user/test/download/text
+// router.get("/test/download/text", userController.downloadtext);
+exports.downloadtext = async (req, res, next) => {
+  console.log('downloadtext');
+
+  try {
+    
+    const fileLists = await getFileNameLists('./controllers/user/logging');
+    // console.log(fileLists)
+    // ## remove folder path , get only file name
+    let fileListS = [];
+    await this.asyncForEach(fileLists, async (item1) => {
+      const itemX = item1.split('\\');
+      fileListS.push(itemX[itemX.length - 1]);
+    });
+    console.log(fileListS)
+
+    // res.download(path.join(__dirname, 'logging.txt'), function (err) 
+    res.download(path.join(__dirname, 'logging/logging.txt'), function (err) {
+      if (err) {
+        // console.log('err xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        // console.log(err);
+      } else {
+        // console.log('ok ........................................');
+        // console.log('%c%s', 'color: #f2ceb6', 'NO ERROR');
+        // console.log('%c%s', 'color: #00a3cc', res);
+      }
+  });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errml001-100', 
+        mode:'errDownloadTExt', 
+        value: "error download"
+      },
+      success: false
+    });
+  }
+}
+
+async function getFileNameLists(path1) {
+  // const path1 = './controllers/user/logging';
+    const getAllFiles = dir =>
+    fs.readdirSync(dir).reduce((files, file) => {
+        const name = path.join(dir, file);
+        const isDirectory = fs.statSync(name).isDirectory();
+        return isDirectory ? [...files, ...getAllFiles(name)] : [...files, name];
+        // return isDirectory ? [...getAllFiles(name)] : [ name];
+    }, []);
+    const fileLists = getAllFiles(path1);
+    // console.log(fileLists);
+  
+    return fileLists;
+}
+
+// router.get("/test/download/list", userController.fileNameLists);
+exports.fileNameLists = async (req, res, next) => {
+  console.log('fileNameLists');
+  try {
+
+    const fileLists = await getFileNameLists('./controllers/user/logging');
+    // console.log(fileLists)
+
+    // ## remove folder path , get only file name
+    let fileListS = [];
+    await this.asyncForEach(fileLists, async (item1) => {
+      const itemX = item1.split('\\');
+      fileListS.push(itemX[itemX.length - 1]);
+    });
+    console.log(fileListS)
+
+    return res.status(200).json({
+      fileListS: fileListS,
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errml001-101', 
+        mode:'errDownloadTExtList', 
+        value: "error download list"
+      },
+      success: false
+    });
+  }
 }
 
 // ## general info

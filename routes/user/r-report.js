@@ -112,9 +112,11 @@ router.get("/cpn/rep10/current/order/:companyID/:ordertatus/:orderIDArr/:seasonY
 // ##
 router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr/:seasonYear", reportController.getRepCompanyOrderOutsource2);
 
-router.get("/cpn/rep14/current/order/state/:companyID/:ordertatus/:orderIDArr/:seasonYear/:type", checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState);
+router.get("/cpn/rep14/current/order/state/:companyID/:ordertatus/:orderIDArr/:seasonYear/:type", 
+        checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState);
 
-router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr/:seasonYear/:type", reportController.getRepCompanyOrderOutsourceState2);
+router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr/:seasonYear/:type", 
+        reportController.getRepCompanyOrderOutsourceState2);
 // // ## get node 
 // router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", 
 //         reportController.getRepCompanyOrderOutsource2);
