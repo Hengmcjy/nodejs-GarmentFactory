@@ -7945,7 +7945,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
   .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1 } );
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
-    companyID: fw._id.companyID, 
+    // companyID: fw._id.companyID, 
     orderID: fw._id.orderID, 
     targetPlace: fw._id.targetPlace,
     color: fw._id.color,
@@ -8009,7 +8009,7 @@ exports.getCurrentCompanyOrderOutsource= async (companyID, orderIDs) => {
 
 // // console.log(orderProductFacOuts);
 const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
-  companyID: fw._id.companyID, 
+  // companyID: fw._id.companyID, 
   outsourcefactoryID: fw._id.outsourcefactoryID,
 }));
     
@@ -8059,7 +8059,7 @@ exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {
   ]).hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
-    companyID: fw._id.companyID, 
+    // companyID: fw._id.companyID, 
     orderID: fw._id.orderID, 
     outsourcefactoryID: fw._id.outsourcefactoryID,
     sumFactoryOutsQty: fw.sumFactoryOutsQty,
@@ -8126,7 +8126,7 @@ exports.getCurrentCompanyOrderOutsourceRemianQTY= async (companyID, orderIDs) =>
   // .hint( { companyID: 1, orderID: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
-    companyID: fw._id.companyID, 
+    // companyID: fw._id.companyID, 
     orderID: fw._id.orderID, 
     outsourcefactoryID: fw._id.outsourcefactoryID,
     sumFactoryOutsQty: fw.sumFactoryOutsQty,
@@ -8183,10 +8183,10 @@ exports.getCurrentCompanyOrderStyleColorSizeOutsourceQTY= async (companyID, orde
   ]).hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
 
   const result = await orderProductFacOutQTY.map(fw => ({
-    companyID: fw._id.companyID, 
+    // companyID: fw._id.companyID, 
     orderID: fw._id.orderID,
     outsourcefactoryID: fw._id.outsourcefactoryID,
-    style: fw._id.style,
+    // style: fw._id.style,
     targetPlace: fw._id.targetPlace,
     color: fw._id.color,
     size: fw._id.size,
@@ -8272,10 +8272,10 @@ exports.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY= async (companyID
   ]).hint( {"companyID" : 1, "orderID": 1, "productionNode.isOutsource": 1, "productionNode.status": 1} );
 
   const result = await orderProductFacOutQTY.map(fw => ({
-    companyID: fw._id.companyID, 
+    // companyID: fw._id.companyID, 
     orderID: fw._id.orderID,
     outsourcefactoryID: fw._id.outsourcefactoryID,
-    style: fw._id.style,
+    // style: fw._id.style,
     targetPlace: fw._id.targetPlace,
     color: fw._id.color,
     size: fw._id.size,
@@ -9795,12 +9795,12 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
-    companyID: fw._id.companyID, 
+    // companyID: fw._id.companyID, 
     orderID: fw._id.orderID,
     // forLoss: fw._id.forLoss,
     targetPlaceID: fw._id.targetPlaceID,
-    targetPlaceName: fw._id.targetPlaceName,
-    style: fw._id.style,
+    // targetPlaceName: fw._id.targetPlaceName,
+    // style: fw._id.style,
     color: fw._id.color,
     size: fw._id.size,
     fromNode: fw._id.fromNode,
@@ -11946,10 +11946,10 @@ exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, product
   // console.log(companyCurrentProductQtyAll);
 
   const companyCurrentProductQtyAllF = await companyCurrentProductQtyAll.map(fw => ({
-    companyID: fw._id.companyID, 
+    // companyID: fw._id.companyID, 
     orderID: fw._id.orderID,
     productID: fw._id.productID,
-    style: fw._id.style,
+    // style: fw._id.style,
     countQty: fw.countQty,
   }));
   // console.log(companyCurrentProductQtyAllF);
@@ -13128,7 +13128,7 @@ exports.getCurrentCFactoryOrder = async (companyID, orderIDs) => {
   .hint( { companyID : 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
 
   const factoryOrderF = await factoryOrder.map(fw => ({
-    companyID: fw._id.companyID, 
+    // companyID: fw._id.companyID, 
     orderID: fw._id.orderID,
     factoryID: fw._id.factoryID,
     // fromNode: fw._id.fromNode,
