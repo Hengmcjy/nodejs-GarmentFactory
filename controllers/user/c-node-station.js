@@ -1327,6 +1327,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
 
     // ##  get data productBarcodeNo
     const orderProduction = await ShareFunc.getOrderProduct1(companyID, factoryID, productBarcodeNo);
+
     // console.log(orderProduction);
     if (!orderProduction) {
       return res.status(501).json({
@@ -1349,7 +1350,9 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
         });
       } else {  // orderProduction.productionNode.length === 1
 
-        // console.log(mode,   '   scan + special');
+        const orderID = orderProduction?orderProduction.orderID:'';
+        const bundleNo = orderProduction?orderProduction.bundleNo:-1;
+        const orderProducts = await ShareFunc.getOrderProductionbyBundleNo(companyID, orderID, bundleNo);
 
         // special and temp case / wait for comtuter setting all node
         // ## get nodeStationFactory from factory
@@ -1381,6 +1384,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
                     stationID: stationID,
                     orderProduction: orderProduction,
                     orderProductions: orderProductions,
+                    orderProducts: [],
                     success: true,
                     mode: 'scan'
                   });
@@ -1414,6 +1418,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
                     stationID: stationID,
                     orderProduction: orderProduction,
                     orderProductions: ['1111'],
+                    orderProducts: [],
                     success: true,
                     mode: 'scan'
                   });
@@ -1437,6 +1442,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             stationID: stationID,
             orderProduction: orderProduction,
             orderProductions: [],
+            orderProducts: [],
             success: true,
             mode: 'backfromrepair'
           });
@@ -1455,6 +1461,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             stationID: stationID,
             orderProduction: orderProduction,
             orderProductions: [],
+            orderProducts: [],
             success: true,
             mode: 'sendtorepair'
           });
@@ -1470,6 +1477,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
             stationID: stationID,
             orderProduction: orderProduction,
             orderProductions: [],
+            orderProducts: [],
             success: true,
             mode: 'scan-receive-affiliate'
           });
@@ -1487,6 +1495,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
               stationID: stationID,
               orderProduction: orderProduction,
               orderProductions: [],
+              orderProducts: orderProducts,
               success: true,
               mode: 'scan'
             });
@@ -1507,6 +1516,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
               stationID: stationID,
               orderProduction: orderProduction,
               orderProductions: orderProductions,  // ## scan1ForAll === false   // ## y=สแกน1ตัวแล้วดึงทั้งหมด
+              orderProducts: [],
               success: true,
               mode: 'scan'
             });
@@ -2808,7 +2818,7 @@ exports.putScanNextDepCompleteOrderProductionBarcodeNo = async (req, res, next) 
 // router.get("/node10/record/productBarcodeNo/:companyID/:factoryID/:productBarcodeNo", nsController.getDatarecordProductBarcodeNo);
 exports.getDatarecordProductBarcodeNo = async (req, res, next) => {
   // try {} catch (err) {}
-  // console.log('getDataNodeStationLogin');
+  // console.log('getDatarecordProductBarcodeNo');
   const companyID = req.params.companyID;
   const factoryID = req.params.factoryID;
   const productBarcodeNo = req.params.productBarcodeNo;
@@ -2817,6 +2827,11 @@ exports.getDatarecordProductBarcodeNo = async (req, res, next) => {
     // ## get getOrderProduct01= async (companyID, factoryID, productBarcodeNo)
     const orderProduct = await ShareFunc.getOrderProduct01(companyID, factoryID, productBarcodeNo);
 
+    const orderID = orderProduct?orderProduct.orderID:'';
+    const bundleNo = orderProduct?orderProduct.bundleNo:-1;
+    const orderProducts = await ShareFunc.getOrderProductionbyBundleNo(companyID, orderID, bundleNo);
+    // console.log(orderProducts);
+
     // await ShareFunc.upsertUserSession1hr(userID);
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -2824,6 +2839,7 @@ exports.getDatarecordProductBarcodeNo = async (req, res, next) => {
       // expiresIn: process.env.expiresIn,
       // userID: userID,
       orderProduct: orderProduct,
+      orderProducts: orderProducts,
     });
   } catch (err) {
     return res.status(501).json({
@@ -2924,6 +2940,11 @@ exports.putScanOrderProductionBarcodeNoReceiveOutsource = async (req, res, next)
 
     // ##  get data productBarcodeNo  getOrderProductReceiveOutsource= async (companyID, productBarcodeNo)
     const orderProduction = await ShareFunc.getOrderProductReceiveOutsource(companyID, productBarcodeNo);
+
+    const orderID = orderProduction?orderProduction.orderID:'';
+    const bundleNo = orderProduction?orderProduction.bundleNo:-1;
+    const orderProducts = await ShareFunc.getOrderProductionbyBundleNo(companyID, orderID, bundleNo);
+
     // console.log(orderProduction);
     if (!orderProduction) {
       return res.status(501).json({
@@ -2968,6 +2989,7 @@ exports.putScanOrderProductionBarcodeNoReceiveOutsource = async (req, res, next)
             nodeID: nodeID,
             stationID: stationID,
             orderProduction: orderProduction,
+            orderProducts: orderProducts,
             success: true,
             mode: mode
           });
@@ -3018,6 +3040,10 @@ exports.putScanOrderProductionBarcodeNoReceiveOutsourceSendOut = async (req, res
 
     // ##  get data productBarcodeNo  getOrderProductReceiveOutsource= async (companyID, productBarcodeNo)
     const orderProduction = await ShareFunc.getOrderProductReceiveOutsource(companyID, productBarcodeNo);
+    const orderID = orderProduction?orderProduction.orderID:'';
+    const bundleNo = orderProduction?orderProduction.bundleNo:-1;
+    const orderProducts = await ShareFunc.getOrderProductionbyBundleNo(companyID, orderID, bundleNo);
+
     // console.log(orderProduction);
     if (!orderProduction) {
       return res.status(501).json({
@@ -3061,6 +3087,7 @@ exports.putScanOrderProductionBarcodeNoReceiveOutsourceSendOut = async (req, res
             nodeID: nodeID,
             stationID: stationID,
             orderProduction: orderProduction,
+            orderProducts: orderProducts,
             success: true,
             mode: mode
           });
