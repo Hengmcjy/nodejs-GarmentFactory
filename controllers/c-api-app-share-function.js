@@ -659,6 +659,28 @@ exports.getFactoryInfo= async (factoryIDArr, companyID, page, limit) => {
   return factory;
 }
 
+exports.getFactoryArrByCompanyID= async (companyID) => {
+  const factory = await Factory.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":{$in: facIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        factoryID: 1,
+        companyID: 1,		
+        show: 1,
+        fDescription: 1,	
+        fInfo: 1,
+    }	},
+    // { $sort: { _id: 1 } },
+    // { $skip: (page-1) *  limit},
+    // { $limit: limit }
+  ]);
+  // console.log(factory);
+  return factory;
+}
+
 exports.getFactoryArrByFacIDs= async (companyID, facIDs) => {
   const factory = await Factory.aggregate([
     { $match: { $and: [
