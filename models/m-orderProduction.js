@@ -71,6 +71,7 @@ const orderProductionSchema = mongoose.Schema({
     toNode : {type: String},
     datetime : {type: Date},
     status : {type: String},
+    sTypeOtus : {type: String},  // ## b =bundle , 1= 1by 1 / sType=scanType
     problemID : {type: String},
     problemName : {type: String},
     isOutsource : {type: Boolean}, 

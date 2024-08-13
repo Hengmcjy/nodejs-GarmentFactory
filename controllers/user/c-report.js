@@ -2199,8 +2199,9 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
   try {
 
     let orderProduct = [];
+    let dataOutsState = [];
     if (type === 'refresh') {
-
+      // console.log('refresh');
       // ## update record to state = 'running'
       const scheduleData = {
         seasonYear: seasonYear,	
@@ -2211,12 +2212,23 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
         sDatetimeDiff: 30,
         sNote: '', 
       };
+      // console.log('00000000000000000000000000000000');
       const result1 = await ScheduleFunc.updateScheduleDataSState(scheduleData, 'running');
-
+      // console.log('11111111111111111111111111111');
+      // console.log('..........................updateScheduleDataSState  ok');
       const isOutsource = true;
       const status = ['outsource', 'normal'];
       // ## get outsource factory sent out & factory receive
-      orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+      const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+      // console.log(orderProduct , orderProduct.length);
+      
+      // const orderProductF1 = orderProduct.filter(i=>i.productCount <= i.sumFactoryOutsQty);
+      // console.log(orderProductF1 , orderProductF1.length);
+
+      // ## test report transform
+      // const orderProduct = [];
+      dataOutsState = await ScheduleFunc.repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
+      // console.log(dataOutsState, '=====================');
 
       // ## update ProductionZonePeriodC > lastDatetime, data
       const sGroup = 'report';
@@ -2238,7 +2250,8 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
       ]} , 
       {
         "lastDatetime": current,
-        "data": orderProduct,
+        // "data": orderProduct,
+        "data": dataOutsState,
       }, {upsert: true}); 
 
       // ## update record to state = 'normal'
@@ -2263,20 +2276,21 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
     } else if (type === 'dt') {
       // ## get data from dtcurrentcompanyorderoutsourcefac
       const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
-      orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
+      dataOutsState = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
     }
 
 
+    const orderProductFacOut = [];
+    // // ## get outsource factory sent out
+    // const status1 = 'outsource';  // ## sent out  outsource
+    // const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
+    // // console.log(orderProductFacOut);
 
-    // ## get outsource factory sent out
-    const status1 = 'outsource';  // ## sent out  outsource
-    const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
-    // console.log(orderProductFacOut);
-
-    // ## get outsource factory receive
-    const status2 = 'normal';  // ## sent out  outsource
-    const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
-    // console.log(orderProductFacReceive);
+    const orderProductFacReceive = [];
+    // // ## get outsource factory receive
+    // const status2 = 'normal';  // ## sent out  outsource
+    // const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
+    // // console.log(orderProductFacReceive);
 
     // // ## get outsource factory sent out
     // const status1 = 'outsource';  // ## sent out  outsource
@@ -2296,6 +2310,7 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
       orderIDArr: orderIDArr,
       orderProductFacOut: orderProductFacOut,
       orderProductFacReceive: orderProductFacReceive,
+      dataOutsState: dataOutsState
 
     });
   } catch (err) {
@@ -2329,6 +2344,7 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
   // console.log(orderIDArr);
 
   try {
+    let dataOutsState = [];
     // getCompanyCurrentSeasonYear= async (companyID)
     const seasonYear1 = await ShareFunc.getCompanyCurrentSeasonYear(companyID);
     if (seasonYear === 'last') {
@@ -2399,6 +2415,7 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
       orderIDArr: orderIDArr,
       orderProductFacOut: orderProductFacOut,
       orderProductFacReceive: orderProductFacReceive,
+      dataOutsState: dataOutsState
 
     });
   } catch (err) {

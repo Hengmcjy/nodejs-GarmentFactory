@@ -163,6 +163,10 @@ exports.strReplaceAll= async (str, find, replace) => {
   return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);
 }
 
+exports.strReplaceAlll= async (str, find, replace) => {
+  return (str.split(find)).join(replace);
+}
+
 function returnDDMMYYYY(numFromToday = 0, sign = '-'){
   let d = new Date();
   d.setDate(d.getDate() + numFromToday);
@@ -287,6 +291,24 @@ exports.getUserClass= async (classLimit) => {
 exports.colorInfo= async () => {
   const color = await Color.aggregate([
 
+    { $project: {			
+        _id: 0,	
+        companyID: 1,	
+        seq: 1,		
+        setName: 1,
+        color: 1
+    }	},
+    { $sort: { seq: 1 } }
+  ]);	
+
+  return color;
+}
+
+exports.colorComID= async (companyID) => {
+  const color = await Color.aggregate([
+    { $match: { $and: [
+      {"companyID": companyID}
+    ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,	
@@ -637,6 +659,28 @@ exports.getFactoryInfo= async (factoryIDArr, companyID, page, limit) => {
   return factory;
 }
 
+exports.getFactoryArrByFacIDs= async (companyID, facIDs) => {
+  const factory = await Factory.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":{$in: facIDs}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        factoryID: 1,
+        companyID: 1,		
+        show: 1,
+        fDescription: 1,	
+        fInfo: 1,
+    }	},
+    // { $sort: { _id: 1 } },
+    // { $skip: (page-1) *  limit},
+    // { $limit: limit }
+  ]);
+  // console.log(factory);
+  return factory;
+}
+
 // ShareFunc.getFactoryArrByCompanyID(companyID);
 exports.getFactoryArrByCompanyID= async (companyID) => {
   const factory = await Factory.aggregate([
@@ -823,6 +867,121 @@ exports.editLangData= async (languageID) => {
 //   });
 
 // ## general zone ####################################################################
+// #################################################################################
+
+// #################################################################################
+// ## fff function zone ####################################################################
+
+exports.getFactoryNameByFactoryID= async (factorys, factoryID) => {
+  const factory = factorys.filter(i=>(i.factoryID === factoryID));
+  if (factory.length > 0) {
+      return factory[0].fInfo.factoryName;
+  }
+  return '';
+}
+
+exports.getFactoryName2ByFactoryID= async (factorys, factoryID) => {
+  const factory = factorys.filter(i=>(i.factoryID === factoryID));
+  if (factory.length > 0) {
+      return factory[0].fInfo.factoryName2;
+  }
+  return '';
+}
+
+
+const dD = [
+  {numName: 1, dayShortName: 'Mon', dayName: 'Monday'},
+  {numName: 2, dayShortName: 'Tue', dayName: 'Tuesday'},
+  {numName: 3, dayShortName: 'Wed', dayName: 'Wednesday'},
+  {numName: 4, dayShortName: 'Thu', dayName: 'Thursday'},
+  {numName: 5, dayShortName: 'Fri', dayName: 'Friday'},
+  {numName: 6, dayShortName: 'Sat', dayName: 'Saturday'},
+  {numName: 7, dayShortName: 'Sun', dayName: 'Sunday'},
+];
+const mM = [
+  {monthID: '01', monthShortName: 'Jan', monthFullName: 'January'},
+  {monthID: '02', monthShortName: 'Feb', monthFullName: 'February'},
+  {monthID: '03', monthShortName: 'Mar', monthFullName: 'March'},
+  {monthID: '04', monthShortName: 'Apr', monthFullName: 'April'},
+  {monthID: '05', monthShortName: 'May', monthFullName: 'May'},
+  {monthID: '06', monthShortName: 'Jun', monthFullName: 'June'},
+  {monthID: '07', monthShortName: 'Jul', monthFullName: 'July'},
+  {monthID: '08', monthShortName: 'Aug', monthFullName: 'August'},
+  {monthID: '09', monthShortName: 'Sep', monthFullName: 'September'},
+  {monthID: '10', monthShortName: 'Oct', monthFullName: 'October'},
+  {monthID: '11', monthShortName: 'Nov', monthFullName: 'November'},
+  {monthID: '12', monthShortName: 'Dec', monthFullName: 'December'},
+];
+
+// ## mode = short , full
+exports.getMonthNamebyID= async (monthID, mode) => {
+  const month = mM.filter(i=>i.monthID == monthID);
+  if (mode === 'short') { return month.length > 0 ? month[0].monthShortName:'';}
+  else if (mode === 'full') { return month.length > 0 ? month[0].monthFullName:'';}
+  else { return ''}
+}
+
+exports.getYYYYMMDDInfo= async (yyyymmdd) => {
+  const info ={
+      yyyy: yyyymmdd.substr(0, 4),
+      mm: yyyymmdd.substr(4, 2),
+      dd: yyyymmdd.substr(6, 2),
+  };
+  return info;
+}
+
+exports.getDateShortByYYYYMMDD= async (yyyymmdd, formatStr, mode, sign) => {
+  const dateInfo = await this.getYYYYMMDDInfo(yyyymmdd);
+  const yyyy = dateInfo.yyyy;
+  const mm = dateInfo.mm;
+  const dd = dateInfo.dd;
+  const monthName = await this.getMonthNamebyID(mm, mode);
+  let dateName = '';
+  if (formatStr === 'ddMMM') { dateName = dd+sign+monthName; }
+  else if (formatStr === 'ddMMMyyyy') { dateName = dd+sign+monthName+sign+yyyy; }
+  else if (formatStr === 'MMMdd') { dateName = monthName+sign+dd; }
+  return dateName
+}
+
+// ## get setname , (orders, orderID)
+exports.getSetNameFromOrderID= async (orders, orderID) => {
+  const order1 = orders.filter(i=>i.orderID === orderID);
+  if (order1.length > 0) {
+    // console.log(order1, order1[0], order1[0].orderColor);
+    if (order1[0].orderColor.length > 0 && order1[0].orderColor) {
+      return order1[0].orderColor[0].setName;
+    }
+  }
+  return '';
+}
+
+exports.getColorCodeByID_SetNmae= async (colors, colorID, setName) => {
+  const idx = colors.findIndex( fi =>(fi.color.colorID === colorID && fi.setName === setName.trim()));
+  if (idx >= 0) {
+    // console.log(colorID, setName+'xxx');
+    return colors[idx].color.colorCode;
+  }
+  return '';
+}
+
+exports.getColorNameByID_SetNmae= async (colors, colorID, setName) => {
+  const idx = colors.findIndex( fi =>(fi.color.colorID === colorID && fi.setName === setName.trim()));
+  if (idx >= 0) {
+    return colors[idx].color.colorName;
+  }
+  return '';
+}
+
+exports.getColorValueByID_SetNmae= async (colors, colorID, setName) => {
+  const idx = colors.findIndex( fi =>(fi.color.colorID === colorID && fi.setName === setName.trim()));
+  if (idx >= 0) {
+    return colors[idx].color.colorValue;
+  }
+  return '';
+}
+
+
+// ## function zone ####################################################################
 // #################################################################################
 
 
@@ -7397,6 +7556,39 @@ exports.get1NodeStationLoginRequest= async (companyID, factoryID, nodeID, statio
   return nodeStationLoginRequest;
 }
 
+exports.getOrderSBySeasonYear= async (companyID, seasonYear) => {
+  // limit = +limit; // ## change to number
+  const orders = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"seasonYear":seasonYear},
+      // {"orderID":{$in: orderIDs}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        orderID: 1,
+        seasonYear: 1,
+        ver: 1,
+        companyID: 1,
+        factoryID: 1,
+        bundleNo: 1,
+        orderStatus: 1,
+        orderDetail: 1,		
+        orderDate: 1,	
+        deliveryDate: 1,
+        customerOR: 1,		
+        orderTargetPlace: 1,
+        orderColor: 1,
+        productOR: 1,
+        createBy: 1,
+        orderSetting: 1,
+    }	},
+    { $sort: { _id: -1 } }
+  ]);
+  // console.log(orders);
+  return orders;
+}
+
 exports.getOrdersBySeasonYear= async (companyID, seasonYear) => {
   const orderIDs = await Order.aggregate([
     { $match: { $and: [
@@ -7873,13 +8065,23 @@ exports.getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) =
 
 exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsource, status) => {
   // const status = 'outsource';
+  const sTypeOtus = 'b';
   const orderProductFacOutQTY = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
       {"orderID":{$in: orderIDs}},
 
       // {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
-      {"productionNode":  {$elemMatch: {"isOutsource": isOutsource, "status": {$in: status} }}},
+      {"productionNode":  {$elemMatch: {
+        "isOutsource": isOutsource, 
+        "status": {$in: status},
+
+        // "sTypeOtus": sTypeOtus, 
+        // $or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: false } } ]
+        
+      }}},
+
+      // {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: true } } ]}
 
       // {"productionNode":  {$elemMatch: {"isOutsource": isOutsource, "status": status }}},
       // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
@@ -7923,6 +8125,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
       fromNode: "$productionNode.fromNode",
       datetime: "$productionNode.datetime",
       status: "$productionNode.status",
+      sTypeOtus: "$productionNode.sTypeOtus",
       isOutsource: "$productionNode.isOutsource",
       outsourceData: "$productionNode.outsourceData",
       // createBy: "$productionNode.createBy",
@@ -7931,6 +8134,9 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
       // {"status":status},
       {"status":{$in: status}},
       {"isOutsource":isOutsource},
+      
+      // {"sTypeOtus":sTypeOtus},
+      // {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: false } } ]}
     ] } },
     { $unwind: "$outsourceData"},
     { $project: {			
@@ -7952,6 +8158,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
       yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime", timezone : process.env.timezone } },
       dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime", timezone : process.env.timezone } },
       status: 1,
+      sTypeOtus: 1,
       isOutsource: 1,
       // createBy: 1,
     }	},
@@ -7965,6 +8172,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
         productCount: '$productCount',
         // productBarcodeNoReal: '$productBarcodeNoReal',
         status: '$status',
+        // sTypeOtus: '$sTypeOtus',
         factoryID: '$factoryID',
         toFactoryID: '$toFactoryID',
         fromFactoryID: '$fromFactoryID',
@@ -7975,7 +8183,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
       // sumFactoryOutsQty: {$sum: '$productCount'} ,
     }}   
   ])
-  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1 } );
+  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
     // companyID: fw._id.companyID, 
@@ -8038,7 +8246,8 @@ exports.getCurrentCompanyOrderOutsource= async (companyID, orderIDs) => {
       }
     }}  
  
-  ]).hint( {"companyID" : 1, "orderID": 1, "productionNode.isOutsource": 1, "productionNode.status": 1} );
+  ])
+  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
 
 // // console.log(orderProductFacOuts);
 const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
@@ -8155,7 +8364,8 @@ exports.getCurrentCompanyOrderOutsourceRemianQTY= async (companyID, orderIDs) =>
       },
       sumFactoryOutsQty: {$sum: 1} ,
     }}   
-  ]).hint( {"companyID" : 1, "orderID": 1, "productionNode.isOutsource": 1, "productionNode.status": 1} );
+  ])
+  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
   // .hint( { companyID: 1, orderID: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
@@ -8302,7 +8512,8 @@ exports.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY= async (companyID
       countQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }} ,  
-  ]).hint( {"companyID" : 1, "orderID": 1, "productionNode.isOutsource": 1, "productionNode.status": 1} );
+  ])
+  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
 
   const result = await orderProductFacOutQTY.map(fw => ({
     // companyID: fw._id.companyID, 

@@ -3,6 +3,8 @@ const uniqueValidator = require("mongoose-unique-validator");
 
 // ## dt = data temp  dtcurrentcompanyorderoutsourcefac
 const dtcurrentcompanyorderoutsourcefacSchema = mongoose.Schema({
+
+
   seasonYear: {type: String}, // ## 2024AW  2024SS …
   companyID: {type: String},
   factoryID: { type: String },
@@ -14,18 +16,51 @@ const dtcurrentcompanyorderoutsourcefacSchema = mongoose.Schema({
   sNote: {type: String}, 
   lastDatetime : {type: Date},  // ## วันที่ล่าสุดที่อัพเดต
   data: [{   // ## 
-    companyID: {type: String},  // ## 
-    orderID: {type: String},  // ## 
-    targetPlace: {type: String},  // ## 
-    color: {type: String},  // ## 
-    bundleNo: {type: Number},  // ## 
-    productCount: {type: Number},  // ## 
-    status: {type: String},  // ## 
     factoryID: {type: String},  // ## 
-    toFactoryID : {type: String},
-    fromFactoryID : {type: String},
-    yyyymmdd : {type: String},
-    sumFactoryOutsQty : {type: Number},
+    factoryName: {type: String},  // ## 
+    factoryName2: {type: String},  // ## 
+    dateList: [{
+      dateName: {type: String}, 
+      out: [{
+        bundleNos : [{type: Number}],
+        color: {type: String}, 
+        colorCode: {type: String}, 
+        colorName: {type: String}, 
+        colorValue: {type: String}, 
+        factoryID1: {type: String},
+        factoryID2: {type: String},
+        orderID: {type: String},
+        qty : {type: Number},
+        setGroup: {type: String},
+        setName: {type: String},
+        targetPlaceID: {type: String},
+      }],
+      receive: [{
+        bundleNos : [{type: Number}],
+        color: {type: String}, 
+        colorCode: {type: String}, 
+        colorName: {type: String}, 
+        colorValue: {type: String}, 
+        factoryID1: {type: String},
+        factoryID2: {type: String},
+        orderID: {type: String},
+        qty : {type: Number},
+        setGroup: {type: String},
+        setName: {type: String},
+        targetPlaceID: {type: String},
+      }],
+    }],
+
+
+    // color: {type: String},  // ## 
+    // bundleNo: {type: Number},  // ## 
+    // productCount: {type: Number},  // ## 
+    // status: {type: String},  // ## 
+    // factoryID: {type: String},  // ## 
+    // toFactoryID : {type: String},
+    // fromFactoryID : {type: String},
+    // yyyymmdd : {type: String},
+    // sumFactoryOutsQty : {type: Number},
   }],
 });
 

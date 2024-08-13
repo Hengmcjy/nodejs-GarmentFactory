@@ -82,15 +82,15 @@ let isQuery_everyDayGroup = false;
 let isQuery_everyHourGroup = false;
 let isQuery_every30mnGroup = false;
 let isQuery_every15mnGroup = false;
-setInterval(async() => {
-  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-  // console.log(current, isQuery_time1Group, isQuery_everyDayGroup, isQuery_everyHourGroup, isQuery_every30mnGroup, isQuery_every15mnGroup);
-  if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
-    // isQueryNow = true;
-    await this.getSchedule(); 
-  }
-  // console.log('auto schedule');
-},1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
+// setInterval(async() => {
+//   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+//   // console.log(current, isQuery_time1Group, isQuery_everyDayGroup, isQuery_everyHourGroup, isQuery_every30mnGroup, isQuery_every15mnGroup);
+//   if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
+//     // isQueryNow = true;
+//     await this.getSchedule(); 
+//   }
+//   // console.log('auto schedule');
+// },1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
 
 
 // ## main scheduler #################################
@@ -460,6 +460,7 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
   try {
     
     // console.log('fac timing ',  mm1 , mm);
+    let dataOutsState = [];
     let isTimeing = false;
     const sDatetimeF = scheduleData.sDatetime.filter(i=> +i.mm === +mm1);
     // console.log('sDatetimeF.length ',  sDatetimeF.length);
@@ -482,6 +483,11 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
       const status = ['outsource', 'normal'];
       // ## get outsource factory sent out & factory receive
       const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+
+      dataOutsState = await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
+
+      const repCurrentCompanyOrderOutsourceFac = 
+        await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
       
       // ## update  Schedule>  lastDatetime
       const scheduleUpsert = await Schedule.updateOne({$and: [
@@ -518,7 +524,8 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
       ]} , 
       {
         "lastDatetime": current,
-        "data": orderProduct,
+        // "data": orderProduct,
+        "data": dataOutsState,
       }, {upsert: true}); 
       // console.log(dtorderoutsourcefacUpsert);
 
@@ -933,3 +940,302 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
 
 // ## schedule
 // #############################################################
+
+
+
+// #######################################################################################################
+// ## transform report
+
+exports.repCurrentCompanyOrderOutsourceFac_Transform = async (orderProduct, companyID, seasonYear) => {
+  const result1 = await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
+
+  return result1;
+}
+
+// repCurrentCompanyOrderOutsourceFac_Transform(orderProduct)
+async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear) {
+
+  // ## initialize data
+
+  // ## get colors  colorComID= async (companyID) 
+  const colors = await ShareFunc.colorComID(companyID);
+  // console.log(colors);
+
+  // ## get orderIDs
+  const orders = await ShareFunc.getOrderSBySeasonYear(companyID, seasonYear);
+  const orderIDArr = Array.from(new Set(orders.map((item) => item.orderID)));
+  // console.log(orderIDArr);
+
+  // ## get outsource factory sent out
+  const status1 = 'outsource';  // ## sent out  outsource
+  const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
+  // console.log(orderProductFacOut);
+
+  // ## get outsource factory receive
+  const status2 = 'normal';  // ## sent out  outsource
+  const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
+  // console.log(orderProductFacReceive);
+
+  const factoryIDs = Array.from(new Set(orderProductFacOut.map((item) => item.factoryID)));
+  // console.error(factoryIDs);
+  const factorys = await ShareFunc.getFactoryArrByFacIDs(companyID, factoryIDs);
+  // console.error(factorys);
+
+  let dataOutsState = [];
+
+  // ## orderProductFacOut
+  await ShareFunc.asyncForEach(orderProductFacOut, async (item) => {
+    const setName = await ShareFunc.getSetNameFromOrderID([...orders], item.orderID);
+    item.setname = setName;
+    const color = await ShareFunc.strReplaceAlll(item.color, '-', '');
+    item.color = color+'';
+    const targetPlace = await ShareFunc.strReplaceAlll(item.targetPlace, '-', '');
+    item.targetPlace = targetPlace;
+
+    const colorCode = await ShareFunc.getColorCodeByID_SetNmae(colors, color, setName);
+    const colorName = await ShareFunc.getColorNameByID_SetNmae(colors, color, setName);
+    const colorValue = await ShareFunc.getColorValueByID_SetNmae(colors, color, setName);
+    item.colorCode = colorCode;
+    item.colorName = colorName;
+    item.colorValue = colorValue;
+    item.setGroup = item.orderID
+      +':'+setName
+      +':'+targetPlace
+      +':'+colorName+':'+colorCode+':'+color+':'+colorValue
+      +':'+item.factoryID
+      +':'+item.yyyymmdd
+      +':'+item.fromFactoryID; // ## factory who scan send out
+  });
+  // console.error(orderProductFacOut);
+
+  // ## orderProductFacReceive
+  await ShareFunc.asyncForEach(orderProductFacReceive, async (item) => {
+    const setName = await ShareFunc.getSetNameFromOrderID([...orders], item.orderID);
+    item.setname = setName;
+    const color = await ShareFunc.strReplaceAlll(item.color, '-', '');
+    item.color = color+'';
+    const targetPlace = await ShareFunc.strReplaceAlll(item.targetPlace, '-', '');
+    item.targetPlace = targetPlace;
+
+    const colorCode = await ShareFunc.getColorCodeByID_SetNmae(colors, color, setName);
+    const colorName = await ShareFunc.getColorNameByID_SetNmae(colors, color, setName);
+    const colorValue = await ShareFunc.getColorValueByID_SetNmae(colors, color, setName);
+    item.colorCode = colorCode;
+    item.colorName = colorName;
+    item.colorValue = colorValue;
+    item.setGroup = item.orderID
+      +':'+setName
+      +':'+targetPlace
+      +':'+colorName+':'+colorCode+':'+color+':'+colorValue
+      +':'+item.factoryID
+      +':'+item.yyyymmdd
+      +':'+item.fromFactoryID; // ## factory who scan send out
+  });
+  // console.error(orderProductFacReceive);
+
+  // ## find  date  list
+  await ShareFunc.asyncForEach(factoryIDs, async (item) => {
+    let dateL = [];
+    let dateList = [];
+    let dataOutsState1 = {};
+
+    const orderProductFacOutF = orderProductFacOut.filter(i=>i.factoryID==item);
+    const orderProductFacReceiveF = orderProductFacReceive.filter(i=>i.factoryID==item);
+    let dateOut = Array.from(new Set(orderProductFacOutF.map((item) => item.yyyymmdd)));
+    let dateReceive = Array.from(new Set(orderProductFacReceiveF.map((item) => item.yyyymmdd)));
+    dateOut.sort();  // ## sort asc
+    dateReceive.sort();  // ## sort asc
+    dateList = [...dateOut];
+
+    await ShareFunc.asyncForEach2(dateReceive, async (item2) => {
+      const dateReceiveF = dateOut.filter(i=>i==item2);
+          if (dateReceiveF.length === 0) {
+              dateList.push(item2);
+          }
+    });
+    dateList.sort();  // ## sort asc
+
+    await ShareFunc.asyncForEach2(dateList, async (item2) => {
+      let date1 = {
+        yyyymmdd: item2,
+        dateName: await ShareFunc.getDateShortByYYYYMMDD(item2, 'ddMMMyyyy', 'short', '-')
+      };
+      dateL.push(date1);
+    });
+
+    dataOutsState1.factoryID = item;
+    dataOutsState1.factoryName = await ShareFunc.getFactoryNameByFactoryID(factorys, item);
+    dataOutsState1.factoryName2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, item);
+    dataOutsState1.dateList = dateL;
+    dataOutsState.push(dataOutsState1);
+    // console.error(dateL);
+  });
+  // console.error(dataOutsState);
+
+  await ShareFunc.asyncForEach(dataOutsState, async (item) => {
+    const factoryID = item.factoryID; // ## to factory , outsource factory
+    await ShareFunc.asyncForEach2(item.dateList, async (item2) => {
+      const yyyymmdd = item2.yyyymmdd;
+      const orderProductFacOutF = orderProductFacOut.filter(i=>i.factoryID==factoryID && i.yyyymmdd==yyyymmdd);
+      const orderProductFacReceiveF = orderProductFacReceive.filter(i=>i.factoryID==factoryID && i.yyyymmdd==yyyymmdd);
+      const setGroupOutArr = Array.from(new Set(orderProductFacOutF.map((item) => item.setGroup)));
+      const setGroupReceiveArr = Array.from(new Set(orderProductFacReceiveF.map((item) => item.setGroup)));
+
+      let setGroupInfoOut = [];
+      await ShareFunc.asyncForEach3(setGroupOutArr, async (item3) => {
+        const qty = await getQty001(item3, orderProductFacOut);
+        const bundleNos = await getBundleNos001(item3, orderProductFacOut);
+        const setGroupInfo = item3.split(':'); // BA1P4A4A:muji:JAPN:OATMEAL:#013:OM:f000004:20240327
+        const orderID = setGroupInfo[0];
+        const setName = setGroupInfo[1];
+        const targetPlaceID = setGroupInfo[2];
+        const colorName = setGroupInfo[3];
+        const colorCode = setGroupInfo[4];
+        const color = setGroupInfo[5];
+        const colorValue = setGroupInfo[6];
+        const facotoryID1 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[7]); // ## factory outsource
+        const facotoryID2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[9]); // ## factory who scan send out
+        const setGroupInfo1 = {
+            setGroup: item3,
+            qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
+            facotoryID1, facotoryID2
+        };
+        setGroupInfoOut.push(setGroupInfo1);
+      });
+
+      let setGroupInfoReceive = [];
+      await ShareFunc.asyncForEach3(setGroupReceiveArr, async (item3) => {
+        const qty = await getQty001(item3, orderProductFacReceive);
+        const bundleNos = await getBundleNos001(item3, orderProductFacReceive);
+        const setGroupInfo = item3.split(':'); // BA1P4A4A:muji:JAPN:OATMEAL:#013:OM:f000004:20240327
+        const orderID = setGroupInfo[0];
+        const setName = setGroupInfo[1];
+        const targetPlaceID = setGroupInfo[2];
+        const colorName = setGroupInfo[3];
+        const colorCode = setGroupInfo[4];
+        const color = setGroupInfo[5];
+        const colorValue = setGroupInfo[6];
+        const facotoryID1 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[7]); // ## factory outsource
+        const facotoryID2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[9]); // ## factory who scan receice back
+        const setGroupInfo1 = {
+            setGroup: item3,
+            qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
+            facotoryID1, facotoryID2
+        };
+        setGroupInfoReceive.push(setGroupInfo1);
+      });
+      item2.out = setGroupInfoOut;
+      item2.receive = setGroupInfoReceive;
+    });
+  });
+
+  dataOutsState.sort((a,b)=>{ return a.factoryID >b.factoryID?1:a.factoryID <b.factoryID?-1:0 });
+  dataOutsState.forEach( (item1, index1) => {
+      item1.dateList.sort((a,b)=>{ return a.yyyymmdd <b.yyyymmdd?1:a.yyyymmdd >b.yyyymmdd?-1:0 }); // sort desc
+  });
+  // console.error(dataOutsState);
+
+  return dataOutsState;
+}
+
+async function getQty001(setGroup, facOutArr) {
+  const facOutF = facOutArr.filter(i=> i.setGroup == setGroup);
+  if (facOutF.length > 0) {
+      const facOutTotalQTY = +facOutF.reduce((prev, cur) => {return prev + cur.productCount;}, 0);
+      return facOutTotalQTY;
+  }
+  return 0;
+}
+
+async function getBundleNos001(setGroup, facOutArr) {
+  const facOutF = facOutArr.filter(i=> i.setGroup == setGroup);
+  if (facOutF.length > 0) {
+      const bundleNos = Array.from(new Set(facOutF.map((item) => item.bundleNo)));
+      return bundleNos;
+  }
+  return [];
+}
+
+
+
+
+// ## transform report
+// #######################################################################################################
+
+/*
+
+  // console.log(this.dataOutsState);
+  // ## get data detail by factoryID by date
+  this.dataOutsState.forEach( (item1, index1) => {
+      const factoryID = item1.factoryID; // ## to factory , outsource factory
+      item1.dateList.forEach( (item2: any, index2: number) => {
+          const yyyymmdd = item2.yyyymmdd;
+          const orderProductFacOutF = this.orderProductFacOut.filter(i=>i.factoryID==factoryID && i.yyyymmdd==yyyymmdd);
+          const orderProductFacReceiveF = this.orderProductFacReceive.filter(i=>i.factoryID==factoryID && i.yyyymmdd==yyyymmdd);
+          // const facOutQTY = +orderProductFacOutF.reduce((prev, cur) => {return prev + cur.productCount;}, 0);
+          // const facReceiveQTY = +orderProductFacReceiveF.reduce((prev, cur) => {return prev + cur.productCount;}, 0);
+          const setGroupOutArr = Array.from(new Set(orderProductFacOutF.map((item: any) => item.setGroup)));
+          const setGroupReceiveArr = Array.from(new Set(orderProductFacReceiveF.map((item: any) => item.setGroup)));
+
+          let setGroupInfoOut: any[] = [];
+          setGroupOutArr.forEach( (item3: any, index3: number) => {
+              const qty = this.getQty(item3, this.orderProductFacOut);
+              const bundleNos = this.getBundleNos(item3, this.orderProductFacOut);
+              const setGroupInfo = item3.split(':'); // BA1P4A4A:muji:JAPN:OATMEAL:#013:OM:f000004:20240327
+              const orderID = setGroupInfo[0];
+              const setName = setGroupInfo[1];
+              const targetPlaceID = setGroupInfo[2];
+              const colorName = setGroupInfo[3];
+              const colorCode = setGroupInfo[4];
+              const color = setGroupInfo[5];
+              const colorValue = setGroupInfo[6];
+              const facotoryID1 = this.userService.getFactoryName2ByFactoryID( setGroupInfo[7]); // ## factory outsource
+              const facotoryID2 = this.userService.getFactoryName2ByFactoryID( setGroupInfo[9]); // ## factory who scan send out
+              const setGroupInfo1: any = {
+                  setGroup: item3,
+                  qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
+                  facotoryID1, facotoryID2
+              };
+              setGroupInfoOut.push(setGroupInfo1);
+          });
+
+          let setGroupInfoReceive: any[] = [];
+          setGroupReceiveArr.forEach( (item3: any, index3: number) => {
+              const qty = this.getQty(item3, this.orderProductFacReceive);
+              const bundleNos = this.getBundleNos(item3, this.orderProductFacReceive);
+              const setGroupInfo = item3.split(':'); // BA1P4A4A:muji:JAPN:OATMEAL:#013:OM:f000004:20240327
+              const orderID = setGroupInfo[0];
+              const setName = setGroupInfo[1];
+              const targetPlaceID = setGroupInfo[2];
+              const colorName = setGroupInfo[3];
+              const colorCode = setGroupInfo[4];
+              const color = setGroupInfo[5];
+              const colorValue = setGroupInfo[6];
+              const facotoryID1 = this.userService.getFactoryName2ByFactoryID( setGroupInfo[7]); // ## factory outsource
+              const facotoryID2 = this.userService.getFactoryName2ByFactoryID( setGroupInfo[9]); // ## factory who scan receice back
+              const setGroupInfo1: any = {
+                  setGroup: item3,
+                  qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
+                  facotoryID1, facotoryID2
+              };
+              setGroupInfoReceive.push(setGroupInfo1);
+          });
+          item2.out = setGroupInfoOut;
+          item2.receive = setGroupInfoReceive;
+      });
+  });
+
+  this.dataOutsState.sort((a,b)=>{ return a.factoryID >b.factoryID?1:a.factoryID <b.factoryID?-1:0 });
+  this.dataOutsState.forEach( (item1, index1) => {
+      ((item1.dateList) as any[]).sort((a,b)=>{ return a.yyyymmdd <b.yyyymmdd?1:a.yyyymmdd >b.yyyymmdd?-1:0 }); // sort desc
+  });
+  // ((((this.megaMenuItems[0].items) as MenuItem[][])[0][0].items) as MenuItem[])[0].command
+
+  // console.log(this.orderProductFacOut);
+  // console.log(this.orderProductFacReceive);
+  // console.log(this.factoryIDs);
+  // console.log(this.factories);
+  // console.log(this.dataOutsState);
+}
+
+*/
