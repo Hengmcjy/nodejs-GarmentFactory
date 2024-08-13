@@ -1093,12 +1093,12 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, compan
         const colorCode = setGroupInfo[4];
         const color = setGroupInfo[5];
         const colorValue = setGroupInfo[6];
-        const facotoryID1 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[7]); // ## factory outsource
-        const facotoryID2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[9]); // ## factory who scan send out
+        const factoryID1 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[7]); // ## factory outsource
+        const factoryID2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[9]); // ## factory who scan send out
         const setGroupInfo1 = {
             setGroup: item3,
             qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
-            facotoryID1, facotoryID2
+            factoryID1, factoryID2
         };
         setGroupInfoOut.push(setGroupInfo1);
       });
@@ -1115,12 +1115,12 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, compan
         const colorCode = setGroupInfo[4];
         const color = setGroupInfo[5];
         const colorValue = setGroupInfo[6];
-        const facotoryID1 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[7]); // ## factory outsource
-        const facotoryID2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[9]); // ## factory who scan receice back
+        const factoryID1 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[7]); // ## factory outsource
+        const factoryID2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[9]); // ## factory who scan receice back
         const setGroupInfo1 = {
             setGroup: item3,
             qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
-            facotoryID1, facotoryID2
+            factoryID1, factoryID2
         };
         setGroupInfoReceive.push(setGroupInfo1);
       });
@@ -1164,80 +1164,4 @@ async function getBundleNos001(setGroup, facOutArr) {
 // ## transform report
 // #######################################################################################################
 
-/*
 
-  // console.log(this.dataOutsState);
-  // ## get data detail by factoryID by date
-  this.dataOutsState.forEach( (item1, index1) => {
-      const factoryID = item1.factoryID; // ## to factory , outsource factory
-      item1.dateList.forEach( (item2: any, index2: number) => {
-          const yyyymmdd = item2.yyyymmdd;
-          const orderProductFacOutF = this.orderProductFacOut.filter(i=>i.factoryID==factoryID && i.yyyymmdd==yyyymmdd);
-          const orderProductFacReceiveF = this.orderProductFacReceive.filter(i=>i.factoryID==factoryID && i.yyyymmdd==yyyymmdd);
-          // const facOutQTY = +orderProductFacOutF.reduce((prev, cur) => {return prev + cur.productCount;}, 0);
-          // const facReceiveQTY = +orderProductFacReceiveF.reduce((prev, cur) => {return prev + cur.productCount;}, 0);
-          const setGroupOutArr = Array.from(new Set(orderProductFacOutF.map((item: any) => item.setGroup)));
-          const setGroupReceiveArr = Array.from(new Set(orderProductFacReceiveF.map((item: any) => item.setGroup)));
-
-          let setGroupInfoOut: any[] = [];
-          setGroupOutArr.forEach( (item3: any, index3: number) => {
-              const qty = this.getQty(item3, this.orderProductFacOut);
-              const bundleNos = this.getBundleNos(item3, this.orderProductFacOut);
-              const setGroupInfo = item3.split(':'); // BA1P4A4A:muji:JAPN:OATMEAL:#013:OM:f000004:20240327
-              const orderID = setGroupInfo[0];
-              const setName = setGroupInfo[1];
-              const targetPlaceID = setGroupInfo[2];
-              const colorName = setGroupInfo[3];
-              const colorCode = setGroupInfo[4];
-              const color = setGroupInfo[5];
-              const colorValue = setGroupInfo[6];
-              const facotoryID1 = this.userService.getFactoryName2ByFactoryID( setGroupInfo[7]); // ## factory outsource
-              const facotoryID2 = this.userService.getFactoryName2ByFactoryID( setGroupInfo[9]); // ## factory who scan send out
-              const setGroupInfo1: any = {
-                  setGroup: item3,
-                  qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
-                  facotoryID1, facotoryID2
-              };
-              setGroupInfoOut.push(setGroupInfo1);
-          });
-
-          let setGroupInfoReceive: any[] = [];
-          setGroupReceiveArr.forEach( (item3: any, index3: number) => {
-              const qty = this.getQty(item3, this.orderProductFacReceive);
-              const bundleNos = this.getBundleNos(item3, this.orderProductFacReceive);
-              const setGroupInfo = item3.split(':'); // BA1P4A4A:muji:JAPN:OATMEAL:#013:OM:f000004:20240327
-              const orderID = setGroupInfo[0];
-              const setName = setGroupInfo[1];
-              const targetPlaceID = setGroupInfo[2];
-              const colorName = setGroupInfo[3];
-              const colorCode = setGroupInfo[4];
-              const color = setGroupInfo[5];
-              const colorValue = setGroupInfo[6];
-              const facotoryID1 = this.userService.getFactoryName2ByFactoryID( setGroupInfo[7]); // ## factory outsource
-              const facotoryID2 = this.userService.getFactoryName2ByFactoryID( setGroupInfo[9]); // ## factory who scan receice back
-              const setGroupInfo1: any = {
-                  setGroup: item3,
-                  qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
-                  facotoryID1, facotoryID2
-              };
-              setGroupInfoReceive.push(setGroupInfo1);
-          });
-          item2.out = setGroupInfoOut;
-          item2.receive = setGroupInfoReceive;
-      });
-  });
-
-  this.dataOutsState.sort((a,b)=>{ return a.factoryID >b.factoryID?1:a.factoryID <b.factoryID?-1:0 });
-  this.dataOutsState.forEach( (item1, index1) => {
-      ((item1.dateList) as any[]).sort((a,b)=>{ return a.yyyymmdd <b.yyyymmdd?1:a.yyyymmdd >b.yyyymmdd?-1:0 }); // sort desc
-  });
-  // ((((this.megaMenuItems[0].items) as MenuItem[][])[0][0].items) as MenuItem[])[0].command
-
-  // console.log(this.orderProductFacOut);
-  // console.log(this.orderProductFacReceive);
-  // console.log(this.factoryIDs);
-  // console.log(this.factories);
-  // console.log(this.dataOutsState);
-}
-
-*/
