@@ -2219,7 +2219,7 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
       const isOutsource = true;
       const status = ['outsource', 'normal'];
       // ## get outsource factory sent out & factory receive
-      const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+      orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
       // console.log(orderProduct , orderProduct.length);
       
       // const orderProductF1 = orderProduct.filter(i=>i.productCount <= i.sumFactoryOutsQty);
@@ -2341,9 +2341,10 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
   const orderIDArr = JSON.parse(req.params.orderIDArr);
   // const repListNameArr = JSON.parse(req.params.repListName);
   // console.log(companyID, orderStatusArr);
-  // console.log(orderIDArr);
+  // console.log(orderIDArr, type);
 
   try {
+    // let orderProduct = [];
     let dataOutsState = [];
     // getCompanyCurrentSeasonYear= async (companyID)
     const seasonYear1 = await ShareFunc.getCompanyCurrentSeasonYear(companyID);
@@ -2351,12 +2352,15 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
       seasonYear = seasonYear1;
     } 
 
+    // console.log(seasonYear);
     let orderProduct = [];
     if (type === 'refresh') {
       const isOutsource = true;
       const status = ['outsource', 'normal'];
       // ## get outsource factory sent out & factory receive
       orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+
+      dataOutsState = await ScheduleFunc.repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
     
       // ## update ProductionZonePeriodC > lastDatetime, data
       const sGroup = 'report';
@@ -2378,24 +2382,28 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
       ]} , 
       {
         "lastDatetime": current,
-        "data": orderProduct,
+        // "data": orderProduct,
+        "data": dataOutsState,
       }, {upsert: true}); 
 
     } else if (type === 'dt') {
       // ## get data from dtcurrentcompanyorderoutsourcefac
       const sName = 'auto_getCurrentCompanyOrderOutsourceFac';
-      orderProduct = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
+      dataOutsState = await ShareFunc.get_auto_getCurrentCompanyOrderOutsourceFac(companyID, seasonYear, sName);
     }
 
-    // ## get outsource factory sent out
-    const status1 = 'outsource';  // ## sent out  outsource
-    const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
-    // console.log(orderProductFacOut);
 
-    // ## get outsource factory receive
-    const status2 = 'normal';  // ## sent out  outsource
-    const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
-    // console.log(orderProductFacReceive);
+    const orderProductFacOut = [];
+    const orderProductFacReceive = [];
+    // // ## get outsource factory sent out
+    // const status1 = 'outsource';  // ## sent out  outsource
+    // const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
+    // // console.log(orderProductFacOut);
+
+    // // ## get outsource factory receive
+    // const status2 = 'normal';  // ## sent out  outsource
+    // const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
+    // // console.log(orderProductFacReceive);
 
     // // ## get outsource factory sent out
     // const status1 = 'outsource';  // ## sent out  outsource
