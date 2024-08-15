@@ -3048,7 +3048,9 @@ exports.getGeneralInfo = async (req, res, next) => {
     const ver = controlAppVer.ver;
 
     // ## get client control
-    const outSourceLocationDepartment = (await ShareFunc.getControlAppOutSourceLocationDepartment()).outSourceLocationDepartment;
+    const outSourceInfo = await ShareFunc.getControlAppOutSourceLocationDepartment();
+    const outSourceLocationDepartment = outSourceInfo.outSourceLocationDepartment;
+    const outSourceSeasonShow = outSourceInfo.outSourceSeasonShow;
     // console.log(outSourceLocationDepartment);
 
     // // ## get subNodeflow
@@ -3083,8 +3085,8 @@ exports.getGeneralInfo = async (req, res, next) => {
       controlApp: controlApp,
       ver: ver,
       sysInfo: sysInfo,
-      outSourceLocationDepartment: outSourceLocationDepartment
-      // updateQrCodeRealOrderProduction: updateQrCodeRealOrderProduction
+      outSourceLocationDepartment: outSourceLocationDepartment,
+      outSourceSeasonShow: outSourceSeasonShow
     });
   } catch (err) {
     console.log(err);

@@ -102,6 +102,9 @@ router.put("/yarnlotbox/edit/devide", checkAuth, checkUUID, yarnController.putEd
 // ## putYarnLotTransferCF
 router.put("/yarnlot/CF/transfer", checkAuth, checkUUID, yarnController.putYarnLotTransferCF);
 
+// ## putYarnLotTransferCFCancelAndBackCenter
+router.put("/yarnlot/CF/transfer2/cancel/backcenter", checkAuth, checkUUID, yarnController.putYarnLotTransferCFCancelAndBackCenter);
+
 // ## get yarn plan list /api/yarn/yarnlot/CF/rep/transfer1/yarn1 getYarnTransferUsageList
 router.put("/yarnlot/CF/rep/transfer1/yarn1", checkAuth, checkUUID, yarnController.getYarnTransferUsageList);
 

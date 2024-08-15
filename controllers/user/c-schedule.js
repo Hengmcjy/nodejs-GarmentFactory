@@ -82,15 +82,12 @@ let isQuery_everyDayGroup = false;
 let isQuery_everyHourGroup = false;
 let isQuery_every30mnGroup = false;
 let isQuery_every15mnGroup = false;
-setInterval(async() => {
-  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-  // console.log(current, isQuery_time1Group, isQuery_everyDayGroup, isQuery_everyHourGroup, isQuery_every30mnGroup, isQuery_every15mnGroup);
-  if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
-    // isQueryNow = true;
-    await this.getSchedule(); 
-  }
-  // console.log('auto schedule');
-},1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
+// setInterval(async() => {
+//   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+//   if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
+//     await this.getSchedule(); 
+//   }
+// },1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
 
 
 // ## main scheduler #################################
@@ -481,13 +478,20 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
       
       const isOutsource = true;
       const status = ['outsource', 'normal'];
+      const sTypeOtus1 = 'b'; // ## bundle mode
+      const sTypeOtusExist1 = false;
       // ## get outsource factory sent out & factory receive
-      const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
-
-      dataOutsState = await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
+      // getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsource, status, sTypeOtus, sTypeOtusExist)
+      const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status, sTypeOtus1, sTypeOtusExist1);
+      
+      const sTypeOtus2 = '1'; // ## 1 = 1 by 1
+      const sTypeOtusExist2 = true;
+      const orderProduct1BY1 = await ShareFunc.getCurrentCompanyOrderOutsourceFac1BY1(companyID, orderIDArr, isOutsource, status, sTypeOtus2, sTypeOtusExist2);
+      
+      dataOutsState = await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderProduct1BY1, companyID, seasonYear);
 
       const repCurrentCompanyOrderOutsourceFac = 
-        await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
+        await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderProduct1BY1, companyID, seasonYear);
       
       // ## update  Schedule>  lastDatetime
       const scheduleUpsert = await Schedule.updateOne({$and: [
@@ -946,14 +950,14 @@ async function auto_getCompanyCurrentProductQtyAll(scheduleData) {
 // #######################################################################################################
 // ## transform report
 
-exports.repCurrentCompanyOrderOutsourceFac_Transform = async (orderProduct, companyID, seasonYear) => {
-  const result1 = await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
+exports.repCurrentCompanyOrderOutsourceFac_Transform = async (orderProduct, orderProduct1BY1, companyID, seasonYear) => {
+  const result1 = await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderProduct1BY1, companyID, seasonYear);
 
   return result1;
 }
 
 // repCurrentCompanyOrderOutsourceFac_Transform(orderProduct)
-async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear) {
+async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderProduct1BY1, companyID, seasonYear) {
 
   // ## initialize data
 
@@ -969,14 +973,23 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, compan
   // ## get outsource factory sent out
   const status1 = 'outsource';  // ## sent out  outsource
   const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
+  const orderProductFac1BY1Out = await orderProduct1BY1.filter(i=>i.status === status1);
   // console.log(orderProductFacOut);
 
   // ## get outsource factory receive
   const status2 = 'normal';  // ## sent out  outsource
   const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
+  const orderProductFac1BY1Receive = await orderProduct1BY1.filter(i=>i.status === status2);
   // console.log(orderProductFacReceive);
 
-  const factoryIDs = Array.from(new Set(orderProductFacOut.map((item) => item.factoryID)));
+  const factoryIDsOut = Array.from(new Set(orderProductFacOut.map((item) => item.factoryID)));
+  const factoryIDs1BY1 = Array.from(new Set(orderProductFac1BY1Out.map((item) => item.factoryID)));
+  let factoryIDs = [...factoryIDsOut];
+  await ShareFunc.asyncForEach(factoryIDs1BY1, async (item) => {
+    const fac = factoryIDs.filter(i=>i === item);
+    if (fac.length === 0) {factoryIDs.push(item);}
+  });
+  factoryIDs.sort();
   // console.error(factoryIDs);
   const factorys = await ShareFunc.getFactoryArrByCompanyID(companyID);
   // console.error(factorys);
@@ -985,6 +998,7 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, compan
 
   // ## orderProductFacOut
   await ShareFunc.asyncForEach(orderProductFacOut, async (item) => {
+    const sTypeOtus = 'b';
     const setName = await ShareFunc.getSetNameFromOrderID([...orders], item.orderID);
     item.setname = setName;
     const color = await ShareFunc.strReplaceAlll(item.color, '-', '');
@@ -1004,12 +1018,14 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, compan
       +':'+colorName+':'+colorCode+':'+color+':'+colorValue
       +':'+item.factoryID
       +':'+item.yyyymmdd
-      +':'+item.fromFactoryID; // ## factory who scan send out
+      +':'+item.fromFactoryID // ## factory who scan send out
+      +':'+sTypeOtus; // ## b = bundle mode
   });
   // console.error(orderProductFacOut);
 
   // ## orderProductFacReceive
   await ShareFunc.asyncForEach(orderProductFacReceive, async (item) => {
+    const sTypeOtus = 'b';  // ## b = bundle mode
     const setName = await ShareFunc.getSetNameFromOrderID([...orders], item.orderID);
     item.setname = setName;
     const color = await ShareFunc.strReplaceAlll(item.color, '-', '');
@@ -1029,7 +1045,8 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, compan
       +':'+colorName+':'+colorCode+':'+color+':'+colorValue
       +':'+item.factoryID
       +':'+item.yyyymmdd
-      +':'+item.fromFactoryID; // ## factory who scan send out
+      +':'+item.fromFactoryID // ## factory who scan send out
+      +':'+sTypeOtus; // ## b = bundle mode
   });
   // console.error(orderProductFacReceive);
 
@@ -1095,10 +1112,11 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, compan
         const colorValue = setGroupInfo[6];
         const factoryID1 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[7]); // ## factory outsource
         const factoryID2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[9]); // ## factory who scan send out
+        const sTypeOtus = setGroupInfo[10];  // ## b = bundle mode , 1 = 1by1
         const setGroupInfo1 = {
             setGroup: item3,
             qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
-            factoryID1, factoryID2
+            factoryID1, factoryID2, sTypeOtus
         };
         setGroupInfoOut.push(setGroupInfo1);
       });
@@ -1117,10 +1135,11 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, compan
         const colorValue = setGroupInfo[6];
         const factoryID1 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[7]); // ## factory outsource
         const factoryID2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, setGroupInfo[9]); // ## factory who scan receice back
+        const sTypeOtus = setGroupInfo[10];  // ## b = bundle mode , 1 = 1by1
         const setGroupInfo1 = {
             setGroup: item3,
             qty, bundleNos, orderID, setName, targetPlaceID, colorName, colorCode, color, colorValue,
-            factoryID1, factoryID2
+            factoryID1, factoryID2, sTypeOtus
         };
         setGroupInfoReceive.push(setGroupInfo1);
       });

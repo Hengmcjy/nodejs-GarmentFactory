@@ -23,6 +23,7 @@ const controlAppSchema = mongoose.Schema({
     nodeID : {type: String},
     scanOutsource : {type: Boolean}
   }],
+  outSourceSeasonShow: [{type: String}],
 });
 
 controlAppSchema.plugin(uniqueValidator);

@@ -2199,6 +2199,7 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
   try {
 
     let orderProduct = [];
+    let orderProduct1BY1 = [];
     let dataOutsState = [];
     if (type === 'refresh') {
       // console.log('refresh');
@@ -2219,15 +2220,23 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
       const isOutsource = true;
       const status = ['outsource', 'normal'];
       // ## get outsource factory sent out & factory receive
-      orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+
+      const sTypeOtus1 = 'b'; // ## b = bundle mode
+      const sTypeOtusExist1 = false;
+      orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status, sTypeOtus1, sTypeOtusExist1);
       // console.log(orderProduct , orderProduct.length);
+      
+      const sTypeOtus2 = '1'; // ## 1 = 1 by 1
+      const sTypeOtusExist2 = true;
+      orderProduct1BY1 = await ShareFunc.getCurrentCompanyOrderOutsourceFac1BY1(companyID, orderIDArr, isOutsource, status, sTypeOtus2, sTypeOtusExist2);
+      // console.log(orderProduct1BY1 , orderProduct1BY1.length);
       
       // const orderProductF1 = orderProduct.filter(i=>i.productCount <= i.sumFactoryOutsQty);
       // console.log(orderProductF1 , orderProductF1.length);
 
-      // ## test report transform
-      // const orderProduct = [];
-      dataOutsState = await ScheduleFunc.repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
+
+      
+      dataOutsState = await ScheduleFunc.repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderProduct1BY1, companyID, seasonYear);
       // console.log(dataOutsState, '=====================');
 
       // ## update ProductionZonePeriodC > lastDatetime, data
@@ -2346,9 +2355,10 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
   try {
     // let orderProduct = [];
     let dataOutsState = [];
+    let orderProduct1BY1 = [];
     // getCompanyCurrentSeasonYear= async (companyID)
-    const seasonYear1 = await ShareFunc.getCompanyCurrentSeasonYear(companyID);
     if (seasonYear === 'last') {
+      const seasonYear1 = await ShareFunc.getCompanyCurrentSeasonYear(companyID);
       seasonYear = seasonYear1;
     } 
 
@@ -2358,7 +2368,14 @@ exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
       const isOutsource = true;
       const status = ['outsource', 'normal'];
       // ## get outsource factory sent out & factory receive
-      orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status);
+      const sTypeOtus1 = 'b'; // ## b = bundle mode
+      const sTypeOtusExist1 = false;
+      orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status, sTypeOtus1, sTypeOtusExist1);
+      // console.log(orderProduct , orderProduct.length);
+      const sTypeOtus2 = '1'; // ## 1 = 1 by 1
+      const sTypeOtusExist2 = true;
+      orderProduct1BY1 = await ShareFunc.getCurrentCompanyOrderOutsourceFac1BY1(companyID, orderIDArr, isOutsource, status, sTypeOtus2, sTypeOtusExist2);
+      console.log(orderProduct1BY1 , orderProduct1BY1.length);
 
       dataOutsState = await ScheduleFunc.repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, companyID, seasonYear);
     

@@ -1381,6 +1381,7 @@ exports.getControlAppOutSourceLocationDepartment= async () => {
   // console.log(controlAppf);
   const controlApp = {
     outSourceLocationDepartment: controlAppf.outSourceLocationDepartment,
+    outSourceSeasonShow: controlAppf.outSourceSeasonShow,
   };
   // console.log(appControl);
   return controlApp;
@@ -5492,6 +5493,123 @@ exports.getCFYarnUsageTransfer= async (companyID, toFactoryID, customerID, yarnS
     }	},
     { $unwind: "$yarnUsage" },
     { $project: { 
+      // _id: 0, 
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      yarnID: 1,		
+      yarnColorID: 1,
+      yarnDataUUID: 1,
+      status: 1,
+
+      datetimeIssue: "$yarnUsage.datetimeIssue",
+      datetime: "$yarnUsage.datetime",
+      yuUUID: "$yarnUsage.yuUUID",
+      yarnLotID: "$yarnUsage.yarnLotID",
+      yarnLotUUID: "$yarnUsage.yarnLotUUID",
+      invoiceID: "$yarnUsage.invoiceID",
+      usageMode: "$yarnUsage.usageMode",
+      yarnWeight: "$yarnUsage.yarnWeight",
+      yarnWeightNet: "$yarnUsage.yarnWeightNet",
+      useWeight: "$yarnUsage.useWeight",
+      yarnBoxInfo: "$yarnUsage.yarnBoxInfo",
+      usageInfo: "$yarnUsage.usageInfo",
+      _id: "$yarnUsage._id",
+    }},
+    { $match: { $and: [
+      // {"yarnDataUUID":yarnDataUUID},
+      // {"yarnColorID":yarnColorID},
+      {"usageMode":usageMode},
+      // {"type":type},
+      {"usageInfo.toFactoryID":toFactoryID},
+      // {"uuid":uuid},
+      // {"yarnID":yarnID},
+      // {"status":{$in: status}},
+    ] } },
+    // { $unwind: "$usageInfo.setFactoryID" },
+    { $project: {			
+      _id: 1,	
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      yarnID: 1,		
+      yarnColorID: 1,
+      yarnDataUUID: 1,
+      status: 1,
+
+      yyyymmdd: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
+      mmdd: { $dateToString: { format: "%m-%d", date: "$datetime" } },
+
+      yyyymmdd2: { $dateToString: { format: "%Y-%m-%d", date: "$datetimeIssue" } },
+      mmdd2: { $dateToString: { format: "%m-%d", date: "$datetimeIssue" } },
+
+      yyyymmdd3: { $dateToString: { format: "%Y%m%d", date: "$datetimeIssue" } },
+      mmdd3: { $dateToString: { format: "%m%d", date: "$datetimeIssue" } },
+
+      datetime: 1,
+      datetimeIssue: 1,
+      yuUUID: 1,
+      yarnLotID: 1,
+      yarnLotUUID: 1,
+      invoiceID: 1,
+      usageMode: 1,
+      yarnWeight: 1,
+      yarnWeightNet: 1,
+      useWeight: 1,
+      yarnBoxInfo: 1,
+      usageInfo: 1,
+      // setFactoryID: "$usageInfo.setFactoryID",
+    }	},
+  ]);
+
+  await this.asyncForEach(yarnLotUsage, async (item1) => {
+    item1.yarnWeightNet = parseFloat(item1.yarnWeightNet);
+    item1.useWeight = parseFloat(item1.useWeight);
+    item1.yarnWeight = parseFloat(item1.yarnWeight);
+    if (item1.usageInfo.yarnPlanWeight) { item1.usageInfo.yarnPlanWeight = parseFloat(item1.usageInfo.yarnPlanWeight); }
+    if (item1.usageInfo.yarnInvoiceWeight) { item1.usageInfo.yarnInvoiceWeight = parseFloat(item1.usageInfo.yarnInvoiceWeight); }
+    if (item1.yarnBoxInfo && item1.yarnBoxInfo.length > 0) {
+      await this.asyncForEach2(item1.yarnBoxInfo, async (item2) => {
+        if (item2.yarnPlanWeight) { item2.yarnPlanWeight = parseFloat(item2.yarnPlanWeight); }
+        if (item2.yarnWeight) { item2.yarnWeight = parseFloat(item2.yarnWeight); }
+        if (item2.yarnWeightNet) { item2.yarnWeightNet = parseFloat(item2.yarnWeightNet); }
+        if (item2.useWeight) { item2.useWeight = parseFloat(item2.useWeight); }
+        if (item2.yarnTransferWeight) { item2.yarnTransferWeight = parseFloat(item2.yarnTransferWeight); }
+      });
+    }
+  });
+
+  return yarnLotUsage;
+}
+
+exports.getCFYarnUsageTransferII= async (companyID, toFactoryID, customerID, yarnSeasonID, yarnID, usageMode, useWeight) => {
+  const yarnLotUsage = await YarnLotUsage.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"yarnID":yarnID},
+      // {"yarnColorID":yarnColorID},
+      // {"yarnDataUUID":yarnDataUUID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        yarnID: 1,		
+        yarnColorID: 1,
+        yarnDataUUID: 1,
+        yarnUsage: 1,
+        status: 1,
+    }	},
+    { $unwind: "$yarnUsage" },
+    { $project: { 
       _id: 0, 
       companyID: 1,
       factoryID: 1,		
@@ -5560,6 +5678,18 @@ exports.getCFYarnUsageTransfer= async (companyID, toFactoryID, customerID, yarnS
       usageInfo: 1,
       // setFactoryID: "$usageInfo.setFactoryID",
     }	},
+
+    // $toDouble  toLong
+    { $addFields: {
+      value: {"$toString" : "$yarnWeight"},
+      // value1: { $round: [{"$toString" : "$yarnWeight"}, 2]},
+      value2: { $round: [{"$toDouble" : "$yarnWeight"}, 2]},
+      value3: { $round: [{"$toInt" : "$yarnWeight"}, 2]},
+      value4: { $round: [{"$toLong" : "$yarnWeight"}, 2]},
+
+      size: { $size: "$yarnBoxInfo" },
+    }},
+
   ]);
 
   await this.asyncForEach(yarnLotUsage, async (item1) => {
@@ -5746,6 +5876,124 @@ exports.getYarnUsageV1= async (companyID, factoryID, toFactoryID, customerID, ya
       usageInfo: 1,
       // setFactoryID: "$usageInfo.setFactoryID",
     }	},
+  ]);
+
+  await this.asyncForEach(yarnLotUsage, async (item1) => {
+    item1.yarnWeightNet = parseFloat(item1.yarnWeightNet);
+    item1.useWeight = parseFloat(item1.useWeight);
+    item1.yarnWeight = parseFloat(item1.yarnWeight);
+    if (item1.usageInfo.yarnPlanWeight) { item1.usageInfo.yarnPlanWeight = parseFloat(item1.usageInfo.yarnPlanWeight); }
+    if (item1.usageInfo.yarnInvoiceWeight) { item1.usageInfo.yarnInvoiceWeight = parseFloat(item1.usageInfo.yarnInvoiceWeight); }
+    if (item1.yarnBoxInfo && item1.yarnBoxInfo.length > 0) {
+      await this.asyncForEach2(item1.yarnBoxInfo, async (item2) => {
+        if (item2.yarnPlanWeight) { item2.yarnPlanWeight = parseFloat(item2.yarnPlanWeight); }
+        if (item2.yarnWeight) { item2.yarnWeight = parseFloat(item2.yarnWeight); }
+        if (item2.yarnWeightNet) { item2.yarnWeightNet = parseFloat(item2.yarnWeightNet); }
+        if (item2.useWeight) { item2.useWeight = parseFloat(item2.useWeight); }
+        if (item2.yarnTransferWeight) { item2.yarnTransferWeight = parseFloat(item2.yarnTransferWeight); }
+      });
+    }
+  });
+
+  return yarnLotUsage;
+}
+
+
+// ## get yarnBoxInfo from YarnLotUsage by _id 
+exports.getYarnUsage_YarnBoxInfo_By_id= 
+  async (companyID, customerID, yarnSeasonID, yarnID, uuid, yarnColorID, yarnDataUUID, 
+        invoiceID, yuUUID, yarnLotID, usageMode, yarnLotUUID, fromFactoryID, toFactoryID, orderID, yarnUsage_id) => {
+
+  // console.log(companyID, customerID, yarnSeasonID, yarnID, uuid, yarnColorID, yarnDataUUID, 
+  //   invoiceID, yuUUID, yarnLotID, usageMode, yarnLotUUID, fromFactoryID, toFactoryID, orderID, yarnUsage_id);
+
+  const yarnLotUsage = await YarnLotUsage.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"customerID":customerID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"yarnID":yarnID},
+      // {"uuid":uuid},
+      {"yarnColorID":yarnColorID},
+      {"yarnDataUUID":yarnDataUUID},
+      // {"status":{$in: status}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,		
+        customerID: 1,	
+        yarnSeasonID: 1,
+        yarnID: 1,		
+        yarnColorID: 1,
+        yarnDataUUID: 1,
+        yarnUsage: 1,
+        status: 1,
+    }	},
+    { $unwind: "$yarnUsage" },
+    { $project: { 
+
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      yarnID: 1,		
+      yarnColorID: 1,
+      yarnDataUUID: 1,
+      status: 1,
+
+      // datetimeIssue: "$yarnUsage.datetimeIssue",
+      // datetime: "$yarnUsage.datetime",
+      yuUUID: "$yarnUsage.yuUUID",
+      yarnLotID: "$yarnUsage.yarnLotID",
+      yarnLotUUID: "$yarnUsage.yarnLotUUID",
+      invoiceID: "$yarnUsage.invoiceID",
+      usageMode: "$yarnUsage.usageMode",
+
+      yarnWeight: "$yarnUsage.yarnWeight",
+      yarnWeightNet: "$yarnUsage.yarnWeightNet",
+      useWeight: "$yarnUsage.useWeight",
+
+      yarnBoxInfo: "$yarnUsage.yarnBoxInfo",
+      usageInfo: "$yarnUsage.usageInfo",
+      _id: "$yarnUsage._id",
+    }},
+
+    { $match: { $and: [
+      {"invoiceID":invoiceID},
+      {"yuUUID":yuUUID},
+      {"yarnLotID":yarnLotID},
+      {"usageMode":usageMode},
+      {"yarnLotUUID":yarnLotUUID},
+      {"_id":new ObjectId(yarnUsage_id)},
+      {"usageInfo.fromFactoryID":fromFactoryID},
+      {"usageInfo.toFactoryID":toFactoryID},
+      {"usageInfo.orderID":orderID},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      factoryID: 1,		
+      customerID: 1,	
+      yarnSeasonID: 1,
+      yarnID: 1,		
+      yarnColorID: 1,
+      yarnDataUUID: 1,
+      status: 1,
+
+      yuUUID: 1,
+      yarnLotID: 1,
+      yarnLotUUID: 1,
+      invoiceID: 1,
+      usageMode: 1,
+      yarnWeight: 1,
+      yarnWeightNet: 1,
+      useWeight: 1,
+      yarnBoxInfo: 1,
+      usageInfo: 1,
+      // setFactoryID: "$usageInfo.setFactoryID",
+    }	},
+    
   ]);
 
   await this.asyncForEach(yarnLotUsage, async (item1) => {
@@ -8085,9 +8333,142 @@ exports.getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) =
   return bundleNoListF;
 }
 
-exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsource, status) => {
+exports.getCurrentCompanyOrderOutsourceFac1BY1= async (companyID, orderIDs, isOutsource, status, sTypeOtus, sTypeOtusExist) => {
+  const orderProductFacOutQTY = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+
+      // {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
+      {"productionNode":  {$elemMatch: {
+        "isOutsource": isOutsource, 
+        "status": {$in: status},
+
+        "sTypeOtus": sTypeOtus, 
+        // $or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]
+        
+      }}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        // productionNode: 1,
+        // productBarcodeNo: 1,
+        // productBarcodeNoReal: 1,
+        targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+        color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+        size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+        runningNo: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit ] }},
+        // bundleNo: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+
+    }	},
+    { $unwind: "$productionNode"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,
+      targetPlace: 1,
+      color: 1,
+      size: 1,
+      runningNo: 1,
+      // bundleNo: 1,
+      // productCount: 1,
+      // productBarcodeNoReal: 1,
+      factoryID: "$productionNode.factoryID",	
+      fromNode: "$productionNode.fromNode",
+      datetime: "$productionNode.datetime",
+      status: "$productionNode.status",
+      sTypeOtus: "$productionNode.sTypeOtus",
+      isOutsource: "$productionNode.isOutsource",
+      outsourceData: "$productionNode.outsourceData",
+      // createBy: "$productionNode.createBy",
+    }	},
+    { $match: { $and: [
+      // {"status":status},
+      {"status":{$in: status}},
+      {"isOutsource":isOutsource},
+      
+      {"sTypeOtus":sTypeOtus},
+      { "sTypeOtus": { $exists: sTypeOtusExist } }
+      // {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]}
+    ] } },
+    { $unwind: "$outsourceData"},
+    { $project: {			
+      _id: 1,
+      companyID: 1,	
+      orderID: 1,
+      targetPlace: 1,
+      color: 1,
+      size: 1,
+      runningNo: 1,
+      // bundleNo: 1,
+      // productCount: 1,
+      // productBarcodeNoReal: 1,
+      factoryID: 1,
+      fromNode: 1,
+      toFactoryID: "$outsourceData.factoryID",
+      fromFactoryID: "$outsourceData.fromFactoryID",
+      datetime: 1,
+      yyyymmdd: { $dateToString: { format: "%Y%m%d", date: "$datetime", timezone : process.env.timezone } },
+      // mmdd: { $dateToString: { format: "%m%d", date: "$datetime" } },
+      yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime", timezone : process.env.timezone } },
+      dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime", timezone : process.env.timezone } },
+      status: 1,
+      sTypeOtus: 1,
+      isOutsource: 1,
+      // createBy: 1,
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        // bundleNo: '$bundleNo',
+        // productCount: '$productCount',
+        // productBarcodeNoReal: '$productBarcodeNoReal',
+        status: '$status',
+        // sTypeOtus: '$sTypeOtus',
+        factoryID: '$factoryID',
+        toFactoryID: '$toFactoryID',
+        fromFactoryID: '$fromFactoryID',
+        yyyymmdd: '$yyyymmdd',
+        // createBy: '$createBy',
+      },
+      sumFactoryOutsQty: {$sum: 1} ,
+      // sumFactoryOutsQty: {$sum: '$productCount'} ,
+    }}   
+  ])
+  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+
+  const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
+    // companyID: fw._id.companyID, 
+    orderID: fw._id.orderID, 
+    targetPlace: fw._id.targetPlace,
+    color: fw._id.color,
+    // bundleNo: fw._id.bundleNo, 
+    // productCount: fw._id.productCount, 
+    // productBarcodeNoReal: fw._id.productBarcodeNoReal, 
+    status: fw._id.status, 
+    factoryID: fw._id.factoryID,
+    toFactoryID: fw._id.toFactoryID,
+    fromFactoryID: fw._id.fromFactoryID,
+    yyyymmdd: fw._id.yyyymmdd,
+    // createBy: fw._id.createBy,
+    sumFactoryOutsQty: fw.sumFactoryOutsQty,
+  }));
+
+  return orderProductFacOutQTYF;
+}
+
+exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsource, status, sTypeOtus, sTypeOtusExist) => {
   // const status = 'outsource';
-  const sTypeOtus = 'b';
   const orderProductFacOutQTY = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -8099,7 +8480,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
         "status": {$in: status},
 
         // "sTypeOtus": sTypeOtus, 
-        // $or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: false } } ]
+        $or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]
         
       }}},
 
@@ -8158,7 +8539,7 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
       {"isOutsource":isOutsource},
       
       // {"sTypeOtus":sTypeOtus},
-      // {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: false } } ]}
+      {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]}
     ] } },
     { $unwind: "$outsourceData"},
     { $project: {			
