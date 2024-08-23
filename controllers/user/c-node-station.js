@@ -3134,6 +3134,17 @@ exports.putOutsourceOrderProductionNextNodeID = async (req, res, next) => {
   // const washingAndPressingMerge = data.washingAndPressingMerge;
   // productionNode.datetime = current;
   try {
+
+    // return res.status(501).json({
+    //   message: {
+    //     messageID: 'errns023', 
+    //     mode:'errEditNextNodeOutsource', 
+    //     value: "err edit next node outsource"
+    //   },
+    //   success: false
+    // });
+
+
     await ShareFunc.upsertUserSession1hr(userID);
 
     const uuid = uuidv4();

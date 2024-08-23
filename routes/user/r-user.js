@@ -65,6 +65,10 @@ router.get("/test/test23_1", userController.getTestTest23_1);  // ## view group 
 router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
 router.get("/test/test20", userController.getTestTest20);  // ##  update ver for orderProductionQueue = queueInfo --> []
 
+
+// ## staff scan node station
+router.get("/test/staffscan/getstat/staffID", userController.getTestStaffScanStatByStaffID);  // ## get StaffScan Stat By StaffID
+
 // ## updateOne - push  , orderProductionQueue-> queueInfo
 router.get("/test/orderProductionQueue/01", userController.getOrderProductionQueue01);  // ##  update orderProductionQueue insert queueInfo
 router.get("/test/orderProductionQueue/02", userController.getOrderProductionQueue02);  // ## delete element by bundleNo

@@ -941,6 +941,156 @@ exports.getTestTest20 = async (req, res, next) => {
 
 }
 
+// ## http://192.168.1.36:3968/api/user/test/staffscan/getstat/staffID
+// // ## get StaffScan Stat By StaffID
+// router.get("/test/staffscan/getstat/staffID", userController.getTestStaffScanStatByStaffID);  
+exports.getTestStaffScanStatByStaffID = async (req, res, next) => {
+
+  const companyID = 'c000001';
+  const factoryIDArr = ['f000001'];
+  // const orderID = 'AA0QYA4A';
+  const orderIDArr = ['BA1P5A4A', 'BA1P3A4A'];
+  const nodeIDs = ['3.LINKING'];
+
+  // const date1 = '07/08/2024';  // ## date start
+  // const date2 = '07/08/2024';  // ## date end
+  const dateStart = new Date(moment().tz('Asia/Bangkok').format('2024/08/16 00:00:00+07:00'));
+  const dateEnd = new Date(moment().tz('Asia/Bangkok').format('2024/08/16 23:59:59+07:00'));
+
+  const qrCode  = 'TAILINStaff-6';  // TAILINStaff-256   TALND-356
+  const subNodeID = 'L1';
+
+  const subNodeStaffScan = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDArr}},
+      {"subNodeFlow":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
+
+      {"subNodeFlow":  {$elemMatch: {
+        "factoryID": {$in: factoryIDArr}, 
+        "nodeID": {$in: nodeIDs}, 
+        // "qrCode": {$in: qrCodeArr}, 
+        "datetime": { $gte: dateStart, $lte : dateEnd}, 
+        // "datetime": { $lte : dateEnd} 
+      }}},
+      // {"factoryID":{$in: factoryIDArr}},
+      // {"nodeID":{$in: nodeIDs}},
+      // {"datetime": { $gte: dateStart}} , 
+      // {"datetime": { $lte : dateEnd}} ,
+
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        // productionNode: 1,  // ## 
+        subNodeFlow: 1,  // ## 
+    }	},
+    { $unwind: "$subNodeFlow" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      productBarcodeNoReal: 1,
+      // bundleNo: 1,
+      // productID: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      factoryID: "$subNodeFlow.factoryID",
+      nodeID: "$subNodeFlow.nodeID",
+      subNodeID: "$subNodeFlow.subNodeID",	
+      qrCode: "$subNodeFlow.qrCode",	
+      datetime: "$subNodeFlow.datetime",
+      // createBy: "$subNodeFlow.createBy",
+      // toNode: "$productionNode.toNode",
+      // datetime: "$productionNode.datetime",
+      // createBy: "$productionNode.createBy",
+    }},
+
+    { $match: { $and: [
+      {"factoryID":{$in: factoryIDArr}},
+      {"nodeID":{$in: nodeIDs}},
+      // {"targetPlace":{$in: zoneArr}},
+      // {"status":{$in: statusArr}},
+      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
+      // {"datetime": { $lte : dateEnd}} ,
+
+      {"qrCode":qrCode},
+      {"subNodeID":subNodeID},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      factoryID: 1,	
+      orderID: 1,	
+      productBarcodeNoReal: 1,
+      nodeID: 1,
+      subNodeID: 1,	
+      qrCode: 1,	
+    }},
+
+    // { $group: {			
+    //   _id: { 
+    //     productBarcodeNoReal: '$productBarcodeNoReal',
+    //     // factoryID: '$factoryID',
+    //     // orderID: '$orderID',
+    //     // nodeID: '$nodeID',
+    //     // subNodeID: '$subNodeID',
+    //     // qrCode: '$qrCode',
+    //   },
+    //   // countQty: {$sum: 1} ,
+    // }} 
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+        orderID: '$orderID',
+        nodeID: '$nodeID',
+        subNodeID: '$subNodeID',
+        qrCode: '$qrCode',
+      },
+      countQty: {$sum: 1} ,
+    }} 
+
+  ])
+  .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.datetime": -1 } );
+  // console.log(subNodeStaffScan);
+
+  
+  // const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
+  //   productBarcodeNoReal: fw._id.productBarcodeNoReal, 
+  // }));
+  // console.log(subNodeStaffScanF);
+  // console.log('len = ',subNodeStaffScanF.length);
+
+  const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
+    companyID: fw._id.companyID, 
+    factoryID: fw._id.factoryID,
+    orderID: fw._id.orderID,
+    nodeID: fw._id.nodeID,
+    subNodeID: fw._id.subNodeID,
+    qrCode: fw._id.qrCode,
+    countQty: fw.countQty,
+  }));
+  console.log(subNodeStaffScanF);
+
+
+}
+
 // ## http://192.168.1.36:3968/api/user/test/orderProductionQueue/01
 // router.get("/test/orderProductionQueue/01", userController.getOrderProductionQueue01);  // ##  update orderProductionQueue insert queueInfo
 exports.getOrderProductionQueue01 = async (req, res, next) => {
