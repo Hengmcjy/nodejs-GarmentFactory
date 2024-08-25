@@ -2383,6 +2383,7 @@ exports.getOrderProductionQueueByProductBarcodeNo = async (req, res, next) => {
     const bundleNo = orderProduction.bundleNo;
     const bundleID = orderProduction.bundleID;
     const productCount = orderProduction.productCount;
+    // console.log(companyID, productBarcodeNo, orderID, bundleNo, bundleID, productCount);
     const productBarcode = productBarcodeNo.substr(+process.env.productBarcodePos, +process.env.productBarcodeDigit);
 
     // ## get number from bundleNo , bundleID
@@ -2616,8 +2617,94 @@ exports.putEditOrderProductionSubNodeFlow = async (req, res, next) => {
   }
 }
 
+// // putDeleteSubNodeOrderProductionByBarcodeNo(companyID: string, orderID: string, bundleNo: string, bundleID: string)
+// router.put("/node26/editqr/oderProduction/subNodeFlow/del1", nsController.putDeleteSubNodeOrderProductionByBarcodeNo);
+exports.putDeleteSubNodeOrderProductionByBarcodeNo = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  // console.log('putDeleteSubNodeOrderProductionByBarcodeNo');
+  // console.log(data);
+  // const userID = data.userID;
+  const companyID = data.companyID;
+  const orderID = data.orderID;
+  const bundleNo = +data.bundleNo;
+  const bundleID = data.bundleID;
+  const nodeID = data.nodeID;  // ## 
+  const subNodeIDSelected = data.subNodeIDSelected;  // ## 
+  const productBarcode = data.productBarcode;
+  const productCount = data.productCount;
 
+  // console.log(companyID, orderID, bundleNo, bundleID, nodeID, subNodeIDSelected, productBarcode, productCount);
 
+  try {
+    //  ## update orderProductionQueue / delete array 1 element 
+    const result1 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        {"orderID":orderID},
+        {"bundleNo":bundleNo},
+        {"bundleID":bundleID},
+      ]}, 
+      {
+        $pull: {
+          subNodeFlow: {
+            "nodeID": nodeID,
+            "subNodeID": subNodeIDSelected, 
+            // "type": type,
+            // "productBarcode":{$in: productBarcodes}, 
+            // "bundleNo":{$in: bundleNos}, 
+            // "numberFrom": { $gte: no1 } , 
+            // "numberTo": { $lte: no2 }
+          }
+        }
+      });
+      // console.log(result1);
+
+    // ## get number from bundleNo , bundleID
+    let numberFrom = 0;
+    let numberTo = 0;
+    const orderProductionNo = await ShareFunc.getOrderProductListByByORIDBunNo2(companyID, orderID, bundleNo, bundleID);
+    // console.log(orderID, orderProductionNo);
+    if (orderProductionNo.length > 0) {
+      orderProductionNo.sort((a,b)=>{ return a.productBarcodeNoReal >b.productBarcodeNoReal?1:a.productBarcodeNoReal <b.productBarcodeNoReal?-1:0 });
+      numberFrom = +orderProductionNo[0].productBarcodeNoReal.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+      numberTo = +orderProductionNo[orderProductionNo.length - 1].productBarcodeNoReal.substr(+process.env.runningNoPos, +process.env.runningNoDigit);
+      // console.log(numberFrom, numberTo);
+    }
+
+    let orderProductionQueueBundleNo = await ShareFunc.getOrderProductionQueueByBundleNo(companyID, orderID, bundleNo);
+    // console.log(orderProductionQueueBundleNo);
+    let orderSubNodeFlowCost = await ShareFunc.getOrderProductionSubNodeFlowCost1(companyID, orderID);
+
+    return res.status(200).json({
+      orderSubNodeFlowCost: orderSubNodeFlowCost,
+      orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      orderID: orderID,
+      bundleNo: bundleNo,
+      bundleID: bundleID,
+      productBarcode: productBarcode,
+      productCount: productCount,
+      numberFrom: numberFrom,
+      numberTo: numberTo,
+      success: true,
+      message: {
+        messageID: 'ok', 
+        mode:'findOrderProductionQueueOK', 
+        value: ""
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO024', 
+        mode:'errEditQROrderProductionSubNodeFlowDel1', 
+        value: "error edit qr order production subNodeFlow Delete 1 bundle"
+      },
+      success: false
+    });
+  }
+}
 
 // // ## get product problem
 // router.get("/node21/orderProduction/lists/:companyID/:orderID/:bundleNo/:nodeID", 

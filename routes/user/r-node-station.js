@@ -144,6 +144,9 @@ nsController.getorderProductionCNByORIDBunNo);
 router.get("/node24/orderProduction/staffscanned/lists/:orderID/:bundleNo/:nodeID/:qrcodeArr", 
 nsController.getorderProductionStaffScannedNameListCNByORIDQRs);
 
+// putDeleteSubNodeOrderProductionByBarcodeNo
+router.put("/node26/editqr/oderProduction/subNodeFlow/del1", nsController.putDeleteSubNodeOrderProductionByBarcodeNo);
+
 // getOrderProductionQueueByProductBarcodeNo
 router.get("/node22/get1/orderProductionQueue/:companyID/:productBarcodeNo", nsController.getOrderProductionQueueByProductBarcodeNo);
 
