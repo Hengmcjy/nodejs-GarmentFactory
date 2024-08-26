@@ -82,12 +82,12 @@ let isQuery_everyDayGroup = false;
 let isQuery_everyHourGroup = false;
 let isQuery_every30mnGroup = false;
 let isQuery_every15mnGroup = false;
-// setInterval(async() => {
-//   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-//   if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
-//     await this.getSchedule(); 
-//   }
-// },1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
+setInterval(async() => {
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
+    await this.getSchedule(); 
+  }
+},1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
 
 
 // ## main scheduler #################################
