@@ -10,8 +10,12 @@ const moment = require('moment-timezone');
 const errorController = require('./controllers/c-api-error');
 
 require('dotenv').config({ path: './config.env' });
+require('dotenv').config({ path: './config2.env' });
 // require('dotenv').config({});
 // const ddos = new Ddos({burst:10, limit:15});
+
+// console.log(process.env.MGDB === 'nodeGarmentSystem', process.env.MGDB);
+// console.log(process.env.PRODUCTION === 'false', process.env.PRODUCTION);
 
 // ## declare routes
 const scheduleUserRoutes = require("./routes/user/r-schedule");

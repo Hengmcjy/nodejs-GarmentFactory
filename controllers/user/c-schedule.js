@@ -85,10 +85,14 @@ let isQuery_every15mnGroup = false;
 setInterval(async() => {
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
-    await this.getSchedule(); 
+    // console.log(process.env.MGDB === 'nodeGarmentSystem', process.env.MGDB);
+    if (process.env.PRODUCTION === 'true') { // ## real server database
+      await this.getSchedule(); 
+    }
   }
 },1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
 
+// console.log(process.env.PRODUCTION === 'false', process.env.PRODUCTION);
 
 // ## main scheduler #################################
 // #######################################################################################################
