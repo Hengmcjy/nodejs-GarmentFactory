@@ -138,6 +138,15 @@ router.get("/cpn/rep1/current/order/:companyID/:ordertatus/:orderIDArr", checkAu
 
 router.get("/cpn/rep9/current/order/:companyID/:ordertatus/:orderID", checkAuth, checkUUID, reportController.getRepCompanyOrderByOrderID);
 
+
+router.post("/cpn/rep/edit1/order/zoneperiod/qty", 
+        checkAuth, checkUUID, reportController.postRepCompanyOrderZonePeriod);
+
+
+router.get("/cpn/RepQTYEdit/current/seasonYear/:companyID/:seasonYear", 
+        checkAuth, checkUUID, reportController.getRepQTYEditBySeasonYear);
+
+
 // // ## 
 // router.get("/cpn/rep2/current/orderstyle/:companyID/:ordertatus", checkAuth, checkUUID, reportController.getRepCompanyOrderStyle);
 

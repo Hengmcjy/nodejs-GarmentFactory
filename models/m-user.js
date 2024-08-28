@@ -12,7 +12,14 @@ const userSchema = mongoose.Schema({
     tel: {type: String},
     email: {type: String},
     registDate: {type: Date, required: true},
-    lastLogin: {type: Date}
+    lastLogin: {type: Date},
+    menuAuthor: [{   // ## 
+      menuID : {type: String},
+      menuName : {type: String},
+      visible : {type: Boolean},
+      enable : {type: Boolean},
+      state: {type: String},  // ## normal , close , wait …
+    }],
   },
   uCompany: [{
     companyID : {type: String},

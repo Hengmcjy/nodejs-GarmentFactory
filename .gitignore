@@ -12,6 +12,7 @@
 npm-debug.log
 yarn-error.log
 config.env
+config2.env
 mykey.json
 mykeyii.json
 newkey.json

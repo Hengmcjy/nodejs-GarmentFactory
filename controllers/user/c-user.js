@@ -12,6 +12,10 @@ const io = require('../../socket');
 
 const ShareFunc = require("../c-api-app-share-function");
 
+
+const Menu = require("../../models/m-menu");
+const MenuAuthor = require("../../models/m-menuAuthor");
+
 const User = require("../../models/m-user");
 const UserClass = require("../../models/m-userClass");
 const UserGroupScan = require("../../models/m-userGroupScan");

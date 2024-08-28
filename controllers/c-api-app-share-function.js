@@ -39,6 +39,7 @@ const OrderProduction = require("../models/m-orderProduction");
 const OrderProductionQueue = require("../models/m-orderProductionQueue");
 const OrderProductionQueueList = require("../models/m-orderProductionQueueList");
 const SubNodeFlowType = require("../models/m-subNodeFlowType");
+const RepQTYEdit = require("../models/m-repQTYEdit");
 
 
 const OPDLost = require("../models/m-opdLost");
@@ -12464,6 +12465,123 @@ exports.getRepCFNProductStateStyleTargetPlaceColorSize = async (companyID, facto
 
 // #######################################################################################################
 // ## report..... company
+
+// ShareFunc.getRepQTYEditBySeasonYear(companyID, seasonYear);
+exports.getRepQTYEditBySeasonYear = async (companyID, seasonYear) => {
+  const repQTYEdit = await RepQTYEdit.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"orderID":orderID},
+      // {"editType":editType},
+      {"seasonYear":seasonYear},
+    ] } },
+    { $unwind: "$dataRQTYE" },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        orderID: 1,		
+        editType: 1,	
+        seasonYear: 1,
+        setName: 1,	
+        // dataRQTYE: 1,
+        fromNode: "$dataRQTYE.fromNode",
+        color: "$dataRQTYE.color",
+        productColor: "$dataRQTYE.productColor",
+        productSize: "$dataRQTYE.productSize",
+        size: "$dataRQTYE.size",
+        sizeSeq: "$dataRQTYE.sizeSeq",
+        targetPlaceID: "$dataRQTYE.targetPlaceID",
+        targetPlaceSeq: "$dataRQTYE.targetPlaceSeq",
+        sumProductQty: "$dataRQTYE.sumProductQty",
+    }	},
+  ]);
+  // console.log(repQTYEdit);
+  return repQTYEdit;
+}
+
+// ShareFunc.getRepQTYEdit1(companyID, orderID, editType, seasonYear);
+exports.getRepQTYEdit1 = async (companyID, orderID, editType, seasonYear) => {
+  const repQTYEdit = await RepQTYEdit.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      {"editType":editType},
+      {"seasonYear":seasonYear},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        orderID: 1,		
+        editType: 1,	
+        seasonYear: 1,
+        setName: 1,	
+        dataRQTYE: 1,
+    }	}
+  ]);
+  // console.log(repQTYEdit);
+  return repQTYEdit;
+}
+
+exports.getRepQTYEditByDataRQTYE = async (companyID, orderID, editType, seasonYear, dataRQTYE) => {
+  const repQTYEdit = await RepQTYEdit.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      {"editType":editType},
+      {"seasonYear":seasonYear},
+    ] } },
+    { $unwind: "$dataRQTYE" },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        orderID: 1,		
+        editType: 1,	
+        seasonYear: 1,
+        setName: 1,	
+        // dataRQTYE: 1,
+        fromNode: "$dataRQTYE.fromNode",
+        color: "$dataRQTYE.color",
+        productColor: "$dataRQTYE.productColor",
+        productSize: "$dataRQTYE.productSize",
+        size: "$dataRQTYE.size",
+        sizeSeq: "$dataRQTYE.sizeSeq",
+        targetPlaceID: "$dataRQTYE.targetPlaceID",
+        targetPlaceSeq: "$dataRQTYE.targetPlaceSeq",
+        sumProductQty: "$dataRQTYE.sumProductQty",
+    }	},
+    { $match: { $and: [
+      {"fromNode":dataRQTYE.fromNode},
+      {"productColor":dataRQTYE.productColor},
+      {"size":dataRQTYE.size},
+      {"targetPlaceID":dataRQTYE.targetPlaceID},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      orderID: 1,		
+      editType: 1,	
+      seasonYear: 1,
+      setName: 1,	
+      // dataRQTYE: 1,
+      fromNode: 1,	
+      color: 1,
+      productColor: 1,	
+      productSize: 1,	
+      size: 1,	
+      sizeSeq: 1,	
+      targetPlaceID: 1,	
+      targetPlaceSeq: 1,	
+      sumProductQty: 1,
+  }	},
+  ]);
+  // console.log(repQTYEdit);
+  return repQTYEdit;
+}
+
+
+
+
+
 
 exports.getCNCurrentProductionNodeQty = async (companyID, orderStatusArr, productStatusArr, orderIDArr, toNodeArr) => {
   const orderProductRep = await OrderProduction.aggregate([

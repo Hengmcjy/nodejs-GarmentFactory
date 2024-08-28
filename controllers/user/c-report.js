@@ -15,6 +15,8 @@ const MailSignup = require("../../models/m-mailSignup");
 const Factory = require("../../models/m-factory");
 const Customer = require("../../models/m-customer");
 const OrderProduction = require("../../models/m-orderProduction");
+const RepQTYEdit = require("../../models/m-repQTYEdit");
+
 
 const Schedule = require("../../models/m-schedule");
 const Dtproductionzoneperiodc = require("../../models/m-dt-productionzoneperiodc");
@@ -234,7 +236,11 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
     currentProductionZoneForLoss = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr);
     // console.log(currentProductionZoneForLoss);
     // console.log('getRepCurrentProductionZonePeriod 3');
-    
+
+    // console.log(companyID, seasonYear);
+    const repQTYEditList = await ShareFunc.getRepQTYEditBySeasonYear(companyID, seasonYear);
+    // console.log(repQTYEditList);
+
     // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
     // currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
     // countCurrentProductAllDetailCFN = await ShareFunc.getCountCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr);
@@ -245,6 +251,7 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
       currentProductionZonePeriod: currentProductionZonePeriod,
       currentProductionZoneForLoss: currentProductionZoneForLoss,
       orderStyleColorSize: orderStyleColorSize,
+      repQTYEditList: repQTYEditList,
       // currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
     });
   } catch (err) {
@@ -2563,49 +2570,166 @@ exports.getRepCompanyOrderByOrderID = async (req, res, next) => {
   }
 }
 
-// // router.get("/cpn/rep2/current/orderstyle/:companyID/:ordertatus", checkAuth, checkUUID, reportController.getRepCompanyOrderStyle);
-// exports.getRepCompanyOrderStyle = async (req, res, next) => {
-//   // try {} catch (err) {}
-//   // console.log('getRepCompanyOrderStyle');
-//   const companyID = req.params.companyID;
-//   // const factoryID = req.params.factoryID;
-//   // const nodeID = req.params.nodeID;
-//   const orderStatusArr = JSON.parse(req.params.ordertatus);
-//   // const repListNameArr = JSON.parse(req.params.repListName);
-//   // console.log(companyID, factoryID, nodeID, productStatusArr);
+// router.get("/cpn/RepQTYEdit/current/seasonYear/:companyID/:seasonYear", 
+//   checkAuth, checkUUID, reportController.getRepQTYEditBySeasonYear);
+exports.getRepQTYEditBySeasonYear = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getRepQTYEditBySeasonYear');
+  const companyID = req.params.companyID;
+  const seasonYear = req.params.seasonYear;
 
-//   try {
-//     // currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr);
-//     // const currentOrder = {
-//     //   orderStyleColorSize: orderStyleColorSize,
-//     //   currentCompanyOrder: currentCompanyOrder
-//     // };
-    
-//     const token = '';
-//     res.status(200).json({
-//       token: token,
-//       expiresIn: process.env.expiresIn,
-//       // currentOrderStyle: currentOrderStyle,
-//       // currentCompanyOrder: currentCompanyOrder,
-//       // repDataFormat1: repDataFormat1,
-//       // orders: orders,
-//       // products: products,
-//       // orderProductAllQtyRep: orderProductAllQtyRep,
-//       // factory: factory,
-//       // nodeStation: nodeStation,
-//       // nodeFlows: nodeFlows,
-//       // nodeFlow: nodeFlow
-//     });
-//   } catch (err) {
-//     return res.status(501).json({
-//       message: {
-//         messageID: 'errrp004', 
-//         mode:'errRepCurrentCompanyOrderStyle', 
-//         value: "error report current company order style"
-//       }
-//     });
-//   }
-// }
+  // console.log(companyID, seasonYear);
+
+  try {
+
+    const repQTYEditList = await ShareFunc.getRepQTYEditBySeasonYear(companyID, seasonYear);
+    // console.log(repQTYEditList);
+
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      repQTYEditList: repQTYEditList,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp002', 
+        mode:'errRepQTYEditBySeasonYear', 
+        value: "error report QTYEdit By SeasonYear"
+      }
+    });
+  }
+}
+
+// router.post("/cpn/rep/edit1/order/zoneperiod/qty", 
+//   checkAuth, checkUUID, reportController.postRepCompanyOrderZonePeriod);
+exports.postRepCompanyOrderZonePeriod = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('postRepCompanyOrderZonePeriod');
+  const data = req.body;
+  // console.log(err);
+
+  try {
+    // ##  
+    const companyID = data.companyID;
+    const orderID = data.orderID;
+    const editType = data.editType;  // ## edit-qty , plan-adjust
+    const seasonYear = data.seasonYear;  // ## 2025SS
+    const setName = data.setName;   // ## muji
+    const dataRQTYE = data.dataRQTYE;   // ##
+    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+    // console.log(companyID, orderID, editType, setName);
+    // ## update current date
+    await this.asyncForEach(dataRQTYE, async (item1) => {
+      item1.datetime = current;
+    });
+
+    if (dataRQTYE.sumProductQty === 0) {
+      // ## delete element
+      const result1 = await RepQTYEdit.updateMany(
+        {$and: [
+          {"companyID":companyID},
+          {"orderID":orderID}, 
+          {"editType":editType}, 
+          {"seasonYear":seasonYear}, 
+        ]}, 
+        {
+          $pull: {
+            dataRQTYE: {
+              "fromNode": dataRQTYE.fromNode,
+              "productColor": dataRQTYE.productColor,
+              "size": dataRQTYE.size,
+              "targetPlaceID": dataRQTYE.targetPlaceID,
+            }
+          }
+        });
+
+    } else {
+
+      const repQTYEdit1 = await ShareFunc.getRepQTYEdit1(companyID, orderID, editType, seasonYear);
+      if (repQTYEdit1.length === 0) {
+        // console.log('add new');
+        const repQTYEditUpsert = await RepQTYEdit.updateOne({$and: [
+            {"companyID":companyID},
+            {"orderID":orderID}, 
+            {"editType":editType}, 
+            {"seasonYear":seasonYear}, 
+          ]} , 
+          {
+            "dataRQTYE": dataRQTYE,
+          }, {upsert: true}); 
+      } else {  // ## repQTYEdit1.length > 0
+        // edit
+        // getRepQTYEditByDataRQTYE = async (companyID, orderID, editType, seasonYear, dataRQTYE)
+        const repQTYEdit01 = await ShareFunc.getRepQTYEditByDataRQTYE(companyID, orderID, editType, seasonYear, dataRQTYE);
+        if (repQTYEdit01.length === 0) {
+          // ## edit push new element
+          const result1 = await RepQTYEdit.updateOne(
+            {$and: [
+              {"companyID":companyID},
+              {"orderID":orderID}, 
+              {"editType":editType}, 
+              {"seasonYear":seasonYear}, 
+            ]}, 
+            {$push: {dataRQTYE: {$each: [dataRQTYE],  $position: 0}}},  // ## add new element at the first
+            );
+  
+        } else {  // ## repQTYEdit01.length > 0
+          // ## edit update old element qty and datetime
+          const result1 = await RepQTYEdit.updateMany(
+            {$and: [
+              {"companyID":companyID},
+              {"orderID":orderID}, 
+              {"editType":editType}, 
+              {"seasonYear":seasonYear}, 
+            ]},
+            {
+              $set: { 
+                "dataRQTYE.$[elem].sumProductQty" : dataRQTYE.sumProductQty,
+                "dataRQTYE.$[elem].datetime" : current,
+              }
+            }, 
+            {
+              multi: true, 
+              arrayFilters: [  {
+                "elem.fromNode": dataRQTYE.fromNode,
+                "elem.productColor": dataRQTYE.productColor,
+                "elem.size": dataRQTYE.size,
+                "elem.targetPlaceID": dataRQTYE.targetPlaceID,
+              } ] 
+            }); 
+        }
+      }
+    }
+
+    // console.log(repQTYEditUpsert);
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      success: true
+      // order: order
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      success: false,
+      message: {
+        messageID: 'errO002A', 
+        mode:'errCreateRepQTYEdit', 
+        value: "create RepQTYEdit error"
+      }
+    });
+  }
+}
+
+
 
 
 // ## report company ############################################################################
