@@ -117,9 +117,10 @@ router.get("/cpn/rep14/current/order/state/:companyID/:ordertatus/:orderIDArr/:s
 
 router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr/:seasonYear/:type", 
         reportController.getRepCompanyOrderOutsourceState2);
-// // ## get node 
-// router.get("/node/outs/rep10/CF/:companyID/:ordertatus/:orderIDArr", 
-//         reportController.getRepCompanyOrderOutsource2);
+//
+
+// ## putEditSchedule01 = auto_getCurrentCompanyOrderOutsourceFac
+router.put("/edit/productions/OutsourceState", reportController.putEditSchedule01);
 
 
 

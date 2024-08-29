@@ -2,6 +2,10 @@ const path = require("path");
 const express = require('express');
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+
+// const os = require('os');
+// console.log(os.cpus());
+
 // const Ddos = require('ddos')
 // 
 const cors = require('cors');

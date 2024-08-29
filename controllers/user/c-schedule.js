@@ -86,7 +86,10 @@ setInterval(async() => {
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
     // ## real server database // ## from file config2.env
-    if (process.env.PRODUCTION === 'true') { await this.getSchedule(); }
+    // console.log(process.env.PRODUCTION === 'false', process.env.PRODUCTION);
+    if (process.env.PRODUCTION === 'true') { 
+      await this.getSchedule(); 
+    }
   }
 },1000*intervalSecond*intervalMinute1); // intervalSecond*intervalMinute1
 
@@ -421,7 +424,7 @@ async function auto_getCompanyOrderOutsource(scheduleData) {
       // const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
       // console.log(scheduleData.seasonYear+' '+' EveryHour ' + scheduleData.sName +' / '+ current2+'done! ........]');
     }
-    // return true;
+    return true;
   } catch (err) {
     console.error(err);
   }
@@ -484,16 +487,19 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
       const sTypeOtusExist1 = false;
       // ## get outsource factory sent out & factory receive
       // getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsource, status, sTypeOtus, sTypeOtusExist)
+
+      // console.log('1111 ');
       const orderProduct = await ShareFunc.getCurrentCompanyOrderOutsourceFac(companyID, orderIDArr, isOutsource, status, sTypeOtus1, sTypeOtusExist1);
-      
+      // console.log('2222 ');
       const sTypeOtus2 = '1'; // ## 1 = 1 by 1
       const sTypeOtusExist2 = true;
       const orderProduct1BY1 = await ShareFunc.getCurrentCompanyOrderOutsourceFac1BY1(companyID, orderIDArr, isOutsource, status, sTypeOtus2, sTypeOtusExist2);
-      
-      dataOutsState = await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderProduct1BY1, companyID, seasonYear);
-
+      // console.log('3333 ');
+      const dataOutsState = await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderProduct1BY1, companyID, seasonYear);
+      // console.log('44444 ');
       const repCurrentCompanyOrderOutsourceFac = 
         await repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderProduct1BY1, companyID, seasonYear);
+        // console.log('xxxxx ');
       
       // ## update  Schedule>  lastDatetime
       const scheduleUpsert = await Schedule.updateOne({$and: [
@@ -514,6 +520,7 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
         "sDatetime": scheduleData.sDatetime,
       }, {upsert: true}); 
       // console.log(scheduleUpsert);
+      // console.log('yyyyyy ');
 
       // ## update ProductionZonePeriodC > lastDatetime, data
       const dtorderoutsourcefacUpsert  = await Dtorderoutsourcefac.updateOne({$and: [
@@ -534,12 +541,13 @@ async function auto_getCurrentCompanyOrderOutsourceFac(scheduleData) {
         "data": dataOutsState,
       }, {upsert: true}); 
       // console.log(dtorderoutsourcefacUpsert);
+      // console.log('zzzzzz ');
 
       // // console.error(mm1,'updated auto_getCurrentCompanyOrderOutsourceFac');
       // const current2 = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
       // console.log(scheduleData.seasonYear+' '+' EveryHour ' + scheduleData.sName +' / '+ current2+'done! ......... ]');
     }
-    // return true;
+    return true;
   } catch (err) {
     console.error(err);
   }
@@ -966,26 +974,32 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
   // console.log(orderProduct1BY1);
   // console.log('-**************************************************************');
 
+  // console.log('** 1111 ');
   // ## get colors  colorComID= async (companyID) 
   const colors = await ShareFunc.colorComID(companyID);
   // console.log(colors);
+  // console.log('** 22222 ');
 
   // ## get orderIDs
   const orders = await ShareFunc.getOrderSBySeasonYear(companyID, seasonYear);
+  // console.log('** 3333 ');
   const orderIDArr = Array.from(new Set(orders.map((item) => item.orderID)));
   // console.log(orderIDArr);
+  // console.log('** 4444 ');
 
   // ## get outsource factory sent out
   const status1 = 'outsource';  // ## sent out  outsource
   const orderProductFacOut = await orderProduct.filter(i=>i.status === status1);
   const orderProductFac1BY1Out = await orderProduct1BY1.filter(i=>i.status === status1);
   // console.log(orderProductFacOut);
+  // console.log('** 5555 ');
 
   // ## get outsource factory receive
   const status2 = 'normal';  // ## sent out  outsource
   const orderProductFacReceive = await orderProduct.filter(i=>i.status === status2);
   const orderProductFac1BY1Receive = await orderProduct1BY1.filter(i=>i.status === status2);
   // console.log(orderProductFacReceive);
+  // console.log('** 6666 ');
 
   const factoryIDsOut = Array.from(new Set(orderProductFacOut.map((item) => item.factoryID)));
   const factoryIDs1BY1 = Array.from(new Set(orderProductFac1BY1Out.map((item) => item.factoryID)));
@@ -995,9 +1009,11 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
     if (fac.length === 0) {factoryIDs.push(item);}
   });
   factoryIDs.sort();
+  // console.log('** 7777 ');
   // console.error(factoryIDs);
   const factorys = await ShareFunc.getFactoryArrByCompanyID(companyID);
   // console.error(factorys);
+  // console.log('** 8888 ');
 
   let dataOutsState = [];
 
@@ -1027,6 +1043,7 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
       +':'+sTypeOtus; // ## b = bundle mode
   });
   // console.error(orderProductFacOut);
+  // console.log('## 1111 ');
 
   // ## orderProductFacReceive
   await ShareFunc.asyncForEach(orderProductFacReceive, async (item) => {
@@ -1054,6 +1071,7 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
       +':'+sTypeOtus; // ## b = bundle mode
   });
   // console.error(orderProductFacReceive);
+  // console.log('## 2222 ');
 
   await ShareFunc.asyncForEach(orderProductFac1BY1Out, async (item) => {
     const sTypeOtus = '1';  // ## 1 = 1by1scan
@@ -1080,6 +1098,7 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
       +':'+sTypeOtus; // ## 1 = 1by1scan
   });
   // console.error(orderProductFac1BY1Out);
+  // console.log('## 3333 ');
 
   await ShareFunc.asyncForEach(orderProductFac1BY1Receive, async (item) => {
     const sTypeOtus = '1';  // ## 1 = 1by1scan
@@ -1106,6 +1125,7 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
       +':'+sTypeOtus; // ## 1 = 1by1scan
   });
   // console.error(orderProductFac1BY1Receive);
+  // console.log('## 4444 ++++++++++++++++++++++++++++++++++++++++');
 
   // ## find  date  list
   await ShareFunc.asyncForEach(factoryIDs, async (item) => {
@@ -1129,6 +1149,8 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
     dateOut.sort();  // ## sort asc
     dateReceive.sort();  // ## sort asc
     dateList = [...dateOut];
+
+    // console.log('## 5555 ');
 
     // ## insert dateReceive to dateList
     await ShareFunc.asyncForEach2(dateReceive, async (item2) => {
@@ -1156,6 +1178,8 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
     dateList.sort();  // ## sort asc
     // console.error(dateList);
 
+    // console.log('## 6666 ');
+
     await ShareFunc.asyncForEach2(dateList, async (item2) => {
       let date1 = {
         yyyymmdd: item2,
@@ -1164,6 +1188,8 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
       dateL.push(date1);
     });
 
+    // console.log('## 7777 ');
+
     dataOutsState1.factoryID = item;
     dataOutsState1.factoryName = await ShareFunc.getFactoryNameByFactoryID(factorys, item);
     dataOutsState1.factoryName2 = await ShareFunc.getFactoryName2ByFactoryID(factorys, item);
@@ -1171,9 +1197,20 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
     dataOutsState.push(dataOutsState1);
     // console.error(dateL);
   });
+  // console.log('## 5555 ++++++++++++++++++++++++++++++++++++++++');
+
+  // console.log(' delay 10 sec ');
+  // await new Promise(resolve => setTimeout(resolve, 10000));  // ## delay 10 sec
+  // console.log(' stop delay ');
+
   // console.error(dataOutsState);
   // console.error('+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++');
+  // let round1 = 0;
+  // console.log('@@ 1111 ');
+  // console.log('dataOutsState.length',dataOutsState.length);  
   await ShareFunc.asyncForEach(dataOutsState, async (item) => {
+    // console.log('item.dateList.length',item.dateList.length);
+
     const factoryID = item.factoryID; // ## to factory , outsource factory
     await ShareFunc.asyncForEach2(item.dateList, async (item2) => {
       const yyyymmdd = item2.yyyymmdd;
@@ -1193,9 +1230,10 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
       // await getQty1BY1_001(item3, orderProductFac1BY1Receive);
 
       let setGroupInfoOut = [];
-
       // ## b = bundle mode
+      // console.log('setGroupOutArr.length',setGroupOutArr.length); round1 = round1 + setGroupOutArr.length;
       await ShareFunc.asyncForEach3(setGroupOutArr, async (item3) => {
+
         const qty = await getQty001(item3, orderProductFacOut);
         const bundleNos = await getBundleNos001(item3, orderProductFacOut);
         const setGroupInfo = item3.split(':'); // BA1P4A4A:muji:JAPN:OATMEAL:#013:OM:f000004:20240327
@@ -1217,7 +1255,9 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
         setGroupInfoOut.push(setGroupInfo1);
       });
 
+      
       // ## 1 = 1by1
+      // console.log('setGroup1BY1OutArr.length',setGroup1BY1OutArr.length); round1 = round1 + setGroup1BY1OutArr.length;
       await ShareFunc.asyncForEach3(setGroup1BY1OutArr, async (item3) => {
         const qty = await getQty1BY1_001(item3, orderProductFac1BY1Out);
         const bundleNos = [];
@@ -1240,7 +1280,9 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
         setGroupInfoOut.push(setGroupInfo1);
       });
 
+      
       let setGroupInfoReceive = [];
+      // console.log('setGroupReceiveArr.length',setGroupReceiveArr.length); round1 = round1 + setGroupReceiveArr.length;
       // ## b = bundle mode
       await ShareFunc.asyncForEach3(setGroupReceiveArr, async (item3) => {
         const qty = await getQty001(item3, orderProductFacReceive);
@@ -1264,6 +1306,8 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
         setGroupInfoReceive.push(setGroupInfo1);
       });
 
+      
+      // console.log('setGroup1BY1ReceiveArr.length',setGroup1BY1ReceiveArr.length); round1 = round1 + setGroup1BY1ReceiveArr.length;
       // ## 1 = 1by1
       await ShareFunc.asyncForEach3(setGroup1BY1ReceiveArr, async (item3) => {
         // console.error('---------------item3, orderProductFac1BY1Receive------------------');
@@ -1288,7 +1332,7 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
         };
         setGroupInfoReceive.push(setGroupInfo1);
       });
-
+      
 
       item2.out = setGroupInfoOut;
       item2.receive = setGroupInfoReceive;
@@ -1296,12 +1340,14 @@ async function repCurrentCompanyOrderOutsourceFac_Transform(orderProduct, orderP
       // console.error(setGroupInfoReceive);
     });
   });
+  // console.log("================= round1 = " , round1)
 
   dataOutsState.sort((a,b)=>{ return a.factoryID >b.factoryID?1:a.factoryID <b.factoryID?-1:0 });
   dataOutsState.forEach( (item1, index1) => {
       item1.dateList.sort((a,b)=>{ return a.yyyymmdd <b.yyyymmdd?1:a.yyyymmdd >b.yyyymmdd?-1:0 }); // sort desc
   });
   // console.error(dataOutsState);
+  // console.log('@@ ----------------- ');
 
   return dataOutsState;
 }
