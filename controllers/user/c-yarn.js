@@ -17,6 +17,7 @@ const YarnLotUsage = require("../../models/m-yarnLotUsage");
 const YarnSeason = require("../../models/m-yarnSeason");
 const YarnColor = require("../../models/m-yarnColor");
 const YarnSupplier = require("../../models/m-yarnSupplier");
+const YarnStockCardPCS = require("../../models/m-yarnStockCardPCS");
 // const Company = require("../../models/m-company");
 // const Factory = require("../../models/m-factory");
 // const Product = require("../../models/m-product");
@@ -2222,11 +2223,15 @@ exports.getYarnUsage = async (req, res, next) => {
     // ## get yarn usage
     const yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
     // console.log('000');
+    
+    const yarnStockCardPCS = await ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID);
+
     return res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
       userID: userID,
       yarnLotUsageList: yarnLotUsageList,
+      yarnStockCardPCS: yarnStockCardPCS,
     });
 
     // // ## get yarn usage
@@ -2302,11 +2307,16 @@ exports.getYarnUsageCF = async (req, res, next) => {
     // ## get yarn usage
     const yarnLotUsageList = await ShareFunc.getYarnUsageCF(companyID, [setfactoryID], customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
     // // console.log(yarnLotUsageList);
+    
+    // ## yarnStockCardPCS  getYarnStockCardPCS= async (companyID, yarnSeasonID, yarnID, yarnColorID)
+    const yarnStockCardPCS = await ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID);
+    
     return res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
       userID: userID,
       yarnLotUsageList: yarnLotUsageList,
+      yarnStockCardPCS: yarnStockCardPCS,
     });
 
     // // ## get yarn usage
@@ -2480,10 +2490,10 @@ exports.putYarnUsageTransfersDate = async (req, res, next) => {
   // console.log(yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, factoryIDBox);
   // console.log(uuid);
 
-  console.log(companyID, yarnDataUUID, yarnSeasonID);
-  console.log(yarnID, yarnColorID, yarnLotID);
-  console.log(setfactoryID, factoryID, toFactoryID, customerID, yarnDataUUID, status);
-  console.log( mode, yuUUID, yarnLotID, invoiceID, usageMode, datetime);
+  // console.log(companyID, yarnDataUUID, yarnSeasonID);
+  // console.log(yarnID, yarnColorID, yarnLotID);
+  // console.log(setfactoryID, factoryID, toFactoryID, customerID, yarnDataUUID, status);
+  // console.log( mode, yuUUID, yarnLotID, invoiceID, usageMode, datetime);
 
   let session = await mongoose.startSession();
   // let session2 = await mongoose.startSession();
@@ -2607,6 +2617,181 @@ exports.putYarnUsageTransfersDate = async (req, res, next) => {
       success: true,
       message: {},
       yarnLotUsageList: yarnLotUsageList,
+      // yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
+      // yarnPlanDateGroup: yarnPlanDateGroup
+      
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    // await session2.abortTransaction(); 
+    session.endSession();
+    // session2.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'erry010', 
+        mode:'errYarnLotDevide', 
+        value: "error yarn lotID edit devide"
+      },
+    });
+  }  finally {
+    session.endSession();
+    // session2.endSession();
+  }
+}
+
+// router.put("/edit/usage2/stockcard/pcs", checkAuth, checkUUID, yarnController.putYarnStockCardPCS); 
+exports.putYarnStockCardPCS = async (req, res, next) => {
+  // console.log('putYarnStockCardPCS'); 
+  const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const yarnStockCardPCS = data.yarnStockCardPCS;
+  const companyID = yarnStockCardPCS.companyID;
+  const yarnSeasonID = yarnStockCardPCS.yarnSeasonID;// 2024SS
+  const season = yarnSeasonID.substr(0, 4);  // 2024 
+  const yarnID = yarnStockCardPCS.yarnID;
+  const yarnColorID = yarnStockCardPCS.yarnColorID;
+
+  let dataPCS = yarnStockCardPCS.dataPCS[0];
+  const pcs = dataPCS.pcs;
+
+  // console.log(yarnStockCardPCS); 
+  // console.log(dataPCS, pcs); 
+
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  dataPCS.datetime = current;
+
+  const yarnStockCardPCS1 = await ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID);
+
+  let session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async (session) => {
+
+      if (pcs === 0 && yarnStockCardPCS1) {
+        // ## remove element
+        // console.log('pcs === 0 && yarnStockCardPCS1.length > 0'); 
+        const result1 = await YarnStockCardPCS.updateMany(
+          {$and: [
+            {"companyID":companyID},
+            {"yarnID":yarnID},
+            {"yarnColorID":yarnColorID},
+            {"yarnSeasonID":yarnSeasonID},
+          ]}, 
+          {
+            $pull: {
+              dataPCS: {
+                "ddmmyyyy": dataPCS.ddmmyyyy , 
+                "usageMode": dataPCS.usageMode , 
+                "orderID": dataPCS.orderID , 
+                "toFactoryID": dataPCS.toFactoryID , 
+                "invoiceID": dataPCS.invoiceID , 
+
+                "yarnBoxInfoLen": dataPCS.yarnBoxInfoLen ,
+                "yarnLotID2": dataPCS.yarnLotID2 , 
+                "yarnDataUUID": dataPCS.yarnDataUUID , 
+                "yarnLotUUID": dataPCS.yarnLotUUID , 
+                "yuUUID": dataPCS.yuUUID ,
+              }
+            }
+          }).session(session);
+        await session.commitTransaction();
+        session.endSession();
+
+      } else {
+        // ##  mode upsert
+        if (!yarnStockCardPCS1) {
+          // console.log('mode upsert   ,  yarnStockCardPCS1.length === 0'); 
+          const yarnStockCardPCSUpsert = await YarnStockCardPCS.updateOne({$and: [
+            {"companyID":companyID},
+            {"yarnID":yarnID},
+            {"yarnColorID":yarnColorID},
+            {"yarnSeasonID":yarnSeasonID},
+            ]} , 
+            {
+              "dataPCS": dataPCS,
+            }, {upsert: true}).session(session); 
+          await session.commitTransaction();
+          session.endSession();
+
+        // ##  mode edit
+        } else {
+          // console.log('mode edit   ,  yarnStockCardPCS1.length > 0'); 
+
+          // ## check element exist
+          const dataPCSSDataPCS1 = await ShareFunc.getYarnStockCardPCSDataPCS1(companyID, yarnSeasonID, yarnID, yarnColorID, dataPCS);
+          if (dataPCSSDataPCS1.length === 0 ) {
+            // ## add element
+            const result1 = await YarnStockCardPCS.updateOne(
+              {$and: [
+                {"companyID":companyID},
+                {"yarnID":yarnID},
+                {"yarnColorID":yarnColorID},
+                {"yarnSeasonID":yarnSeasonID}, 
+              ]}, 
+              {
+                $push: {"dataPCS": dataPCS},
+              },
+              // {upsert: true});
+              {upsert: true}).session(session);
+
+          } else {
+            // ## edit element
+            const yarnStockCardPCSUpdate = await YarnStockCardPCS.updateOne(
+              {$and: [
+                {"companyID":companyID},
+                {"yarnID":yarnID},
+                {"yarnColorID":yarnColorID},
+                {"yarnSeasonID":yarnSeasonID},
+              ]},
+              {$set: {
+                "dataPCS.$[elem].datetime" : current,
+                "dataPCS.$[elem].pcs" : pcs,
+              }},
+              {
+                multi: true,
+                arrayFilters: [  
+                  {
+                    "elem.ddmmyyyy": dataPCS.ddmmyyyy , 
+                    "elem.usageMode": dataPCS.usageMode , 
+                    "elem.orderID": dataPCS.orderID , 
+                    "elem.toFactoryID": dataPCS.toFactoryID , 
+                    "elem.invoiceID": dataPCS.invoiceID , 
+  
+                    "elem.yarnBoxInfoLen": dataPCS.yarnBoxInfoLen ,
+                    "elem.yarnLotID2": dataPCS.yarnLotID2 , 
+                    "elem.yarnDataUUID": dataPCS.yarnDataUUID , 
+                    "elem.yarnLotUUID": dataPCS.yarnLotUUID , 
+                    "elem.yuUUID": dataPCS.yuUUID ,
+                  },
+                ]
+              }).session(session);
+              await session.commitTransaction();
+              session.endSession();
+          }
+        }
+      }
+    });
+
+    // let yarnLotUsageList = [];
+    // if (mode === 'yarn-packaging-list-stock-card') {
+    //   yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    // } else if (mode === 'fac-lot') {
+    //   yarnLotUsageList = await ShareFunc.getYarnUsageCF(companyID, [setfactoryID], customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    // }
+
+    const yarnStockCardPCS = await ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    // console.log('4');
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      success: true,
+      message: {},
+      yarnStockCardPCS: yarnStockCardPCS,
       // yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
       // yarnPlanDateGroup: yarnPlanDateGroup
       

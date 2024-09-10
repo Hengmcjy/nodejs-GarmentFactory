@@ -52,6 +52,8 @@ const YarnLotUsage = require("../models/m-yarnLotUsage");
 const YarnSeason = require("../models/m-yarnSeason");
 const YarnColor = require("../models/m-yarnColor");
 const YarnSupplier = require("../models/m-yarnSupplier");
+const YarnStockCardPCS = require("../models/m-yarnStockCardPCS");
+
 const Customer = require("../models/m-customer");
 const ControlApp = require("../models/m-controlApp");
 const Color = require("../models/m-color");
@@ -1358,6 +1360,7 @@ exports.getControlApp= async () => {
     factoryRunID: controlAppf.app.factoryRunID,
     nodeRunID: controlAppf.app.nodeRunID,
     customerRunID: controlAppf.app.customerRunID,
+    imgServer: controlAppf.app.imgServer,
     ver: controlAppf.app.ver,
   };
   // console.log(controlApp);
@@ -4505,6 +4508,111 @@ exports.getYarnPlanDataInfo1= async (companyID, factoryID, customerID, yarnSeaso
   return yarnData;
 }
 
+
+// ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID)
+exports.getYarnStockCardPCS= async (companyID, yarnSeasonID, yarnID, yarnColorID) => {
+  const yarnStockCardPCS = await YarnStockCardPCS.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"yarnID":yarnID},
+      {"yarnColorID":yarnColorID},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      yarnSeasonID: 1,
+      yarnID: 1,
+      yarnColorID: 1,
+      dataPCS: 1,
+    }	},
+    
+  ]);
+  return yarnStockCardPCS.length > 0 ? yarnStockCardPCS[0]: undefined;
+}
+
+// getYarnStockCardPCSDataPCS(companyID, yarnSeasonID, yarnID, yarnColorID, dataPCS)
+exports.getYarnStockCardPCSDataPCS1= async (companyID, yarnSeasonID, yarnID, yarnColorID, dataPCS) => {
+  const yarnStockCardPCS = await YarnStockCardPCS.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"yarnID":yarnID},
+      {"yarnColorID":yarnColorID},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      yarnSeasonID: 1,
+      yarnID: 1,
+      yarnColorID: 1,
+      dataPCS: 1,
+    }	},
+    { $unwind: "$dataPCS" },
+    { $project: { _id: 0, 
+      companyID: 1,
+      yarnSeasonID: 1,
+      yarnID: 1,
+      yarnColorID: 1,
+
+      ddmmyyyy: "$dataPCS.ddmmyyyy",
+      usageMode: "$dataPCS.usageMode",
+      orderID: "$dataPCS.orderID",
+      toFactoryID: "$dataPCS.toFactoryID",
+      invoiceID: "$dataPCS.invoiceID",
+
+      yarnBoxInfoLen: "$dataPCS.yarnBoxInfoLen",
+      yarnLotID2: "$dataPCS.yarnLotID2",
+      yarnDataUUID: "$dataPCS.yarnDataUUID",
+      yarnLotUUID: "$dataPCS.yarnLotUUID",
+      yuUUID: "$dataPCS.yuUUID",
+
+      datetime: "$dataPCS.datetime",
+      pcs: "$dataPCS.pcs",
+      createBy: "$dataPCS.createBy",
+
+    }},
+    { $match: { $and: [
+      {"ddmmyyyy":dataPCS.ddmmyyyy},
+      {"usageMode":dataPCS.usageMode},
+      {"orderID":dataPCS.orderID},
+      {"toFactoryID":dataPCS.toFactoryID},
+      {"invoiceID":dataPCS.invoiceID},
+
+      {"yarnBoxInfoLen":dataPCS.yarnBoxInfoLen},
+      {"yarnLotID2":dataPCS.yarnLotID2},
+      {"yarnDataUUID":dataPCS.yarnDataUUID},
+      {"yarnLotUUID":dataPCS.yarnLotUUID},
+      {"yuUUID":dataPCS.yuUUID},
+    ] } },
+    { $project: { _id: 0, 
+      companyID: 1,
+      yarnSeasonID: 1,
+      yarnID: 1,
+      yarnColorID: 1,
+
+      ddmmyyyy: 1,
+      usageMode: 1,
+      orderID: 1,
+      toFactoryID: 1,
+      invoiceID: 1,
+
+      yarnBoxInfoLen: 1,
+      yarnLotID2: 1,
+      yarnDataUUID: 1,
+      yarnLotUUID: 1,
+      yuUUID: 1,
+
+      datetime: 1,
+      pcs: 1,
+      createBy: 1,
+
+    }},
+    
+  ]);
+  return yarnStockCardPCS;
+}
+
 // getYarnLotBoxLastStr(companyID, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, boxID, boxSign);
 exports.getYarnLotBoxLastStr= async (companyID, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type, boxID, boxSign) => {
   const yarnData = await YarnData.aggregate([
@@ -5236,6 +5344,8 @@ exports.getYarnLotInfoCF= async (companyID, factoryID, yarnSeasonID, yarnID, uui
   }
   return yarnLotInfo;
 }
+
+
 
 // const yarnLotInfo = await ShareFunc.getYarnLotInfoByYarnLotID(companyID, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID);
 exports.getYarnLotInfoByYarnLotID= async (companyID, factoryIDBox, yarnSeasonID, yarnID, yarnColorID, yarnLotID, yarnLotUUID, type) => {

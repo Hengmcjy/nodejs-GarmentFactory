@@ -1890,7 +1890,7 @@ exports.getTestTest4_4 = async (req, res, next) => {
 }
 
 
-// // ## http://192.168.1.36:3968/api/user/langu/update
+// // ## http://100.124.115.121:3968/api/user/langu/update
 // ## update multi langs here
 exports.languageUpdate = async (req, res, next) => {
 
@@ -3200,6 +3200,7 @@ exports.getGeneralInfo = async (req, res, next) => {
     // ## get ver control
     const controlAppVer = await ShareFunc.getControlApp();
     const ver = controlAppVer.ver;
+    const imgServer = controlAppVer.imgServer;
 
     // ## get client control
     const outSourceInfo = await ShareFunc.getControlAppOutSourceLocationDepartment();
@@ -3238,6 +3239,7 @@ exports.getGeneralInfo = async (req, res, next) => {
       userClass: userClass,
       controlApp: controlApp,
       ver: ver,
+      imgServer: imgServer,
       sysInfo: sysInfo,
       outSourceLocationDepartment: outSourceLocationDepartment,
       outSourceSeasonShow: outSourceSeasonShow

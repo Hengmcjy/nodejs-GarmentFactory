@@ -81,11 +81,16 @@ router.put("/usage/list", checkAuth, checkUUID, yarnController.getYarnUsage);
 // ## getYarnUsageCF
 router.put("/usage/list2", checkAuth, checkUUID, yarnController.getYarnUsageCF);
 
+
+router.put("/edit/usage2/stockcard/pcs", checkAuth, checkUUID, yarnController.putYarnStockCardPCS); 
+
+
 // ## editYarnUsageNewFacSendTo
 router.put("/usage/edit/sendto/newFac", checkAuth, checkUUID, yarnController.editYarnUsageNewFacSendTo);
 
 // ## putYarnUsageTransfersDate
 router.put("/edit/usage/transfer/date", checkAuth, checkUUID, yarnController.putYarnUsageTransfersDate); 
+
 
 // ## getYarnLotInfo
 router.put("/yarnlotID/getinfo", checkAuth, checkUUID, yarnController.getYarnLotInfo);
@@ -110,6 +115,8 @@ router.put("/yarnlot/CF/rep/transfer1/yarn1", checkAuth, checkUUID, yarnControll
 
 // ## get yarn current stock /api/yarn/yarnlot/CF/rep/fac/remain getYarnRemainCF
 router.put("/yarnlot/CF/rep/fac/remain", checkAuth, checkUUID, yarnController.getYarnRemainCF);
+
+
 
 
 

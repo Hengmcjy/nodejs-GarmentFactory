@@ -34,6 +34,7 @@ const dtcurrentcompanyorderoutsourcefacSchema = mongoose.Schema({
         setGroup: {type: String},
         setName: {type: String},
         targetPlaceID: {type: String},
+        sTypeOtus: {type: String},
       }],
       receive: [{
         bundleNos : [{type: Number}],
@@ -48,6 +49,7 @@ const dtcurrentcompanyorderoutsourcefacSchema = mongoose.Schema({
         setGroup: {type: String},
         setName: {type: String},
         targetPlaceID: {type: String},
+        sTypeOtus: {type: String},
       }],
     }],
 
