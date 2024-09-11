@@ -4517,6 +4517,8 @@ exports.getYarnStockCardPCS= async (companyID, yarnSeasonID, yarnID, yarnColorID
       {"yarnSeasonID":yarnSeasonID},
       {"yarnID":yarnID},
       {"yarnColorID":yarnColorID},
+      // {"type":type},
+      // {"type":{$in: type}},
     ] } },
     { $project: {			
       _id: 0,	
@@ -4524,7 +4526,9 @@ exports.getYarnStockCardPCS= async (companyID, yarnSeasonID, yarnID, yarnColorID
       yarnSeasonID: 1,
       yarnID: 1,
       yarnColorID: 1,
+      type: 1,
       dataPCS: 1,
+      dataZONE: 1,
     }	},
     
   ]);
@@ -4539,6 +4543,8 @@ exports.getYarnStockCardPCSDataPCS1= async (companyID, yarnSeasonID, yarnID, yar
       {"yarnSeasonID":yarnSeasonID},
       {"yarnID":yarnID},
       {"yarnColorID":yarnColorID},
+      // {"type":type},
+      // {"type":{$in: type}},
     ] } },
     { $project: {			
       _id: 0,	
@@ -4546,7 +4552,9 @@ exports.getYarnStockCardPCSDataPCS1= async (companyID, yarnSeasonID, yarnID, yar
       yarnSeasonID: 1,
       yarnID: 1,
       yarnColorID: 1,
+      type: 1,
       dataPCS: 1,
+      dataZONE: 1,
     }	},
     { $unwind: "$dataPCS" },
     { $project: { _id: 0, 
@@ -4554,6 +4562,7 @@ exports.getYarnStockCardPCSDataPCS1= async (companyID, yarnSeasonID, yarnID, yar
       yarnSeasonID: 1,
       yarnID: 1,
       yarnColorID: 1,
+      type: 1,
 
       ddmmyyyy: "$dataPCS.ddmmyyyy",
       usageMode: "$dataPCS.usageMode",
@@ -4590,6 +4599,7 @@ exports.getYarnStockCardPCSDataPCS1= async (companyID, yarnSeasonID, yarnID, yar
       yarnSeasonID: 1,
       yarnID: 1,
       yarnColorID: 1,
+      type: 1,
 
       ddmmyyyy: 1,
       usageMode: 1,
@@ -4605,6 +4615,93 @@ exports.getYarnStockCardPCSDataPCS1= async (companyID, yarnSeasonID, yarnID, yar
 
       datetime: 1,
       pcs: 1,
+      createBy: 1,
+
+    }},
+    
+  ]);
+  return yarnStockCardPCS;
+}
+
+exports.getYarnStockCardPCSDataZONE1= async (companyID, yarnSeasonID, yarnID, yarnColorID, dataZONE) => {
+  const yarnStockCardPCS = await YarnStockCardPCS.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"yarnID":yarnID},
+      {"yarnColorID":yarnColorID},
+      // {"type":type},
+      // {"type":{$in: type}},
+    ] } },
+    { $project: {			
+      _id: 0,	
+      companyID: 1,
+      yarnSeasonID: 1,
+      yarnID: 1,
+      yarnColorID: 1,
+      type: 1,
+      dataPCS: 1,
+      dataZONE: 1,
+    }	},
+    { $unwind: "$dataZONE" },
+    { $project: { _id: 0, 
+      companyID: 1,
+      yarnSeasonID: 1,
+      yarnID: 1,
+      yarnColorID: 1,
+      type: 1,
+
+      ddmmyyyy: "$dataZONE.ddmmyyyy",
+      usageMode: "$dataZONE.usageMode",
+      orderID: "$dataZONE.orderID",
+      toFactoryID: "$dataZONE.toFactoryID",
+      invoiceID: "$dataZONE.invoiceID",
+
+      yarnBoxInfoLen: "$dataZONE.yarnBoxInfoLen",
+      yarnLotID2: "$dataZONE.yarnLotID2",
+      yarnDataUUID: "$dataZONE.yarnDataUUID",
+      yarnLotUUID: "$dataZONE.yarnLotUUID",
+      yuUUID: "$dataZONE.yuUUID",
+
+      datetime: "$dataZONE.datetime",
+      targetPlaceID: "$dataZONE.targetPlaceID",
+      createBy: "$dataZONE.createBy",
+
+    }},
+    { $match: { $and: [
+      {"ddmmyyyy":dataZONE.ddmmyyyy},
+      {"usageMode":dataZONE.usageMode},
+      {"orderID":dataZONE.orderID},
+      {"toFactoryID":dataZONE.toFactoryID},
+      {"invoiceID":dataZONE.invoiceID},
+
+      {"yarnBoxInfoLen":dataZONE.yarnBoxInfoLen},
+      {"yarnLotID2":dataZONE.yarnLotID2},
+      {"yarnDataUUID":dataZONE.yarnDataUUID},
+      {"yarnLotUUID":dataZONE.yarnLotUUID},
+      {"yuUUID":dataZONE.yuUUID},
+    ] } },
+    { $project: { _id: 0, 
+      companyID: 1,
+      yarnSeasonID: 1,
+      yarnID: 1,
+      yarnColorID: 1,
+      type: 1,
+
+      ddmmyyyy: 1,
+      usageMode: 1,
+      orderID: 1,
+      toFactoryID: 1,
+      invoiceID: 1,
+
+      yarnBoxInfoLen: 1,
+      yarnLotID2: 1,
+      yarnDataUUID: 1,
+      yarnLotUUID: 1,
+      yuUUID: 1,
+
+      datetime: 1,
+      targetPlaceID: 1,
       createBy: 1,
 
     }},

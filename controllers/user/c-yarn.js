@@ -2224,6 +2224,7 @@ exports.getYarnUsage = async (req, res, next) => {
     const yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
     // console.log('000');
     
+    // const types = ['pcs', 'zone'];
     const yarnStockCardPCS = await ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID);
 
     return res.status(200).json({
@@ -2309,6 +2310,7 @@ exports.getYarnUsageCF = async (req, res, next) => {
     // // console.log(yarnLotUsageList);
     
     // ## yarnStockCardPCS  getYarnStockCardPCS= async (companyID, yarnSeasonID, yarnID, yarnColorID)
+    // const types = ['pcs', 'zone'];
     const yarnStockCardPCS = await ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID);
     
     return res.status(200).json({
@@ -2651,6 +2653,8 @@ exports.putYarnStockCardPCS = async (req, res, next) => {
   const season = yarnSeasonID.substr(0, 4);  // 2024 
   const yarnID = yarnStockCardPCS.yarnID;
   const yarnColorID = yarnStockCardPCS.yarnColorID;
+  const type = yarnStockCardPCS.type;  // ## type = 'pcs'
+  // const types = ['pcs', 'zone'];
 
   let dataPCS = yarnStockCardPCS.dataPCS[0];
   const pcs = dataPCS.pcs;
@@ -2762,6 +2766,185 @@ exports.putYarnStockCardPCS = async (req, res, next) => {
                     "elem.yarnDataUUID": dataPCS.yarnDataUUID , 
                     "elem.yarnLotUUID": dataPCS.yarnLotUUID , 
                     "elem.yuUUID": dataPCS.yuUUID ,
+                  },
+                ]
+              }).session(session);
+              await session.commitTransaction();
+              session.endSession();
+          }
+        }
+      }
+    });
+
+    // let yarnLotUsageList = [];
+    // if (mode === 'yarn-packaging-list-stock-card') {
+    //   yarnLotUsageList = await ShareFunc.getYarnUsage(companyID, factoryID, toFactoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    // } else if (mode === 'fac-lot') {
+    //   yarnLotUsageList = await ShareFunc.getYarnUsageCF(companyID, [setfactoryID], customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+    // }
+
+    const yarnStockCardPCS = await ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    // console.log('4');
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      success: true,
+      message: {},
+      yarnStockCardPCS: yarnStockCardPCS,
+      // yarnPlan: yarnPlan.length>0?yarnPlan[0]:undefined,
+      // yarnPlanDateGroup: yarnPlanDateGroup
+      
+    });
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    // await session2.abortTransaction(); 
+    session.endSession();
+    // session2.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'erry010', 
+        mode:'errYarnLotDevide', 
+        value: "error yarn lotID edit devide"
+      },
+    });
+  }  finally {
+    session.endSession();
+    // session2.endSession();
+  }
+}
+
+// router.put("/edit/usage3/stockcard/zone", checkAuth, checkUUID, yarnController.putYarnStockCardPCSZONE); 
+exports.putYarnStockCardPCSZONE = async (req, res, next) => {
+  // console.log('putYarnStockCardPCSZONE'); 
+  const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const yarnStockCardPCS = data.yarnStockCardPCS;
+  const companyID = yarnStockCardPCS.companyID;
+  const yarnSeasonID = yarnStockCardPCS.yarnSeasonID;// 2024SS
+  const season = yarnSeasonID.substr(0, 4);  // 2024 
+  const yarnID = yarnStockCardPCS.yarnID;
+  const yarnColorID = yarnStockCardPCS.yarnColorID;
+  const type = yarnStockCardPCS.type;  // ## type = 'zone'
+  // const types = ['pcs', 'zone'];
+
+  let dataZONE = yarnStockCardPCS.dataZONE[0];
+  const targetPlaceID = dataZONE.targetPlaceID;
+
+  // console.log(yarnStockCardPCS); 
+  // console.log(dataZONE, targetPlaceID); 
+
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  dataZONE.datetime = current;
+
+  const yarnStockCardPCS1 = await ShareFunc.getYarnStockCardPCS(companyID, yarnSeasonID, yarnID, yarnColorID);
+
+  let session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async (session) => {
+
+      if (targetPlaceID === 'x' && yarnStockCardPCS1) {
+        // ## remove element
+        // console.log('pcs === 0 && yarnStockCardPCS1.length > 0'); 
+        const result1 = await YarnStockCardPCS.updateMany(
+          {$and: [
+            {"companyID":companyID},
+            {"yarnID":yarnID},
+            {"yarnColorID":yarnColorID},
+            {"yarnSeasonID":yarnSeasonID},
+          ]}, 
+          {
+            $pull: {
+              dataZONE: {
+                "ddmmyyyy": dataZONE.ddmmyyyy , 
+                "usageMode": dataZONE.usageMode , 
+                "orderID": dataZONE.orderID , 
+                "toFactoryID": dataZONE.toFactoryID , 
+                "invoiceID": dataZONE.invoiceID , 
+
+                "yarnBoxInfoLen": dataZONE.yarnBoxInfoLen ,
+                "yarnLotID2": dataZONE.yarnLotID2 , 
+                "yarnDataUUID": dataZONE.yarnDataUUID , 
+                "yarnLotUUID": dataZONE.yarnLotUUID , 
+                "yuUUID": dataZONE.yuUUID ,
+              }
+            }
+          }).session(session);
+        await session.commitTransaction();
+        session.endSession();
+
+      } else {
+        // ##  mode upsert
+        if (!yarnStockCardPCS1) {
+          // console.log('mode upsert   ,  yarnStockCardPCS1.length === 0'); 
+          const yarnStockCardPCSUpsert = await YarnStockCardPCS.updateOne({$and: [
+            {"companyID":companyID},
+            {"yarnID":yarnID},
+            {"yarnColorID":yarnColorID},
+            {"yarnSeasonID":yarnSeasonID},
+            ]} , 
+            {
+              "dataZONE": dataZONE,
+            }, {upsert: true}).session(session); 
+          await session.commitTransaction();
+          session.endSession();
+
+        // ##  mode edit
+        } else {
+          // console.log('mode edit   ,  yarnStockCardPCS1.length > 0'); 
+
+          // ## check element exist
+          const dataPCSSDataPCSZONE1 = await ShareFunc.getYarnStockCardPCSDataZONE1(companyID, yarnSeasonID, yarnID, yarnColorID, dataZONE);
+          if (dataPCSSDataPCSZONE1.length === 0 ) {
+            // ## add element
+            // console.log('add element'); 
+            const result1 = await YarnStockCardPCS.updateOne(
+              {$and: [
+                {"companyID":companyID},
+                {"yarnID":yarnID},
+                {"yarnColorID":yarnColorID},
+                {"yarnSeasonID":yarnSeasonID}, 
+              ]}, 
+              {
+                $push: {"dataZONE": dataZONE},
+              },
+              // {upsert: true});
+              {upsert: true}).session(session);
+
+          } else {
+            // ## edit element
+            // console.log('edit element'); 
+            const yarnStockCardPCSUpdate = await YarnStockCardPCS.updateOne(
+              {$and: [
+                {"companyID":companyID},
+                {"yarnID":yarnID},
+                {"yarnColorID":yarnColorID},
+                {"yarnSeasonID":yarnSeasonID},
+              ]},
+              {$set: {
+                "dataZONE.$[elem].datetime" : current,
+                "dataZONE.$[elem].targetPlaceID" : targetPlaceID,
+              }},
+              {
+                multi: true,
+                arrayFilters: [  
+                  {
+                    "elem.ddmmyyyy": dataZONE.ddmmyyyy , 
+                    "elem.usageMode": dataZONE.usageMode , 
+                    "elem.orderID": dataZONE.orderID , 
+                    "elem.toFactoryID": dataZONE.toFactoryID , 
+                    "elem.invoiceID": dataZONE.invoiceID , 
+  
+                    "elem.yarnBoxInfoLen": dataZONE.yarnBoxInfoLen ,
+                    "elem.yarnLotID2": dataZONE.yarnLotID2 , 
+                    "elem.yarnDataUUID": dataZONE.yarnDataUUID , 
+                    "elem.yarnLotUUID": dataZONE.yarnLotUUID , 
+                    "elem.yuUUID": dataZONE.yuUUID ,
                   },
                 ]
               }).session(session);

@@ -84,6 +84,8 @@ router.put("/usage/list2", checkAuth, checkUUID, yarnController.getYarnUsageCF);
 
 router.put("/edit/usage2/stockcard/pcs", checkAuth, checkUUID, yarnController.putYarnStockCardPCS); 
 
+router.put("/edit/usage3/stockcard/zone", checkAuth, checkUUID, yarnController.putYarnStockCardPCSZONE); 
+
 
 // ## editYarnUsageNewFacSendTo
 router.put("/usage/edit/sendto/newFac", checkAuth, checkUUID, yarnController.editYarnUsageNewFacSendTo);
