@@ -23,6 +23,8 @@ router.get("/getlists2/yarnseasons/:companyID/:userID", checkAuth, checkUUID, ya
 router.get("/getinfo1/:companyID/:factoryID/:customerID/:setName/:yarnSeason", checkAuth, checkUUID, yarnController.getYarnInfo1);
 
 
+router.put("/yarn/editYarnFullName", checkAuth, checkUUID, yarnController.putYarnFullName);
+
 
 // #############################################################################
 // ## yarn plan ###########################################################################
@@ -85,6 +87,8 @@ router.put("/usage/list2", checkAuth, checkUUID, yarnController.getYarnUsageCF);
 router.put("/edit/usage2/stockcard/pcs", checkAuth, checkUUID, yarnController.putYarnStockCardPCS); 
 
 router.put("/edit/usage3/stockcard/zone", checkAuth, checkUUID, yarnController.putYarnStockCardPCSZONE); 
+
+router.put("/edit/usage4/change/invoiceID", checkAuth, checkUUID, yarnController.putYarnChangeInvoiceID); 
 
 
 // ## editYarnUsageNewFacSendTo

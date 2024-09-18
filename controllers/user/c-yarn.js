@@ -249,6 +249,53 @@ exports.getYarnInfo1 = async (req, res, next) => {
   }
 }
 
+// router.put("/yarn/editYarnFullName", checkAuth, checkUUID, yarnController.putYarnFullName);
+exports.putYarnFullName = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('putYarnFullName');
+  const data = req.body;
+  const userID = req.userData.tokenSet.userID;
+  const companyID = data.companyID;
+  const yarnID = data.yarnID;
+  const yarnFullName2 = data.yarnFullName2;
+
+  // const yarnSeasonID = data.yarnSeason;
+
+  // console.log(companyID, yarnID, yarnFullName2);
+  try {
+
+    // ## 
+    const bundlesetgroupUpdate = await Yarn.updateOne({$and: [
+      {"companyID":companyID},
+      {"yarnID":yarnID}, 
+    ]}, 
+    {
+      "yarnFullName": yarnFullName2,
+    })
+
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      success: true,
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'erry004', 
+        mode:'errputYarnFullName', 
+        value: "error put yarn full name"
+      }
+    });
+  }
+}
+
 // // ## get yarn plan list /api/yarn/yarnplan/get/list1 getYarnPlansList1
 // router.post("/yarnplan/get/list1", 
 //   checkAuth, checkUUID, yarnController.getYarnPlansList1);
@@ -2998,6 +3045,123 @@ exports.putYarnStockCardPCSZONE = async (req, res, next) => {
   }
 }
 
+// router.put("/edit/usage4/change/invoiceID", checkAuth, checkUUID, yarnController.putYarnChangeInvoiceID); 
+exports.putYarnChangeInvoiceID = async (req, res, next) => {
+  // console.log('putYarnChangeInvoiceID');
+  const userID = req.userData.tokenSet.userID;
+  const data = req.body;
+  const companyID = data.companyID;
+
+  const yarnSeasonID = data.yarnSeasonID;
+
+  const invoiceID1 = data.invoiceID1; // 'I-SHXN2024H116';  
+  const invoiceID2 = data.invoiceID2; // 'I-SHXN2024H116-222';
+
+  const type = ["plan", "receive"];  // plan, receive  
+
+  let session = await mongoose.startSession();
+  try {
+    await session.withTransaction(async (session) => {
+      // ## edit update yarnLotUsage
+  const result1 = await YarnLotUsage.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+    ]},
+    {$set: { 
+      "yarnUsage.$[elem].invoiceID" : invoiceID2, 
+    }}, 
+    {
+      multi: true,
+      arrayFilters: [  {
+        "elem.invoiceID": invoiceID1 , 
+      } ]
+    }).session(session);
+
+  // ## edit update yarnData
+  const yarnLotIDUpdate1 = await YarnData.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+    ]},
+    { 
+      $set: { 
+        "yarnDataInfo.$[elem].packageInfo.$[elem2].invoiceID" : invoiceID2 ,
+      },
+    },
+    {
+      multi: true,
+      arrayFilters: [  
+        {
+          "elem.type": {$in: type}  
+        },
+        {
+          "elem2.invoiceID": invoiceID1
+        }
+     ]
+    }).session(session);
+
+    // ## edit update yarnLotUsage
+    const yarnStockCardPCS2 = await YarnStockCardPCS.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        {"yarnSeasonID":yarnSeasonID},
+      ]},
+      { 
+        $set: { 
+          "dataPCS.$[elem].invoiceID" : invoiceID2 ,
+          "dataZONE.$[elem].invoiceID" : invoiceID2 ,
+        },
+      },
+      {
+        multi: true,
+        arrayFilters: [  
+          {
+            "elem.invoiceID": invoiceID1
+            // "elem.type": {$in: type} 
+          },
+          {
+            "elem2.invoiceID": invoiceID1
+          }
+       ]
+      }).session(session);
+
+      await session.commitTransaction();
+      session.endSession();
+    });
+
+    // console.log('putYarnChangeInvoiceID  ok');
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      success: true,
+      message: {},
+    });
+
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    // await session2.abortTransaction(); 
+    session.endSession();
+    // session2.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'erry010', 
+        mode:'errYarnchangeInvoiceID', 
+        value: "error edit yarn change invoiceID"
+      },
+    });
+  }  finally {
+    session.endSession();
+    // session2.endSession();
+  }
+}
+
 // // ## getYarnLotInfo
 // router.put("/yarnlotID/getinfo", checkAuth, checkUUID, yarnController.getYarnLotInfo);
 exports.getYarnLotInfo = async (req, res, next) => {
@@ -3277,7 +3441,7 @@ exports.putEditYarnLotIDDevide = async (req, res, next) => {
                 "elem3.boxUUID": boxUUID  // 1b407f08-9555-47cf-94a1-e787351c9cbc
               }
           ]}
-          ).session(session);;
+          ).session(session);
         // await session.commitTransaction();
         // session.endSession();
         // console.log(yarnLotIDUpdate1);

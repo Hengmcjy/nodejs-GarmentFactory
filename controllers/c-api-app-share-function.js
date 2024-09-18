@@ -17269,29 +17269,29 @@ exports.editOrderProductionForloss = async (companyID, factoryID, orderID, produ
     });
     // console.log('edit order production --------------------------------');
 
-    // ## edit orderProductionQueue
-    const result2 = await OrderProductionQueue.updateMany(
-      {$and: [
-        {"companyID":companyID},
-        {"orderID":{$in: [orderID]}},
-      ]},
-      {
-        // "factoryID": toFactoryID,
-        $set: { 
-          "queueInfo.$[elem].forLossQty" : 0,
-          "queueInfo.$[elem].forLoss" : forLoss,
-        }
-      }, 
-      {
-        multi: true, 
-        arrayFilters: [  {
-          "elem.factoryID": factoryID,
-          "elem.bundleNo":{$in: bundleNos}, 
-          // "elem.numberFrom": { $gte: no1 } , 
-          // "elem.numberTo": { $lte: no2 },
-          "elem.productBarcode": productBarcode
-        } ] 
-      });  
+    // // ## edit orderProductionQueue
+    // const result2 = await OrderProductionQueue.updateMany(
+    //   {$and: [
+    //     {"companyID":companyID},
+    //     {"orderID":{$in: [orderID]}},
+    //   ]},
+    //   {
+    //     // "factoryID": toFactoryID,
+    //     $set: { 
+    //       "queueInfo.$[elem].forLossQty" : 0,
+    //       "queueInfo.$[elem].forLoss" : forLoss,
+    //     }
+    //   }, 
+    //   {
+    //     multi: true, 
+    //     arrayFilters: [  {
+    //       "elem.factoryID": factoryID,
+    //       "elem.bundleNo":{$in: bundleNos}, 
+    //       // "elem.numberFrom": { $gte: no1 } , 
+    //       // "elem.numberTo": { $lte: no2 },
+    //       "elem.productBarcode": productBarcode
+    //     } ] 
+    //   });  
 
 
   // ## edit orderProductionQueueList

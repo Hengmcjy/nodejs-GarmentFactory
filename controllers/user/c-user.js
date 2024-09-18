@@ -28,6 +28,9 @@ const OrderProduction = require("../../models/m-orderProduction");
 const OrderProductionQueueList = require("../../models/m-orderProductionQueueList");
 const OrderProductionQueue = require("../../models/m-orderProductionQueue");
 
+const YarnData = require("../../models/m-yarnData");
+const YarnLotUsage = require("../../models/m-yarnLotUsage");
+const YarnStockCardPCS = require("../../models/m-yarnStockCardPCS");
 
 
 const UnitSize = require("../../models/m-unitSize");
@@ -68,63 +71,63 @@ exports.asyncForEach4= async (array, callback) => {
 // #######################################################################################################
 // ## general
 
-// // ## http://172.31.193.5:3968/api/user/test/test12
+// // ## http://192.168.1.36:3968/api/user/test/test12
 // router.get("/test/test12", userController.getTestTest12); 
 // ## edit orderProduction forloss --> normal
 exports.getTestTest12 = async (req, res, next) => {
   const bundleData = [
     {
       companyID: 'c000001',
-      factoryID: 'f000001',
-      orderID: 'DDE60A4S',
-      productBarcode: 'DDE60A4S    UK-------24WH--------F---',
-      bundleNo1: 1448199,
-      bundleNo2: 1448205,
-      no1: 1749,
-      no2: 1832,
+      factoryID: 'f000003',
+      orderID: 'BA1Q3A5S',
+      productBarcode: 'BA1Q3A5S    JAPN-----24PK--------L---',
+      bundleNo1: 194983,
+      bundleNo2: 195009,
+      no1: 3521,
+      no2: 3844,
       productCount: 12,
       forLoss: false
     },
     {
       companyID: 'c000001',
-      factoryID: 'f000001',
-      orderID: 'DDE60A4S',
-      productBarcode: 'DDE60A4S    UK-------24GL--------F---',
-      bundleNo1: 1448206,
-      bundleNo2: 1448211,
-      no1: 1423,
-      no2: 1494,
-      productCount: 12,
+      factoryID: 'f000003',
+      orderID: 'BA1Q3A5S',
+      productBarcode: 'BA1Q3A5S    JAPN-----24PK--------L---',
+      bundleNo1: 195010,
+      bundleNo2: 195010,
+      no1: 3845,
+      no2: 3850,
+      productCount: 6,
       forLoss: false
     },
-    {
-      companyID: 'c000001',
-      factoryID: 'f000001',
-      orderID: 'DDE60A4S',
-      productBarcode: 'DDE60A4S    UK-------24LY--------F---',
-      bundleNo1: 1448212,
-      bundleNo2: 1448213,
-      no1: 315,
-      no2: 338,
-      productCount: 12,
-      forLoss: false
-    },
+    // {
+    //   companyID: 'c000001',
+    //   factoryID: 'f000003',
+    //   orderID: 'BA1Q3A5S',
+    //   productBarcode: 'DDE60A4S    UK-------24LY--------F---',
+    //   bundleNo1: 1448212,
+    //   bundleNo2: 1448213,
+    //   no1: 315,
+    //   no2: 338,
+    //   productCount: 12,
+    //   forLoss: false
+    // },
   ];
 
-  await this.asyncForEach(bundleData, async (item1) => {
-    const result = await ShareFunc.editOrderProductionForloss(
-      item1.companyID, 
-      item1.factoryID,
-      item1.orderID, 
-      item1.productBarcode, 
-      +item1.bundleNo1, 
-      +item1.bundleNo2, 
-      +item1.no1, 
-      +item1.no2,
-      +item1.productCount,
-      item1.forLoss
-      );
-  });
+  // await this.asyncForEach(bundleData, async (item1) => {
+  //   const result = await ShareFunc.editOrderProductionForloss(
+  //     item1.companyID, 
+  //     item1.factoryID,
+  //     item1.orderID, 
+  //     item1.productBarcode, 
+  //     +item1.bundleNo1, 
+  //     +item1.bundleNo2, 
+  //     +item1.no1, 
+  //     +item1.no2,
+  //     +item1.productCount,
+  //     item1.forLoss
+  //     );
+  // });
 
   const result1 = 'OK';
 
@@ -3023,6 +3026,111 @@ exports.getOrderQueueTest1 = async (req, res, next) => {
   res.write('</html>');
   return res.end();
 }
+
+
+// ## http://192.168.1.36:3968/api/user/yarn/edit/change/invoiceid
+// router.get("/yarn/edit/change/invoiceid", userController.getYarnChangeInvoiceID);
+exports.getYarnChangeInvoiceID = async (req, res, next) => {
+  // // ## change yarn InvoiceID
+  const companyID = 'c000001';
+  const factoryID = 'f000003';
+  const customerID = 'ctm0003';
+
+  const yarnSeasonID = "2025SS";
+  const yarnID = 'XXN23005 3/46nm CmiA Cotton50/Recycled PE25/PBT25';
+  const uuid = '5c0ea132-df4f-4b9e-8b19-c702c65c0f0c';
+  const yarnColorID = 'muji;#068;NV';
+
+  const invoiceID1 = 'I-SHXN2024H108';  
+  const invoiceID2 = '2409TYW5959';
+  // I-SHXN2024H116 เปลี่ยน 2409TYW5988
+  // I-SHXN2024H108   เปลี่ยน 2409TYW5959
+
+  const type = ["plan", "receive"];  // plan, receive  
+
+  // ## edit update yarnLotUsage
+  const result1 = await YarnLotUsage.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"yarnID":yarnID},
+    ]},
+    {$set: { 
+      "yarnUsage.$[elem].invoiceID" : invoiceID2, 
+    }}, 
+    {
+      multi: true,
+      arrayFilters: [  {
+        "elem.invoiceID": invoiceID1 , 
+      } ]
+    });
+
+  // ## edit update yarnData
+  const yarnLotIDUpdate1 = await YarnData.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      {"yarnSeasonID":yarnSeasonID},
+      {"yarnID":yarnID},
+    ]},
+    { 
+      $set: { 
+        "yarnDataInfo.$[elem].packageInfo.$[elem2].invoiceID" : invoiceID2 ,
+      },
+    },
+    {
+      multi: true,
+      arrayFilters: [  
+        {
+          "elem.type": {$in: type}  
+        },
+        {
+          "elem2.invoiceID": invoiceID1
+        }
+     ]
+    });
+
+    // ## edit update yarnLotUsage
+    const yarnStockCardPCS2 = await YarnStockCardPCS.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        {"yarnSeasonID":yarnSeasonID},
+        {"yarnID":yarnID},
+      ]},
+      { 
+        $set: { 
+          "dataPCS.$[elem].invoiceID" : invoiceID2 ,
+          "dataZONE.$[elem].invoiceID" : invoiceID2 ,
+        },
+      },
+      {
+        multi: true,
+        arrayFilters: [  
+          {
+            "elem.invoiceID": invoiceID1
+            // "elem.type": {$in: type} 
+          },
+          {
+            "elem2.invoiceID": invoiceID1
+          }
+       ]
+      });
+
+
+
+  const result = 'OK';
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title> change yarn InvoiceID  </title><head>');
+  res.write('<body>');
+  res.write('<h1>change yarn InvoiceID  </h1></br>');
+  res.write('<h1>change yarn InvoiceID</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
 
 // ## http://172.31.194.255:3968/api/user/test/get/monogdbver/getver
 // router.get("/test/get/monogdbver/getver", userController.getMonogoDbver1);
