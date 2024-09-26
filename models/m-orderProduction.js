@@ -74,6 +74,7 @@ const orderProductionSchema = mongoose.Schema({
     sTypeOtus : {type: String},  // ## b =bundle , 1= 1by 1 / sType=scanType
     problemID : {type: String},
     problemName : {type: String},
+    isTracking : {type: Boolean},  // ## scan by user-office check by themselve
     isOutsource : {type: Boolean}, 
     outsourceData: [{   // ## 
       factoryID : {type: String},

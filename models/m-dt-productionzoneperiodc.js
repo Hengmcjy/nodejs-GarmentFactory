@@ -24,6 +24,17 @@ const dtproductionzoneperiodcSchema = mongoose.Schema({
     fromNode: {type: String},  // ## 
     sumProductQty : {type: Number},
   }],
+  dataFake: [{   // ## 
+    companyID: {type: String},  // ## 
+    orderID: {type: String},  // ## 
+    targetPlaceID: {type: String},  // ## 
+    targetPlaceName: {type: String},  // ## 
+    style: {type: String},  // ## 
+    color: {type: String},  // ## 
+    size: {type: String},  // ## 
+    fromNode: {type: String},  // ## 
+    sumProductQty : {type: Number},
+  }],
 });
 
 dtproductionzoneperiodcSchema.plugin(uniqueValidator);

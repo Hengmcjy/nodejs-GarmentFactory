@@ -647,6 +647,9 @@ async function auto_getProductionZonePeriodC(scheduleData) {
       const currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodC(companyID, productStatusArr, productionNodeStatusArr, orderIDs);
       // console.log(currentProductionZonePeriod);
       // console.log('currentProductionZonePeriod ok ');
+
+      const productionNodeStatusArrFake = ['fake'];
+      const currentProductionZonePeriodFake = await ShareFunc.getProductionZonePeriodC(companyID, productStatusArr, productionNodeStatusArrFake, orderIDs);
       
       
       
@@ -686,6 +689,7 @@ async function auto_getProductionZonePeriodC(scheduleData) {
       {
         "lastDatetime": current,
         "data": currentProductionZonePeriod,
+        "dataFake": currentProductionZonePeriodFake,
       }, {upsert: true}); 
       // console.log(dtproductionzoneperiodcUpsert);
 

@@ -221,10 +221,13 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
     
     // exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName)
     const sName = 'auto_getProductionZonePeriodC';
-    const currentProductionZonePeriod = await ShareFunc.get_auto_getProductionZonePeriodC(companyID, seasonYear, sName);
+    const data = await ShareFunc.get_auto_getProductionZonePeriodC(companyID, seasonYear, sName);
     
+    const currentProductionZonePeriod = data[0].data;
+    const currentProductionZonePeriodFake = data[0].dataFake;
     // console.log(currentProductionPeriod);
     // console.log('getRepCurrentProductionZonePeriod 1');
+    // console.log(currentProductionZonePeriodFake);
 
     const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
     // console.log('getRepCurrentProductionZonePeriod 2');
@@ -233,7 +236,7 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
     const openArr = [true];
     const forLossArr = [true];
     // getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr)
-    currentProductionZoneForLoss = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr);
+    const currentProductionZoneForLoss = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr);
     // console.log(currentProductionZoneForLoss);
     // console.log('getRepCurrentProductionZonePeriod 3');
 
@@ -249,6 +252,7 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
       token: '',
       expiresIn: process.env.expiresIn,
       currentProductionZonePeriod: currentProductionZonePeriod,
+      currentProductionZonePeriodFake: currentProductionZonePeriodFake,
       currentProductionZoneForLoss: currentProductionZoneForLoss,
       orderStyleColorSize: orderStyleColorSize,
       repQTYEditList: repQTYEditList,
@@ -285,6 +289,8 @@ exports.getRepCurrentProductionZonePeriodDate12 = async (req, res, next) => {
   const userGroupScan1 = data.userGroupScan1;
   const userIDGroup = userGroupScan1.userIDGroup;
 
+  const seasonYear = data.seasonYear;
+
   // console.log(companyID, userID, productStatusArr, productionNodeStatusArr);
   // console.log(date12Arr, dateStart, dateEnd, orderStatusArr);
   // console.log(orderIDArr);
@@ -302,28 +308,41 @@ exports.getRepCurrentProductionZonePeriodDate12 = async (req, res, next) => {
     // exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName)
     // const currentProductionZonePeriod = await ShareFunc.get_auto_getProductionZonePeriodC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
     
-
     const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
     // console.log(orderStyleColorSize);
+
+
+
+    // // **********
+    // const sName = 'auto_getProductionZonePeriodC';
+    // const currentProductionZonePeriodFull = await ShareFunc.get_auto_getProductionZonePeriodC(companyID, seasonYear, sName);
+    
+    // // console.log(currentProductionPeriod);
+    // // console.log('getRepCurrentProductionZonePeriod 1');
 
     // const openArr = [true];
     // const forLossArr = [true];
     // // getProductionForLossQTYC = async (companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr)
-    // currentProductionZoneForLoss = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr);
+    // const currentProductionZoneForLossFull = await ShareFunc.getProductionZoneForLossQTYC(companyID, productStatusArr, productionNodeStatusArr, openArr, forLossArr, orderIDArr);
     // // console.log(currentProductionZoneForLoss);
+    // // console.log('getRepCurrentProductionZonePeriod 3');
+
+    // // console.log(companyID, seasonYear);
+    // const repQTYEditListFull = await ShareFunc.getRepQTYEditBySeasonYear(companyID, seasonYear);
+    // // console.log(repQTYEditList);
+
+
     
-    // getTotalProductionQueueByFactoryProductIDs= async (companyID, factoryID, productIDArr) 
-    // currentProductAllDetailCFN = await ShareFunc.getCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr, page, limit);
-    // countCurrentProductAllDetailCFN = await ShareFunc.getCountCFNCurrentProductAllDetailPL(companyID, factoryID, nodeID, productStatusArr);
-    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
       userID: userID,
       token: '',
       expiresIn: process.env.expiresIn,
       currentProductionZonePeriod: currentProductionZonePeriod,
       orderStyleColorSize: orderStyleColorSize,
-      // currentProductionZoneForLoss: currentProductionZoneForLoss,
-      // currentCompanyOrderZoneStyleSize: currentCompanyOrderZoneStyleSize,
+      // *******************************
+      // currentProductionZonePeriodFull: currentProductionZonePeriodFull,
+      // currentProductionZoneForLossFull: currentProductionZoneForLossFull,
+      // repQTYEditListFull: repQTYEditListFull,
     });
   } catch (err) {
     

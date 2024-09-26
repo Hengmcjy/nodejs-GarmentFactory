@@ -1162,6 +1162,7 @@ exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName) 
     { $project: {			
         _id: 0,	
         data: 1,	
+        dataFake: 1,	
         // companyID: 1,		
         // factoryID: 1,	
         // sGroup: 1,
@@ -1174,7 +1175,7 @@ exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName) 
     }	}
   ]);
   // console.log(data);
-  return data[0].data;
+  return data;
 }
 
 // auto_getCompanyOrderOutsource
@@ -3397,8 +3398,7 @@ exports.getProductBarcodeNosOrderProductionbyBundleNo= async (companyID, orderID
 }
 
 // checkExistOrderProductionbyBundleNo
-exports.checkExistOrderProductionbyBundleNo= async (companyID, orderID, bundleNos, productCount, 
-                                                    open, productStatusArr, isOutsourceTracking) => {
+exports.checkExistOrderProductionbyBundleNo= async (companyID, orderID, bundleNos) => {
   // productID = await this.setBackStrLen(process.env.productIDLen, productID, ' ');
   // limit = +limit; // ## change to number
   const orderProductionBundleNo = await OrderProduction.aggregate([
@@ -3408,9 +3408,9 @@ exports.checkExistOrderProductionbyBundleNo= async (companyID, orderID, bundleNo
       // {"bundleNo":bundleNo},
       // {"productCount":productCount},
       {"bundleNo":{$in: bundleNos}},
-      {"productStatus":{$in: productStatusArr}},
-      {"isOutsourceTracking":isOutsourceTracking},
-      {"open":open},
+      // {"productStatus":{$in: productStatusArr}},
+      // {"isOutsourceTracking":isOutsourceTracking},
+      // {"open":open},
     ] } },
     { $project: {			
         _id: 0,	
@@ -3421,6 +3421,7 @@ exports.checkExistOrderProductionbyBundleNo= async (companyID, orderID, bundleNo
         productCount: 1,
         isOutsourceTracking:1,
         productStatus: 1,
+        productionNode: 1,
         // productBarcodeNoReal: 1,
     }	}
   ]).hint( { companyID : 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
@@ -3561,6 +3562,139 @@ exports.getCSZCSOrderProductionBundleNos= async (companyID, orderIDs, isOutsourc
   return orderProduction1F;
 }
 
+exports.getCSZCSOrderProductionBundleNosByBundleNo= async (companyID, orderIDs, isOutsourceTracking1, 
+  productionNodeStatusArr, nodeIDs, bundleNos) => {
+
+  const orderProduction1 = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"factoryID":factoryID},
+      // {"isOutsourceTracking":isOutsourceTracking1},
+      {"orderID":{$in: orderIDs}},
+      {"bundleNo":{$in: bundleNos}},
+      
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        orderID: 1,	
+        // productID: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        bundleNo: 1,  // ## system running no
+        // bundleID: 1,
+        productCount: 1,
+        isOutsourceTracking: 1,
+        productionNode: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      bundleNo: 1,
+      productCount: 1,
+      isOutsourceTracking: 1,
+      // productID: 1,
+      // productBarcodeNo: 1,
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+      factoryID: "$productionNode.factoryID",
+      fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      datetime: "$productionNode.datetime",
+      status: "$productionNode.status",
+      isTracking: "$productionNode.isTracking",
+      // createBy: "$productionNode.createBy",
+    }},
+
+    { $match: { $and: [
+      // {"targetPlace":{$in: zoneArr}},
+      // {"color":{$in: colorArr}},
+      // {"size":{$in: sizeArr}},
+      {"status":{$in: productionNodeStatusArr}},
+      // {"fromNode":{$in: nodeIDs}},
+      // {"status":productionNodeStatusArr},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,	
+      orderID: 1,
+      bundleNo: 1,
+      nodeID: "$fromNode",
+      productCount: 1,
+      isOutsourceTracking: 1,
+      targetPlace: 1,
+      color: 1,
+      size: 1,
+      isTracking: 1,
+      // productBarcodeNo: 1,
+      // productCount: 1,
+      // productionDate: 1,
+      // productStatus: 1,
+      // productProblem: 1,
+      // fromNode: 1,
+      // toNode: 1,
+      // datetime: 1,
+      // createBy: 1,
+    }},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        // factoryID: '$factoryID',
+        orderID: '$orderID',
+        bundleNo: '$bundleNo',
+        productCount: '$productCount',
+        nodeID: '$nodeID',
+        isOutsourceTracking: '$isOutsourceTracking',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+        isTracking: '$isTracking',
+    },
+      // countProductQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+
+  ])
+  .hint( { companyID: 1, orderID: 1, bundleNo: 1, "productionNode.status": 1 } );
+
+
+  // console.log(orderProduction1);
+  const orderProduction1F = await orderProduction1.map(fw => ({
+    companyID: fw._id.companyID, 
+    // factoryID: fw._id.factoryID,
+    orderID: fw._id.orderID,
+    bundleNo: fw._id.bundleNo,
+    productCount: fw._id.productCount,
+    nodeID: fw._id.nodeID,
+    isOutsourceTracking: fw._id.isOutsourceTracking,
+    targetPlace: fw._id.targetPlace,
+    color: fw._id.color,
+    size: fw._id.size,
+    isTracking: fw._id.isTracking,
+    // productID: fw._id.productID,
+    // countProductQty: fw.countProductQty,
+  }))
+
+
+  // console.log(orderProduction1F);
+  return orderProduction1F;
+}
+
 exports.getOrderProductbundleID= async (companyID, orderID, ver, productBarcodeNoReal) => {
   const orderProduction1 = await OrderProduction.aggregate([
     { $match: { $and: [
@@ -3595,7 +3729,7 @@ exports.getOrderProductbundleID= async (companyID, orderID, ver, productBarcodeN
 }
 
 // getCSZCSOrderProductOutsourceTrackingFlowseqs
-exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderIDs, isOutsourceTracking, bundleNos, nodeIDs) => {
+exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderIDs, isOutsourceTracking, bundleNos, nodeIDs, statusArr) => {
   const orderProduction1 = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -3604,8 +3738,11 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
       {"bundleNo":{$in: bundleNos}},
       {"isOutsourceTracking":isOutsourceTracking},
 
-
-      {"productionNode":  {$elemMatch: {"fromNode":{$in: nodeIDs}}}},
+      // {"productionNode":  {$elemMatch: {"fromNode":{$in: nodeIDs}}}},
+      {"productionNode":  {$elemMatch: {
+        "fromNode": {$in: nodeIDs}, 
+        "status": {$in: statusArr},     
+      }}},
 
 
     ] } },
@@ -3651,6 +3788,7 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
       toNode: "$productionNode.toNode",
       datetime: "$productionNode.datetime",
       status: "$productionNode.status",
+      isTracking: "$productionNode.isTracking",
       // createBy: "$productionNode.createBy",
     }},
 
@@ -3658,8 +3796,8 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
       // {"targetPlace":{$in: zoneArr}},
       // {"color":{$in: colorArr}},
       // {"size":{$in: sizeArr}},
-      // {"status":{$in: productionNodeStatusArr}},
       {"fromNode":{$in: nodeIDs}},
+      {"status":{$in: statusArr}},
       // {"status":productionNodeStatusArr},
     ] } },
     { $project: { 
@@ -3674,7 +3812,7 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
       targetPlace: 1,
       color: 1,
       size: 1,
-      // productID: 1,
+      isTracking: 1,
       // productBarcodeNo: 1,
       // productCount: 1,
       // productionDate: 1,
@@ -3683,6 +3821,7 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
       // fromNode: 1,
       // toNode: 1,
       // datetime: 1,
+      status: 1,
       // createBy: 1,
     }},
     { $group: {			
@@ -3697,13 +3836,15 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
         targetPlace: '$targetPlace',
         color: '$color',
         size: '$size',
+        status: '$status',
+        isTracking: '$isTracking',
     },
       // countProductQty: {$sum: 1} ,
       // sumProductQty: {$sum:  '$amount'} ,
     }}  
 
   ])
-  .hint( {"companyID" : 1, "orderID": 1, "bundleNo": 1, "productionNode.status": 1} );
+  .hint( {"companyID" : 1, "orderID": 1, "bundleNo": 1, "isOutsourceTracking": 1, "productionNode.fromNode": 1, "productionNode.status": 1} );
 
   // console.log(orderProduction1);
   const orderProduction1F = await orderProduction1.map(fw => ({
@@ -3717,6 +3858,8 @@ exports.getCSZCSOrderProductOutsourceTrackingFlowseqs= async (companyID, orderID
     targetPlace: fw._id.targetPlace,
     color: fw._id.color,
     size: fw._id.size,
+    status: fw._id.status,
+    isTracking: fw._id.isTracking,
     // productID: fw._id.productID,
     // countProductQty: fw.countProductQty,
   }));

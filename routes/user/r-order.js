@@ -136,6 +136,11 @@ router.get("/orderoutsourcetracking1/getlists/:companyID/:factoryID/:orderIDs/:p
       checkAuth, checkUUID, orderController.getOrderOursourceTracking);
 //
 
+// ## 
+router.get("/orderoutsourcetracking3/getlists/:companyID/:factoryID/:orderIDs/:productionNodeStatusArr/:bundleNoArr", 
+      checkAuth, checkUUID, orderController.getOrderOursourceTrackingByBundleNos);
+//
+
 // ## /api/order/orderoutsourcetracking2/productionNode  upsertOrderProducctionNodeFlow
 router.put("/orderoutsourcetracking2/productionNode", checkAuth, checkUUID, orderController.upsertOrderProducctionNodeFlow);
 
