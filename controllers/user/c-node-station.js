@@ -1301,6 +1301,7 @@ exports.staffNodeLogin = async (req, res, next) => {
   }
 }
 
+
 // ## get scan order production for send product to next department putScanOrderProductionBarcodeNo
 // ## for check productBarcodeNo can scan this nodeID
 // router.put("/scanroderProduction/productBarcodeNo", nsController.putScanOrderProductionBarcodeNo);
@@ -1594,6 +1595,9 @@ exports.checkNodeStationSettingList= async (companyID, factoryID, stationID, flo
 
   return [];
 }
+
+// router.put("/oroderProduction/productBarcodeNo/qctocomplete", nsController.putOrderProductionBarcodeNoQCtoComplete);
+
 
 
 // // ## edit order production  send product to next department 

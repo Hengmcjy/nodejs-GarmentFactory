@@ -1413,22 +1413,23 @@ exports.getRepNodeNoScanDatail = async (req, res, next) => {
           companyID, factoryIDArr, nodeID, orderIDArr, statusArr, 
           targetPlaceID, color, size, page, limit
         );
-        mainDataBundleNoScanDetail = mainDataBundleNoScanDetailF;  // ## current bundle no scan
+      mainDataBundleNoScanDetail = mainDataBundleNoScanDetailF;  // ## current bundle no scan
+      // console.log(mainDataBundleNoScanDetail);
 
-        // ## get productBarcode, bundleNo, bundleID
-        await this.asyncForEach(mainDataBundleNoScanDetail, async (item1) => {
-          if (!productBarcodeArr.includes(item1.productBarcode)) {productBarcodeArr.push(item1.productBarcode);}
-          if (!bundleNoArr.includes(item1.bundleNo)) {bundleNoArr.push(item1.bundleNo);}
-          if (!bundleIDArr.includes(item1.bundleID)) {bundleIDArr.push(item1.bundleID);}
-        });
-        // console.log(productBarcodeArr, bundleNoArr, bundleIDArr);
+      // ## get productBarcode, bundleNo, bundleID
+      await this.asyncForEach(mainDataBundleNoScanDetail, async (item1) => {
+        if (!productBarcodeArr.includes(item1.productBarcode)) {productBarcodeArr.push(item1.productBarcode);}
+        if (!bundleNoArr.includes(item1.bundleNo)) {bundleNoArr.push(item1.bundleNo);}
+        if (!bundleIDArr.includes(item1.bundleID)) {bundleIDArr.push(item1.bundleID);}
+      });
+      // console.log(productBarcodeArr, bundleNoArr, bundleIDArr);
 
-        const mainDataBundleNoScanDetailFF = 
-          await ShareFunc.getRepCFNCurrentMainDataBundleNoscanProductBarcode(
-            companyID, factoryIDArr, nodeID, orderIDArr, statusArr,
-            productBarcodeArr, bundleNoArr, bundleIDArr
-          );
-          mainDataBundleNoScanNo = mainDataBundleNoScanDetailFF;  // ## current bundle no scan , barcodeNo
+      const mainDataBundleNoScanDetailFF = 
+        await ShareFunc.getRepCFNCurrentMainDataBundleNoscanProductBarcode(
+          companyID, factoryIDArr, nodeID, orderIDArr, statusArr,
+          productBarcodeArr, bundleNoArr, bundleIDArr
+        );
+      mainDataBundleNoScanNo = mainDataBundleNoScanDetailFF;  // ## current bundle no scan , barcodeNo
     }
     // console.log(mainDataBundleNoScanDetail);
 

@@ -93,6 +93,8 @@ router.get("/nodestation/lists/:companyID/:factoryID/:status/:page/:limit", nsCo
 // ## staff login to node workstation staffNodeLogin
 router.post("/nodestation/staff/login", nsController.staffNodeLogin);
 
+
+
 // ## get scan order production befor send product to next department putScanOrderProductionBarcodeNo
 router.put("/scanroderProduction/productBarcodeNo", nsController.putScanOrderProductionBarcodeNo);
 
@@ -101,6 +103,8 @@ router.put("/nextdep/scanroderProduction/productBarcodeNo", nsController.putScan
 
 // ## get node product record productBarcodeNo  getDatarecordProductBarcodeNo
 router.get("/node10/record/productBarcodeNo/:companyID/:factoryID/:productBarcodeNo", nsController.getDatarecordProductBarcodeNo);
+
+// router.put("/oroderProduction/productBarcodeNo/qctocomplete", nsController.putOrderProductionBarcodeNoQCtoComplete);
 
 // ## edit order production  send product to next department 
 router.put("/node11/edit/oderProduction/nextnode", nsController.putOrderProductionNextNodeID);

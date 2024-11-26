@@ -5025,7 +5025,8 @@ exports.getStaff1Company = async (req, res, next) => {
 exports.postUpdateUploadImages = async (req, res, next) => {
   const file = req.file;
   const filename = file.filename;
-  // console.log(file);
+  console.log(file);
+  console.log(req.imageData);
   try {
 
     res.status(201).json({

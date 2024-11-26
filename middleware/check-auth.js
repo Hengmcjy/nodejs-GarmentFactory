@@ -36,6 +36,7 @@ module.exports = async (req, res, next) => {
         userID: req.headers.userid,
         mode: req.headers.mode, // updateImageUserProfile ,updateImageMB, updateImageMBSold
         __idx: req.headers.__idx,
+        folder: req.headers.folder,
         mydatajson: req.headers.mydatajson,
       };
       // console.log(req.imageData.mydatajson);

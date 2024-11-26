@@ -2655,6 +2655,122 @@ exports.getOrderProductBundleNos = async (req, res, next) => {
   }
 }
 
+// router.put("/oroderProduction/productBarcodeNo/qctocomplete", checkAuth, checkUUID, orderController.putOrderProductionBarcodeNoQCtoComplete);
+exports.putOrderProductionBarcodeNoQCtoComplete = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
+  const orderID = data.orderID;
+  const productBarcodeNos = data.productBarcodeNos;
+  const nodeIDLast = data.nodeIDLast; // ## 7.QC
+  const toNode = data.toNode; // ## completeNode
+  const userID = data.userID;
+  const createBy = data.createBy;
+
+  // console.log('putOrderProductionBarcodeNoQCtoComplete');
+  // console.log(companyID, factoryID, orderID, productBarcodeNos, nodeIDLast, toNode);
+  // console.log(userID, createBy);
+  
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+
+  let session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    await this.asyncForEach(productBarcodeNos, async (productBarcodeNo) => {
+
+      const productionNode = {
+        factoryID: factoryID,
+        fromNode: nodeIDLast,
+        toNode: toNode,
+        datetime: current,
+        status: 'normal',
+        info: 'forcecomplete',
+        sTypeOtus: '',
+        problemID: '',
+        problemName: '',
+        isTracking: false,
+        isOutsource: false,
+        outsourceData: [],
+        createBy: createBy
+      }
+
+      // ## check last nodeID for check error
+      const orderProduction1 = await ShareFunc.getOrderProduct01(companyID, factoryID, productBarcodeNo);
+      // console.log(orderProduction1);
+      let productionNodeX = [];
+      let nodeIDLast1 = '';
+
+      if (orderProduction1) {
+        productionNodeX = orderProduction1.productionNode;
+        nodeIDLast1 = productionNodeX[productionNodeX.length - 1].toNode;
+        // const nodeIDF = productionNodeX.filter(i=>i.fromNode === productionNode.fromNode);
+        if (nodeIDLast === nodeIDLast1) { // ## check last node is = '7.QC'
+          // console.log('nodeIDLast === nodeIDLast1', nodeIDLast , nodeIDLast1);
+
+          result002 = await OrderProduction.updateOne(
+            {$and: [
+              {"companyID":companyID},
+              // {"factoryID":factoryID},
+              {"orderID":orderID},
+              // {"productID":productID},
+              {"productBarcodeNoReal":{$in: [productBarcodeNo]}}
+            ]}, 
+            {
+              // {$push: {productionNode: {$each:[productionNode],  $position: 0}}},  // ## add new element at the first
+              // $push: {productionNode: productionNode},
+              $push: {productionNode: {$each: [productionNode]}},
+              "productStatus": 'complete'
+            },).session(session);
+
+        } else {
+          console.log('nodeIDLast != nodeIDLast1', nodeIDLast , nodeIDLast1);
+        }
+      }
+
+    });
+    await session.commitTransaction();
+    session.endSession();
+
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      // bundleNos: bundleNos,
+      // nodeIDs: nodeIDs,
+      // forbiddenNodeIDs: forbiddenNodeIDs,
+      // nodeStations: nodeStations,
+      // flowSeq: flowSeq,
+      // orderProductBundleNosOutsourceTracking: orderProductBundleNosOutsourceTracking,
+      // orderProductOutsourceTrackingFlowseqNormal: orderProductOutsourceTrackingFlowseqNormal,
+      // orderProductOutsourceTrackingFlowseqTracking: orderProductOutsourceTrackingFlowseqTracking,
+      // currentOrderStyle: currentOrderStyle,
+      // currentProductQtyAllC: currentProductQtyAllC,
+      // orders: orders,
+      // products: products,
+      // orderProductAllQtyRep: orderProductAllQtyRep,
+      // factory: factory,
+      // nodeStation: nodeStation,
+      // nodeFlows: nodeFlows,
+    });
+
+    
+
+  } catch (err) {
+    console.log(err);
+    await session.abortTransaction(); 
+    session.endSession();
+    return res.status(501).json({
+      message: {
+        messageID: 'errns012', 
+        mode:'errWorkerScanOrderProduction', 
+        value: "error worker scan order production"
+      },
+      success: false
+    });
+  }
+}
 
 // // ## get bundle no by style , zone , color , size
 // router.get("/orderoutsourcetracking1/getlists/:companyID/:factoryID/:orderIDs/:productionNodeStatusArr", 

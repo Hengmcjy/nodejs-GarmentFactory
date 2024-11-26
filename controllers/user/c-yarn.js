@@ -2259,7 +2259,7 @@ exports.getYarnUsage = async (req, res, next) => {
   
   // console.log('getYarnUsage');
   // console.log(yarnColorID);
-  // console.log(companyID, factoryID, customerID, yarnSeasonID, yarnID, yarnColorID, yarnDataUUID, status);
+  console.log(companyID, yarnSeasonID, yarnID, yarnColorID);
 
   await ShareFunc.upsertUserSession1hr(userID);
   // console.log(req.userData.tokenSet);
@@ -2760,7 +2760,7 @@ exports.putYarnStockCardPCS = async (req, res, next) => {
             ]} , 
             {
               "dataPCS": dataPCS,
-            }, {upsert: true}).session(session); 
+            }, {upsert: true}).session(session);
           await session.commitTransaction();
           session.endSession();
 

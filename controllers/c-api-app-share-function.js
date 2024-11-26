@@ -13512,7 +13512,7 @@ exports.getRepCFNCurrentMainDataBundleNoscanProductBarcode = async (companyID, f
     // companyID: fw._id.companyID, 
     // factoryID: fw._id.factoryID, 
     orderID: fw._id.orderID,
-    // productBarcode: fw._id.productBarcode,
+    productBarcode: fw._id.productBarcode,
     bundleNo: fw._id.bundleNo,
     bundleID: fw._id.bundleID,
     // style: fw._id.style,

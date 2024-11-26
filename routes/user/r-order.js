@@ -128,6 +128,10 @@ router.get("/order7/getbundlenos/:companyID/:productBarcode/:startNO/:endNo", ch
 
 
 
+// ## set qc to complete
+router.put("/order8/oroderProduction/productBarcodeNo/qctocomplete", checkAuth, checkUUID, orderController.putOrderProductionBarcodeNoQCtoComplete);
+
+
 
 // ## outsource tracking zone
 

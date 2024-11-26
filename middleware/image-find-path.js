@@ -9,6 +9,7 @@ const path = require("path");
 module.exports = (req, res, next) => {
     // console.log('findpath');
     // console.log(req.imageData);
+    // console.log(req.session);
     
     const imageTempPath = 'public/temp';
     let mbMainPath = '';
