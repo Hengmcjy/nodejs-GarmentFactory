@@ -74,6 +74,7 @@ exports.getOrder = async (req, res, next) => {
   const userID = req.params.userID;
   const orderID = req.params.orderID;
   // const seasonYear = req.params.seasonyear;
+  // console.log('getOrder');
 
   try {
     // ## get 1 order

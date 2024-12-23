@@ -31,6 +31,7 @@ const yarnUserRoutes = require("./routes/user/r-yarn");
 const cusRoutes = require("./routes/user/r-customer");
 const nsRoutes = require("./routes/user/r-node-station");
 const repRoutes = require("./routes/user/r-report");
+const deliRoutes = require("./routes/user/r-deli");
 
 mongoose.set('strictQuery', false);
 
@@ -122,6 +123,7 @@ app.use("/api/yarn", yarnUserRoutes);
 app.use("/api/cus", cusRoutes);
 app.use("/api/ns", nsRoutes);
 app.use("/api/rep", repRoutes);
+app.use("/api/deli", deliRoutes);
 
 // // ## test downloading logging
 // app.get("/dl/log", async (req, res) => {

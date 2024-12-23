@@ -41,6 +41,9 @@ const OrderProductionQueueList = require("../models/m-orderProductionQueueList")
 const SubNodeFlowType = require("../models/m-subNodeFlowType");
 const RepQTYEdit = require("../models/m-repQTYEdit");
 
+const DPacking = require("../models/m-dPacking");
+const DCarton = require("../models/m-dCarton");
+const DCountry = require("../models/m-dCountry");
 
 const OPDLost = require("../models/m-opdLost");
 const LostGroup = require("../models/m-lostGroup");
@@ -7501,6 +7504,139 @@ exports.getYarnColors= async (companyID, showArr) => {
 
 
 // ## yarn zone ####################################################################
+// #################################################################################
+
+// #################################################################################
+// ## delivery zone ####################################################################
+// const DPacking = require("../models/m-dPacking");
+// const DCarton = require("../models/m-dCarton");
+// const DCountry = require("../models/m-dCountry");
+
+exports.getDCartons= async (companyID) => {
+  // limit = +limit; // ## change to number
+  const cartons = await DCarton.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        seq: 1,
+        cartonID: 1,			
+        cartonName: 1,		
+        cSize: 1,	
+        show: 1,
+    }	},
+    { $sort: { seq: 1, cartonID: 1 } }
+  ]);
+  // console.log(cartons);
+  return cartons;
+}
+
+exports.getDCounties= async (companyID) => {
+  // limit = +limit; // ## change to number
+  const countries = await DCountry.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        seq: 1,
+        dCountryID: 1,			
+        dCountryName: 1,		
+        show: 1,	
+    }	},
+    { $sort: { seq: 1, dCountryID: 1 } }
+  ]);
+  // console.log(countries);
+  return countries;
+}
+
+// ShareFunc.checkExistDCartonID(companyID, dCartonID);
+exports.checkExistDCartonID= async (companyID, dCartonID) => {
+  // limit = +limit; // ## change to number
+  const carton = await DCarton.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"dCartonID":dCartonID},
+      // {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        seq: 1,
+        cartonID: 1,			
+        cartonName: 1,		
+        cSize: 1,	
+        show: 1,	
+    }	},
+    // { $sort: { seq: 1, dCountryID: 1 } }
+  ]);
+  // console.log(countries);
+  return carton.length > 0 ? true : false;
+}
+
+exports.checkExistdCountryID= async (companyID, dCountryID) => {
+  // limit = +limit; // ## change to number
+  const country = await DCountry.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"dCountryID":dCountryID},
+      // {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        seq: 1,
+        dCountryID: 1,			
+        dCountryName: 1,		
+        show: 1,	
+    }	},
+    // { $sort: { seq: 1, dCountryID: 1 } }
+  ]);
+  // console.log(countries);
+  return country.length > 0 ? true : false;
+}
+
+// ShareFunc.getDPackings(companyID, seasonYear);
+exports.getDPackings= async (companyID, seasonYear, dStatusArr) => {
+  // limit = +limit; // ## change to number
+  const dPackings = await DPacking.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"seasonYear":seasonYear},
+      {"dStatus":{$in: dStatusArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,
+        seasonYear: 1,			
+        customerID: 1,
+
+        orderID: 1,
+        dID: 1,
+        dCountryID: 1,
+        dStatus: 1,
+        isLock: 1,
+        isLockDCarton: 1,
+        seq: 1,
+        dDate: 1,
+        productionDate: 1,
+        dInfo: 1,	
+        dCarton: 1,
+    }	},
+    { $sort: { seq: 1, cartonID: 1 } }
+  ]);
+  // console.log(dPackings);
+  return dPackings;
+}
+
+
+// ## delivery zone ####################################################################
 // #################################################################################
 
 
