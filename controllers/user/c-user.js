@@ -4513,7 +4513,8 @@ exports.getUserFactory = async (req, res, next) => {
   const userID = req.params.userID;
   const companyID = req.params.companyID;
   const page = +req.params.page;
-  const limit = +req.params.limit;
+  // const limit = +req.params.limit;
+  const limit = 100;
 
   try {
     // ## get user factory info
@@ -5025,8 +5026,8 @@ exports.getStaff1Company = async (req, res, next) => {
 exports.postUpdateUploadImages = async (req, res, next) => {
   const file = req.file;
   const filename = file.filename;
-  console.log(file);
-  console.log(req.imageData);
+  // console.log(file);
+  // console.log(req.imageData);
   try {
 
     res.status(201).json({

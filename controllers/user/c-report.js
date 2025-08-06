@@ -214,7 +214,7 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
   const orderStatusArr = JSON.parse(req.params.orderStatus);
   const orderIDArr = JSON.parse(req.params.orderIDArr);
   const seasonYear = req.params.seasonYear;
-  // console.log(companyID, productStatusArr, productionNodeStatusArr);
+  // console.log(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
   try {
     // ## get Rep Company Current Production work in period
     // const currentProductionZonePeriod = await ShareFunc.getProductionZonePeriodC(companyID, productStatusArr, productionNodeStatusArr, orderIDArr);
@@ -222,6 +222,7 @@ exports.getRepCurrentProductionZonePeriod = async (req, res, next) => {
     // exports.get_auto_getProductionZonePeriodC= async (companyID, seasonYear, sName)
     const sName = 'auto_getProductionZonePeriodC';
     const data = await ShareFunc.get_auto_getProductionZonePeriodC(companyID, seasonYear, sName);
+    // console.log(data);
     
     const currentProductionZonePeriod = data[0].data;
     const currentProductionZonePeriodFake = data[0].dataFake;
@@ -694,6 +695,8 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
   const productStatusArr = JSON.parse(req.params.productStatus);
   const productProbelmStatusArr = ['problem'];
   const repListNameArr = JSON.parse(req.params.repListName);
+  const seasonYearsArr = JSON.parse(req.params.seasonYears);
+
   // console.log(companyID, factoryID, nodeID, productStatusArr);
 
   try {
@@ -702,6 +705,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     let orderProductQtyByOrderIDRep;
     let orderProductQtyByOrderIDProductIDRep;
     let orderProductQtyBundleListRep;
+    let orderIDs = [];
     let orders = [];
     let products = [];
     let productStateStyle = [];
@@ -722,11 +726,15 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
     //   {"del":'n'}
     // ]});
 
-                // 'allTotalProduct',
-                // 'getRepCFNCurrentProductQtyByOrderID',
-                // 'getRepCFNCurrentProductQtyByOrderIDProductID',
-                // 'getAllOrderAndProductFromOrderProduction',
-                // 'getRepCFNProductState',  
+
+    //
+    // ## getOrderSBySeasonYears= async (companyID, seasonYearsArr) 
+    const orderD = await ShareFunc.getOrderSBySeasonYears(companyID, seasonYearsArr);
+    // console.log(' orderD  ===' , orderD);
+    // products
+    await this.asyncForEach(orderD , async (item) => {
+      orderIDs.push(item.orderID);
+    });
 
     // allTotalProduct
     // console.log(' 0 - allTotalProduct');
@@ -849,6 +857,7 @@ exports.getRepCurrentProductQtyCFN = async (req, res, next) => {
       orderProductQtyByOrderIDRep: orderProductQtyByOrderIDRep,
       orderProductQtyByOrderIDProductIDRep: orderProductQtyByOrderIDProductIDRep,
       orderProductQtyBundleListRep: orderProductQtyBundleListRep,
+      orderIDs: orderIDs,
       orders: orders,
       products: products,
       productStateStyle: productStateStyle,

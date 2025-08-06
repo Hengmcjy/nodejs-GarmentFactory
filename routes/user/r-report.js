@@ -59,7 +59,7 @@ router.get("/noder/rep5/current/productqueue/cf/:companyID/:factoryID/:productID
 // // ##
 
 // ## get node getRepCurrentProductQtyCFN
-router.get("/noder/rep1/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName"
+router.get("/noder/rep1/current/productqty/cfn/:companyID/:factoryID/:nodeID/:productStatus/:repListName/:seasonYears"
         , reportController.getRepCurrentProductQtyCFN);
 // // ##
 

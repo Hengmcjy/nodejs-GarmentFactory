@@ -188,7 +188,7 @@ exports.getYarnInfo1 = async (req, res, next) => {
   // const page = +req.params.page;
   // const limit = +req.params.limit;
   // console.log('getYarnInfo1');
-  // console.log(setName);
+  console.log(setName);
   try {
 
     const uuid = uuidv4();

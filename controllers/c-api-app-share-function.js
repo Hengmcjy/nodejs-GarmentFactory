@@ -1891,6 +1891,32 @@ exports.getProductImageProfiles= async (companyID, productIDs) => {
 // #################################################################################
 // ## order zone ####################################################################
 
+// ## get orders by seasonID
+exports.getOrderSBySeasonYears= async (companyID, seasonYearsArr) => {
+  // limit = +limit; // ## change to number
+  // console.log('getOPDLosts');
+  // console.log(companyID, show);
+  const orderD = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      // {"show":show},  seasonYear
+      {"seasonYear":{$in: seasonYearsArr}} // ## 2024AW 2025SS ...
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        orderID: 1,
+        // productBarcode: "$productOR.productORInfo.productBarcode",
+        // opdLostName: 1,
+        // lostGroupID: 1,
+        // show: 1,
+        // seq: 1,
+    }	}
+  ]);
+  // console.log(orderD);
+  return orderD;
+}
+
 // ## get opd lost list
 exports.getOPDLosts= async (companyID, show) => {
   // limit = +limit; // ## change to number
