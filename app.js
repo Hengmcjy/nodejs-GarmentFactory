@@ -99,7 +99,7 @@ mongoose
     `mongodb+srv://`
     + `${process.env.MGUSER}:${process.env.MGPWD}`
     + `${process.env.MGSVR1}/${process.env.MGDB}`
-    + `?retryWrites=true`
+    + `?retryWrites=true&w=majority&appName=Cluster0`
   )
   .then((data) => {
     console.log("Connected to database!");
