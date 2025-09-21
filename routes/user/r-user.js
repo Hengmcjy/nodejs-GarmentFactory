@@ -449,7 +449,8 @@ router.post('/update/upload/images/gcs',
               const imageUserProfile = req.imageData.imageName+'.jpg'
               ShareFunc.editUserImageProfile(userID, imageUserProfile);  // ## update mongodb for image path user
 
-            // ## edit company image profile  
+            //  
+            // ## edit company image profile 
             } else if (mydatajson.callfrom === 'companyEditImageProfile') {
               const oldImage = await ShareFunc.getCompanyImageProfile(companyID);  // ## delete image old @ google storage
               if (oldImage) {
