@@ -13,6 +13,10 @@ const router = express.Router();
 
 // ##  /api/mail
 
+// ## test send email
+// /api/mail/test/sendmail
+router.get("/test/tsendmail", mailController.getTestSendMail);
+
 // /api/mail/signup/sendmail
 // ## send mail when user signup
 router.post("/signup/sendmail", mailController.postSignupSendMail);

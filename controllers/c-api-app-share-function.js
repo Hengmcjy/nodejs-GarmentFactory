@@ -1016,9 +1016,89 @@ exports.getColorValueByID_SetNmae= async (colors, colorID, setName) => {
 // #################################################################################
 // ## email zone ####################################################################
 
+// ## TestSendMail  send mail
+exports.TestSendMail= async (email, uuid) => {
+  const emailFactory = 'go.garment.mail@gmail.com';
+  // ## test send mail ( nodemailer )
+  let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAILSENDER,
+      pass: process.env.EMAILSENDERPWD,
+    }
+  });
+    
+  // http://localhost:4200?key=514cf9e3-6f42-4b0f-ba5e-7365988bd4d6
+  // http://localhost:4200/#/confirmlink?key=4c53f2c8-6c23-4369-bf32-21db104550f0
+  // http://localhost:4200/#/user/ufactory/station/nodepick?nodeFlowID=main
+  // รายละเอียดอีเมล
+  transporter.sendMail({
+    from: process.env.EMAILSENDER,    // ผู้ส่ง
+    to: email,// ผู้รับ / to: "bar@example.com, baz@example.com", // list of receivers
+    subject: "comfirm email [KOJ Garment system]",                      // หัวข้อ
+    // text: "There is a new article. It's about sending emails, check it out!", // plain text body
+    html: `
+      <div style="border-style:solid;border-width:thin;border-color:#dadce0;border-radius:8px;padding:40px 20px"
+      align="center" class="m_-8934074721175062072mdv2rw">
+      <div style="font-family:'Google Sans',Roboto,RobotoDraft,Helvetica,Arial,sans-serif;border-bottom:thin solid #dadce0;color:rgba(0,0,0,0.87);line-height:32px;padding-bottom:24px;text-align:center;word-break:break-word">
+          <div style="font-size:24px">Verify your email </div>
+      </div>
+      <div style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:14px;color:rgba(0,0,0,0.87);line-height:20px;padding-top:20px;text-align:left">
+              Google received a request to use 
+              <a style="font-weight:bold">${email}</a> 
+              as a recovery email for
+              Google Account 
+              <a style="font-weight:bold">${emailFactory}</a>
+              .<br><br>
+              Use this code to finish setting
+              up this recovery email:
+              <br>
+              <div style="text-align:center;font-size:36px;margin-top:20px;line-height:44px">
+                <a href="http://localhost:4200/#/confirmlink/${uuid}" target="_blank">click link</a> 
+              </div>
+              <br>
+              This code will
+              expire in 24 hours.
+              <br><br>
+              If you don’t recognize 
+              <a style="font-weight:bold">${emailFactory}</a>
+              , you
+              can safely ignore this email.
+          </div>
+      </div>
+      `,
+    // html body 
+    // attachments: [
+    //   {
+    //     filename: `${name}.pdf`,
+    //     path: path.join(__dirname, `../../src/assets/books/${name}.pdf`),
+    //     contentType: 'application/pdf',
+    //   },
+    // ],
+  }, (err, info) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(info.messageId);
+    }
+  });
+
+  // Verify the connection of email sender
+  transporter.verify(function (error, success) {
+    if (error) {
+      console.log(error); // Log connection errors
+    } else {
+      console.log("Server is ready to take our messages"); // Success!
+    }
+  });
+
+  // console.log(controlApp);
+  return true;
+}
+
 // ## signupSendMail  send mail
 exports.signupSendMail= async (email, uuid) => {
-  const emailFactory = 'go.garment.mail@gmail.com';
+  const emailFactory = process.env.EMAILSENDER;  //'go.garment.mail@gmail.com';
   // ## test send mail ( nodemailer )
   let transporter = nodemailer.createTransport({
     service: 'gmail',

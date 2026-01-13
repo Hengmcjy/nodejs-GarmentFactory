@@ -116,11 +116,30 @@ exports.postSignupSendMail2 = async (req, res, next) => {
   }
 }
 
+// /api/mail/test/tsendmail
+exports.getTestSendMail = async (req, res, next) => {
+  // console.log('OK test sent email   00');
+  // TestSendMail= async (email, uuid)
+  const uuid = uuidv4();
+  const email = "heng067@gmail.com, hengcrypto@gmail.com, tailin.mailsender@gmail.com";
+  const tsendmail = await ShareFunc.TestSendMail(email, uuid);
+  // console.log('OK test sent email   11');
+  res.status(200).json({
+      message: {
+        messageID: 'complete', 
+        mode:'complete', 
+        value: "send email completed"
+      },
+      success: true
+    });
+}
+
 // // ## send mail when user signup
 // router.post("/signup/sendmail", mailController.postSignupSendMail);
 exports.postSignupSendMail = async (req, res, next) => {
   // try {} catch (err) {}
   const data = req.body;
+  
   // const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
 
   try {

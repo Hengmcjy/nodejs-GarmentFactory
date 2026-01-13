@@ -3398,6 +3398,7 @@ exports.getLangData = async (req, res, next) => {
 // router.get("/get/company/data/info", userController.getCompanyInfo);
 exports.getCompanyInfo = async (req, res, next) => {
   // try {} catch (err) {}
+  // console.log('getCompanyInfo');
   const data = req.body;
   const companyID = data.companyID;
   const groupScanID = data.groupScanID; // ## *=select all
