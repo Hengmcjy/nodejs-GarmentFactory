@@ -25,6 +25,7 @@ const controlAppSchema = mongoose.Schema({
     scanOutsource : {type: Boolean}
   }],
   outSourceSeasonShow: [{type: String}],
+  seasonYearActive: [{type: String}],
 });
 
 controlAppSchema.plugin(uniqueValidator);

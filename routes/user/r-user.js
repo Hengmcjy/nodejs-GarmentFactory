@@ -13,6 +13,11 @@ const ShareFunc = require("../../controllers/c-api-app-share-function");
 
 
 
+// ## web zone
+const wwwcheckAuth = require('../../middleware/wwwcheck-auth');
+
+
+
 const router = express.Router();
 
 // ## http://localhost:3022/api/user/test/test
@@ -105,7 +110,9 @@ router.get("/test/mail/test1", mailController.postSignupSendMail2);
 // ###########################################################
 
 // ## upload update language 
-router.get("/langu/update", userController.languageUpdate);
+// ## http://192.168.1.35:3968/api/user/langu/update
+// , wwwwcheckAuth
+router.get("/langu/update", wwwcheckAuth, userController.languageUpdate);
 
 
 // ## general info / starting data

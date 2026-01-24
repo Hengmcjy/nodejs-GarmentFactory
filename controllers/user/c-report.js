@@ -917,9 +917,22 @@ exports.getRepCurrentProductQtyAllCFNode = async (req, res, next) => {
   try {
     // const orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
 
+
+    // ## get all order list by seasonYear-active
+    const seasonYearActive = (await ShareFunc.getControlAppseasonYearActive()).seasonYearActive;
+    // console.log(seasonYearActive);
+    const orderStatusArr = ['open'];
+    const orderIDss = await ShareFunc.getOrderIDsBySeasonYear(companyID, orderStatusArr, seasonYearActive);
+    // console.log(orderIDss);
+    let orderIDs = [];
+    orderIDss.forEach(i=>orderIDs.push(i.orderID));
+    // console.log('orderIDs ====', orderIDs);
+
+
     // ## get Rep C Current company Production  all
-    const orderProductCFNodeRep = await ShareFunc.getCurrentProductQtyAllCFNode(companyID, factoryIDArr, productStatusArr, orderIDArr);
-    // console.log(orderProductCFNodeRep);
+    const orderProductCFNodeRep = await ShareFunc.getCurrentProductQtyAllCFNode(companyID, factoryIDArr, productStatusArr, orderIDs);
+    // const orderProductCFNodeRep = await ShareFunc.getCurrentProductQtyAllCFNode(companyID, factoryIDArr, productStatusArr, orderIDArr);
+    // console.log('orderProductCFNodeRep ====', orderProductCFNodeRep);
     // ## get Rep CF Current factory Production  all
     // const currentProductQtyAllCF = await ShareFunc.getCFCurrentProductQtyAll(companyID, factoryIDArr, productStatusArr);
     

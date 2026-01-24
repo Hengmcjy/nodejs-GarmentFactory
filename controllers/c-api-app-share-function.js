@@ -71,6 +71,10 @@ const UnitWeight = require("../models/m-unitWeight");
 const ProductBox = require("../models/m-productBox");
 
 
+// ## www zone
+const WInfo = require("../models/m-winfo");
+const WProduct = require("../models/m-wproduct");
+
 // ## declare route socketIO
 const messageIOU = require("../socketio/user/socketioUser");
 
@@ -1079,7 +1083,7 @@ exports.TestSendMail= async (email, uuid) => {
     if (err) {
       console.log(err);
     } else {
-      console.log(info.messageId);
+      // console.log(info.messageId);
     }
   });
 
@@ -1088,7 +1092,7 @@ exports.TestSendMail= async (email, uuid) => {
     if (error) {
       console.log(error); // Log connection errors
     } else {
-      console.log("Server is ready to take our messages"); // Success!
+      // console.log("Server is ready to take our messages"); // Success!
     }
   });
 
@@ -1458,6 +1462,18 @@ exports.getControlAppClientControl= async () => {
   // console.log(controlAppf);
   const controlApp = {
     clientControl: controlAppf.clientControl,
+  };
+  // console.log(appControl);
+  return controlApp;
+}
+
+// await ShareFunc.getControlAppseasonYearActive();
+exports.getControlAppseasonYearActive= async () => {
+  // console.log('appControl');
+  const controlAppf = await ControlApp.findOne();
+  // console.log(controlAppf);
+  const controlApp = {
+    seasonYearActive: controlAppf.seasonYearActive,
   };
   // console.log(appControl);
   return controlApp;
@@ -14042,6 +14058,7 @@ exports.getRepCFNCurrentMainDataBundleNoscan = async (companyID, factoryIDArr, n
 exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
+
   const orderProductCFNodeRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
@@ -19290,4 +19307,36 @@ exports.clrNodeGroupScanID2= async () => {
 }
 
 // ## get clear data ############################################################################
+// ###################################################################################################
+
+
+
+
+// ###################################################################################################
+// ## www zone ############################################################################
+
+// const WInfo = require("../models/m-winfo");
+// const WProduct = require("../models/m-wproduct");
+
+
+exports.getWInfo= async (companyID, factoryID) => {
+  const wInfo = await WInfo.aggregate([
+    { $match: { $and: [
+      {"companyID": companyID},
+      {"factoryID": factoryID}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,	
+        companyInfo: 1,		
+    }	},
+    // { $sort: { seq: 1 } }
+  ]);	
+
+  return wInfo;
+}
+
+
+// ## www zone ############################################################################
 // ###################################################################################################

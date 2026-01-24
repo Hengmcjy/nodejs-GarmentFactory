@@ -10,12 +10,13 @@ const jwt = require("jsonwebtoken");
 
 module.exports = async (req, res, next) => {
   try {
+    console.log('--------------------- wwwcheck-auth middleware ------------------------  00');
     // console.log('****************Auth********************');
     // console.log(process.env.JWT_KEY);
     // console.log(req);
     // console.log('****************Auth********************');
     // console.log(req.headers);
-    // console.log(req.headers.authorization);
+    console.log(req.headers.authorization);
 
     let token = '';
     let userIDEncrypt = '';
@@ -46,13 +47,13 @@ module.exports = async (req, res, next) => {
       // console.log(JSON.parse(req.imageData.mydatajson));
     } else {  // ## auth normal way
       // console.log('auth normal way');
-      token = req.headers.authorization.split(" ")[1];
-      userIDEncrypt = req.headers.authorization.split(" ")[2];
-      uuid5Encrypt = req.headers.authorization.split(" ")[3];
+      token = req.headers.authorization.split(" ")[2];
+      userIDEncrypt = req.headers.authorization.split(" ")[3];
+      uuid5Encrypt = req.headers.authorization.split(" ")[4];
       
-      // console.log(token);
-      // console.log(userIDEncrypt);
-      // console.log(uuid5Encrypt);
+      console.log('token = ', token);
+      console.log('userIDEncrypt = ', userIDEncrypt);
+      console.log('uuid5Encrypt = ', uuid5Encrypt);
     }
 
     // console.log('****************Auth********************');
@@ -60,23 +61,25 @@ module.exports = async (req, res, next) => {
     // const token = req.headers.authorization.split(" ")[1];
     // const userIDEncrypt = req.headers.authorization.split(" ")[2];
     // const uuid5Encrypt = req.headers.authorization.split(" ")[3];
-    const decodedToken = jwt.verify(token, process.env.JWT_KEY);
-    const tokenSet = {
-      appName : decodedToken.appName,
-      appVer: decodedToken.appVer, 
-      userID: decodedToken.userID, 
-      uuid5: decodedToken.uuid5, 
-      browser: decodedToken.browser, 
-      browserVer: decodedToken.browserVer, 
-      deviceType: decodedToken.deviceType, 
-      os: decodedToken.os, 
-      osVer: decodedToken.osVer
-    };
-    req.userData = {
-      tokenSet : tokenSet,
-      uuid5Encrypt : uuid5Encrypt,
-      userIDEncrypt : userIDEncrypt,
-    };
+
+
+    // const decodedToken = jwt.verify(token, process.env.JWT_KEY);
+    // const tokenSet = {
+    //   appName : decodedToken.appName,
+    //   appVer: decodedToken.appVer, 
+    //   userID: decodedToken.userID, 
+    //   uuid5: decodedToken.uuid5, 
+    //   browser: decodedToken.browser, 
+    //   browserVer: decodedToken.browserVer, 
+    //   deviceType: decodedToken.deviceType, 
+    //   os: decodedToken.os, 
+    //   osVer: decodedToken.osVer
+    // };
+    // req.userData = {
+    //   tokenSet : tokenSet,
+    //   uuid5Encrypt : uuid5Encrypt,
+    //   userIDEncrypt : userIDEncrypt,
+    // };
 
     // console.log('aaa',req.userData);
     // // ## check uuid5  and userID
@@ -90,6 +93,7 @@ module.exports = async (req, res, next) => {
     //   });
     // }
 
+    console.log('--------------------- wwwcheck-auth middleware ------------------------  11');
     next();
   } catch (error) {
     // console.log(error);

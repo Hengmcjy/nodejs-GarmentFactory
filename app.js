@@ -33,6 +33,8 @@ const nsRoutes = require("./routes/user/r-node-station");
 const repRoutes = require("./routes/user/r-report");
 const deliRoutes = require("./routes/user/r-deli");
 
+const wTailinRoutes = require("./routes/user/r-wwwtailin");
+
 mongoose.set('strictQuery', false);
 
 moment.tz.setDefault('Asia/Bangkok');
@@ -105,7 +107,7 @@ mongoose
     console.log("Connected to database!");
     console.log('mongoDB ver. = ??');
     console.log('mongoose ver. = '+data.version);
-    console.log('nodeJs version =  '+process.version+'----------------------------------------------');
+    console.log('nodeJs version =  '+process.version+'.');
   })
   .catch(() => {
     console.log("Connection failed!");
@@ -124,6 +126,9 @@ app.use("/api/cus", cusRoutes);
 app.use("/api/ns", nsRoutes);
 app.use("/api/rep", repRoutes);
 app.use("/api/deli", deliRoutes);
+
+// wTailinRoutes
+app.use("/api/wtailin", wTailinRoutes);
 
 // // ## test downloading logging
 // app.get("/dl/log", async (req, res) => {

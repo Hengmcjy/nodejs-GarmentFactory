@@ -131,7 +131,7 @@ exports.getTestSendMail = async (req, res, next) => {
         value: "send email completed"
       },
       success: true
-    });
+  });
 }
 
 // // ## send mail when user signup
