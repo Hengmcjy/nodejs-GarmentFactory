@@ -105,11 +105,11 @@ exports.postEmailContactSend = async (req, res, next) => {
   // const companyID = req.params.companyID;
   // const factoryID = req.params.factoryID;
   const data = req.body;
-  console.log(data);
+  // console.log(data);
 
   const uuid = uuidv4();
   const email = "heng067@gmail.com, hengcrypto@gmail.com, tailin.mailsender@gmail.com";
-  const tsendmail = await ShareFunc.TestSendMail(email, uuid);
+  const tsendmail = await ShareFunc.TestSendMail(email, uuid, data);
   // console.log('OK test sent email   11');
   res.status(200).json({
       message: {

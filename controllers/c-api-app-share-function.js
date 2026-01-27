@@ -1021,7 +1021,7 @@ exports.getColorValueByID_SetNmae= async (colors, colorID, setName) => {
 // ## email zone ####################################################################
 
 // ## TestSendMail  send mail
-exports.TestSendMail= async (email, uuid) => {
+exports.TestSendMail= async (email, uuid, data) => {
   const emailFactory = 'go.garment.mail@gmail.com';
   // ## test send mail ( nodemailer )
   let transporter = nodemailer.createTransport({
@@ -1045,29 +1045,34 @@ exports.TestSendMail= async (email, uuid) => {
       <div style="border-style:solid;border-width:thin;border-color:#dadce0;border-radius:8px;padding:40px 20px"
       align="center" class="m_-8934074721175062072mdv2rw">
       <div style="font-family:'Google Sans',Roboto,RobotoDraft,Helvetica,Arial,sans-serif;border-bottom:thin solid #dadce0;color:rgba(0,0,0,0.87);line-height:32px;padding-bottom:24px;text-align:center;word-break:break-word">
-          <div style="font-size:24px">Verify your email </div>
+          <div style="font-size:24px">
+            CUSTOMER message from TAILIN-website
+          </div>
       </div>
       <div style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:14px;color:rgba(0,0,0,0.87);line-height:20px;padding-top:20px;text-align:left">
-              Google received a request to use 
-              <a style="font-weight:bold">${email}</a> 
-              as a recovery email for
-              Google Account 
-              <a style="font-weight:bold">${emailFactory}</a>
-              .<br><br>
-              Use this code to finish setting
-              up this recovery email:
-              <br>
-              <div style="text-align:center;font-size:36px;margin-top:20px;line-height:44px">
-                <a href="http://localhost:4200/#/confirmlink/${uuid}" target="_blank">click link</a> 
+              
+
+
+              <div style="max-width: 400px; margin: 20px auto; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; background-color: #fff;">
+                <!-- Header/Title -->
+                <div style="background-color: #f4f4f4; padding: 15px; font-size: 18px; font-weight: bold; color: #333; border-bottom: 1px solid #ddd;">
+                  New Message
+                </div>
+    
+                <!-- Content -->
+                <div style="padding: 20px; color: #555; line-height: 1.5;">
+                  <p style="margin: 0 0 10px 0; font-weight: bold;">Name: ${data.name1}    ${data.lname1}</p>
+                  <p style="margin: 0 0 10px 0; font-weight: bold;">Email: ${data.email1}</p>
+                  <p style="margin: 0 0 15px 0;">Message:</p>
+                  <p style="margin: 20px 0 0 0;">
+                    <pre>${data.message1}</pre>
+                  </p>
+                  
+                  
+                </div>
               </div>
-              <br>
-              This code will
-              expire in 24 hours.
-              <br><br>
-              If you don’t recognize 
-              <a style="font-weight:bold">${emailFactory}</a>
-              , you
-              can safely ignore this email.
+
+
           </div>
       </div>
       `,
