@@ -1,0 +1,31 @@
+
+<app-s-work-station-head></app-s-work-station-head>
+
+<div class="surface-ground px-4 py-5 md:px-6 lg:px-8">
+
+    <div class="grid ">
+        <div class="col-12 lg:col-4 p-2">
+
+            <div class="card">
+                <div class="text-900 text-xl font-semibold mb-3">Product</div>
+                <ul class="list-none p-0 m-0">
+                    <li class="flex align-items-center p-3 mb-3 border-bottom-1 surface-border"
+                        *ngFor="let prod of orderProductQtyByOrderIDProductIDRep; let a = index">
+                        <img [src]="genImagePathProduct(nsService.findProduct(prod.productID).imageProfile)" class="w-3rem flex-shrink-0 mr-3">
+                        <div class="flex flex-column">
+                            <span class="text-xl font-medium text-900 mb-1">{{nsService.findProduct(prod.productID).productName}}</span>
+                            <span>{{nsService.findProduct(prod.productID).productCustomerCode}}</span>
+                        </div>
+                        <span class="text-xl text-900 ml-auto font-semibold">{{prod.sumProductQty}}</span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="col-12 lg:col-8 p-2">
+            <app-s-node-product-record></app-s-node-product-record>
+        </div>
+
+    </div>
+</div>

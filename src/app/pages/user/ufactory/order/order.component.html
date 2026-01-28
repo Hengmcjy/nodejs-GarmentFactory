@@ -1,0 +1,77 @@
+<!-- <app-ufactory-dashboard-menu></app-ufactory-dashboard-menu> -->
+<app-ucompany-menu></app-ucompany-menu>
+
+<!-- <div class="surface-ground">
+    <div class="grid p-fluid">
+        <div class="col-12">
+            <div class="card card-w-title">
+                ufactory order <br>
+                - create order <br>
+                - order progress , order report <br>
+                <br>
+                customer <br>
+                - create customer<br>
+
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<p-paginator [rows]="limit" [totalRecords]="ordersCount" [rowsPerPageOptions]="[10,20,50]"
+                (onPageChange)="paginate($event)"></p-paginator>
+
+<p-table [value]="ordersF"  [tableStyle]="{'min-width': '60rem'}">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>img</th>
+            <th>orderID</th>
+            <th>orderDate</th>
+            <th>customerName</th>
+            <th>productName</th>
+            <th>action</th>
+
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-order let-idx="rowIndex">
+        <tr class="m-0 p-0">
+            <td class=" py-0 pl-1 pr-0">
+                <img [src]="genProductImagePath(order.productOR.productID)"
+                    class="w-4rem cursor-pointer"
+                    (click)="checkGetProductID(order.productOR.productID, 'view')"/>
+            </td>
+            <td>
+                <span>{{order.orderID}}</span>
+            </td>
+            <td>
+                <span>{{order.orderDate | date: 'dd-MM-yyyy'}}</span>
+                <i class="pi pi-user-edit text-yellow-500 ml-1 cursor-pointer"
+                    (click)="checkGetUserID(order.createBy.userID)"></i>
+            </td>
+            <td>
+                <span class="cursor-pointer" (click)="checkGetCustomerID(order.customerOR.customerID, 'view')">
+                    {{order.customerOR.customerName}}
+                </span>
+            </td>
+            <td>
+                <span class="cursor-pointer" (click)="checkGetProductID(order.productOR.productID, 'view')">
+                    {{order.productOR.productName}}
+                    {{checkQtyMaxView(order)}}
+                </span>
+            </td>
+            <td>
+                <button pButton pRipple type="button" icon="pi pi-file-edit"
+                    class="p-button-rounded p-button-success"
+                    (click)="goto('/user/ucompany/order/edit', order, order.customerOR.customerID, order.productOR.productID)">
+                </button>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+        <div class="flex align-items-center justify-content-between">
+            In total there are  products.
+        </div>
+    </ng-template>
+</p-table>
+
+<!-- <p-paginator [rows]="limit" [totalRecords]="ordersCount" [rowsPerPageOptions]="[10,20,50]"
+                (onPageChange)="paginate($event)"></p-paginator> -->

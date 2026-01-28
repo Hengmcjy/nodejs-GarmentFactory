@@ -1,0 +1,64 @@
+
+<app-ucompany-menu></app-ucompany-menu>
+
+<!-- <p>uc-scanned-subnode works!</p> -->
+
+<div class="surface-ground pb-2" *ngIf="nodeStationSelect.nodeID === ''">
+    <div class="surface-card p-4 shadow-2 border-round p-fluid">
+        <div class="grid formgrid p-fluid">
+            <div class="col-3 mb-6" *ngFor="let fs of flowSeq; let i = index">
+
+                <div class="shadow-2 border-round surface-card mb-3 h-full flex-column justify-content-between flex">
+                    <div class="p-4">
+                        <div class="flex align-items-center">
+                            <span
+                                class="inline-flex border-circle align-items-center justify-content-center bg-green-50 mr-3"
+                                style="width: 38px; height: 38px;">
+                                <!-- <i class="pi pi-globe text-xl text-green-600"></i> -->
+                                <span class="material-symbols-outlined">rebase</span>
+                            </span>
+                            <span class="text-900 font-medium text-base">
+                                {{fs.nodeID}}
+                            </span>
+                        </div>
+
+                    </div>
+                    <div class="px-4 py-3 surface-100 text-right">
+                        <div class="grid">
+                            <div class="col-6"></div>
+                            <div class="col-6">
+                                <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right" label="More"
+                                    class="p-element p-ripple p-button-rounded p-button-success p-button p-component bg-green-400 mt-3"
+                                    (click)="selectFlowSeq(fs)">
+                                    <!-- <span
+                                        class="p-button-icon p-button-icon-right pi pi-arrow-right" aria-hidden="true">
+                                    </span> -->
+                                    <span class="p-button-label">enter</span>
+                                    <span class="p-ink"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-s-rep-workload-overall *ngIf="nodeStationSelect.nodeID !== ''"
+    [callFromType]="'office'"
+    [nodeStation]="nodeStationSelect"
+    [stationID]="'station1'">
+</app-s-rep-workload-overall>
+<!-- @Input() callFromType: string = '';  // ## node, office
+    @Input() nodeStation: NodeStation = GBC.clrNodeStation();
+    @Input() stationID = ''; -->
+
+
+
+
+
+
+

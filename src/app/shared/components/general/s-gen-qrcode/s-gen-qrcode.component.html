@@ -1,0 +1,135 @@
+
+
+
+<div class="surface-ground px-2 py-2 md:px-2 lg:px-2 w-full">
+    <p-card class="w-full">
+        <div class="grid">
+            <div class="col-2"></div>
+            <div class="col-8 text-center">
+                <div class="p-inputgroup">
+                    <button type="button" pButton pRipple icon="pi pi-bolt" styleClass="p-button-success"
+                        (click)="numberChange()"></button>
+                    <div class="surface-200 w-10 txt-percent-100">
+                        {{productBarcodeNo}}
+                    </div>
+                    <button type="button" pButton pRipple label="Search"></button>
+                </div>
+            </div>
+            <div class="col-2"></div>
+        </div>
+
+        <div class="p-inputgroup w-6">
+            <span class="p-inputgroup-addon">No.</span>
+            <p-inputNumber  mode="decimal" inputId="withoutgrouping"
+                [min]="0" [max]="99999"
+                [useGrouping]="false"
+                [showClear]="true"
+                [(ngModel)]="runningNo"
+                (onFocus)="$event.target.select()">
+            </p-inputNumber>
+        </div>
+
+        <p-tabView class="mt-3">
+
+            <p-tabPanel header="style">
+                <!-- <app-s-select-style></app-s-select-style> -->
+                <div class="grid">
+                    <div class="col-6 md:col-4 lg:col-3" *ngFor="let orderStyle of orderStyles; let s = index">
+                        <button pButton pRipple type="button"  class="p-button-outlined p-button-info"
+                            (click)="selectStyle(orderStyle)">
+                            {{orderStyle.orderID}}
+                        </button>
+                    </div>
+                </div>
+            </p-tabPanel>
+
+            <p-tabPanel header="zone">
+                <!-- <app-s-select-target-place></app-s-select-target-place> -->
+                <div class="flex flex-row flex-wrap card-container blue-container">
+                    <span class="m-0 p-0" *ngFor="let zone of mainZone; let i = index">
+                        <button pButton pRipple type="button"
+                            label=""
+                            class="p-button-outlined mx-2 my-1" styleClass="p-button-lg"
+                            (click)="selectZone(zone)">
+                            {{zone.targetPlaceID | uppercase}}
+                        </button>
+                    </span>
+                </div>
+            </p-tabPanel>
+
+            <p-tabPanel header="year">
+                <!-- <app-s-select-year></app-s-select-year> -->
+                <div class="flex flex-row flex-wrap card-container blue-container">
+                    <span class="m-0 p-0" *ngFor="let yb of yearBefore; let i = index">
+                        <button pButton pRipple type="button"
+                            label=""
+                            class="p-button-outlined m-2" styleClass="p-button-lg"
+                            (click)="selectYear(yb)">
+                            {{yb}}
+                        </button>
+                    </span>
+                </div>
+
+                <div class="flex flex-row flex-wrap card-container blue-container">
+                    <span class="m-0 p-0" *ngFor="let yn of yearNow; let j = index">
+                        <button pButton pRipple type="button"
+                            label=""
+                            class="p-button-outlined m-2" styleClass="p-button-lg"
+                            (click)="selectYear(yn)">
+                            {{yn}}
+                        </button>
+                    </span>
+                </div>
+
+                <div class="flex flex-row flex-wrap card-container blue-container">
+                    <span class="m-0 p-0" *ngFor="let ya of yearAfter; let k = index">
+                        <button pButton pRipple type="button"
+                            label=""
+                            class="p-button-outlined m-2" styleClass="p-button-lg"
+                            (click)="selectYear(ya)">
+                            {{ya}}
+                        </button>
+                    </span>
+                </div>
+
+            </p-tabPanel>
+
+            <p-tabPanel header="color1">
+                <!-- <app-s-select-color></app-s-select-color> -->
+                <div class="grid formgrid p-fluid ">
+                    <div class="field mb-5 col-6 md:col-3 lg:col-2 " *ngFor="let color of colors; let i = index">
+                        <span class="flex flex-column align-items-center  align-items-stretch ">
+                            <div class="" [ngClass]="userService.getClassColorSetName(color.setName)">
+                                {{color.setName}}
+                            </div>
+                            <button pButton pRipple type="button"
+                                class="p-button-rounded p-button-lg mx-2 mt-2 mb-1 w-auto"
+                                [style]="getColor(color.color.colorValue)"
+                                (click)="selectColor1(color)">
+                                &nbsp;
+                            </button>
+                            <span class="mb-1">{{color.color.colorName}}</span>
+                            <div class="color-code">{{color.color.colorCode}}</div>
+                        </span>
+                    </div>
+                </div>
+            </p-tabPanel>
+
+            <p-tabPanel header="size">
+                <!-- <app-s-select-size></app-s-select-size> -->
+                <div class="flex flex-row flex-wrap card-container blue-container">
+                    <span class="m-0 p-0" *ngFor="let size of sizes; let i = index">
+                        <button pButton pRipple type="button"
+                            label=""
+                            class="p-button-outlined mx-2" styleClass="p-button-lg"
+                            (click)="selectSize(size)">
+                            {{size.size.sizeName | uppercase}}
+                        </button>
+                    </span>
+                </div>
+            </p-tabPanel>
+
+        </p-tabView>
+
+    </p-card>
+</div>

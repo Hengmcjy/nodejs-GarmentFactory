@@ -1,0 +1,90 @@
+<app-ufactory-dashboard-menu></app-ufactory-dashboard-menu>
+
+<p-toast></p-toast>
+
+<p-confirmPopup></p-confirmPopup>
+
+<div class="surface-ground px-4 py-2 md:px-4 lg:px-4">
+    <div class="grid">
+
+        <div class="col-12 md:col-6 lg:col-4">
+            <div class=" shadow-2  border-round bg-yellow-100"  >
+                <img src="https://storage.googleapis.com/mystoragegarment/productionlinecreate.png" class="py-4 px-2 md:px-4 lg:px-6 w-full" />
+
+                <div class="px-0 py-0 mt-2 mb-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component "
+                        (click)="showCreateNodeFlowModal()">
+                        <span class="p-button-icon p-button-icon-left pi pi-plus text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">new production line</span>
+                        <span class="p-ink"></span>
+                    </button>
+
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 md:col-6 lg:col-4" *ngFor="let nodeFlow of nodeFlows; let i = index">
+            <div class="surface-card shadow-2 p-3 m-1 border-round">
+                <div class="flex justify-content-between mb-3">
+                    <div class="w-full">
+                        <span class="block text-900 font-medium text-xl text-center mb-3">
+                            <!-- <span class="text-900 font-medium text-3xl">{{i}} </span> -->
+                            {{nodeFlow.nodeFlowID}}
+                        </span>
+                        <ul class="list-none m-0 pl-2">
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">flow type</span>
+                                <span class="text-900 font-medium text-sm  text-center">
+                                    <!-- {{nodeFlow.flowType}} -->
+                                    <button pButton pRipple type="button" label="{{nodeFlow.flowType}}"
+                                        class="p-button-rounded p-button-text mr-4 p-1 text-sm "
+                                        [ngClass]="nodeFlow.flowType==='main'?'p-button-text':'p-button-warning p-button-text'"
+                                        (click)="confirmFlowType($event, i, nodeFlow)">
+                                    </button>
+                                </span>
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">condition flow</span>
+                                <span class="text-900 font-medium text-sm">
+                                    <!-- {{nodeFlow.flowCondition.isFlowSequence?'have to sort':'no sort'}} -->
+                                    <button pButton pRipple type="button" label="{{nodeFlow.flowCondition.isFlowSequence?'have to sort':'no sort'}}"
+                                        class="p-button-rounded p-button-text mr-4 p-1 text-sm "
+                                        [ngClass]="nodeFlow.flowCondition.isFlowSequence?'p-button-text':'p-button-warning p-button-text'"
+                                        (click)="confirmConditionType($event, i, nodeFlow)">
+                                    </button>
+                                </span>
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">
+                                    node flow list
+                                    <!-- <div class="p-inputgroup m-0 p-0">
+                                        <span class="p-inputgroup-addon border-none bg-white m-0 p-0">node flow list</span>
+                                        <button pButton pRipple type="button" icon="pi pi-eye"
+                                            class="p-button-rounded p-button-warning p-button-text mr-4 p-1 text-sm m-0 p-0"
+                                            (click)="gotoNodeFlowPick('/user/ufactory/station/nodepick', nodeFlow.nodeFlowID)">
+                                        </button>
+                                    </div> -->
+                                </span>
+
+                                <span class="text-900 font-medium text-sm flex justify-content-between">
+                                    <!-- <button pButton pRipple type="button" icon="pi pi-eye"
+                                        class="p-button-rounded p-button-warning p-button-text mr-4 p-1 text-sm "
+                                        (click)="gotoNodeFlowPick('/user/ufactory/station/nodepick', nodeFlow.nodeFlowID)">
+                                    </button> -->
+                                    <button pButton pRipple type="button" label="manage"
+                                        class="p-button-rounded p-button-info p-button-text mr-4 p-1 text-sm "
+                                        (click)="gotoNodeFlowPick('/user/ufactory/station/nodepick', nodeFlow.nodeFlowID)">
+                                    </button>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>

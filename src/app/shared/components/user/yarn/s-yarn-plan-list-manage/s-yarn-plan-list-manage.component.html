@@ -1,0 +1,328 @@
+
+
+
+<div *ngIf="viewMode === 'plan-list'">
+    <p-toolbar class="" styleClass="p-2">
+        <div class="p-toolbar-group-start">
+            <!-- <div class="txt-m-gray">
+                {{yarnPlan.yarnID}}
+            </div> -->
+        </div>
+        <div class="p-toolbar-group-center">
+            <span class="yarn-season-head">
+                YARN
+                &nbsp;
+                <span class="" [ngClass]="mode==='list-manage-plan'?'txt-plan-head':'txt-actual-head'">
+                    {{mode==='list-manage-plan'?'PLAN':'ACTUAL'}}
+                </span>
+            </span>
+            &nbsp;&nbsp;
+            <span class="txt-m-gray">
+                [
+                &nbsp;
+                <span class="txt-m-gray">
+                    {{yarnSeason}}
+                </span>
+                &nbsp;
+                ]
+            </span>
+        </div>
+        <div class="p-toolbar-group-end">
+            <!-- <p-button icon="pi pi-search" class="mr-2"></p-button> -->
+        </div>
+    </p-toolbar>
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <div class="text-lg txt-m-gray ml-4 my-2">
+                <!-- {{yarnPlan.yarnID}} -->
+                {{yarnService.getYarnfullName(yarnPlan.yarnID)}}
+            </div>
+        </div>
+        <div class="p-toolbar-group-center">
+            <!-- <div class="txt-m-gray">
+                {{yarnPlan.yarnID}}
+            </div> -->
+        </div>
+        <div class="p-toolbar-group-end">
+            <!-- <p-button icon="pi pi-search" class="mr-2"></p-button> -->
+        </div>
+    </p-toolbar>
+
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [ngClass]="mode==='create'?'cursor-pointer':''"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip>
+        </div>
+        <div class="p-toolbar-group-center">
+            <!-- <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [ngClass]="mode==='create'?'cursor-pointer':''"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip> -->
+        </div>
+        <div class="p-toolbar-group-end">
+            <!-- <p-button icon="pi pi-search" class="mr-2"></p-button> -->
+        </div>
+    </p-toolbar>
+
+    <p-table [value]="yarnPlan.colorS" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="text-center" rowspan="2">
+                    <span class="">Color</span>
+                    <div class="text-pink-400 cursor-pointer mt-2" (dblclick)="yarnWeightStat()">
+                        <span class="material-symbols-outlined text-lg">key_visualizer</span>
+                    </div>
+                </th>
+                <th class="text-center"
+                    [attr.colspan]="yarnPlanDateGroupPlan.length+1"
+                    *ngIf="yarnPlanDateGroupPlan.length>0">
+                    Plan
+                </th>
+                <th class="text-center bg-green-400 cursor-pointer" [attr.colspan]="yarnPlanDateGroupReceive.length+1"
+                    (dblclick)="changeActualMode()">
+                    <span *ngIf="actualMode==='actual'">
+                        Actual
+                    </span>
+                    <span *ngIf="actualMode==='actual.net'">
+                        Actual [NET]
+                    </span>
+                </th>
+            </tr>
+            <tr>
+                <!-- <th class="text-center">Color</th> -->
+                <th class="text-center" *ngFor="let date1 of yarnPlanDateGroupPlan; let d1 = index">
+                    <div class="">
+                        ETD
+                    </div>
+                    <div class="">
+                        {{date1.date1}}
+                    </div>
+                </th>
+                <th class="text-center" *ngIf="yarnPlanDateGroupPlan.length>0">
+                    <span class="">
+                        P.Total
+                    </span>
+                </th>
+                <!-- <th>Category</th> -->
+                <!-- <th>Quantity</th> -->
+                <th class="text-center bg-green-400" *ngFor="let date2 of yarnPlanDateGroupReceive; let d2 = index">
+                    <!-- <div class="">
+
+                    </div> -->
+                    <div class="">
+                        {{date2.date1}}
+                    </div>
+                </th>
+                <th class="text-center bg-green-400" *ngIf="yarnPlanDateGroupReceive.length>0">
+                    <span class="">
+                        A.Total
+                    </span>
+                </th>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-color1 let-idx="rowIndex">
+            <tr *ngIf="loading && idx===0">
+                <div class="text-center" *ngIf="loading">
+                    <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+                </div>
+            </tr>
+            <tr *ngIf="!loading">
+
+                <td>
+                    <div>
+                        <p-button icon="pi pi-plus-circle"
+                            styleClass="p-button-rounded p-button-text p-button-sm m-0 p-0"
+                            (onClick)="addYarnDataInfo(color1)">
+                        </p-button>
+                        <p-button icon="pi pi-list"
+                            styleClass="p-button-rounded p-button-warning p-button-text p-button-sm m-0 p-0"
+                            (onClick)="yarnPackingListManageSelect(color1)">
+                        </p-button>
+                        <p-button icon="pi pi-book"
+                            styleClass="p-button-rounded p-button-success p-button-text p-button-sm m-0 p-0"
+                            (onClick)="yarnPackingListStockCardSelect(color1)">
+                        </p-button>
+                        <p-button class=""
+                            styleClass="p-button-rounded p-button-text text-cyan-600 "
+                            (onClick)="yarnBoxTransfer(color1)">
+                            <span class="material-symbols-outlined text-lg"> transform </span>
+                        </p-button>
+                        <p-chip
+                            class="m-1 pl-3" styleClass="surface-0 text-500 text-sm  m-1 pl-0"
+                            [label]="color1.color.colorCode +' '+ color1.color.colorName">
+                            <p-avatar class="" label="" styleClass="border-gray mr-2"
+                                [style]="{ 'background-color': color1.color.colorValue, color: 'gray' }"
+                                shape="circle">
+                            </p-avatar>
+                        </p-chip>
+                    </div>
+                </td>
+                <!-- [style]="{ 'background-color': color1.color.colorValue, color: '#ffffff' }" -->
+                <td class="text-center " *ngFor="let date2 of yarnPlanDateGroupPlan; let d2 = index">
+                    <span class="">
+                        <!--  | number : '1.2-2' -->
+                        {{getWeight(color1, date2, 'plan')}}
+                    </span>
+                </td>
+                <td class="surface-100 text-center font-bold" *ngIf="yarnPlanDateGroupPlan.length>0">
+                    <span class="">
+                        {{getColorTotalPlan(color1)}}
+                    </span>
+                </td>
+                <!-- <td class="text-center">
+                    <span class="">
+
+                    </span>
+                </td> -->
+                <td class="bg-green-50 text-center " *ngFor="let date3 of yarnPlanDateGroupReceive; let d3 = index">
+                    <span class="my-0 py-0">
+                        {{getWeightReceive(color1, date3)}}
+                    </span>
+                    <div class="flex justify-content-center flex-wrap my-0 py-0 text-red-600">
+                        <span class="flex align-items-center justify-content-center" *ngFor="let sL of getStateLists(color1, date3); let s4 = index">
+                            <span class="text-green-500" *ngIf="sL==='verified'">
+                                <i class="pi pi-check" style="font-size: 0.65rem"></i>
+                            </span>
+                            <span class="text-green-500" *ngIf="sL==='boxIDAllVerified'">
+                                <i class="pi pi-circle-fill" style="font-size: 0.6rem"></i>
+                            </span>
+                            <span class="text-yellow-300" *ngIf="sL==='wait'">
+                                <i class="pi pi-circle-fill" style="font-size: 0.6rem"></i>
+                            </span>
+                        </span>
+                    </div>
+                </td>
+                <td class="bg-green-300 text-center font-bold" *ngIf="yarnPlanDateGroupReceive.length>0">
+                    <span class="">
+                        {{getColorTotalReceive(color1)}}
+                    </span>
+                    <div class="text-xs text-green-600 white-space-nowrap" *ngIf="getColorTotalReceivePercent(color1) !== ''">
+                        <span class="">
+                            {{getColorTotalReceivePercent(color1)}}%
+                        </span>
+                        &nbsp;
+                        <span class="text-green-400" *ngIf="false">
+                            |
+                        </span>
+                        &nbsp;
+                        <span class="" *ngIf="false">
+                            {{getColorTotalReceiveQty(color1)}}
+                        </span>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="footer">
+            <tr class="" style="height: 50px;">
+                <th class="surface-100 text-center">
+                    <span>
+
+                    </span>
+                </th>
+                <th class="surface-100 text-center " *ngFor="let date1 of yarnPlanDateGroupPlan; let d1 = index">
+                    <div class="">
+                        {{getMMDDTotalFooter(date1.mmdd)}}
+                    </div>
+                </th>
+                <th class="surface-100 text-center underline" *ngIf="yarnPlanDateGroupPlan.length>0">
+                    <span class="">
+                        {{totalPlanFooter}}
+                    </span>
+                </th>
+                <!-- <th>Category</th> -->
+                <!-- <th>Quantity</th> -->
+                <th class="bg-green-300 text-center " *ngFor="let date4 of yarnPlanDateGroupReceive; let d4 = index">
+                    <div class="">
+                        {{getMMDDTotalReceiveFooter(date4.mmdd)}}
+                    </div>
+                </th>
+                <th class="bg-green-300 text-center underline" *ngIf="yarnPlanDateGroupReceive.length>0">
+                    <span class="">
+                        {{gettotalReceiveFooter()}}
+                    </span>
+                </th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <span class="">
+
+            </span>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="" *ngIf="viewMode==='yarn-ct-lot-fac'">
+    <app-s-yarn-lot-fac
+        [mode]="viewMode"
+        [viewMode]="'yarn-ct-lot-fac'"
+        [yarnSeasonID]="yarnSeason"
+        [company]="company"
+        [factorySelect]="factorySelect"
+        [factoryCTSelect]="factoryCTSelect"
+        [customer]="customer"
+        [yarnPlan]="yarnPlan"
+        [yarnID]="yarnPlan.yarnID"
+        [yarnPlans]="[]"
+        [yarnPlansCount]="0"
+        [yarnsCount]="0"
+        (closeYarnStockCard)="backToPlanList($event)">
+    </app-s-yarn-lot-fac>
+</div>
+
+<div *ngIf="viewMode === 'yarn-stat'">
+    <app-s-yarn-stat
+        [viewMode]="viewMode"
+        [yarnSeason]="yarnSeason"
+        [company]="company"
+        [factorySelect]="factorySelect"
+        [customer]="customer"
+        [yarnPlan]="yarnPlanSelect"
+        [orderImagesSelect]="orderImagesSelect"
+        [colorSx]="colorSx"
+        (closeYarnStat)="backToPlanList($event)">
+    </app-s-yarn-stat>
+</div>
+
+<div *ngIf="viewMode === 'yarn-packaging-list-manage'">
+    <app-s-yarn-plan-packinglist-manage
+        [mode]="viewMode"
+        [yarnSeason]="yarnSeason"
+        [company]="company"
+        [factorySelect]="factorySelect"
+        [customer]="customer"
+        [yarnPlan]="yarnPlanSelect"
+        [orderImagesSelect]="orderImagesSelect"
+        [colorS]="colorS"
+        [yarnColorID]="yarnColorID"
+        (closeYarnPackingList)="backToPlanList($event)">
+    </app-s-yarn-plan-packinglist-manage>
+</div>
+
+<div *ngIf="viewMode === 'yarn-packaging-list-stock-card'">
+    <app-s-yarn-stock
+        [mode]="viewMode"
+        [yarnSeason]="yarnSeason"
+        [company]="company"
+        [factorySelect]="factorySelect"
+        [factoryCTSelect]="factoryCTSelect"
+        [customer]="customer"
+        [uuid]="uuid"
+        [yarnID]="yarnID"
+        [orderImagesSelect]="orderImagesSelect"
+        [colorS]="colorS"
+        [yarnColorID]="yarnColorID"
+        [yarnDataUUID]="yarnDataUUID"
+        [yarnDataInfo_Receive]="yarnDataInfo_Receive"
+        (closeYarnStockCard)="backToPlanList($event)">
+    </app-s-yarn-stock>
+</div>

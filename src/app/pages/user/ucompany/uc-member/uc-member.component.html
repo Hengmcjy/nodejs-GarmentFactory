@@ -1,0 +1,207 @@
+<app-ucompany-menu></app-ucompany-menu>
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-ground px-4 py-4 md:px-4 lg:px-4 w-12">
+    <div class="grid m-0 p-0">
+
+        <div class="col-12 sm:col-6 md:col-4 lg:col-3 xl:col-2 p-0 pb-4 " *ngIf="!newMemberShow">
+            <div class="shadow-2 p-2 mb-5 lg:mb-0 mr-0 lg:mr-5 bg-red-100">
+                <img src="https://storage.googleapis.com/mystoragegarment/createmember.png" class="mb-3 w-full">
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text  p-button p-component p-2"
+                        (click)="newMember()">
+                        <span class="p-button-icon p-button-icon-left pi pi-user-plus text-base" aria-hidden="true"></span>
+                        <span class="p-button-label text-lg">invite member</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="col-12 sm:col-6 sm:col-offset-3 md:col-4 md:col-offset-4 lg:col-3 lg:col-offset-4 xl:col-2 p-0 pb-4 " *ngIf="newMemberShow">
+            <div class="shadow-2 p-1 mb-1 lg:mb-0 mr-0 lg:mr-5 bg-red-50">
+                <img src="https://storage.googleapis.com/mystoragegarment/memberperson.png" class="mb-0 w-full">
+                <div class="text-center mb-2">
+                    <div class="text-xl text-900 font-medium text-center ">new Member</div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2"
+                        (click)="showMemberEditModal('create', 'member new create')">
+                        <span class="p-button-icon p-button-icon-left pi pi-cog text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">setting</span>
+                        <span class="p-ink"></span>
+                    </button>
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-danger p-button p-component p-2"
+                        (click)="cancelCreateNewMember()">
+                        <span class="p-button-icon p-button-icon-left pi pi-user-minus text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">delete</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div> -->
+
+        <div class="col-12 p-0 pb-4" *ngIf="newMemberShow">
+            <div class="grid">
+                <div class="col-offset-3 col-6">
+                    <div class="surface-card p-4 shadow-2 border-round">
+                        <div class="text-3xl font-medium text-900 mb-2">invite member</div>
+                        <!-- <div class="font-medium text-500 mb-3">Vivamus id nisl interdum, blandit augue sit amet, eleifend mi.</div> -->
+                        <div class=" surface-border">
+                            <div class="p-inputgroup">
+                                <input type="text" pInputText placeholder="" [(ngModel)]="memberUserID">
+                                <button type="button" pButton pRipple label="invite"
+                                    (click)="putInviteMemberCompany()"></button>
+                                <button pButton pRipple type="button" icon="pi pi-times"
+                                    class="p-button-rounded p-button-danger p-button-text"
+                                    (click)="cancelCreateNewMember()"></button>
+                            </div>
+                            <small class="p-invalid txt-err" *ngIf="errID==='erru006-1' || errID==='erru006-2'">
+                                {{errText}}
+                            </small>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 m-0 p-0" *ngIf="newMemberShow"></div>
+
+        <div class="col-12 sm:col-6 md:col-4 lg:col-3 xl:col-2 p-0 pb-4 " *ngFor="let member of membersCompany; let i = index">
+            <div class="shadow-2 p-2 mb-5 lg:mb-0 mr-0 lg:mr-5 bg-red-50">
+                <img [src]="genImagePath(member.uInfo.pic)" class="mb-3 w-full">
+                <div class="flex justify-content-between align-items-center">
+                    <div class="pr-3">
+                        <div class="text-xl text-900 font-medium mb-2">{{member.uInfo.userName}}</div>
+                        <div class="text-sm text-blue-600 m-1">{{member.userID}}</div>
+                        <div class="text-sm text-500">
+                            <span class="font-semibold m-1">Class : </span>
+                            <span class="m-1">{{member.uCompany[0].userComClass.userClassName}}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <p-overlayPanel #op >
+                        <ng-template pTemplate >
+                            <app-s-user-card [user]="member"></app-s-user-card>
+                        </ng-template>
+                    </p-overlayPanel>
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2"
+                        (click)="op.show($event)">
+                        <span class="p-button-icon p-button-icon-left pi pi-id-card text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">
+                            {{userService.getStateUserJoinCompany(member, company.companyID)}}
+                        </span>
+                        <span class="p-ink"></span>
+                    </button>
+                    <br>
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2"
+                        (click)="showMemberEditModal('edit', 'member edit', member)"
+                        *ngIf="false">
+                        <span class="p-button-icon p-button-icon-left pi pi-cog text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">setting</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- <p-overlayPanel #op>
+            <ng-template pTemplate>
+                Content
+            </ng-template>
+        </p-overlayPanel>
+
+        <button type="text" pButton label="Custom Target" (click)="op.show($event, actualTarget)"></button>
+        <div #actualTarget></div> -->
+
+        <!-- <div class="col-12 sm:col-6 md:col-4 lg:col-3 xl:col-2 p-0 pb-4">
+            <div class="shadow-2 p-2 mb-5 lg:mb-0 mr-0 lg:mr-5 bg-red-50">
+                <img src="assets/images/blocks/avatars/square/avatar-f-1.jpg" class="mb-3 w-full">
+                <div class="flex justify-content-between align-items-center">
+                    <div class="pr-3">
+                        <div class="text-xl text-900 font-medium mb-2">Claire Davies</div>
+                        <div class="text-blue-600">Software Developer</div>
+                    </div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2">
+                        <span class="p-button-icon p-button-icon-left pi pi-cog text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">setting</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- <div class="col-12 sm:col-6 md:col-4 lg:col-3 xl:col-2 p-0 pb-4 ">
+            <div class="shadow-2 p-2 mb-5 lg:mb-0 mr-0 lg:mr-5 bg-red-50">
+                <img src="assets/images/blocks/avatars/square/avatar-f-1.jpg" class="mb-3 w-full">
+                <div class="flex justify-content-between align-items-center">
+                    <div class="pr-3">
+                        <div class="text-xl text-900 font-medium mb-2">Claire Davies</div>
+                        <div class="text-blue-600">Software Developer</div>
+                    </div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2">
+                        <span class="p-button-icon p-button-icon-left pi pi-cog text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">setting</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- <div class="col-12 sm:col-6 md:col-4 lg:col-3 xl:col-2 p-0 pb-4 ">
+            <div class="shadow-2 p-2 mb-5 lg:mb-0 mr-0 lg:mr-5 bg-red-50">
+                <img src="assets/images/blocks/avatars/square/avatar-f-1.jpg" class="mb-3 w-full">
+                <div class="flex justify-content-between align-items-center">
+                    <div class="pr-3">
+                        <div class="text-xl text-900 font-medium mb-2">Claire Davies</div>
+                        <div class="text-blue-600">Software Developer</div>
+                    </div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2">
+                        <span class="p-button-icon p-button-icon-left pi pi-cog text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">setting</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- <div class="col-12 sm:col-6 md:col-4 lg:col-3 xl:col-2 p-0 pb-4 ">
+            <div class="shadow-2 p-2 mb-5 lg:mb-0 mr-0 lg:mr-5 bg-red-50">
+                <img src="assets/images/blocks/avatars/square/avatar-f-1.jpg" class="mb-3 w-full">
+                <div class="flex justify-content-between align-items-center">
+                    <div class="pr-3">
+                        <div class="text-xl text-900 font-medium mb-2">Claire Davies</div>
+                        <div class="text-blue-600">Software Developer</div>
+                    </div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2">
+                        <span class="p-button-icon p-button-icon-left pi pi-cog text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">setting</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div> -->
+
+    </div>
+</div>
+

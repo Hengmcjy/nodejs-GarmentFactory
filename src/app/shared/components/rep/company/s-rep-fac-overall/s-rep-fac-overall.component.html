@@ -1,0 +1,133 @@
+
+
+<div class="card m-0 p-0 border-none bg-tran">
+    <button pButton pRipple type="button" icon="pi pi-refresh"
+        class="p-button-rounded p-button-text p-button-lg mb-2"
+        (click)="getRepCurrentProductQtyAllCF()">
+    </button>
+    <button pButton pRipple type="button" class="p-button-rounded p-button-text mb-2 mx-1" (click)="getRepCurrentProductQtyAllCF()">
+        <span class="text-lg font-semibold">
+            {{reportHeader}}
+        </span>
+    </button>
+</div>
+
+<p-tabView [scrollable]="true">
+    <p-tabPanel header="All Factory">
+        <p-tabView [scrollable]="true">
+            <p-tabPanel *ngFor="let group1 of currentAllProductQtyStyleGroup; let i = index" header={{group1[0].style}}>
+                <div class="surface-ground p-2" >
+                    <p-table [value]="currentProductQtyAllCFilter(i)"
+                        class="w-full"
+                        styleClass="p-datatable-sm">
+                        <ng-template pTemplate="caption">
+                            {{userService.translateCode('hd', 'hd-all-fac')}} - {{group1[0].style}}
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th class="" >{{userService.translateCode('mn', 'mn-color')}}</th>
+                                <th class="" >{{userService.translateCode('mn', 'mn-size')}}</th>
+                                <th class="" *ngFor="let zone of mainZone; let n = index">{{zone.targetPlaceName}}</th>
+                                <th class="" >{{userService.translateCode('mn', 'mn-total')}}</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                            <tr class="text-sm">
+                                <td class="border-none"
+                                    [ngClass]="checkColorShow(order.color, false, idx) ? 'border-none border-top-1' : ''">
+                                    <span *ngIf="checkColorShow(order.color, true, idx)">
+                                        <span *ngFor="let colorName of order.color.split(','); let m = index">
+                                            {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(order.style))}}
+                                            &nbsp;
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{userService.strReplaceAll(order.size, '-', '')}}</td>
+                                <td *ngFor="let zone1 of mainZone; let p = index">
+                                    {{getProductionQty(order.companyID, order.productID, order.style,
+                                        order.color, order.size, p)}}
+                                </td>
+                                <td>
+                                    {{getProductionQtyRowTotal(order.companyID, order.productID, order.style,
+                                        order.color, order.size)}}
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer">
+                            <tr>
+                                <td>{{userService.translateCode('mn', 'mn-total')}}</td>
+                                <td></td>
+                                <td *ngFor="let zone2 of mainZone; let q = index">
+                                    {{getProductionQtyColumnTotal(group1[0], q)}}
+                                </td>
+                                <td>
+                                    {{getProductionQtyGrandTotal(group1[0])}}
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </p-tabPanel>
+
+    <p-tabPanel *ngFor="let fac of factories; let x = index" header={{fac.fInfo.factoryName}}>
+        <p-tabView [scrollable]="true">
+            <p-tabPanel *ngFor="let group2 of currentFactoryProductQtyStyleGroup; let y = index" header={{group2[0].style}}>
+                <div class="surface-ground p-2" >
+                    <p-table [value]="currentProductQtyAllCFFilter(y, fac)"
+                        class="w-full"
+                        styleClass="p-datatable-sm">
+                        <ng-template pTemplate="caption">
+                            {{fac.fInfo.factoryName}}
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th class="" >{{userService.translateCode('mn', 'mn-color')}}</th>
+                                <th class="" >{{userService.translateCode('mn', 'mn-size')}}</th>
+                                <th class="" *ngFor="let zone of mainZone; let n = index">{{zone.targetPlaceName}}</th>
+                                <th class="" >{{userService.translateCode('mn', 'mn-total')}}</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                            <tr class="text-sm">
+                                <td class="border-none"
+                                    [ngClass]="checkColorShow(order.color, false, idx) ? 'border-none border-top-1' : ''">
+                                    <span *ngIf="checkColorShow(order.color, true, idx)">
+                                        <span *ngFor="let colorName of order.color.split(','); let m = index">
+                                            {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(order.style))}}
+                                            &nbsp;
+                                        </span>
+                                    </span>
+                                </td>
+                                <td>{{userService.strReplaceAll(order.size, '-', '')}}</td>
+                                <td *ngFor="let zone1 of mainZone; let p = index">
+                                    {{getFactoryProductionQty(order.companyID, order.factoryID, order.productID, order.style,
+                                        order.color, order.size, p)}}
+                                </td>
+                                <td>
+                                    {{getFactoryProductionQtyRowTotal(order.companyID, order.factoryID, order.productID, order.style,
+                                        order.color, order.size)}}
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer">
+                            <tr>
+                                <td>{{userService.translateCode('mn', 'mn-total')}}</td>
+                                <td></td>
+                                <td *ngFor="let zone2 of mainZone; let q = index">
+                                    {{getFactoryProductionQtyColumnTotal(group2[0], fac, q)}}
+                                </td>
+                                <td>
+                                    {{getFactoryProductionQtyGrandTotal(group2[0], fac)}}
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </p-tabPanel>
+</p-tabView>
+
+

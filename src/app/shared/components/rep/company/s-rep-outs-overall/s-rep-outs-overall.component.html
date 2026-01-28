@@ -1,0 +1,155 @@
+
+
+<p-blockUI [target]="willBlock" [blocked]="blockedPanel">
+    <div class="">
+        <i class="pi pi-lock" style="font-size: 3rem"></i>
+    </div>
+    <br>
+    <div class="text-5xl text-600 mt-2">
+        wait for a minute
+    </div>
+</p-blockUI>
+
+<div class="card m-0 p-0 border-none bg-tran">
+    <button pButton pRipple type="button" icon="pi pi-refresh"
+        class="p-button-rounded p-button-text p-button-lg mb-2 mx-1"
+        (dblclick)="inputUserPassPopup()">
+    </button>
+    <button pButton pRipple type="button" class="p-button-rounded p-button-text mb-2 mx-1">
+        <span class="text-lg font-semibold">
+            {{reportHeader}}
+        </span>
+    </button>
+</div>
+
+<p-tabView #willBlock [scrollable]="true">
+    <p-tabPanel header="Outsource all">
+        <div class="surface-ground p-2" >
+            <p-table [value]="currentOrderStyle"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="" style="width: 1%"></th>
+                        <th class="" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                        <th class="" >{{userService.translateCode('hd', 'hd-qty-all')}}</th>
+                        <th class="outsource-caption-select" styleClass="outsource-caption-select"
+                            *ngFor="let facOutsID of outsourcefactoryID; let fo = index">
+                            {{userService.getFactoryNameByFactoryID(facOutsID)}}
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                    <tr class="text-sm">
+                        <td>
+                            <button pButton pRipple type="button" icon="pi pi-user"
+                                class="p-button-rounded p-button-info p-button-text p-0 m-0"
+                                (click)="showCustomerSelectionViewBtn(order.customerOR, 'view')">
+                            </button>
+                        </td>
+                        <td class="vertical-align-middle">
+                            {{order.orderID}}
+                        </td>
+                        <td>{{order.sumQty}}</td>
+                        <td class="txt-subcontact-cell2" *ngFor="let facOutsID of outsourcefactoryID; let fo2 = index">
+                            <span class="">
+                                    <!-- [ngClass]="checkSetOrderPropertySelect(order.productColor, order.productSize,zone1.targetPlaceID)"> -->
+                                    {{getOutsourcefactoryIDQTY(facOutsID, order.orderID)}}
+                            </span>
+                            <div class="frac ml-1 txt-sm-gray ">
+                                <span>
+                                    {{getSumOutsourcefactoryIDQTY(facOutsID, order.orderID)}}
+                                </span>
+                                <span class="bottom txt-xl-red text-red-500">
+                                    {{getOutsourcefactoryIDRemainQTY(facOutsID, order.orderID)}}
+                                </span>
+
+                            </div>
+
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </p-tabPanel>
+    <p-tabPanel *ngFor="let facOuts of outsourcefactoryID; let i = index" header={{userService.getFactoryNameByFactoryID(facOuts)}}>
+        <p-tabView [scrollable]="true">
+            <p-tabPanel *ngFor="let styleTxt of getStyleOuts(facOuts); let j = index" header={{styleTxt}}>
+                <div class="surface-ground p-2" >
+                    <div class="">
+                        <span class="font-semibold">{{userService.translateCode('hd', 'hd-total-order')}}</span>
+                        &nbsp; : &nbsp;
+                        <span class="text-primary">{{findOrderQty(styleTxt)}}</span>
+                    </div>
+                    <p-table [value]="orderStyleColorSizeFilterF(facOuts, styleTxt)"
+                        rowGroupMode="rowspan"  groupRowsBy="colorSeq"
+                        class="w-full"
+                        styleClass="p-datatable-sm">
+                        <ng-template pTemplate="caption">
+                            {{userService.translateCode('mn', 'mn-order')}} - {{styleTxt}}
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th class="text-center" style="width: 20%">{{userService.translateCode('mn', 'mn-color')}}</th>
+                                <th class="" >{{userService.translateCode('mn', 'mn-size')}}</th>
+                                <!-- <th class="" *ngFor="let zone of targetPlaces; let n = index">{{zone.targetPlace.countryID}}</th> -->
+                                <th class="text-center" *ngFor="let zone of mainZone; let nn = index">{{zone.targetPlaceName}}</th>
+                                <!-- <th class="" >total</th> -->
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-order let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                            <tr class="text-sm " *ngIf="idx !== 0 && checkColorShow(order.color, false, idx) ">
+                                <td class="border-none border-bottom-3"></td>
+                                <td class="border-none border-bottom-3"></td>
+                                <td class="border-none border-bottom-3" *ngFor="let zone of mainZone; let nnn = index"></td>
+                            </tr>
+                            <tr>
+                                <td class="text-center border-none" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                                    <span *ngIf="checkColorShow(order.color, true, idx)">
+                                        <span *ngFor="let colorName of order.color.split(','); let m = index">
+                                            {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(order.orderID))}}
+                                            &nbsp;
+                                        </span>
+                                        <div *ngFor="let colorName of order.color.split(','); let m2 = index">
+                                            {{userService.getCodeColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(order.orderID))}}
+
+                                        </div>
+                                    </span>
+                                </td>
+                                <td>
+                                    {{userService.strReplaceAll(order.size, '-', '')}}
+                                </td>
+                                <td class="text-center" *ngFor="let zone2 of mainZone; let n2 = index">
+                                    <span class="text-400 txt-subcontact-cell2">
+                                        {{getOrderQty(facOuts, order.companyID, order.orderID,
+                                            order.color, order.size, zone2.targetPlaceID)}}
+                                    </span>
+                                    <div class="frac ml-1 txt-sm-gray ">
+                                        <span>
+                                            {{getOutsProductionZoneQtyReturned(facOuts, order.companyID, order.orderID,
+                                                order.color,
+                                                order.size,
+                                                zone2.targetPlaceID)}}
+                                        </span>
+                                        <span class="bottom txt-xl-red text-red-500">
+                                            {{getOutsProductionZoneQtyRemain(facOuts, order.companyID, order.orderID,
+                                                order.color,
+                                                order.size,
+                                                zone2.targetPlaceID)}}
+                                        </span>
+
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+
+    </p-tabPanel>
+</p-tabView>
+
+
+
+

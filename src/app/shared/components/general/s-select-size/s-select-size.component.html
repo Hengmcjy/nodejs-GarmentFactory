@@ -1,0 +1,11 @@
+
+<div class="flex flex-row flex-wrap card-container blue-container">
+    <span class="m-0 p-0" *ngFor="let size of sizes; let i = index">
+        <button pButton pRipple type="button"
+            label=""
+            class="p-button-outlined mx-2" styleClass="p-button-lg"
+            (click)="selectSize(size)">
+            {{size.size.sizeName | uppercase}}
+        </button>
+    </span>
+</div>

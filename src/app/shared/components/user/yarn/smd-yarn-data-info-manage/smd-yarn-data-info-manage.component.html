@@ -1,0 +1,63 @@
+
+
+
+<div class="flex flex-row">
+    <div>
+        <p-calendar class="max-w-full" [(ngModel)]="datetime" [inline]="true" [showWeek]="true"
+        (onSelect)="selectDate()"></p-calendar>
+    </div>
+
+    <div class="flex-grow-1 p-4 surface-ground">
+        <div class="grid">
+            <div class="col-4">
+                <span class="filter-topic">
+                    ETD:
+                </span>
+            </div>
+            <div class="col-8">
+                <span class="date-yarn1 text-center">
+                    <span class="underline bg-yellow100">{{datetime |  date:'d-MMM'}}</span>
+                    &nbsp;
+                    <span class="txt-year-yarn1">{{datetime |  date:'y'}}</span>
+                </span>
+            </div>
+
+            <div class="col-4">
+                <span class="filter-topic">
+                    Weight:
+                </span>
+            </div>
+            <div class="col-8">
+                <p-inputNumber
+                    class="bg1"
+                    styleClass="bg1"
+                    inputStyleClass="bg1"
+                    (onFocus)="$event.target.select()"
+                    [(ngModel)]="yarnWeight"
+                    [size]="8"
+                    [minFractionDigits]="2"
+                    [maxFractionDigits]="2"
+                    [useGrouping]="false"></p-inputNumber>
+                <span class="txt-sm-gray text-xl">
+                    &nbsp;
+                    KG.
+                </span>
+            </div>
+
+            <div class="col-12 ">
+                <div class="grid">
+                    <div class="col-4"></div>
+                    <div class="col-6">
+                        <p-button class="w-full" label="update plan" (onClick)="putYarnPlanDataInfo()"></p-button>
+                    </div>
+                    <div class="col-2"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+

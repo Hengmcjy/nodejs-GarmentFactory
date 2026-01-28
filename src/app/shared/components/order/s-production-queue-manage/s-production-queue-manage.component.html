@@ -1,0 +1,187 @@
+
+<p-toast position="top-right" ></p-toast>
+
+<p-blockUI [blocked]="blockUI">
+    <i class="pi pi-lock" style="font-size: 3rem"></i>
+    <div class="txt-ui-block">waiting a moment</div>
+</p-blockUI>
+
+<div class="grid" >
+    <div class="col-12  text-center" *ngIf="isOutsource">
+        <div class="text-sm text-600 font-bold">
+            <span>
+                {{factoryFrom.fInfo.factoryName}} [ main ]
+            </span>
+        </div>
+        <div>
+            <span class="txt-outsource-head">
+                OUTSOURCE (SUB CONTACTOR) =
+                &nbsp;
+                <span class="outsource-caption-select">
+                    {{factory.fInfo.factoryName}} Factory
+                </span>
+            </span>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="grid formgrid p-fluid">
+
+            <div class="field mb-2 col-12 w-full" *ngFor="let yarnLot of yarnLots; let y = index">
+                <div class="p-inputgroup w-full">
+                    <span class="p-inputgroup-addon">Yarn Lot {{y+1}} :</span>
+                    <span class="w-8">
+                        <div class="p-inputgroup w-full">
+                            <input type="text" class="w-6" pInputText placeholder="Yarn Lot ID"
+                                [(ngModel)]="yarnLots[y].yarnLotID">
+                        </div>
+                        <div class="p-inputgroup" *ngIf="false">
+                            <input type="text" pInputText placeholder="Weight (g.)"
+                                (keypress)="userService.numberOnly($event);"
+                                [(ngModel)]="yarnLots[y].yarnWeight">
+                            <span class="p-inputgroup-addon">g.</span>
+                        </div>
+                    </span>
+
+                    <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-rounded p-button-success" *ngIf="!blockUI"
+                        (click)="plusYarnLot()"></button>
+                    <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-danger" *ngIf="!blockUI"
+                        (click)="deleteYarnLot(y)"></button>
+                </div>
+            </div>
+
+
+            <div class="field mb-1 mt-3 col-12">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon w-3">qty</span>
+                    <span class="p-inputgroup-addon w-9 surface-50">{{qty}}</span>
+                </div>
+            </div>
+
+            <div class="field mb-1 col-12">
+                <div class="p-inputgroup border-1 border-round border-300">
+                    <span class="p-inputgroup-addon w-3">bundle No</span>
+                    <span class="p-inputgroup-addon w-4 surface-50 border-none">
+                        <input type="text" pInputText
+                            (keypress)="userService.numberOnly($event);"
+                            (keyup.enter)="createQueueInfo();this.showBtnSave = true;"
+                            [readOnly]="bundleNoboxReadOnly"
+                            onClick="this.select();"
+                            [(ngModel)]="bundleNo" #inputx1>
+                    </span>
+                    <span class="p-inputgroup-addon w-1 surface-50 border-none"> - </span>
+                    <span class="p-inputgroup-addon w-4 surface-50 border-none">{{+bundleNo + +countBundle - 1}}</span>
+                </div>
+            </div>
+            <!-- <div class="field mb-1 col-12">
+                <div class="p-inputgroup border-1 border-round border-300">
+                    <span class="p-inputgroup-addon w-3">Start No.</span>
+                    <span class="p-inputgroup-addon w-4 surface-50 border-none">
+                        <input type="text" pInputText
+                            (keypress)="calQtyNo()"
+                            (keyup.enter)="createQueueInfo();this.showBtnSave = true;"
+                            onClick="this.select();"
+                            [(ngModel)]="startNo" #inputx1>
+                    </span>
+                    <span class="p-inputgroup-addon w-1"> to </span>
+                    <span class="p-inputgroup-addon w-4 surface-50 border-none"> {{toNo}} </span>
+                </div>
+            </div> -->
+
+            <!-- <div class="field mb-4 col-12">
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon w-6">Qty</span>
+                    <input type="text" pInputText
+                        (keypress)="userService.numberOnly($event);"
+                        onClick="this.select();"
+                        [(ngModel)]="qty" #inputx1>
+                </div>
+            </div> -->
+
+            <div class=" border-1 border-300 p-5 m-3 surface-50" style="border-radius: 10px;" *ngIf="productORInfo">
+                <div class="grid relative">
+
+                    <div class="col-4 text-right font-medium">next running No : </div>
+                    <div class="col-8">
+                        {{+runningNo}}
+                        <!-- <span>
+                            <input type="text" pInputText
+                                onClick="this.select();"
+                                [(ngModel)]="runningNo">
+                        </span> -->
+                    </div>
+
+                    <div class="col-4 text-right font-medium">Product code : </div>
+                    <div class="col-8">{{productBarcode}}</div>
+
+                    <div class="col-4 text-right font-medium">Place : </div>
+                    <div class="col-8">{{orderService.qZone}}</div>
+
+                    <div class="col-4 text-right font-medium">Size : </div>
+                    <div class="col-8">{{orderService.qSize}}</div>
+
+                    <div class="col-4 text-right font-medium">Qty : </div>
+                    <div class="col-8">{{qty}}</div>
+
+                </div>
+            </div>
+
+            <div class="col-6">
+
+            </div>
+            <div class="col-6">
+                <button pButton pRipple type="button" label="save"
+                    (click)="postOrderProductionQueuesCreateNew()"
+                    *ngIf="showBtnSave && checkYarnLot()"></button>
+            </div>
+
+            <div class="col-12" *ngIf="this.errCode.messageID">
+                <span class="txt-err" *ngIf="this.errCode.messageID === 'errO007-2-1'">
+                    Bundle #no duplicated (err! existed).
+                </span>
+
+                <span class="txt-err" *ngIf="this.errCode.messageID !== 'errO007-2-1'">
+                    err!!. Please try again.
+                </span>
+            </div>
+
+        </div>
+    </div>
+    <div class="col-8">
+
+        <div class="surface-ground p-2" >
+            <p-table [value]="queueInfo"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="caption">
+                    {{productBarcode}}  ,  &nbsp;&nbsp;&nbsp; Total all Queue :  {{countProductionQueueByBarcode}}
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="px-0" style="width: 10%">Date</th>
+                        <th class="px-0" style="width: 10%">Bund No.</th>
+                        <th class="px-0" style="width: 30%;">factory</th>
+                        <th class="px-0" style="width: 20%">toNode</th>
+                        <th class="px-0" style="width: 10%">Total.Qty</th>
+                        <th class="px-0" style="width: 10%">start</th>
+                        <th class="px-0" style="width: 10%">end</th>
+                        <th class="px-0" style="width: 10%">user</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-queueInfo let-idx="rowIndex">
+                    <tr class="text-sm">
+                        <td class="text-xs ">
+                            {{queueInfo.queueDate | date: 'dd-MM-yyyy HH:mm'}}
+                        </td>
+                        <td>{{queueInfo.bundleNo}}</td>
+                        <td>{{userService.strFirstAndDot(userService.getUserfactoryName(factories, queueInfo.factoryID), 25)}}</td>
+                        <td>{{queueInfo.toNode}}</td>
+                        <td>{{queueInfo.productCount}}</td>
+                        <td>{{queueInfo.numberFrom}}</td>
+                        <td>{{queueInfo.numberTo}}</td>
+                        <td>{{userService.strFirstAndDot(queueInfo.createBy.userName, 10)}}</td>
+                </ng-template>
+            </p-table>
+        </div>
+
+    </div>
+</div>

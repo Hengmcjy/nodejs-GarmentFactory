@@ -1,0 +1,34 @@
+<div class="surface-ground p-2" >
+    <p-table [value]="orderProductionQueue.queueInfo"
+        class="w-full"
+        styleClass="p-datatable-sm">
+        <ng-template pTemplate="caption">
+            {{productBarcode}}  ,  &nbsp;&nbsp;&nbsp; Total all Queue :  {{countProductionQueueByBarcode}}
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="px-0" style="width: 10%">Date</th>
+                <th class="px-0" style="width: 5%;">bun No</th>
+                <th class="px-0" style="width: 30%;">factory</th>
+                <th class="px-0" style="width: 15%">toNode</th>
+                <th class="px-0" style="width: 10%">Total.Qty</th>
+                <th class="px-0" style="width: 10%">start</th>
+                <th class="px-0" style="width: 10%">end</th>
+                <th class="px-0" style="width: 10%">user</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-queueInfo let-idx="rowIndex">
+            <tr class="text-sm">
+                <td class="text-xs ">
+                    {{queueInfo.queueDate | date: 'dd-MM-yyyy hh:mm'}}
+                </td>
+                <td>{{queueInfo.bundleNo}}</td>
+                <td>{{userService.strFirstAndDot(userService.getUserfactoryName(factories, queueInfo.factoryID), 25)}}</td>
+                <td>{{queueInfo.toNode}}</td>
+                <td>{{queueInfo.productCount}}</td>
+                <td>{{queueInfo.numberFrom}}</td>
+                <td>{{queueInfo.numberTo}}</td>
+                <td>{{userService.strFirstAndDot(queueInfo.createBy.userName, 10)}}</td>
+        </ng-template>
+    </p-table>
+</div>

@@ -1,0 +1,103 @@
+{
+    "primeng": {
+        "startsWith": "Starts with",
+        "contains": "Contains",
+        "notContains": "Not contains",
+        "endsWith": "Ends with",
+        "equals": "Equals",
+        "notEquals": "Not equals",
+        "noFilter": "No Filter",
+        "lt": "Less than",
+        "lte": "Less than or equal to",
+        "gt": "Greater than",
+        "gte": "Greater than or equal to",
+        "is": "Is",
+        "isNot": "Is not",
+        "before": "Before",
+        "after": "After",
+        "dateIs": "Date is",
+        "dateIsNot": "Date is not",
+        "dateBefore": "Date is before",
+        "dateAfter": "Date is after",
+        "clear": "Clear",
+        "apply": "Apply",
+        "matchAll": "Match All",
+        "matchAny": "Match Any",
+        "addRule": "Add Rule",
+        "removeRule": "Remove Rule",
+        "accept": "Yes",
+        "reject": "No",
+        "choose": "Choose",
+        "upload": "Upload",
+        "cancel": "Cancel",
+        "dayNames": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "dayNamesShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+        "dayNamesMin": ["Su","Mo","Tu","We","Th","Fr","Sa"],
+        "monthNames": ["January","February","March","April","May","June","July","August","September","October","November","December"],
+        "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        "dateFormat": "mm/dd/yy",
+        "firstDayOfWeek": 0,
+        "today": "Today",
+        "weekHeader": "Wk",
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "passwordPrompt": "Enter a password",
+        "emptyMessage": "No results found",
+        "emptyFilterMessage": "No results found"
+    },
+    "TEST": {
+        "multiLanguage": "multi Language",
+        "language": "english Language",
+        "login": "login",
+        "signup": "sign up"
+    },
+    "HOME": {
+		"xuelek": "Xuelek.com",
+		"login": "Login",
+		"signup": "Sign-up",
+        "userid": "UserID",
+        "password": "Password",
+        "repassword": "rePassword",
+        "loginby": "Login by",
+        "signupby": "Sign up by",
+        "result": "Result",
+        "faq": "FAQ",
+        "erruserid":"userID err input",
+        "erruserpass":"Should at least be 6 characters long.",
+
+        "end": ""
+	},
+	"info": {
+		"info1-head": "INFO 1",
+        "info1": {
+            "info-body1":"<ul> <li>Coffee</li> <li>Tea</li> <li>Milk</li> </ul>",
+            "info-body2":"<h1>My First Heading</h1> <p>My first paragraph.</p>"
+        },
+        "info2-head": "INFO 2",
+        "info2": {
+            "info-body1":"<ul> <li>Coffee</li> <li>Tea</li> <li>Milk</li> </ul>",
+            "info-body2":"<h1>My First Heading</h1> <p>My first paragraph.</p>"
+        },
+        "info3-head": "INFO 3",
+        "info3": {
+            "info-body1":"<h1>Yay</h1> <p>yay is a word used to describe that your happy!</p>",
+            "info-body2":"<ol> <li>Aries</li> <li>Bingo</li> <li>Leo</li> <li>Oracle</li> </ol>  "
+        },
+        "end": ""
+    },
+    "public": {
+        "testhtml":" Welcome to my Angular application!<br> <strong>This is an amazing app which uses the latest technologies!</strong>",
+        "xuelek.com": "xuelek.com",
+        "xuelek": "xuelek {{value}} + {{value2}}",
+        "xuelek game": "xuelek game",
+        "number game": "number game"
+    },
+
+    "indexPage": {
+        "idx-001": "Information",
+        "idx-002": "You must change your password immediately",
+        "idx-003": "Changing your password",
+        "idx-004": "Your password has been changed"
+    }
+}

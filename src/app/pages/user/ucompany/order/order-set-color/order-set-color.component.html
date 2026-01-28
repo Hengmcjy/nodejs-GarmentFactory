@@ -1,0 +1,97 @@
+
+
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-ground py-2" >
+    <div class="surface-card p-4 shadow-2 border-round p-fluid">
+        <div class="grid formgrid p-fluid">
+            <div class="field col-12 order-set-zone text-center flex justify-content-center flex-wrap">
+                <span class="flex align-items-center justify-content-center">Set Color</span>
+                <span class="flex align-items-center justify-content-center mx-4">
+                    <button pButton pRipple type="button" (click)="putOrderColorUpdate()">
+                        save
+                    </button>
+                </span>
+            </div>
+
+            <div class="field col-1"></div>
+            <div class="field col-10">
+                <p-table [value]="orderColor"
+                    class="w-full"
+                    styleClass="p-datatable-sm">
+                    <ng-template pTemplate="header">
+                        <tr class="text-center">
+                            <th class="px-0 text-center" style="width: 10%">##</th>
+                            <th class="px-0 text-center" style="width: 30%">Set Color</th>
+                            <th class="px-0" style="width: 30%"></th>
+                            <th class="px-0" style="width: 5%"></th>
+                            <th class="px-0" style="width: 5%"></th>
+                            <th class="px-0" style="width: 10%"></th>
+                            <th class="px-0" style="width: 10%">
+                                <button pButton pRipple type="button" icon="pi pi-plus"
+                                    class="p-button-rounded p-button-outlined"
+                                    (click)="addColorOrder()"></button>
+                            </th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-color let-idx="rowIndex">
+                        <tr class="text-sm m-0 " (dblclick)="deleteColor(idx)">
+                            <td class="m-0 text-cente row-number">{{idx+1}}</td>
+                            <td class="m-0 ">
+                                <div *ngFor="let colorID of userService.changeColorTextToColorTextComma(orderColor[idx].color.colorID).split(','); let i = index">
+                                    <!-- {{userService.getColorNameByColorCode(colorID, color.setName)}} -->
+                                    {{orderColor[idx].color.colorName}}
+                                    &nbsp;
+                                    <!-- {{userService.getCodeColorNameByColorCode(colorID, color.setName)}} -->
+                                    {{orderColor[idx].color.colorCode}}
+                                </div>
+                                <!-- {{color.color.colorID}} / {{color.color.colorName}} / {{color.color.colorCode}} -->
+                            </td>
+                            <td class="m-0 ">
+                                <p-avatarGroup styleClass="mb-3" *ngIf="orderColor[idx].color.colorID.length > 0">
+                                    <p-avatar *ngFor="let color of userService.changeColorTextToColorTextComma(orderColor[idx].color.colorID).split(','); let i2 = index"
+                                            styleClass="p-mr-2 border-300"
+                                            [style]="{'background-color': userService.getColorByColorCode(color)}"
+                                            shape="circle"
+                                        ></p-avatar>
+                                </p-avatarGroup>
+                            </td>
+                            <td class="m-0 ">
+                                <button pButton pRipple type="button" icon="pi pi-plus"
+                                    class="p-button-rounded p-button-warning p-button-text"
+                                    (click)="showColorSelectionModal(idx)"></button>
+                            </td>
+                            <td class="m-0 ">
+                                <button pButton pRipple type="button" icon="pi pi-minus"
+                                    class="p-button-rounded p-button-warning p-button-text"
+                                    (click)="clearColor(idx)"></button>
+                            </td>
+                            <td class="m-0 ">
+                                <i class="pi pi-arrow-circle-up cursor-pointer text-blue-500" style="font-size: 1.5rem"
+                                    (click)="swapIndex(orderColor, idx, idx-1)"
+                                    *ngIf="idx!==0"></i>
+                                <!-- <button pButton pRipple type="button" icon="pi pi-arrow-circle-up" class="p-button-rounded p-button-text p-1 m-0"
+                                    style="font-size: 0.5rem"
+                                    styleClass="p-button-sm"
+                                    *ngIf="idx!==0"></button> -->
+                            </td>
+                            <td class="m-0 ">
+                                <i class="pi pi-arrow-circle-down cursor-pointer text-yellow-500" style="font-size: 1.5rem"
+                                    (click)="swapIndex(orderColor, idx, idx+1)"
+                                    *ngIf="idx!==orderColor.length-1"></i>
+                                <!-- <button pButton pRipple type="button" icon="pi pi-arrow-down"
+                                    class="p-button-rounded p-button-text p-button-warning p-1 m-0"
+                                    style="font-size: 1rem"
+                                    styleClass="p-button-sm"
+                                    *ngIf="idx!==targetPlaces.length-1"></button> -->
+                            </td>
+                    </ng-template>
+
+                </p-table>
+            </div>
+            <div class="field col-1"></div>
+
+        </div>
+    </div>
+</div>

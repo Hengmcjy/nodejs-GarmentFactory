@@ -1,0 +1,28 @@
+
+
+<!-- <div class="grid">
+    <div class="col-6 md:col-4 lg:col-3" *ngFor="let or of orders; let s = index">
+        <button pButton pRipple type="button"  class="p-button-outlined p-button-info"
+            (click)="selectStyle(or)">
+            {{or.orderID}}
+        </button>
+    </div>
+</div> -->
+
+
+<div class="grid">
+    <div class="col-12 sm:col-6 lg:col-3 xl:col-2 p-3" *ngFor="let or of orders; let s = index">
+        <div class="text-center cursor-pointer" (click)="selectStyle(or)">
+            <div class="border-1 border-200 surface-50 flex align-items-center justify-content-center border-round mb-1 mx-auto"
+                style="width: 90px; height: 90px;">
+
+                <img [src]="getImage1(or.orderID)"
+                    class=""
+                    style="width: 48px; height: 48px;">
+            </div>
+            <div class="text-600 text-sm mt-1">{{or.orderID}}</div>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,278 @@
+
+
+
+<div class="border-none bg-tran">
+    <span class="flex flex-column md:flex-row gap-3 m-0 p-0 border-none ">
+
+        <div class="field mb-4 w-3">
+            <div class="cursor-pointer">
+                <app-s-product-card [product]="product"></app-s-product-card>
+            </div>
+        </div>
+
+
+        <div class="w-3" *ngIf="mode==='setgroup'">
+            <div class="surface-card shadow-2 p-3 m-1 border-round">
+                <div class="flex justify-content-between mb-3">
+                    <div class="w-full">
+                        <span class="block text-900 font-medium text-xl mb-3">
+                            [ {{bundleSetGroup.targetPlaceID}} ] {{bundleSetGroup.color.colorCode}} {{bundleSetGroup.color.colorName}}
+                        </span>
+                        <ul class="list-none m-0 pl-2">
+                            <li class="px-0 py-2 border-bottom-1 surface-border text-center">
+                                <span class="text-600 font-medium text-sm">{{bundleSetGroup.groupName}}</span>
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">Sequence</span>
+                                <span class="text-900 font-medium text-sm">{{bundleSetGroup.seq}}</span>
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">Yarn Lot ID</span>
+                                <span class="text-900 font-medium text-sm">
+                                    <div class="" *ngFor="let yarn of bundleSetGroup.yarnLotID.split(','); let i2 = index">
+                                        {{yarn}}
+                                    </div>
+                                </span>
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">bundle no.</span>
+                                <span class="text-900 font-medium text-sm" *ngIf="mode==='setgroup'">
+                                    <div class="" *ngFor="let bun of bundleSetGroup.bundleNoSet.split(','); let i3 = index">
+                                        {{bun}}
+                                    </div>
+                                </span>
+                                <!-- <span class="text-900 font-medium text-sm" *ngIf="mode==='bundleNos'">
+                                    <div class="" >
+                                        ...
+                                    </div>
+                                </span> -->
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">Bundle.</span>
+                                <span class="text-900 font-medium text-sm">{{bundleSetGroup.bundleNoQty}}</span>
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">State</span>
+                                <span class="text-900 font-medium text-sm cursor-pointer">
+                                    {{bundleSetGroup.completed?'Completed':'Tracking'}}
+                                </span>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div>
+                        <i class="pi pi-circle-fill text-2xl" [ngStyle]="{color: bundleSetGroup.color.colorValue}"></i>
+                        <!-- ligth green warning danger -->
+                        <!-- <i class="pi pi-circle-fill text-green-500 text-2xl"></i> -->
+                        <!-- <i class="pi pi-circle-fill text-red-500 text-2xl"></i> -->
+                        <!-- <i class="pi pi-circle-fill text-yellow-500 text-2xl"></i> -->
+                        <!-- <i class="pi pi-circle-fill text-gray-500 text-2xl"></i> -->
+                    </div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-times-circle" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-danger p-button p-component p-2 px-5 mr-5"
+                        >
+                        <span class="p-button-icon p-button-icon-left pi pi-times-circle text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">Delete</span>
+                        <span class="p-ink"></span>
+                    </button>
+                    <button pbutton="" pripple="" icon="pi pi-file-pdf" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-success p-button p-component p-2">
+                        <span class="p-button-icon p-button-icon-left pi pi-file-pdf text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">PDF</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+
+    </span>
+
+    <!--  -->
+
+</div>
+
+
+<div class="border-none bg-tran" >
+    <span class="flex flex-column md:flex-row gap-3 m-0 p-0 border-none " >
+
+        <div class=" shadow-2 border-round m-2 p-4 w-4 bg-primary-100">
+            <div class="flex align-items-center justify-content-between mb-4">
+                <span class="text-xl font-medium text-900">
+                    All Bundle Product
+                </span>
+                <div class="ml-auto">
+                    <button pbutton="" pripple="" icon="pi pi-file-pdf" (click)="bundleStatePDFPrint('all')"
+                        class="p-element p-button-text p-button-plain p-button-rounded p-button p-component p-button-icon-only p-button-success">
+                        <span class="p-button-icon pi pi-file-pdf" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+            <ul class="mt-4 list-none p-0 mx-0">
+                <li class="flex align-items-center pb-3">
+                    <span class="border-round bg-indigo-500 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        Bundles
+                    </span>
+                    <span class="text-600 text-xl font-medium ml-auto">
+                        {{BundleStateBoard.bundleAllCount}}
+                    </span>
+                </li>
+                <li class="flex align-items-center py-3">
+                    <span class="border-round bg-blue-500 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        Qty
+                    </span>
+                    <span class="text-600 text-xl font-medium ml-auto">
+                        {{BundleStateBoard.qtyAll}}
+                    </span>
+                </li>
+                <li class="flex align-items-center py-3">
+                    <p-button  styleClass="p-button-raised p-button-text p-button-help"
+                        (onClick)="showOutsTracking()"
+                        *ngIf="(whoCall === 'staff-office' && outsMode==='out')">
+                        &nbsp; Edit progressing
+                    </p-button>
+                </li>
+
+                <!-- <li class="flex align-items-center py-3">&nbsp;</li> -->
+                <li class="flex align-items-center py-3">Zone Qty : </li>
+
+                <li class="flex align-items-center py-3" *ngFor="let bd1 of BundleStateBoard.bundleStateTargetPlaceBoard; let i = index">
+                    <span class="border-round surface-200 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        {{bd1.targetPlaceName}}
+                    </span>
+                    <span class="text-600 text-base font-medium ml-auto">
+                        {{bd1.qty}} [ {{bd1.bundleCount}} bundle ]
+                    </span>
+                </li>
+            </ul>
+        </div>
+
+        <div class=" shadow-2 border-round m-2 p-4 w-4 bg-yellow-50">
+            <div class="flex align-items-center justify-content-between mb-4">
+                <span class="text-xl font-medium text-900">
+                    Bundle still in Production
+                </span>
+                <div class="ml-auto">
+                    <button pbutton="" pripple="" icon="pi pi-file-pdf" (click)="bundleStatePDFPrint('notCompleted')"
+                        class="p-element p-button-text p-button-plain p-button-rounded p-button p-component p-button-icon-only p-button-success">
+                        <span class="p-button-icon pi pi-file-pdf" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+            <ul class="mt-4 list-none p-0 mx-0">
+                <li class="flex align-items-center pb-3">
+                    <span class="border-round bg-indigo-500 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        Bundles
+                    </span>
+                    <span class="text-600 text-xl font-medium ml-auto">
+                        {{BundleStateBoardNotCompleted.bundleAllCount}}
+                    </span>
+                </li>
+                <li class="flex align-items-center py-3">
+                    <span class="border-round bg-blue-500 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        Qty
+                    </span>
+                    <span class="text-600 text-xl font-medium ml-auto">
+                        {{BundleStateBoardNotCompleted.qtyAll}}
+                    </span>
+                </li>
+
+                <li class="flex align-items-center py-3">&nbsp;</li>
+                <li class="flex align-items-center py-3">Zone Qty : </li>
+
+                <li class="flex align-items-center py-3" *ngFor="let bd1 of BundleStateBoardNotCompleted.bundleStateTargetPlaceBoard; let i = index">
+                    <span class="border-round surface-200 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        {{bd1.targetPlaceName}}
+                    </span>
+                    <span class="text-600 text-base font-medium ml-auto">
+                        {{bd1.qty}} [ {{bd1.bundleCount}} bundle ]
+                    </span>
+                </li>
+            </ul>
+        </div>
+
+        <div class=" shadow-2 border-round m-2 p-4 w-4 bg-green-50" *ngIf="mode==='setgroup'">
+            <div class="flex align-items-center justify-content-between mb-4">
+                <span class="text-xl font-medium text-900">
+                    Bundle completed
+                </span>
+                <div class="ml-auto">
+                    <button pbutton="" pripple="" icon="pi pi-file-pdf" (click)="bundleStatePDFPrint('Completed')"
+                        class="p-element p-button-text p-button-plain p-button-rounded p-button p-component p-button-icon-only p-button-success">
+                        <span class="p-button-icon pi pi-file-pdf" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+            <ul class="mt-4 list-none p-0 mx-0">
+                <li class="flex align-items-center pb-3">
+                    <span class="border-round bg-indigo-500 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        Bundles
+                    </span>
+                    <span class="text-600 text-xl font-medium ml-auto">
+                        {{BundleStateBoardCompleted.bundleAllCount}}
+                    </span>
+                </li>
+                <li class="flex align-items-center py-3">
+                    <span class="border-round bg-blue-500 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        Qty
+                    </span>
+                    <span class="text-600 text-xl font-medium ml-auto">
+                        {{BundleStateBoardCompleted.qtyAll}}
+                    </span>
+                </li>
+
+                <li class="flex align-items-center py-3">&nbsp;</li>
+                <li class="flex align-items-center py-3">Zone Qty : </li>
+
+                <li class="flex align-items-center py-3" *ngFor="let bd1 of BundleStateBoardCompleted.bundleStateTargetPlaceBoard; let i = index">
+                    <span class="border-round surface-200 mr-3 flex-shrink-0"
+                        style="width: 1rem; height: 1rem;">
+                    </span>
+                    <span class="text-xl font-medium text-90">
+                        {{bd1.targetPlaceName}}
+                    </span>
+                    <span class="text-600 text-base font-medium ml-auto">
+                        {{bd1.qty}} [ {{bd1.bundleCount}} bundle ]
+                    </span>
+                </li>
+            </ul>
+        </div>
+
+    </span>
+</div>
+
+<!-- *ngIf="outsMode==='out'" -->
+<div class="surface-ground flex-auto py-2  w-11" *ngIf="viewMode==='order-outsource-progress-tracking'">
+    <app-s-order-outs-progress-tracking
+        [orderID]="orderID"
+        [bundleNos]="bundleNos"
+        [factoryIDOuts]="factoryIDOuts"
+    ></app-s-order-outs-progress-tracking>
+</div>

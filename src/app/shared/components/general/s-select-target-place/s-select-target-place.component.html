@@ -1,0 +1,14 @@
+
+
+<div class="flex flex-row flex-wrap card-container blue-container">
+    <span class="m-0 p-0" *ngFor="let target of targetPlaces; let i = index">
+        <button pButton pRipple type="button"
+            label=""
+            class="p-button-outlined mx-2 my-1" styleClass="p-button-lg"
+            (click)="selectTargetPlace(target)">
+            {{target.targetPlace.targetPlaceName | uppercase}} / &nbsp;
+            <span class="text-sm text-blue-600">{{target.targetPlace.countryName | uppercase}}</span>
+        </button>
+    </span>
+</div>
+

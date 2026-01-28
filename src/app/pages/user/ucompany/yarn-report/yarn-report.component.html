@@ -1,0 +1,150 @@
+<app-ucompany-menu></app-ucompany-menu>
+
+<div class="container">
+    <div class="topright z-index1000">
+        <span class="">
+            {{yarnService.getyarnMainMode(viewMode)}}
+        </span>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="col-12 md:col-3 lg:col-2 m-0 pr-0">
+        <div class="sticky-top150">
+            <div class="w-full pt-2 px-2 cursor-pointer" (click)="showFactorySelectionModal()">
+                <app-spns-yarn-factory [factorySelect]="factorySelect"></app-spns-yarn-factory>
+            </div>
+            <div class="w-full pt-2 px-2 cursor-pointer" (click)="showYarnSeasonsList()">
+                <app-spns-yarn-seasonyear [yarnSeason]="yarnSeasonID"></app-spns-yarn-seasonyear>
+            </div>
+            <div class="w-full pt-2 px-2 cursor-pointer" (click)="showCustomerSelectionModal()">
+                <app-spns-yarn-customer [customer]="customer"></app-spns-yarn-customer>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 md:col-9 lg:col-10 m-0 pl-0">
+        <div class="pt-2 pl-4">
+
+            <div class="">
+                <p-toolbar class="" styleClass="p-2">
+                    <div class="p-toolbar-group-start">
+                        <p-megaMenu [model]="megaMenuItems" styleClass="m-0 p-0"></p-megaMenu>
+                    </div>
+                    <div class="p-toolbar-group-center">
+                        <span class="yarn-season-head" *ngIf="yarnReportName !== ''">
+                            {{yarnReportName}}
+                        </span>
+
+                        <span class="yarn-season-head" *ngIf="yarnReportName === ''">
+                            YARN
+
+                            <span class="" >
+                                 Report
+                            </span>
+                        </span>
+                        &nbsp;&nbsp;
+                        <span class="txt-m-gray">
+                            [
+                            &nbsp;
+                            <span class="txt-m-gray">
+                                {{yarnSeasonID}}
+                            </span>
+                            &nbsp;
+                            ]
+                        </span>
+                    </div>
+                    <div class="p-toolbar-group-end">
+
+                    </div>
+                </p-toolbar>
+                <p-toolbar class="" styleClass="p-1">
+                    <div class="p-toolbar-group-start">
+                        <div class="text-900 flex">
+                            <button pButton pRipple type="button"
+                                class="p-button-rounded p-button-warning p-button-text"
+                                (click)="showYarnList('yarnReport')">
+                                <span class="material-symbols-outlined">frame_inspect</span>
+                            </button>
+
+                            <div class="text-lg txt-m-gray ml-4 my-2 pt-2  ml-0">
+                                {{yarn.yarnID !== ''? yarnService.getYarnfullName(yarn.yarnID) : 'Yarn ID [ all ]'}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-toolbar-group-center text-left">
+
+                    </div>
+                    <div class="p-toolbar-group-end">
+                        <div *ngIf="mode==='yarnReport-stock-current'">
+                            <p-button label="show all"
+                                styleClass="p-button-secondary p-1"
+                                ></p-button>
+                        </div>
+                    </div>
+                </p-toolbar>
+            </div>
+
+            <div *ngIf="mode===''">
+                <img src="https://storage.googleapis.com/mystoragegarment/yarnStock.jpg" class="mb-3 w-full" />
+            </div>
+
+            <div class="text-center" *ngIf="mode !=='' && loading">
+                <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+            </div>
+
+            <div class="" *ngIf="viewMode==='yarnReport'">
+                <app-s-yarn-report-list *ngIf="mode==='yarnReport-list'"
+                    [mode]="mode"
+                    [viewMode]="viewMode"
+                    [yarnSeasonID]="yarnSeasonID"
+                    [company]="company"
+                    [factorySelect]="factorySelect"
+                    [customer]="customer"
+
+                    (closeYarnReportList)="gotoYarnReportList($event)">
+                </app-s-yarn-report-list>
+
+                <app-s-yarn-report-fac-stock *ngIf="mode==='yarnReport-stock-current'"
+                    [mode]="mode"
+                    [viewMode]="viewMode"
+                    [yarnSeasonID]="yarnSeasonID"
+                    [company]="company"
+                    [factorySelect]="factorySelect"
+                    [customer]="customer"
+
+                    (closeYarnReportStock)="gotoYarnReportList($event)">
+                </app-s-yarn-report-fac-stock>
+
+                <app-s-yarn-transfer-report *ngIf="mode==='yarnReport-transfer'"
+                    [mode]="mode"
+                    [viewMode]="'yarnTransferReport'"
+                    [yarnSeasonID]="yarnSeasonID"
+                    [company]="company"
+                    [factorySelect]="factorySelect"
+                    [customer]="customer"
+                    [yarnPlans]="[]"
+                    [yarnPlansCount]="0"
+                    [yarns]="[]"
+                    [yarnsCount]="0"
+                    (closeYarnTransferCard)="gotoYarnReportList($event)">
+
+                </app-s-yarn-transfer-report>
+
+                <div *ngIf="mode==='fac-usage'">
+                    mode = 'fac-usage'
+                </div>
+
+                <div *ngIf="mode==='com-usage'">
+                    mode = 'com-usage'
+                </div>
+
+                <div *ngIf="mode==='com-stock'">
+                    mode = 'com-stock'
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>

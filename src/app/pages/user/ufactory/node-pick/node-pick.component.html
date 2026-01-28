@@ -1,0 +1,92 @@
+
+<app-ufactory-dashboard-menu></app-ufactory-dashboard-menu>
+
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-ground px-4 py-2 md:px-4 lg:px-4 w-12">
+    <div class="grid w-12">
+
+        <div class="col-3">
+            <div class="surface-card shadow-2 p-3 m-1 border-round">
+                <div class="flex justify-content-between mb-3">
+                    <div class="w-full">
+                        <span class="block text-900 font-medium text-xl text-center mb-3">
+                            <!-- <span class="text-900 font-medium text-3xl">{{i}} </span> -->
+                            {{nodeFlow.nodeFlowID}}
+                        </span>
+                        <ul class="list-none m-0 pl-2">
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">flow type</span>
+                                <span class="text-900 font-medium text-sm  text-center">
+                                    <!-- {{nodeFlow.flowType}} -->
+                                    <button pButton pRipple type="button" label="{{nodeFlow.flowType}}"
+                                        class="p-button-rounded p-button-text mr-4 p-1 text-sm "
+                                        [ngClass]="nodeFlow.flowType==='main'?'p-button-text':'p-button-warning p-button-text'"
+                                        >
+                                    </button>
+                                </span>
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">condition flow</span>
+                                <span class="text-900 font-medium text-sm">
+                                    <!-- {{nodeFlow.flowCondition.isFlowSequence?'have to sort':'no sort'}} -->
+                                    <button pButton pRipple type="button" label="{{nodeFlow.flowCondition.isFlowSequence?'have to sort':'no sort'}}"
+                                        class="p-button-rounded p-button-text mr-4 p-1 text-sm "
+                                        [ngClass]="nodeFlow.flowCondition.isFlowSequence?'p-button-text':'p-button-warning p-button-text'"
+                                        >
+                                    </button>
+                                </span>
+                            </li>
+                            <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                <span class="text-600 font-medium text-sm">node flow list</span>
+                                <span class="text-900 font-medium text-sm flex justify-content-between">
+                                    <!-- <button pButton pRipple type="button" label="manage"
+                                        class="p-button-rounded p-button-info mr-4 p-1 text-sm ">
+                                    </button> -->
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-save" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-primary p-button p-component p-2 px-5"
+                        (click)="putNodeFlowEdit('flowSeq', nodeFlow)">
+                        <span class="p-button-icon p-button-icon-left pi pi-save text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">save</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-9">
+            <p-pickList [source]="nodeID1" [target]="nodeID2" sourceHeader="Available" targetHeader="Selected" [dragdrop]="isdragdrop"
+                [responsive]="false" [sourceStyle]="{'height':'500px'}" [targetStyle]="{'height':'500px'}"
+                (onMoveToTarget)="viewArr()" (onMoveToSource)="viewArr()" (onMoveAllToTarget)="viewArr()" (onMoveAllToSource)="viewArr()"
+                (onSourceReorder)="viewArr()" (onTargetReorder)="viewArr()" >
+                <ng-template let-nodeIDText let-idx="index" pTemplate="item">
+                    <div class="product-item">
+                        <div class="product-list-detail">
+                            <h5 class="mb-2">
+                                <span class="font-semibold text-red-100">[ {{+idx+1}} ] </span>
+                                <span class="font-normal text-base">{{nodeIDText.nodeID}}</span>
+
+                            </h5>
+                            <!-- <i class="pi pi-tag product-category-icon"></i>
+                            <span class="product-category">{{product.a}}</span> -->
+                        </div>
+                        <!-- <div class="product-list-action">
+                            <h6 class="mb-2">${{nodeIDText.nodeID}}</h6>
+                            <span [class]="'product-badge status-' + product.b.toLowerCase()">{{product.b}}</span>
+                        </div> -->
+                    </div>
+                </ng-template>
+
+            </p-pickList>
+        </div>
+
+    </div>
+</div>
+

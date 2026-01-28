@@ -1,0 +1,122 @@
+
+
+<div class="surface-ground px-4 pt-0 pb-4 my-0  md:px-6 lg:px-8">
+    <div class="card flex flex-column md:flex-row gap-3 m-0 p-0 border-none bg-tran">
+        <span>
+            <div class="p-inputgroup">
+                <!-- <input type="text" pInputText placeholder="Keyword" /> -->
+                <p-calendar [(ngModel)]="date12" selectionMode="range"
+                    [readonlyInput]="readonlyInput"
+                    [numberOfMonths]="3"
+                    [dateFormat]="dateFormat"
+                    onselect="selectDate()"></p-calendar>
+                <button type="button" pButton styleClass="p-button-warn" [disabled]="isShowReport"
+                    (click)="selectDate()">
+                    {{userService.translateCode('btn', 'btn-show-report')}}
+                </button>
+                <button type="button" pButton class="p-button-success" *ngIf="false"
+                    (click)="selectDate()">
+                    Show report - separate date
+                </button>
+            </div>
+        </span>
+    </div>
+</div>
+
+<p-tabView [scrollable]="true">
+
+    <p-tabPanel header="Style">
+        <div class="text-center" *ngIf="loading">
+            <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+        </div>
+        <div class="surface-ground p-2" *ngIf="!loading">
+            <p-table [value]="styles"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="caption">
+                    {{date1}} - {{date2}}
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr class=" text-left">
+                        <th class="" style="width: 1%"></th>
+                        <th class="text-left" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                        <th class="text-left" *ngFor="let dep of flowSeq; let f0 = index">
+                            <!-- {{nsService.getNodeStationName(nodeStations, dep.nodeID)}} -->
+                            {{userService.translateCode('nd',nsService.getNodeStationName(nodeStations, dep.nodeID))}}
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-style1 let-idx="rowIndex">
+                    <tr class="text-sm text-center">
+                        <td>
+
+                        </td>
+                        <td class="text-left font-bold">
+                            <span>
+                                {{style1}}
+                            </span>
+                        </td>
+                        <td class="vertical-align-middle text-left" *ngFor="let dep1 of flowSeq; let f1 = index">
+                            <span (dblclick)="showSMDScannedProduct(dep1.nodeID, style1, 'all')">
+                                {{getNodeIDScannedStyle(style1, dep1.nodeID)}}
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </p-tabPanel>
+
+    <p-tabPanel header="Style - Zone">
+        <div class="text-center" *ngIf="loading">
+            <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+        </div>
+        <div class="surface-ground p-2" *ngIf="!loading">
+            <p-table [value]="styles"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="caption">
+                    {{date1}} - {{date2}}
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr class=" text-left">
+                        <th class="" style="width: 1%"></th>
+                        <th class="text-left" >Style</th>
+                        <th class="text-left" *ngFor="let dep of flowSeq; let f0 = index">
+                            {{userService.translateCode('nd',nsService.getNodeStationName(nodeStations, dep.nodeID))}}
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-style1 let-idx="rowIndex">
+                    <tr class="text-sm text-center">
+                        <td>
+
+                        </td>
+                        <td class="text-left font-bold">
+                            <span>
+                                {{style1}}
+                            </span>
+                        </td>
+                        <td class="vertical-align-middle text-left" *ngFor="let dep1 of flowSeq; let f1 = index">
+                            <span class="">
+                                <div class="mb-1" *ngFor="let zone of mainZone; let n = index">
+                                    <div *ngIf="getNodeIDScannedStyleZone(style1, dep1.nodeID, zone.targetPlaceID) !== ''">
+                                        <span class="txt-sm-gray">
+                                            {{getZoneName(zone.targetPlaceID)}}
+                                        </span>
+                                        &nbsp;&nbsp;
+                                        <!-- showSMDScannedProduct(fromNode: string, style: string, zone: string) -->
+                                        <span class="" (dblclick)="showSMDScannedProduct(dep1.nodeID, style1, zone.targetPlaceID)">
+                                            {{getNodeIDScannedStyleZone(style1, dep1.nodeID, zone.targetPlaceID)}}
+                                        </span>
+                                    </div>
+                                </div>
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </p-tabPanel>
+
+</p-tabView>

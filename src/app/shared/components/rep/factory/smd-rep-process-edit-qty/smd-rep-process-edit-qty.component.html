@@ -1,0 +1,68 @@
+<!-- <p>smd-rep-process-edit-qty works!</p> -->
+
+
+
+<div class="grid">
+
+    <div class="col-6">
+        <div class="grid">
+            <div class="col-4 text-right">
+                STYLE :
+            </div>
+            <div class="col-8">
+                {{data.orderID}} &nbsp;&nbsp; [ {{data.targetPlaceID}} ]
+            </div>
+            <div class="col-4 text-right">
+                SIZE :
+            </div>
+            <div class="col-8">
+                {{data.size}}
+            </div>
+            <div class="col-4 text-right">
+                COLOR :
+            </div>
+            <div class="col-8">
+                {{data.colorCode}}  {{data.colorName}}
+            </div>
+
+            <div class="col-12">&nbsp;</div>
+            <!-- <div class="col-12">&nbsp;</div> -->
+
+            <div class="col-4 text-right">
+                NodeID :
+            </div>
+            <div class="col-8">
+                {{data.fromNode}}
+            </div>
+            <div class="col-4 text-right">
+                QTY :
+            </div>
+            <div class="col-8">
+                {{data.qty}}
+            </div>
+
+        </div>
+    </div>
+
+    <div class="col-6">
+        <div class="grid">
+            <div class="col-12 text-center">
+                <span>
+                    {{data.header}}
+                </span>
+            </div>
+            <div class="col-12">
+                <span>
+                    <input type="number" pInputText  class="w-full"
+                        (keypress)="userService.numberOnly($event);"
+                        (keyup.enter)="saveEditQTY()"
+                        (keyup)="newQTYChange()"
+                        onClick="this.select();"
+                        [(ngModel)]="newQTY"
+                        #input1>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+

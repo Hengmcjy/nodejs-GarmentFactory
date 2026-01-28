@@ -1,0 +1,49 @@
+
+<app-ufactory-dashboard-menu></app-ufactory-dashboard-menu>
+
+<div class="grid">
+    <div class="col-12 md:col-4" >
+        <p-table [value]="nodeStations">
+            <!-- <ng-template pTemplate="caption">
+                <div class="flex align-items-center justify-content-between">
+                    Products
+                    <p-button icon="pi pi-refresh"></p-button>
+                </div>
+            </ng-template> -->
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>nodeID</th>
+                    <th>status</th>
+                    <!-- <th>location</th> -->
+                    <th></th>
+
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-node let-idx="rowIndex">
+                <tr [style]="getRowClass(idx)">
+                    <td>{{node.nodeID}}</td>
+
+                    <td>{{getNodeStatus(node.status)}}</td>
+                    <!-- <td>{{node.status}}</td> -->
+                    <!-- <td>{{node.nodeInfo.location}}</td> -->
+                    <td>
+                        <button pButton pRipple type="button" icon="pi pi-file-edit"
+                            class="p-button-rounded p-button-success"
+                            (click)="editNode(node);rowSelect(idx, 'selectRow');">
+                        </button>
+                    </td>
+
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <div class="flex align-items-center justify-content-between">
+                    In total there are {{nodeStations ? nodeStations.length : 0 }}
+                </div>
+            </ng-template>
+        </p-table>
+    </div>
+    <div class="col-12 md:col-8" >
+        <app-node-edit [nodeStation]="nodeStation"></app-node-edit>
+    </div>
+</div>
+

@@ -1,0 +1,42 @@
+<app-ufactory-dashboard-menu></app-ufactory-dashboard-menu>
+
+<p-tabView [scrollable]="true">
+    <p-tabPanel header="test" *ngIf="user.uInfo.addr==='HengTest'">
+        <app-s-test-prg></app-s-test-prg>
+    </p-tabPanel>
+    <p-tabPanel header="Factory production">
+        <app-s-rep-fac-dashboard
+            [factory]="factory">
+        </app-s-rep-fac-dashboard>
+    </p-tabPanel>
+
+    <p-tabPanel header="Node production">
+        <div class="px-4 py-5 mt-4 md:px-6 lg:px-8" >
+            <div class="flex align-items-start flex-column lg:justify-content-between lg:flex-row">
+                <div class="font-medium text-3xl text-900">
+                    {{userService.translateCode('hd', 'hd-nodestation')}}
+                </div>
+            </div>
+        </div>
+        <app-s-rep-fac-node-station
+            [factory]="factory">
+        </app-s-rep-fac-node-station>
+    </p-tabPanel>
+
+    <p-tabPanel header="Node scan information" >
+        <app-s-rep-fac-node-scan
+            [factory]="factory">
+        </app-s-rep-fac-node-scan>
+    </p-tabPanel>
+
+    <p-tabPanel header="Node bundle remain">
+        <app-s-rep-fac-node-bundle
+            [factory]="factory"
+            [nodeID]="bundleNodeID">
+        </app-s-rep-fac-node-bundle>
+    </p-tabPanel>
+
+</p-tabView>
+
+
+

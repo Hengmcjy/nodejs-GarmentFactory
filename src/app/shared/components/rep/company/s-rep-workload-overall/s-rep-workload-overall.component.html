@@ -1,0 +1,21 @@
+<!-- <p>s-rep-workload-overall works!</p> -->
+
+<div class="surface-ground">
+    <div class="grid p-fluid">
+        <div class="col-12">
+            <div class="card card-w-title p-0 m-0">
+                <p-megaMenu [model]="megaMenuItems"></p-megaMenu>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="surface-ground">
+    <app-s-rep-workload-overall2 *ngIf="repActive==='overall'"
+        [nodeStation]="nodeStation"
+        [stationID]="stationID">
+    </app-s-rep-workload-overall2>
+    <app-s-rep-workload-personal *ngIf="repActive==='personal'"></app-s-rep-workload-personal>
+    <app-s-rep-pds-wl-subnode *ngIf="repActive==='product-scan'"></app-s-rep-pds-wl-subnode>
+</div>
+

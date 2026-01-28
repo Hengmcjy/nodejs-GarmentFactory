@@ -1,0 +1,41 @@
+
+<app-ucompany-menu></app-ucompany-menu>
+
+<p-table [value]="yarns"  [tableStyle]="{'min-width': '60rem'}">
+    <ng-template pTemplate="header">
+        <tr>
+            <th>No.</th>
+            <th>customer</th>
+            <th>Yarn name</th>
+            <th>action</th>
+
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-yarn let-idx="rowIndex">
+        <tr class="m-0 p-0">
+            <td>
+                <span>{{idx+1}}</span>
+            </td>
+            <td>
+                <span class="txt-sm-gray">
+                    {{userService.getCustomerName(yarn.customerID)}}
+                </span>
+            </td>
+            <td>
+                <span>{{yarn.yarnID}}</span>
+            </td>
+            <td>
+                <button pButton pRipple type="button" icon="pi pi-file-edit"
+                    class="p-button-rounded p-button-success"
+                    (click)="goto('/user/ucompany/yarn/edit', yarn)">
+                </button>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+        <div class="flex align-items-center justify-content-between">
+            In total there are  yarns.
+        </div>
+    </ng-template>
+</p-table>
+

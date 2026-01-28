@@ -1,0 +1,138 @@
+<app-ufactory-dashboard-menu></app-ufactory-dashboard-menu>
+
+<div class="surface-ground px-4 py-2 md:px-6 lg:px-4">
+    <div class="p-fluid flex flex-column lg:flex-row">
+        <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly md:justify-content-between lg:justify-content-start mb-5 lg:pr-8 lg:mb-0">
+            <li>
+                <div class="flex flex-column align-items-center flex-or">
+                    <img [src]="genImagePath(factory.fInfo.pic)" class="h-10rem w-10rem" />
+                    <button pbutton="" type="button" icon="pi pi-pencil"
+                        class="p-element p-button-rounded -mt-4 p-button p-component p-button-icon-only"
+                        (click)="showFileUploadModal(false)">
+                        &nbsp;&nbsp;&nbsp;
+                        <span class="p-button-icon pi pi-image" aria-hidden="true"></span>
+                        <span aria-hidden="true" class="p-button-label">&nbsp;</span>
+                    </button>
+                </div>
+            </li>
+            <li class="text-center font-medium text-red-700">
+                {{factory.factoryID}}
+            </li>
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('card')">
+                    <i class="pi pi-id-card md:mr-2"></i>
+                        <span class="font-medium hidden md:block">factory card</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('profile')">
+                    <i class="pi pi-building md:mr-2"></i>
+                    <span class="font-medium hidden md:block">factory Profile</span>
+                    <span class="p-ink" style="height: 149px;width: 149px;top: -60.2778px;left: 47.0555px;"></span>
+                </a>
+            </li>
+        </ul>
+
+        <div class=" p-5  flex-auto" *ngIf="mode==='card'">
+            <app-s-factory-card [factory]="userService.factoryDialogSelected"></app-s-factory-card>
+        </div>
+
+        <div class="surface-card p-5 shadow-2 border-round flex-auto" *ngIf="mode==='profile'">
+            <div class="surface-section" *ngIf="mode==='profile'">
+                <div class="font-medium text-3xl text-900 mb-3">Factory</div>
+                <!-- <div class="text-500 mb-5">Morbi tristique blandit turpis. In viverra ligula id nulla hendrerit rutrum.</div> -->
+                <ul class="list-none p-0 m-0">
+
+                    <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap">
+                        <div class="text-500 w-6 md:w-2 font-medium">Company ID</div>
+                        <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                            {{factory.companyID}}
+                        </div>
+                    </li>
+                    <li class="flex align-items-center py-3 px-2 surface-border flex-wrap">
+                        <div class="text-500 w-6 md:w-2 font-medium">Factory ID</div>
+                        <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                            {{factory.factoryID}}
+                        </div>
+                    </li>
+                    <li class="flex align-items-center py-3 px-2  surface-border flex-wrap">
+                        <div class="text-500 w-6 md:w-2 font-medium">Abbreviation</div>
+                        <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                            <input appNoSpace type="text" pInputText  placeholder=""
+                                (keypress)="userService.numberAZazOnly($event);userService.lengthMax(factory.fInfo.abbreviation, 4)"
+                                [(ngModel)]="factory.fInfo.abbreviation">
+                        </div>
+                        <!-- <div class="w-2 md:w-2 flex justify-content-end">
+                            <button pButton pRipple label="Apply"  class="p-button-text"></button>
+                        </div> -->
+                    </li>
+                    <li class="flex align-items-center py-3 px-2  surface-border flex-wrap">
+                        <div class="text-500 w-6 md:w-2 font-medium">Factory name</div>
+                        <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                            <input type="text" pInputText  placeholder=""
+                                [(ngModel)]="factory.fInfo.factoryName">
+                        </div>
+                    </li>
+                    <li class="flex align-items-center py-3 px-2  surface-border flex-wrap">
+                        <div class="text-500 w-6 md:w-2 font-medium">Tel</div>
+                        <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                            <input type="text" pInputText  placeholder=""
+                                [(ngModel)]="factory.fInfo.tel">
+                        </div>
+                    </li>
+                    <li class="flex align-items-center py-3 px-2  surface-border flex-wrap">
+                        <div class="text-500 w-6 md:w-2 font-medium">Email</div>
+                        <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                            <input type="text" pInputText  placeholder=""
+                                [(ngModel)]="factory.fInfo.email">
+                        </div>
+                    </li>
+                    <li class="flex align-items-center py-3 px-2 surface-border flex-wrap">
+                        <div class="text-500 w-6 md:w-2 font-medium">Description</div>
+                        <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1 line-height-3">
+                            <textarea pInputTextarea
+                                [(ngModel)]="factory.fDescription">
+                            </textarea>
+                        </div>
+                    </li>
+                    <li class="flex align-items-center py-3 px-2  border-bottom-1 surface-border flex-wrap">
+                        <div class="text-500 w-6 md:w-2 font-medium">Create by</div>
+                        <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1 line-height-3">
+                            <span>
+                                {{factory.fInfo.createBy.userName}}
+                            </span>
+                            <br>
+                            <span>
+                                {{factory.fInfo.registDate | date: 'dd-MM-yyyy'}}
+                            </span>
+                        </div>
+                    </li>
+                </ul>
+                <!-- <ul class="list-none m-0 p-0">
+                    <li class="px-0 py-2 flex justify-content-between align-items-center  surface-border">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <span class="text-900 font-medium text-sm">
+                            <button pButton pRipple type="button" label="save" class="p-button-rounded p-button-info p-3"></button>
+                        </span>
+                    </li>
+
+                </ul> -->
+                <div>
+                    <button pbutton="" pripple="" label="Update Profile"
+                        class="p-element p-ripple w-auto p-button p-component mt-4"
+                        (click)="editFactory()">
+                        <span class="p-button-label">Update Company Profile</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,406 @@
+
+<p-blockUI [target]="willBlock" [blocked]="blockedPanel">
+    <div class="">
+        <i class="pi pi-lock" style="font-size: 3rem"></i>
+    </div>
+    <br>
+    <div class="text-5xl text-600 mt-2">
+        wait for a minute
+    </div>
+</p-blockUI>
+
+<div  class="">
+
+    <div class="card m-0 p-0 border-none bg-tran">
+        <button pButton pRipple type="button" icon="pi pi-refresh"
+            class="p-button-rounded p-button-text p-button-lg mb-2 mx-1"
+            [disabled]="blockedPanel"
+            (click)="getRepCurrentProductQtyCom()">
+        </button>
+        <button pButton pRipple type="button" class="p-button-rounded p-button-text mb-2 mx-1" [disabled]="blockedPanel">
+            <span class="text-lg font-semibold">
+                {{reportHeader}}
+            </span>
+        </button>
+    </div>
+
+    <p-tabView #willBlock  [scrollable]="true">
+
+        <p-tabPanel header="overall">
+            <div class="surface-ground p-2">
+                <p-table [value]="currentOrderStyle"
+                    class="w-full"
+                    styleClass="p-datatable-sm">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="" style="width: 1%"></th>
+                            <th class="" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-qty-all')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-completed')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-in-production')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-remain')}}</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                        <tr class="text-sm">
+                            <td>
+                                <button pButton pRipple type="button" icon="pi pi-user"
+                                    class="p-button-rounded p-button-info p-button-text p-0 m-0"
+                                    (click)="showCustomerSelectionViewBtn(order.customerOR, 'view')">
+                                </button>
+                            </td>
+                            <td class="vertical-align-middle">
+                                {{order.style}}
+                            </td>
+                            <td class="text-center">
+                                {{order.sumQty}}
+                            </td>
+                            <td class="text-center">
+                                {{findProductQtyComplete(order, 'complete')}}
+                            </td>
+                            <td class="text-center">
+                                {{findProductQtyComplete(order, 'inProduction')}}
+                            </td>
+                            <td class="text-center">
+                                {{findProductQtyComplete(order, 'remain')}}
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="overall-zone">
+            <div class="surface-ground p-2">
+                <p-table [value]="currentOrderStyle"
+                    class="w-full"
+                    styleClass="p-datatable-sm">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="" style="width: 1%"></th>
+                            <th class="" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-qty-all')}}</th>
+                            <th class="text-center" *ngFor="let zone of mainZone; let nn = index">{{zone.targetPlaceName}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-remain')}}</th>
+                            <!-- <th class="" >in Production</th> -->
+                            <!-- <th class="" >Remain</th> -->
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                        <tr class="text-sm">
+                            <td>
+                                <button pButton pRipple type="button" icon="pi pi-user"
+                                    class="p-button-rounded p-button-info p-button-text p-0 m-0"
+                                    (click)="showCustomerSelectionViewBtn(order.customerOR, 'view')">
+                                </button>
+                            </td>
+                            <td class="vertical-align-middle">
+                                {{order.style}}
+                            </td>
+                            <td class="text-center">{{order.sumQty}}</td>
+                            <td class="text-center" *ngFor="let zone2 of mainZone; let pp = index">
+                                <span class="text-center">
+                                    <span class="text-blue-500">
+                                        {{findCompanyProductQtyZoneCompleteAll(order, zone2.targetPlaceID)}}
+                                    </span>
+                                    <span class="text-300 text-center">&nbsp;|&nbsp;</span>
+                                    <span>
+                                        {{findCompanyProductQtyZoneAll(order, zone2.targetPlaceID)}}
+                                    </span>
+                                </span>
+                                <div class="text-400 text-center">
+                                    <span>
+                                        {{findCompanyOrderQtyZoneAll(order, zone2.targetPlaceID)}}
+                                    </span>
+                                    &nbsp;|&nbsp;
+                                    <span class="text-red-200">
+                                        {{findCompanyOrderQtyZoneRemainAll(order, zone2.targetPlaceID)}}
+                                    </span>
+                                    <span class="text-xs text-purple-500">
+                                        &nbsp;
+                                        {{findCompanyOrderQtyZoneForLoss(order, zone2.targetPlaceID)}}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-semibold">
+                                    {{finndCompanyProductQtyZoneAllRemain(order, 'qty')}}
+                                </span>
+                                <div class="text-xs text-400 font-medium font-italic">
+                                    {{finndCompanyProductQtyZoneAllRemain(order, 'percent')}}
+                                </div>
+                            </td>
+
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="overall-zone-color-size">
+            <p-tabView [scrollable]="true">
+                <p-tabPanel *ngFor="let group1 of currentAllProductQtyStyleGroup; let i = index" header={{group1[0].style}}>
+                    <div class="surface-ground p-2" >
+                        <div class="">
+                            <span class="font-semibold">{{userService.translateCode('hd', 'hd-total-order')}}</span>
+                            &nbsp; : &nbsp;
+                            <span class="text-primary">{{findOrderQty(group1[0])}}</span>
+                        </div>
+                        <p-table [value]="currentProductQtyAllCFilter(i)"
+                            class="w-full"
+                            styleClass="p-datatable-sm">
+                            <ng-template pTemplate="caption">
+                                {{group1[0].style}}
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th class="" >{{userService.translateCode('mn', 'mn-color')}}</th>
+                                    <th class="text-center" >{{userService.translateCode('mn', 'mn-size')}}</th>
+                                    <th class="text-center" *ngFor="let zone of mainZone; let n = index">{{zone.targetPlaceName}}</th>
+                                    <th class="text-center" >{{userService.translateCode('mn', 'mn-total')}}</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                                <tr class="text-sm ">
+                                    <td class="border-none"
+                                        [ngClass]="checkColorShow(order.color, false, idx) ? 'border-none border-top-1' : ''">
+                                        <span *ngIf="checkColorShow(order.color, true, idx)">
+                                            <span *ngFor="let colorName of order.color.split(','); let m = index">
+                                                {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(order.style))}}
+                                                &nbsp;
+                                            </span>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{userService.getSizeName(userService.strReplaceAll(order.size, '-', ''))}}</td>
+                                    <td class="text-center" *ngFor="let zone1 of mainZone; let p = index">
+                                        <span class="text-center">
+                                            <span class="text-blue-500">
+                                                {{getProductionCompleteQty(order.companyID, order.productID, order.style,
+                                                    order.color, order.size, p)}}
+                                            </span>
+                                            <span class="text-300 text-center">&nbsp;|&nbsp;</span>
+                                            {{getProductionQty(order.companyID, order.productID, order.style,
+                                                order.color, order.size, p)}}
+                                        </span>
+                                        <div class="text-400 text-center">
+                                            <span>
+                                                {{getProductionZoneQty(order.companyID, order.productID, order.style,
+                                                    order.color, order.size, p)}}
+                                            </span>
+                                            &nbsp;|&nbsp;
+                                            <span class="text-red-200">
+                                                {{getProductionZoneRemainQty(order.companyID, order.productID, order.style,
+                                                    order.color, order.size, p)}}
+                                            </span>
+                                            <span class="text-xs text-purple-500">
+                                                &nbsp;
+                                                {{getProductionZoneRemainQtyForLoss(order.companyID, order.productID, order.style,
+                                                    order.color, order.size, p)}}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        {{getProductionQtyRowTotal(order.companyID, order.productID, order.style,
+                                            order.color, order.size)}}
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="footer">
+                                <tr>
+                                    <td>{{userService.translateCode('mn', 'mn-total')}}</td>
+                                    <td></td>
+                                    <td class="text-center" *ngFor="let zone2 of mainZone; let q = index">
+                                        <span class="text-center">
+                                            {{getProductionCompleteQtyColumnTotal(group1[0], q)}}
+                                            <span class="text-300 text-center">&nbsp;|&nbsp;</span>
+                                            {{getProductionQtyColumnTotal(group1[0], q)}}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        {{getProductionQtyGrandTotal(group1[0])}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{userService.translateCode('hd', 'hd-remain')}}</td>
+                                    <td></td>
+                                    <td *ngFor="let zone2 of mainZone; let q = index"></td>
+                                    <td class="text-center">
+                                        {{getReaminProductionQtyGrandTotal(group1[0])}}
+                                    </td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </p-tabPanel>
+            </p-tabView>
+        </p-tabPanel>
+
+
+        <p-tabPanel header="overall-country" *ngIf="false">
+            <div class="surface-ground p-2 mb-4" *ngFor="let currentOrderStyle1 of currentOrderStyle; let nn = index">
+                <p-table
+                    [value]="[currentOrderStyle1]"
+                    class="w-full "
+                    styleClass="p-datatable-sm">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="" style="width: 1%"></th>
+                            <th class="" style="width: 10%">{{userService.translateCode('mn', 'mn-style')}}</th>
+                            <th class="text-center" style="width: 8%">{{userService.translateCode('mn', 'hd-qty-all')}}</th>
+                            <!-- <th class="text-center" *ngFor="let zone3 of targetPlaces; let n = index">{{zone3.targetPlace.countryID}}</th> -->
+                            <th class="text-center" *ngFor="let zone3 of getOrderTargetPlace(currentOrderStyle1.style); let n = index">
+                                {{zone3.targetPlace.countryID}}
+                            </th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-remain')}}</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                        <tr class="text-sm text-center">
+                            <td>
+                                <button pButton pRipple type="button" icon="pi pi-user"
+                                    class="p-button-rounded p-button-info p-button-text p-0 m-0"
+                                    (click)="showCustomerSelectionViewBtn(order.customerOR, 'view')">
+                                </button>
+                            </td>
+                            <td class="vertical-align-middle">
+                                {{order.style}}
+                            </td>
+                            <td class="text-center">{{order.sumQty}}</td>
+                            <!-- <td class="text-center" *ngFor="let zone5 of targetPlaces; let pp = index"> -->
+                            <td class="text-center" *ngFor="let zone5 of getOrderTargetPlace(currentOrderStyle1.style); let pp = index">
+                                <span class="text-center">
+                                    <span class="text-blue-500">
+                                        {{findCompanyProductQtyCountryCompleteAll(order, zone5.targetPlace.countryID)}}
+                                    </span>
+                                    <span class="text-300 text-center">&nbsp;|&nbsp;</span>
+                                    {{findCompanyProductQtyCountryAll(order, zone5.targetPlace.countryID)}}
+                                </span>
+                                <div class="text-400 text-center">
+                                    <span>
+                                        {{findCompanyOrderQtyCountryAll(order, zone5.targetPlace.countryID)}}
+                                    </span>
+                                    &nbsp;|&nbsp;
+                                    <span class="text-red-200">
+                                        {{findCompanyOrderQtyCountryRemainAll(order, zone5.targetPlace.countryID)}}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-semibold">
+                                    {{finndCompanyProductQtyCountryAllRemain(order, 'qty')}}
+                                </span>
+                                <div class="text-xs text-400 font-medium font-italic">
+                                    {{finndCompanyProductQtyCountryAllRemain(order, 'percent')}}
+                                </div>
+                            </td>
+
+                        </tr>
+                    </ng-template>
+
+
+                </p-table>
+            </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="overall-country-color-size" *ngIf="false">
+            <p-tabView [scrollable]="true">
+                <p-tabPanel *ngFor="let group1 of currentAllProductQtyStyleGroup; let i = index" header={{group1[0].style}}>
+                    <div class="surface-ground p-2" >
+                        <div class="">
+                            <span class="font-semibold">Total Order</span>
+                            &nbsp; : &nbsp;
+                            <span class="text-primary">{{findOrderQty(group1[0])}}</span>
+                        </div>
+                        <p-table [value]="currentProductQtyAllCFilter(i)"
+                            class="w-full"
+                            styleClass="p-datatable-sm">
+                            <ng-template pTemplate="caption">
+                                {{group1[0].style}}
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th class="" >{{userService.translateCode('mn', 'mn-color')}}</th>
+                                    <th class="text-center" >{{userService.translateCode('mn', 'mn-size')}}</th>
+                                    <!-- <th class="text-center" *ngFor="let zone4 of targetPlaces; let nn = index">{{zone4.targetPlace.countryID}}</th> -->
+                                    <th class="text-center" *ngFor="let zone4 of getOrderTargetPlace(group1[0].style); let nn = index">{{zone4.targetPlace.countryID}}</th>
+                                    <th class="text-center" >{{userService.translateCode('mn', 'mn-total')}}</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                                <tr class="text-sm text-center">
+                                    <td class="border-none"
+                                        [ngClass]="checkColorShow(order.color, false, idx) ? 'border-none border-top-1' : ''">
+                                        <span *ngIf="checkColorShow(order.color, true, idx)">
+                                            <span *ngFor="let colorName of order.color.split(','); let m = index">
+                                                {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(order.style))}}
+                                                &nbsp;
+                                            </span>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">{{userService.strReplaceAll(order.size, '-', '')}}</td>
+                                    <!-- <td class="text-center" *ngFor="let zone10 of targetPlaces; let ppp = index"> -->
+                                    <td class="text-center" *ngFor="let zone10 of getOrderTargetPlace(group1[0].style); let ppp = index">
+                                        <span class="text-center">
+                                            <span class="text-blue-500">
+                                                {{getProductionCountryCompleteQty(order.companyID, order.productID, order.style,
+                                                    order.color, order.size, ppp)}}
+                                            </span>
+                                            <span class="text-300 text-center">&nbsp;|&nbsp;</span>
+                                            {{getProductionCountryQty(order.companyID, order.productID, order.style,
+                                                order.color, order.size, ppp)}}
+                                        </span>
+                                        <div class="text-400 text-center">
+                                            <span>
+                                                {{getOrderCountryQty(order.companyID, order.productID, order.style,
+                                                    order.color, order.size, ppp)}}
+                                            </span>
+                                            &nbsp;|&nbsp;
+                                            <span class="text-red-200">
+                                                {{getOrderCountryRemainQty(order.companyID, order.productID, order.style,
+                                                    order.color, order.size, ppp)}}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        {{getProductionCountryQtyRowTotal(order.companyID, order.productID, order.style,
+                                            order.color, order.size)}}
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="footer">
+                                <tr class="text-center">
+                                    <td>{{userService.translateCode('mn', 'mn-total')}}</td>
+                                    <td></td>
+                                    <!-- <td class="text-center" *ngFor="let zone2 of targetPlaces; let q = index"> -->
+                                    <td class="text-center" *ngFor="let zone2 of getOrderTargetPlace(group1[0].style); let q = index">
+                                        <span class="text-center">
+                                            {{getProductionCountryCompleteQtyColumnTotal(group1[0], q)}}
+                                            <span class="text-300 text-center">&nbsp;|&nbsp;</span>
+                                            {{getProductionCountryQtyColumnTotal(group1[0], q)}}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        {{getProductionCountryQtyGrandTotal(group1[0])}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>{{userService.translateCode('hd', 'hd-remain')}}</td>
+                                    <td></td>
+                                    <!-- <td *ngFor="let zone5 of targetPlaces; let qq = index"></td> -->
+                                    <td *ngFor="let zone5 of getOrderTargetPlace(group1[0].style); let qq = index"></td>
+                                    <td class="text-center">
+                                        {{getReaminProductionCountryQtyGrandTotal(group1[0])}}
+                                    </td>
+                                </tr>
+                            </ng-template>
+
+                        </p-table>
+                    </div>
+                </p-tabPanel>
+            </p-tabView>
+        </p-tabPanel>
+
+    </p-tabView>
+</div>
+
+

@@ -1,0 +1,40 @@
+
+<div class="card-body file-upload">
+    <div class="img-parent mb-4" *ngFor='let url of previewPaths; let i = index'>
+        <img [src]="url" class="img-thumbnail "> <br/> <span class="">{{userService.strLast(previewPathFileName[i],10)}}</span>
+        <button type="button" class="img-close"
+            (click)="deleteImageUser(i)"
+            *ngIf="!uploading">
+            X
+        </button>
+    </div>
+</div>
+
+<div class="card-body file-upload mt-2">
+    <div class="grid" *ngIf="!uploading">
+        <div class="col">
+            <div class="custom-file">
+                <button pButton type="button" label="file select" icon="pi pi-file-import" class="p-button-secondary  w-full" >
+                    <input type="file" pInputText  name="image2" [multiple]="multiple"
+                        ng2FileSelect [uploader]="uploader"
+                        accept="image/x-png,image/gif,image/jpeg"
+                        #fileInput/>
+                </button>
+            </div>
+        </div>
+        <div class="col">
+            <button pButton type="button" label="Upload" icon="pi pi-upload" class="p-button-warning  w-full"
+                [disabled]="(   !uploader.getNotUploadedItems().length ||
+                                previewPaths.length===0 ||
+                                previewPathFileName.length===0)"
+                (click)="uploadImage();">
+            </button>
+        </div>
+    </div>
+    <div class="grid" *ngIf="uploading">
+        <div class="col-12 filter-topic">
+            uploading...
+        </div>
+    </div>
+
+  </div>

@@ -1,0 +1,15 @@
+
+
+<div class="grid">
+    <div class="col-12 sm:col-6 lg:col-3 xl:col-2 p-3" *ngFor="let dC of dCartons; let s = index">
+        <div class="text-center cursor-pointer" (click)="selectCarton(dC)">
+            <div class="border-1 border-200 surface-50 flex align-items-center justify-content-center border-round mb-1 mx-auto"
+                style="width: 90px; height: 90px;">
+                <div class="text-600 text-sm mt-0">
+                    <div class="text-300 text-xs mt-0">{{dC.seq}}</div>
+                    <div class="text-900 font-bold text-sm mt-1">{{dC.cSize}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

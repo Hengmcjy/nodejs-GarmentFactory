@@ -1,0 +1,428 @@
+
+
+
+
+<div class="surface-ground px-4 py-4 md:px-4 lg:px-4">
+    <div class="grid justify-content-center flex-column lg:flex-row mb-4 w-12" >
+        <div class="field mb-2 col-12">
+            {{userService.genProductBarcode(order.productOR.productID, orderService.qZone, '-----',
+                    userService.getInfoFromorder(order, 'year'),
+                    userService.strReplaceAll(orderService.qColor,',',''),
+                    orderService.qSize,
+                    userService.getInfoFromorder(order, 'sex'))}}
+        </div>
+        <div class="field mb-1  col-8">
+            <div class="p-inputgroup">
+                <span class="p-inputgroup-addon">Lot1 :</span>
+                <input type="text" pInputText [(ngModel)]="yarnLotID1">
+            </div>
+        </div>
+        <div class="col-4"></div>
+        <div class="field mb-1  col-8">
+            <div class="p-inputgroup">
+                <span class="p-inputgroup-addon">Lot2 :</span>
+                <input type="text" pInputText [(ngModel)]="yarnLotID2">
+            </div>
+        </div>
+        <div class="col-4"></div>
+
+        <div class="field mb-2 col-9">
+            <app-s-orderview
+                [currentCompanyOrder]="currentCompanyOrder"
+                [orderStyleColorSize]="orderStyleColorSizeF"
+                [currentProductQtyAllC]="currentProductQtyAllC"
+                [order]="order">
+            </app-s-orderview>
+        </div>
+        <div class="field mb-2 col-3">
+
+
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">
+                        <!-- <div>
+                            {{productORInfoSelected.productBarcode}}
+                        </div> -->
+                        <div class="grid">
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">Label set</span>
+                                    <span class="p-inputgroup-addon w-6 bg-gray-100">{{labelCount}}</span>
+                                </div>
+                                <p-slider [(ngModel)]="labelCount" [min]="1" [max]="24" (onSlideEnd)="calEndNumber();"></p-slider>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">Start number</span>
+                                    <input type="text" pInputText
+                                        [max]="maxLabelStart"
+                                        (keypress)="userService.numberOnly($event);"
+
+                                        [(ngModel)]="labelStart1">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">Start number</span>
+                                    <input type="text" pInputText
+                                        [max]="maxLabelStart"
+                                        (keypress)="userService.numberOnly($event);"
+
+                                        [(ngModel)]="labelEnd1">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button pButton pRipple type="button" icon="pi pi-search"
+                                    class=" p-button-raised p-button-text p-button-secondary"
+                                    *ngIf="checkBundle()"
+                                    (click)="getBundleNoBeforeExportText()">
+                                    export QRCode
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" *ngIf="productORInfoSelected.productBarcode !== '-' ">
+                    <p-card>
+                        <ng-template pTemplate="header" >
+                            <div class="text-center filter-topic">Gen QRCode many</div>
+                        </ng-template>
+                        <div class="grid">
+
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">Qty per bundle</span>
+                                    <input type="text" pInputText
+                                        (keypress)="userService.numberOnly($event);"
+                                        [(ngModel)]="qtyPerBundle">
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">start number</span>
+                                    <input type="text" pInputText
+                                        (keypress)="userService.numberOnly($event);"
+                                        [(ngModel)]="startNumber">
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">to number</span>
+                                    <input type="text" pInputText
+                                        (keypress)="userService.numberOnly($event);"
+                                        [(ngModel)]="endNumber">
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <button pButton pRipple type="button" (click)="genLabelMany(deleyLoop, qtyPerBundle, startNumber, endNumber)">
+                                    Gen Label
+                                </button>
+                                <div class="txt-err mt-2" *ngIf="errBundle !== ''">
+                                    {{errBundle}}
+                                </div>
+                                <div class="txt-qrcode-run text-center mt-2" *ngIf="txtNoRunning !== ''">
+                                    {{txtNoRunning}}
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <button pButton pRipple type="button" icon="pi pi-search"
+                                    class=" p-button-raised p-button-text p-button-secondary"
+                                    *ngIf="checkBundle()"
+                                    (click)="getBundleNoBeforeExportText()">
+                                    export QRCode
+                                </button>
+                            </div>
+
+                        </div>
+                    </p-card>
+                </div>
+
+                <div class="col-12">
+                    <p-card>
+                        <ng-template pTemplate="header" >
+                            <div class="text-center filter-topic">
+                                QRCode lost replace
+                                <div>{{order.productOR.productID}}</div>
+                            </div>
+                        </ng-template>
+                        <div class="p-inputgroup">
+                            <input type="text" pInputText
+                                (keypress)="userService.numberOnly($event);"
+                                [(ngModel)]="qrcodeLostQty">
+                            <button type="button" pButton pRipple styleClass="p-button-warn"
+                                *ngIf="qrcodeLostQty%12===0"
+                                (click)="exportLostQRCodeReplace()">
+                                create
+                            </button>
+                        </div>
+                    </p-card>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="grid justify-content-center flex-column lg:flex-row mb-4 w-12" *ngIf="false">
+
+        <div class="field mb-4 col-offset-1 col-11">
+            <button pButton pRipple type="button" icon="pi pi-search"
+                class=" p-button-raised p-button-text p-button-secondary"
+                (click)="showProductfilterModal()">
+                &nbsp;
+                <span class="mx-1" *ngFor="let style of styleS; let i1 = index">
+                    <p-chip label="{{style}}" styleClass="style-chip"></p-chip>
+                </span>
+                <span class="mx-1" *ngFor="let targetPlace of targetPlaceS; let i2 = index">
+                    <p-chip label="{{targetPlace}}" styleClass="targetPlace-chip"></p-chip>
+                </span>
+                <span class="mx-1" *ngFor="let color of colorS; let i3 = index">
+                    <p-chip label="{{color}}" styleClass="color-chip"></p-chip>
+                </span>
+                <span class="mx-1" *ngFor="let size of sizeS; let i4 = index">
+                    <p-chip label="{{size}}" styleClass="size-chip"></p-chip>
+                </span>
+            </button>
+        </div>
+
+        <div class="col-6 ">
+            <p-table [value]="tempFullProductORInfo" styleClass="p-datatable-sm"
+                [tableStyle]="{'min-width': '40rem'}" class="m-0 p-0">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="text-red-700">{{order.orderID}}</th>
+                        <th>Place</th>
+                        <th>color</th>
+                        <th>size</th>
+                        <th>Qty</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-productOR let-idx="rowIndex">
+                    <tr class="text-sm"
+                        (click)="rowSelect(idx, 'selectRow')"
+                        [style]="getRowClass(idx)">
+                        <td>
+                            {{idx+1}}.
+                            {{userService.strLast(userService.formatProductBarcodeString(productOR.productBarcode), 29)}}
+                        </td>
+                        <td>{{productOR.targetPlace.targetPlaceName}}</td>
+                        <td>
+                            <!-- <span *ngFor="let color of productOR.productColor.split(','); let i = index">
+                                <button pButton type="button"
+                                    class="p-button-rounded p-button-sm w-auto mr-1"
+                                    [style]="getBackgroudColor(color)">
+                                    &nbsp;
+                                </button>
+                            </span> -->
+                            <p-avatarGroup styleClass="mb-3">
+                                <p-avatar *ngFor="let color of productOR.productColor.split(','); let i = index"
+                                        styleClass="p-mr-2 border-300"
+                                        [style]="{'background-color': userService.getColorByColorCode(color)}"
+                                        shape="circle"
+                                    ></p-avatar>
+                            </p-avatarGroup>
+                        </td>
+                        <td>{{productOR.productSize}}</td>
+                        <td>{{productOR.productQty}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+        <div class="col-3 ">
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">
+                        <!-- <div>
+                            {{productORInfoSelected.productBarcode}}
+                        </div> -->
+                        <div class="grid">
+                            <div class="col-12">
+                                <p-toggleButton [(ngModel)]="shoeLabelHead"
+                                    onLabel="show-header" offLabel="hide-header" [style]="{'width': '10em'}"
+                                    class="p-button-info"></p-toggleButton>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">Label set</span>
+                                    <span class="p-inputgroup-addon w-6 bg-gray-100">{{labelCount}}</span>
+                                </div>
+                                <p-slider [(ngModel)]="labelCount" [min]="1" [max]="24" (onSlideEnd)="calEndNumber();"></p-slider>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">Start number</span>
+                                    <input type="text" pInputText
+                                        [max]="maxLabelStart"
+                                        (keypress)="userService.numberOnly($event);"
+                                        (keyup)="maxValue()"
+                                        (input)="calEndNumber();"
+                                        [(ngModel)]="labelStart">
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">End number</span>
+                                    <span class="p-inputgroup-addon w-6 bg-gray-100">{{labelEnd}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" *ngIf="productORInfoSelected.productBarcode !== '-' ">
+                    <p-card>
+                        <ng-template pTemplate="header" >
+                            <div class="text-center filter-topic">Gen QRCode many</div>
+                        </ng-template>
+                        <div class="grid">
+
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">Qty per bundle</span>
+                                    <input type="text" pInputText
+                                        (keypress)="userService.numberOnly($event);"
+                                        [(ngModel)]="qtyPerBundle">
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">start number</span>
+                                    <input type="text" pInputText
+                                        (keypress)="userService.numberOnly($event);"
+                                        [(ngModel)]="startNumber">
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon w-6">to number</span>
+                                    <input type="text" pInputText
+                                        (keypress)="userService.numberOnly($event);"
+                                        [(ngModel)]="endNumber">
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <button pButton pRipple type="button" (click)="genLabelMany(deleyLoop, qtyPerBundle, startNumber, endNumber)">
+                                    Gen Label
+                                </button>
+                                <div class="txt-err mt-2" *ngIf="errBundle !== ''">
+                                    {{errBundle}}
+                                </div>
+                                <div class="txt-qrcode-run text-center mt-2" *ngIf="txtNoRunning !== ''">
+                                    {{txtNoRunning}}
+                                </div>
+                            </div>
+
+                        </div>
+                    </p-card>
+                </div>
+            </div>
+        </div>
+
+        <div class=" col-3 " >
+
+            <button pButton type="button" label="Download Image"
+                class="mb-4" (click)="saveimg()"
+                *ngIf="labelQRCodes.length>0"></button>
+            <!-- <button pButton type="button" label="pdf" (click)="savePdf()"></button> -->
+            <!-- <button pButton type="button" label="Show img" (click)="saveimg2()"></button> -->
+
+            <div class="label-box ">
+                <div class="label15x1-head   bg-white  text-xl text-900 text-right font-bold
+                    pt-6 px-2"
+                    *ngIf="shoeLabelHead">
+                    <div class="grid m-0 p-0 mt-6">
+                        <div class="col-12 m-0 p-0 text-left ">
+                            {{
+                                labelQRCodes.length>0?
+                                    userService.formatProductBarcodeString(labelQRCodes[0].productBarcode)
+                                    :''
+                            }}
+                        </div>
+                        <div class="col-12 m-0 p-0 text-left">
+                            #{{labelQRCodes.length>0?labelQRCodes.length:0}} :
+                            {{labelQRCodes.length>0?labelStart:0}} - {{labelQRCodes.length>0?labelEnd:0}}
+                        </div>
+                        <div class="col-12 m-0 p-0 text-left ">
+                            {{labelQRCodes.length>0?labelQRCodes[0].productColor:''}}
+                        </div>
+                    </div>
+                    <!-- bottom line -->
+                    <div class="grid m-0 p-0 my-2 ">
+                        <div class="col-3 m-0 p-0"></div>
+                        <div class="col-6 m-0 p-0 bottomline"></div>
+                        <div class="col-3 m-0 p-0"></div>
+                    </div>
+
+                </div>
+                <div class="label15x1  bg-white py-1 pb-5 " *ngFor="let labelQRCode of labelQRCodes; let i = index">
+                    <div class="grid ">
+                        <div class="col-5 mb-0 text-center">
+                            <qrcode [qrdata]="labelQRCode.productBarcodeNumber"
+                                [width]="150" [errorCorrectionLevel]="'M'"
+                                class=" w-12"></qrcode>
+                            <!-- <div class="font-bold text-5xl text-900 p-0 mx-1 mt-0">
+                                {{labelQRCode.style}}
+                            </div>
+                            <div class="font-bold text-3xl text-900 p-0 mx-1 mt-0">
+                                XXXXXXXX
+                            </div>
+                            <div class="font-bold text-3xl text-900 p-0 mx-1 mt-0">
+                                YYYYYYYY
+                            </div> -->
+                            <div class="text-xl text-900 ml-2 mr-5 mt-0 text-center">
+                                <span class="white-space-normal">
+                                    {{labelQRCode.productColor}}
+                                </span>
+
+                            </div>
+                        </div>
+                        <div class="col-7 text-right font-bold">
+                            <div class="text-3xl text-900 ml-2 mr-5 mt-3">
+                                # {{labelQRCode.runningNumber}}
+                                <!-- {{labelQRCode.targetPlaceName}} -->
+                            </div>
+                            <div class="font-bold text-3xl text-900 ml-2 mr-5 mt-3">
+                                {{labelQRCode.targetPlaceName}} / {{labelQRCode.countryID}}
+                                <!-- {{labelQRCode.productSize}} -->
+                            </div>
+                            <div class="text-5xl text-900 ml-2 mr-5 mt-3">
+                                {{labelQRCode.productSize}}
+                                <!-- # {{labelQRCode.runningNumber}} -->
+                            </div>
+                            <!-- <div class="text-5xl text-900 ml-2 mr-5 mt-3">
+                                {{labelQRCode.productColor}}
+                            </div> -->
+                            <div class="font-bold text-5xl text-900 mr-5 mt-3">
+                                {{labelQRCode.style}}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- bottom line -->
+                    <div class="grid m-0 p-0">
+                        <div class="col-3 m-0 p-0"></div>
+                        <div class="col-6 m-0 p-0 bottomline"></div>
+                        <div class="col-3 m-0 p-0"></div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div id="download">
+                <img #canvas>
+                <a #downloadLink></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+

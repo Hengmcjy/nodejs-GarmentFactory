@@ -1,0 +1,9 @@
+
+
+<div *ngIf="mode==='yarn-lists-select'">
+    <div class="m-0 " *ngFor="let yarn1 of yarns; let iy = index">
+        <p-button  styleClass="p-button-info p-button-text" (dblclick)="selectYarn(yarn1)">
+            {{iy + 1}} . &nbsp;:&nbsp;&nbsp;&nbsp;  {{yarn1.yarnID}}
+        </p-button>
+    </div>
+</div>

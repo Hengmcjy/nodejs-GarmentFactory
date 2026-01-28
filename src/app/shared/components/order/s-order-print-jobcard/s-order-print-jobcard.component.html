@@ -1,0 +1,153 @@
+
+
+
+<div class="surface-ground pb-2" >
+    <div class="surface-card p-4 shadow-2 border-round p-fluid">
+        <div class="p-inputgroup">
+            <span class="p-inputgroup-addon w-3">
+                from bundle no :
+            </span>
+            <!-- <input pInputText class="w-9" /> -->
+            <input type="text" pInputText class="w-9"
+                (keypress)="userService.numberOnly($event);"
+                [(ngModel)]="startNo">
+        </div>
+        &nbsp;
+        <div class="p-inputgroup">
+            <span class="p-inputgroup-addon w-3">
+                &nbsp;&nbsp;
+                to bundle no :
+            </span>
+            <!-- <input pInputText class="w-9" /> -->
+            <input type="text" pInputText class="w-9"
+                (keypress)="userService.numberOnly($event);"
+                [(ngModel)]="endNo">
+        </div>
+        &nbsp;
+        <div class="p-inputgroup">
+            <span class="p-inputgroup-addon w-3">
+                total bundle :
+            </span>
+            <span class="p-inputgroup-addon surface-50 text-center w-9">
+                {{countProductionQueueByBundleNo}}
+            </span>
+        </div>
+        &nbsp;
+        <div class="p-inputgroup">
+            <span class="p-inputgroup-addon w-3">
+                total QTY :
+            </span>
+            <span class="p-inputgroup-addon surface-50 text-center w-9">
+                {{sumProductionQueueByBundleNo}}
+            </span>
+        </div>
+
+        <div class="grid mt-4">
+            <div class="col-4"></div>
+            <div class="col-4 text-center">
+                <p-button label="get data"
+                    *ngIf="subNodeFlowCost.length > 0"
+                    (onClick)="getProductionQueueCount()"></p-button>
+
+                <div class="text-red-300 text-xl font-semibold" *ngIf="subNodeFlowCost.length === 0">
+                    no have sub node flow cost !!!
+                </div>
+            </div>
+            <div class="col-4"></div>
+
+        </div>
+
+    </div>
+    <div class="surface-card p-4 shadow-2 border-round p-fluid"
+        *ngIf="countProductionQueueByBundleNo>0 && sumProductionQueueByBundleNo>0">
+        <div class="grid">
+            <div class="col-6">
+                <p-button label="view PDF [type1]" styleClass="m-2" (onClick)="getProductionQueueList('type1')"></p-button>
+                <p-button label="view PDF [type2]" styleClass="m-2" (onClick)="getProductionQueueList('type2')"></p-button>
+                <p-button label="view PDF Bundle running no." styleClass="m-2" (onClick)="getProductionQueueList('bundle-runningno')"></p-button>
+            </div>
+            <div class="col-6">
+                <p-button label="veiw PDF [ QTY = 60 ] " styleClass="p-button-warning m-2"
+                    *ngIf="subNodeFlowCost60.length > 0"
+                    (onClick)="getProductionQueueList('60bundles')"></p-button>
+                <p-button label="veiw PDF [ QTY = 120 ]" styleClass="p-button-warning m-2"
+                    *ngIf="subNodeFlowCost120.length > 0"
+                    (onClick)="getProductionQueueList('120bundles')"></p-button>
+                <p-button label="veiw PDF [ KG ]" styleClass="p-button-warning m-2"
+                    *ngIf="subNodeFlowCostKG.length > 0"
+                    (onClick)="getProductionQueueList('kg')"></p-button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <button (click)="exportAs('pdf', 'portrait')">export as pdf</button> -->
+<!-- <button (click)="exportAs('pdf', 'landscape')">export as pdf landscape</button> -->
+<!-- <button (click)="exportAs('xlsx')">export as Ms-Excel</button> -->
+<!-- <button (click)="exportAs('docx')">export as MS-Word</button> -->
+<!-- <p-button label="openPDF" (onClick)="openPDF()"></p-button> -->
+<!-- <p-button label="openPDF2" (onClick)="openPDF2()"></p-button> -->
+
+<!-- <p-button label="openPDF2" (onClick)="generatePDF()"></p-button> -->
+
+
+<!-- <div   id="htmlData" >
+
+    <div class="page bg-white " *ngFor="let page of pages; let i = index"
+      [style.height]="sizePage.height + 'cm'"
+      [style.width]="sizePage.width + 'cm'"
+      (click)="clickPage(i)">
+      <div class="content"
+        [style.paddingTop]="paddingPage.top + 'mm'"
+        [style.paddingRight]="paddingPage.right + 'mm'"
+        [style.paddingBottom]="paddingPage.bottom + 'mm'"
+        [style.paddingLeft]="paddingPage.left + 'mm'"
+        >
+
+            <table class="table" style="width:100%">
+                <tr>
+                    <th class="th" style="width:50%">Firstname</th>
+                    <th class="th" style="width:50%">Lastname</th>
+
+                </tr>
+                <tr>
+                    <td class="td" style="width:50%">Jill</td>
+                    <td class="td" style="width:50%">Smith</td>
+
+                </tr>
+                <tr>
+                    <td class="td" style="width:50%">Eve</td>
+                    <td class="td" style="width:50%">Jackson</td>
+
+                </tr>
+                <tr>
+                    <td class="td" style="width:50%">John</td>
+                    <td class="td" style="width:50%">Doe</td>
+
+                </tr>
+            </table>
+
+
+        </div>
+    </div> -->
+
+
+
+<!-- </div> -->

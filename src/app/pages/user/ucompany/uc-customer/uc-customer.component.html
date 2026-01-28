@@ -1,0 +1,73 @@
+
+<app-ucompany-menu></app-ucompany-menu>
+
+
+
+<div class="surface-ground px-4 py-4 md:px-4 lg:px-4 w-12">
+    <div class="grid m-0 p-0">
+
+        <div class="col-12 sm:col-4 md:col-3 lg:col-2 p-0 pb-4 " *ngIf="!newCustomerShow">
+            <div class="shadow-2 p-2 mb-5 lg:mb-0 mr-0 lg:mr-5 bg-green-100">
+                <img src="https://storage.googleapis.com/mystoragegarment/createcustomer.png" class="mb-3 w-full">
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text  p-button p-component p-2"
+                        (click)="newCustomer()">
+                        <span class="p-button-icon p-button-icon-left pi pi-user-plus text-base" aria-hidden="true"></span>
+                        <span class="p-button-label text-lg">create customer</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 sm:col-6 sm:col-offset-3 md:col-4 md:col-offset-4 lg:col-3 lg:col-offset-4  p-0 pb-4 " *ngIf="newCustomerShow">
+            <div class="shadow-2 p-1 mb-1 lg:mb-0 mr-0 lg:mr-5 bg-green-50">
+                <img src="https://storage.googleapis.com/mystoragegarment/newcustomer.png" class="mb-0 w-full">
+                <div class="text-center mb-2">
+                    <div class="text-xl text-900 font-medium text-center ">new Customer</div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2"
+                        (click)="showCustomerEditModal('create', 'customer new create', customer)">
+                        <span class="p-button-icon p-button-icon-left pi pi-cog text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">setting</span>
+                        <span class="p-ink"></span>
+                    </button>
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-danger p-button p-component p-2"
+                        (click)="cancelCreateNewCustomer()">
+                        <span class="p-button-icon p-button-icon-left pi pi-user-minus text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">delete</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 m-0 p-0" *ngIf="newCustomerShow"></div>
+
+        <div class="col-12 sm:col-4 md:col-3 lg:col-2 p-0 pb-4 " *ngFor="let cus of customers; let i = index">
+            <div class="shadow-2 p-2 mb-5 lg:mb-0 mr-0 lg:mr-5 bg-green-50">
+                <img [src]="genImagePath(cus.imageProfile)" class="mb-3 w-full">
+                <div class="flex justify-content-between align-items-center">
+                    <div class="pr-3">
+                        <div class="text-xl text-900 font-medium mb-2">{{cus.customerName}}</div>
+                        <div class="text-blue-600">{{cus.registDate | date :'mediumDate'}}</div>
+                    </div>
+                </div>
+                <div class="px-0 py-0 mt-2 text-right">
+                    <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                        class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2"
+                        (click)="showCustomerEditModal('edit', 'customer edit', cus)">
+                        <span class="p-button-icon p-button-icon-left pi pi-cog text-xs" aria-hidden="true"></span>
+                        <span class="p-button-label text-base">setting</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+

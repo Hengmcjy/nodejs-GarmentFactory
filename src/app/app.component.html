@@ -1,0 +1,27 @@
+<!-- <router-outlet></router-outlet> -->
+
+
+
+<p-toast position="top-right" key="c"  [baseZIndex]="10000" >
+    <ng-template let-message pTemplate="message">
+        <div class="flex flex-column" style="flex: 1">
+            <div class="text-center">
+                <i class="pi pi-exclamation-triangle" style="font-size: 3rem"></i>
+                <h4>{{message.summary}}</h4>
+                <p>{{message.detail}}</p>
+            </div>
+            <div class="grid p-fluid mt-2">
+                <div class="col-6">
+                    <!-- <button type="button" pButton  label="Yes" class="p-button-success" (click)="closeMsg()"></button> -->
+                </div>
+                <div class="col-6">
+                    <button type="button" pButton  label="go to" class="p-button-secondary" (click)="closeMsg()"></button>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+</p-toast>
+
+<div (window:resize)="onResize($event)">
+    <router-outlet></router-outlet>
+</div>

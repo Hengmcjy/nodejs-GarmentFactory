@@ -1,0 +1,125 @@
+
+
+<!-- <div class="surface-ground ">
+    <div class="grid p-fluid ">
+        <div class="field col-12">
+            <div class="card card-w-title p-0 m-0">
+                <p-megaMenu [model]="megaMenuItems"></p-megaMenu>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<p-toast position="top-right" ></p-toast>
+
+<!-- <div class="surface-card p-4 shadow-2 border-round p-fluid" >
+    order-outsource-progress-tracking   page show
+</div> -->
+
+<div class="surface-ground p-2" >
+    <p-table [value]="orderProductBundleNosOutsourceTracking"
+        class="w-full"
+        styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="text-center" style="width: 1%"></th>
+                <th class="text-center" >bundle no.</th>
+                <th class="text-center" *ngFor="let dep of flowSeq; let f0 = index">
+                    {{userService.translateCode('nd',nsService.getNodeStationName(nodeStations, dep.nodeID))}}
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-order let-idx="rowIndex">
+
+            <!-- ## separate row -->
+            <tr *ngIf="checkRowDiffData(idx, order.targetPlace, order.color, order.size )">
+                <td class="border-none surface-ground"></td>
+            </tr>
+
+            <tr class="text-sm mb-0 pb-0 border-bottom-none">
+                <td class="border-bottom-none text-200 text-sm my-0 py-0">{{idx+1}}</td>
+                <td class="text-center border-bottom-none my-0 py-0">
+                    <span class="font-semibold">
+                        {{order.bundleNo}}
+                    </span>
+                </td>
+                <td *ngFor="let dep2 of flowSeq; let f2 = index"
+                    class="text-center vertical-align-middle border-bottom-none my-0 py-0 " >
+                    <span class="m-0">
+                        <!-- <p-button icon="pi pi-check" styleClass="p-button-sm p-button-rounded p-button-text m-0"></p-button> -->
+                        <!-- {{getStateNodeID('forbiddenNodeID', dep2, order) === 'forbiddenNodeID'?'':''}} -->
+
+                        <!-- <p-button *ngIf="getStateNodeID('doneNodeID', dep2, order)==='doneNodeID'"
+                            icon="pi pi-check"
+                            styleClass="p-button-sm p-button-rounded p-button-text p-button-secondary" [disabled]="true">
+                        </p-button> -->
+
+                        <span class="material-symbols-outlined text-sm text-500 mt-2 pt-2"
+                            *ngIf="getStateNodeID('doneNodeID', dep2, order)==='doneNodeID'">
+                            emergency
+                        </span>
+                        <span class="material-symbols-outlined text-sm text-500 mt-2 pt-2"
+                            *ngIf="getStateNodeIDTracking('doneNodeID-tracking', dep2, order)==='doneNodeID-tracking'">
+                            call
+                        </span>
+
+                        <p-button *ngIf="getStateNodeID('doneNodeID', dep2, order)==='stillTrack'"
+                            icon="pi pi-question-circle"
+                            styleClass="p-button-base p-button-rounded p-button-warning p-button-text"
+                            (dblclick)="checkOrderProducctionNodeFlow(order.bundleNo, dep2.nodeID, order.productCount);">
+                        </p-button>
+
+                        <p-button *ngIf="getStateNodeID('doneNodeID', dep2, order)==='fake'"
+                            icon="pi pi-user-edit"
+                            styleClass="p-button-base p-button-rounded p-button-help p-button-text p-button-lg"
+                            class="text-lg">
+                        </p-button>
+
+
+
+                        <span class="material-symbols-outlined text-sm text-300"
+                            *ngIf="getStateNodeID('forbiddenNodeID', dep2, order) === 'forbiddenNodeID'">
+                            more_horiz
+                        </span>
+
+                    </span>
+                </td>
+            </tr>
+            <tr class="text-center border-none  border-top-none my-0 py-0">
+                <td class="text-center my-0 py-0"></td>
+                <td class="text-center my-0 py-0">
+                    <span class="text-sm text-500">{{order.targetPlace}}</span>
+                    .&nbsp;
+                    <span class="text-500 text-xs font-italic">[ {{order.productCount}} ]</span>
+                </td>
+                <td colspan="7" class="text-right text-xs font-light text-400 my-0 py-0">
+                    <span class="text-500">fac:&nbsp;</span>
+                    <span class="font-normal text-yellow-600">
+                        <!-- {{userService.getFactoryNameByFactoryID(order.factoryID)}} -->
+                        {{factoryIDOutsName}}
+                    </span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <!-- <span class="font-normal text-500">{{order.targetPlace}}</span>
+                    &nbsp;&nbsp;&nbsp;&nbsp; -->
+                    {{order.colorCode}}
+                    -
+                    {{order.colorName}}
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="font-normal text-500">{{order.size}}</span>
+
+                </td>
+            </tr>
+
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="">
+    <p-card class="m-10" header="Infomation" *ngIf="blockedPanel">
+        <p class="text-5xl text-600 m-2 p-4">
+            <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+        </p>
+    </p-card>
+
+</div>
+

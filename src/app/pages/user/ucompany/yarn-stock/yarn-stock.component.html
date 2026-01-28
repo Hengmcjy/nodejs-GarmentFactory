@@ -1,0 +1,92 @@
+
+<app-ucompany-menu></app-ucompany-menu>
+
+<div class="grid">
+
+    <div class="col-12 md:col-3 lg:col-2 m-0 pr-0">
+        <div class="">
+            <div class="w-full pt-2 px-2 cursor-pointer" (click)="showFactorySelectionModal()">
+                <app-spns-yarn-factory [factorySelect]="factorySelect"></app-spns-yarn-factory>
+            </div>
+            <div class="w-full pt-2 px-2 cursor-pointer" (click)="showYarnSeasonsList()">
+                <app-spns-yarn-seasonyear [yarnSeason]="yarnSeason"></app-spns-yarn-seasonyear>
+            </div>
+            <div class="w-full pt-2 px-2 cursor-pointer" (click)="showCustomerSelectionModal()">
+                <app-spns-yarn-customer [customer]="customer"></app-spns-yarn-customer>
+            </div>
+
+            <div class="w-full py-2 px-2">
+                &nbsp;
+            </div>
+
+            <div class="w-full pt-2 px-2 cursor-pointer">
+                <div class="card01 bg-teal-50 w-full p-2 mb-2 text-center">
+                    <div class="txt-green-600">
+                        <i class="pi pi-refresh"></i>
+                        &nbsp;
+                        Yarn list
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full pt-2 px-2 cursor-pointer">
+                <div class="card01 bg-teal-50 w-full p-2 mb-2 text-center">
+                    <div class="txt-green-600">
+                        + New plan
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 md:col-9 lg:col-10 m-0 pl-0">
+        <app-s-yarn-stock
+            [mode]="'view'"
+            [yarnSeason]="yarnSeason"
+            [company]="company"
+            [factorySelect]="factorySelect"
+            [customer]="customer"
+            [uuid]="uuid"
+            [yarnID]="yarnID"
+            [orderImagesSelect]="orderImagesSelect"
+            [colorS]="colorS"
+            [yarnColorID]="yarnColorID">
+        </app-s-yarn-stock>
+
+        <!-- <p-toolbar class="" styleClass="p-2">
+            <div class="flex cursor-pointer">
+                <button pButton pRipple type="button" icon="pi pi-search"
+                    class=" p-button-raised p-button-text p-button-secondary"
+                    (click)="showYarnfilterModal()">
+                    &nbsp;Yarn
+                </button>
+                <button pButton pRipple type="button" icon="pi pi-search"
+                    class=" p-button-raised p-button-text p-button-secondary ml-2"
+                    (click)="showStyleSelector('orderID-selector', 0)">
+                    &nbsp;Style
+                </button>
+                &nbsp;
+                <p-chip *ngFor="let yn of yarnSelects; let i1 = index"
+                    class="mx-1 pl-3" styleClass="m-1 pl-0"
+                    [ngClass]="mode==='create'?'cursor-pointer':''"
+                    [label]="yn.yarnID"
+                    [removable]="true"
+                    (onRemove)="yarnRemove(i1)">
+                </p-chip>
+
+                <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                    class="mx-1 pl-3" styleClass="m-1 pl-0"
+                    [ngClass]="mode==='create'?'cursor-pointer':''"
+                    [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                    [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath "
+                    [removable]="true"
+                    (onRemove)="styleRemove(i1)"
+                    (dblclick)="showStyleSelector('orderID-selector', i1)">
+                </p-chip>
+
+            </div>
+        </p-toolbar> -->
+
+    </div>
+
+</div>

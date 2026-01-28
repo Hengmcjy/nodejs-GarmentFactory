@@ -1,0 +1,89 @@
+
+
+
+
+<div class="" >
+
+
+    <div class="surface-0 p-2 mt-2 mb-0" >
+        <div class="text-center">
+            <span class="orderID-head2">
+                {{orderID}}
+            </span>
+        </div>
+
+        <div class="flex flex-row-reverse flex-wrap m-0 mt-2 surface-0">
+            <!-- <div class="ml-6">
+                <span class="block text-900 mb-1 text-xl font-medium">Zone overview</span>
+            </div> -->
+            <div class="flex  ml-10">
+                <div class="flex flex-row align-content-center" >
+                    <div class="flex align-items-center justify-content-center mr-5" *ngFor="let daTa1 of colorBArTxt; let i = index">
+                        <span class="{{daTa1.barColor}} mr-2" style="height: 8px;width: 30px;"></span>
+                        {{daTa1.barTxt}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p-table [value]="dataOrderSelected"
+            class="xbody w-full pt-2"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="body" let-targetPlace let-idx="rowIndex">
+                <tr class="text-sm" >
+                    <td style="width: 3%" class="white-space-nowrap">
+
+                    </td>
+                    <td style="width: 10%" class="text-center py-0 pl-1 pr-0">
+                        <div class="text-xs font-medium text-500 text-center m-0">
+                            overview
+                        </div>
+                    </td>
+                    <td>
+                        <app-s-cc-progressbar
+                            [data]="dataOrderSelected"
+                            [colorBArTxt]="colorBArTxt">
+                        </app-s-cc-progressbar>
+                    </td>
+                    <td style="width: 5%"></td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+    </div>
+
+    <div class="text-center" *ngIf="blockedPanel">
+        <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+    </div>
+
+    <div class="surface-0 p-2 text-center" *ngIf="!blockedPanel">
+        <p-table [value]="overviewData"
+            class=" w-full"
+            styleClass="p-datatable-sm p-datatable-gridlines">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="text-center border-1" *ngFor="let node of toNodeArr; let n0 = index">
+                        <span class="txt-sm-gray">
+                            {{userService.strFirstAndDot(node, 8)}}
+                        </span>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-data1 let-idx="rowIndex">
+                <tr class="text-sm" >
+                    <td class="text-center" *ngFor="let node1 of toNodeArr; let n1 = index">
+                        <span class="">
+                            {{findNodeQty(node1)}}
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+    <div class="surface-0 p-2 text-center" *ngIf="!blockedPanel">
+        <div class="card" style="width: 90%;">
+            <p-chart type="bar" [data]="barData" [options]="barOptions"></p-chart>
+        </div>
+    </div>
+</div>

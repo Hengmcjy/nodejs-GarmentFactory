@@ -1,0 +1,70 @@
+
+
+
+<div class="surface-ground px-4 py-2 md:px-6 lg:px-4">
+    <div class="p-fluid flex flex-column lg:flex-row">
+        <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly md:justify-content-between lg:justify-content-start mb-5 lg:pr-8 lg:mb-0">
+            <li>
+                <div class="flex flex-column align-items-center flex-or">
+                    <img [src]="genImagePath(user.uInfo.pic)" class="h-10rem w-10rem" />
+                    <button pbutton="" type="button" icon="pi pi-pencil"
+                        class="p-element p-button-rounded -mt-4 p-button p-component p-button-icon-only"
+                        *ngIf="picMode==='edit'">
+                        &nbsp;&nbsp;&nbsp;
+                        <span class="p-button-icon pi pi-image" aria-hidden="true"></span>
+                        <span aria-hidden="true" class="p-button-label">&nbsp;</span>
+                    </button>
+                </div>
+            </li>
+            <li class="text-center font-medium text-red-700">
+                {{user.userID}}
+            </li>
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('card')">
+                    <i
+                        class="pi pi-id-card md:mr-2"></i>
+                        <span class="font-medium hidden md:block">card</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+            <li *ngIf="false">
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('profile')">
+                    <i class="pi pi-user md:mr-2"></i>
+                    <span class="font-medium hidden md:block">Profile</span>
+                    <span class="p-ink" style="height: 149px;width: 149px;top: -60.2778px;left: 47.0555px;"></span>
+                </a>
+            </li>
+            <li *ngIf="picMode !== 'view'">
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('password')">
+                    <i class="pi pi-wrench md:mr-2"></i>
+                        <span class="font-medium hidden md:block">Password</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -60.6111px;left: 13.0555px;"></span>
+                </a>
+            </li>
+
+
+
+        </ul>
+
+        <div class=" p-5  flex-auto" *ngIf="mode==='card'">
+            <app-s-user-card [user]="user"></app-s-user-card>
+        </div>
+
+        <app-s-chang-password class="w-12" *ngIf="mode==='password'"></app-s-chang-password>
+        <app-s-user-profile class="w-12"  *ngIf="mode==='profile'"
+            [nameMode]="'control-man'"
+            [editMode]="editMode"
+            [picMode]="picMode"
+            [type]="'company'"
+            [user]="user">
+        </app-s-user-profile>
+
+    </div>
+</div>
+

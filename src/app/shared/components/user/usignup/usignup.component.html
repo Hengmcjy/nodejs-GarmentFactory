@@ -1,0 +1,37 @@
+
+<div class="surface-card p-5  border-round w-full ">
+    <div>
+        <label for="email1" class="block text-900 font-medium mb-2" >Email</label>
+        <input id="email1" type="text"
+            pInputText
+            class="w-full "
+            [ngClass]="emailCheck ? '' : ' ng-invalid ng-dirty '"
+            [(ngModel)]="email1"
+            (input)="emailChange($event)">
+        <small class="p-invalid txt-err" *ngIf="errID==='erru001-2'">email already use !!</small>
+
+        <label for="pwd1" class="block text-900 font-medium mb-2 mt-5" >Password</label>
+        <input id="pwd1" type="password"
+            pInputText
+            class="w-full  "
+            maxlength="20"
+            minlength="6"
+            (input)="pwdChange($event)"
+            [(ngModel)]="pwd1"
+            [ngClass]="pwdCheck ? '' : ' ng-invalid ng-dirty '"
+            [pKeyFilter]="blockSpecial" >
+
+
+        <label for="pwd2" class="block text-900 font-medium mb-2 mt-3" >Password again</label>
+        <input id="pwd2" type="password"
+            pInputText
+            class="w-full mb-6"
+            maxlength="20"
+            minlength="6"
+            (input)="pwdChange($event)"
+            [(ngModel)]="pwd2"
+            [ngClass]="pwdCheck ? '' : ' ng-invalid ng-dirty '"
+            [pKeyFilter]="blockSpecial">
+        <button pButton pRipple label="Sign up" icon="pi pi-user" class="w-full" (click)="signup()" [disabled]="!(pwdCheck && emailCheck)"></button>
+    </div>
+</div>

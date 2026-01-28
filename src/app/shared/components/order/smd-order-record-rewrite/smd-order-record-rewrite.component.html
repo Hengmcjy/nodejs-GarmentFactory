@@ -1,0 +1,71 @@
+
+<!-- // export class ProductORRewriteInfo {
+    //     constructor(
+    //         public datetime: Date,
+    //         public productBarcode: string,
+    //         public targetPlace: TargetPlace,
+    //         public productColor: string,
+    //         public productSize: string,
+    //         public productQtyOld: number,
+    //         public productQty: number,
+    //         public productLossQty: number,
+    //         public productYear: string,
+    //         public productSex: string,
+    //         public sizeSeq: number,
+    //         public colorSeq: number,
+    //         public targetPlaceSeq: number,
+    //         public createBy: CreateBy
+    //     ) {}
+    // } -->
+
+<p-table [value]="productORRewriteInfo"  [tableStyle]="{'min-width': '60rem'}">
+    <ng-template pTemplate="caption">
+        {{order.orderID}}
+    </ng-template>
+    <ng-template pTemplate="header">
+        <tr>
+            <th class="cursor-pointer" (click)="sortByDatetime()">Datetime</th>
+            <th class="cursor-pointer" (click)="sortByZone()">Zone - country</th>
+            <th class="cursor-pointer" (click)="sortByColor()">Color</th>
+            <th class="cursor-pointer" (click)="sortBySize()">Size</th>
+            <th>Qty Revise</th>
+            <th>user</th>
+
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-rewrite let-idx="rowIndex">
+        <tr class="m-0 p-0">
+            <td>
+                <span>{{rewrite.datetime | date: 'dd-MM-yyyy'}}</span>
+                <div>{{rewrite.datetime | date: 'hh:mm'}}</div>
+            </td>
+            <td>
+                <span>{{rewrite.targetPlace.targetPlaceName}} - {{rewrite.targetPlace.countryName}}</span>
+            </td>
+            <td>
+                <span>{{userService.getColorNameByColorCode(rewrite.productColor, setName)}}</span>
+                <div>{{userService.getCodeColorNameByColorCode(rewrite.productColor, setName)}}</div>
+            </td>
+            <td>
+                <span>{{rewrite.productSize}}</span>
+            </td>
+            <td>
+                <span>
+                    <span class="text-500">{{rewrite.productQtyOld}} </span>
+                    &nbsp;&nbsp; >> &nbsp;&nbsp;
+                    <span class="font-semibold text-orange-600 text-lg">{{rewrite.productQty}}</span>
+                </span>
+            </td>
+            <td>
+                <span>{{rewrite.createBy.userName}}</span>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+        <div class="flex align-items-center justify-content-between">
+            In total there are  products queue.
+        </div>
+    </ng-template>
+</p-table>
+
+

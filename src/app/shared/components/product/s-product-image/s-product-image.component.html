@@ -1,0 +1,47 @@
+<div class="surface-section px-4 py-8 md:px-6 lg:px-8">
+    <div class="grid justify-content-center flex-column lg:flex-row mb-4">
+        <div class="col-12 lg:col-6">
+            <img [src]="productImageProfileGCSPath+product.imageProfile"
+                alt="product" class="border-round w-full">
+        </div>
+        <div class="col-12 xl:col-6 xl:pl-4 py-4">
+            <div class="w-full hidden lg:block">
+                <div class="text-900 text-3xl font-medium">Feature Title</div>
+            </div>
+            <table class="w-full mt-2">
+                <tr *ngFor="let feature of product.productFeature; let i = index">
+                    <td w-7="" class="text-900 text-xl p-2 font-medium">{{feature.featureName}}</td>
+                    <td class="text-600 p-2">{{feature.featureDetail}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div *ngIf="images && false" class="grid" >
+        <div class="col-6 sm:col-4 md:col-3 lg:col-3  xl:col-2 p-0" *ngIf="!modeView">
+            <div class=" p-3 bg-yellow-100 " >
+                <img src="https://storage.googleapis.com/mystoragegarment/wait.png"
+                    class="mb-3 w-full cursor-pointer pButton"
+                    (click)="showFileUploadModal(true)"/>
+            </div>
+        </div>
+        <p-galleria [value]="images" [(visible)]="displayCustom" [(activeIndex)]="activeIndex"
+            [responsiveOptions]="responsiveOptions" [containerStyle]="{'max-width': '850px'}" [numVisible]="7" [circular]="true"
+            [fullScreen]="true" [showItemNavigators]="true" [showThumbnails]="true" thumbnailsPosition="top"
+            [baseZIndex]="100000">
+            <ng-template pTemplate="item" let-item>
+                <img [src]="item.previewImageSrc" style="width: 90%; height: 90%; display: block;" />
+            </ng-template>
+            <ng-template pTemplate="thumbnail" let-item>
+                <div class="grid grid-nogutter justify-content-center">
+                    <img [src]="item.thumbnailImageSrc" style="display: block;max-width: 50px;" />
+                </div>
+            </ng-template>
+        </p-galleria>
+        <div *ngFor="let image of images; let index = index;" class="col-6 sm:col-4 md:col-3 lg:col-3  xl:col-2" key="index">
+            <img [src]="image.thumbnailImageSrc" [alt]="image.alt" style="cursor: pointer"
+                class="w-12  p-0 m-0 "
+                (click)="imageClick(index)" />
+        </div>
+    </div>
+</div>
+

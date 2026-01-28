@@ -1,0 +1,37 @@
+
+<div class="">
+    <div class="m-2 ">
+        <span class="text-xl font-bold text-600">
+            invoiceID (old) :
+        </span>
+        &nbsp;&nbsp;
+        <span class="text-xl font-semibold text-800">
+            {{invoiceID1}}
+        </span>
+    </div>
+
+    <div class="m-4">
+        <span>
+            <input type="text" pInputText  class="w-full"
+                onClick="this.select();"
+                (keyup)="checkEqualString()"
+                [(ngModel)]="invoiceID2"
+                #input1>
+        </span>
+    </div>
+    <div class="m-4">
+        <span>
+            <input type="text" pInputText  class="w-full"
+                onClick="this.select();"
+                (keyup)="checkEqualString()"
+                [(ngModel)]="invoiceID3"
+                #input2>
+        </span>
+    </div>
+    <div class="card flex justify-content-center border-none" *ngIf="okInvoice">
+        <p-button styleClass="p-button-warning" (onClick)="closeDialog()">
+            change InvoiceID !!
+        </p-button>
+    </div>
+
+</div>

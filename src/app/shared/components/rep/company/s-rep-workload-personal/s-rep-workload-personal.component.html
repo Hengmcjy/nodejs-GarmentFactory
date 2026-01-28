@@ -1,0 +1,270 @@
+
+
+
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-ground p-0" >
+    <div class="surface-ground p-0 shadow-2 border-round p-fluid">
+        <div class="grid formgrid p-fluid">
+            <div class="field col-12">
+
+                <div class="surface-ground px-0 py-0 md:px-2 lg:px-2">
+                    <div class="p-fluid flex flex-column   lg:flex-row">
+                        <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly
+                            md:justify-content-between lg:justify-content-start m-0 lg:pr-8 lg:mb-0">
+                            <!-- <li class="">
+                                <div class="p-inputgroup m-0 p-0 " style="width: 120px;">
+                                    <button type="button" pButton label="X" (click)="clearScan()"></button>
+                                    <input type="text" pInputText  class="w-full pw" autocomplete="off"
+                                        [(ngModel)]="staffID"
+                                        (keyup.enter)="getWorkerInfoByQRCode1('scan')"
+                                        #input1>
+                                </div>
+                            </li> -->
+
+                            <li class="" >
+                                <a pripple="" (click)="selectMenu('staff-scanned-report')"
+                                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors">
+                                    <span class="font-medium hidden md:block">
+                                        staff scanned
+                                    </span>
+                                    <span class="p-ink" style="height: 149px; width: 149px; top: -24.3001px; left: -3.3px;"></span>
+                                </a>
+                            </li>
+                            <!-- <li class="" *ngIf="false">
+                                <a pripple="" (click)="selectMenu('menu2')"
+                                    class="p-ripple p-element flex align-items-center cursor-pointer
+                                        p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                                        >
+                                    <span class="font-medium hidden md:block">
+                                        menu2
+                                    </span>
+                                    <span class="p-ink" style="height: 149px; width: 149px; top: -24.3001px; left: -3.3px;"></span>
+                                </a>
+                            </li> -->
+
+                            <!-- <li class=" " ><div>&nbsp;</div></li> -->
+                            <!-- <li class=" " ><div>&nbsp;</div></li> -->
+                            <li class="h-full " >
+
+                                <div class="container h-full m-0 p-0">
+                                    <div class="sticky1 mt-10">
+
+                                        <div class="p-inputgroup m-0 p-0 mb-4" style="width: 120px;">
+                                            <button type="button" pButton label="X" (click)="clearScan()"></button>
+                                            <input type="text" pInputText  class="w-full pw" autocomplete="off"
+                                                [(ngModel)]="staffID"
+                                                (keyup.enter)="getWorkerInfoByQRCode1('scan')"
+                                                #input1>
+                                        </div>
+                                        <span class="" *ngIf="staffSelect.userID !== '' ">
+                                            <img [src]="genImagePath(staffSelect.uInfo.pic)" class=" m-0 p-0 mb-1" style="width: 100px;" />
+                                            <div class="">
+                                                <div class="m-1 text-center text-sm  font-semibold text-500">
+                                                    <span>{{staffSelect.userID}}</span>
+                                                </div>
+                                                <div class="m-1 text-center text-sm font-semibold text-500">
+                                                    <span>{{staffSelect.uInfo.userName}}</span>
+                                                </div>
+                                            </div>
+                                        </span>
+
+                                    </div>
+                                </div>
+
+                            </li>
+
+
+                            <!-- <li *ngIf="false">
+                                <a pripple=""
+                                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors">
+                                    <span class="font-medium hidden md:block">...</span>
+                                    <span class="p-ink" style="height: 149px; width: 149px; top: -24.3001px; left: -3.3px;"></span>
+                                </a>
+                            </li> -->
+                            <!-- <li *ngIf="false">
+                                <a pripple=""
+                                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors">
+                                    <span class="font-medium hidden md:block">...</span>
+                                    <span class="p-ink" style="height: 149px; width: 149px; top: -24.3001px; left: -3.3px;"></span>
+                                </a>
+                            </li> -->
+                        </ul>
+
+                        <div class="surface-card p-5 shadow-2 border-round flex-auto" *ngIf="menuSelect==='staff-scanned-report'">
+
+                            <div class="px-2 py-0 my-0  md:px-2 lg:px-2">
+                                <div class="card flex flex-column md:flex-row gap-3 m-0 p-0 border-none ">
+                                    <span>
+                                        <div class="p-inputgroup">
+                                            <!-- <input type="text" pInputText placeholder="Keyword" /> -->
+                                            <p-calendar [(ngModel)]="date12" selectionMode="range"
+                                                [readonlyInput]="readonlyInput"
+                                                [numberOfMonths]="3"
+                                                [dateFormat]="dateFormat"
+                                                onselect="selectDate()"></p-calendar>
+                                            <button type="button" pButton styleClass="p-button-warn"
+                                                (click)="selectDate()"
+                                                *ngIf="staffSelect.userID !== '' ">
+                                                {{userService.translateCode('btn', 'btn-show-report')}}
+                                            </button>
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="grid text-base text-500 text-rigth mt-1">
+                                <div class="col-4"></div>
+                                <div class="col-4"></div>
+                                <div class="col-4"><span class="">{{note}}</span></div>
+                            </div>
+
+                            <p-tabView>
+                                <p-tabPanel *ngFor="let nodeID1 of nodeIDs; let i = index" header={{nodeIDs2[i]}}>
+
+                                    <p-table [value]="getOrderIDFromNodeID(nodeID1)"
+                                        class="w-full"
+                                        styleClass="p-datatable-sm">
+                                        <ng-template pTemplate="caption">
+                                            {{date1}} - {{date2}}
+                                        </ng-template>
+                                        <ng-template pTemplate="header">
+                                            <tr class=" text-left">
+                                                <th class="" style="width: 1%"></th>
+                                                <th class="text-left" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                                                <th class="text-left" *ngFor="let subnode of getSubNodeflow(nodeID1); let s0 = index">
+                                                    {{subnode.subNodeID}}
+                                                    .
+                                                    {{userService.strFirstAndDot(subnode.subNodeName, 10)}}
+                                                </th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-style1 let-idx="rowIndex">
+                                            <tr class="text-sm text-center">
+                                                <td>
+
+                                                </td>
+                                                <td class="text-left font-bold">
+                                                    <span>
+                                                        {{style1}}
+                                                    </span>
+                                                </td>
+                                                <td class="vertical-align-middle text-left" *ngFor="let subnode of getSubNodeflow(nodeID1); let s1 = index">
+                                                    <span>
+                                                        {{getQTYSubNode(nodeID1, subnode.subNodeID, style1)}}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+
+                                </p-tabPanel>
+
+                                <p-tabPanel header="Style/Color/Size">
+                                    <p-table [value]="subNodeStaffScanStyleZoneColorSizeData"
+                                        rowGroupMode="rowspan"  groupRowsBy="orderID"
+                                        class="w-full"
+                                        styleClass="p-datatable-sm">
+                                        <ng-template pTemplate="caption">
+                                            {{date1}} - {{date2}}
+                                        </ng-template>
+                                        <ng-template pTemplate="header">
+                                            <tr class=" text-left">
+                                                <th class="" style="width: 1%"></th>
+                                                <th class="text-left" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                                                <th class="text-left" >color | size</th>
+                                                <th class="text-left" *ngFor="let subnode2 of getSubNodeflow(nodeID); let s2 = index">
+                                                    {{subnode2.subNodeID}}
+                                                    .
+                                                    {{userService.strFirstAndDot(subnode2.subNodeName, 10)}}
+                                                </th>
+                                            </tr>
+                                        </ng-template>
+                                        <ng-template pTemplate="body" let-scan let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                                            <tr class="text-sm text-center">
+                                                <td>
+
+                                                </td>
+                                                <td class="text-left font-bold" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                                                    <span>
+                                                        {{scan.orderID}}
+                                                    </span>
+                                                </td>
+                                                <td class="text-left font-bold text-500" >
+                                                    <span class="text-xs text-500">
+                                                        <div class="txt-sm-gray">
+                                                            {{userService.getCodeColorNameByColorCode(scan.color, userService.getSetNameColorByOrderID(scan.orderID))}}
+                                                        </div>
+                                                        <div class="">
+                                                            <span class="">
+                                                                {{userService.strFirstAndDot(userService.getColorNameByColorCode(scan.color, userService.getSetNameColorByOrderID(scan.orderID)), 10)}}
+                                                            </span>
+                                                            <span class="">|</span>
+                                                            <span class="font-bold text-900 text-lg">
+                                                                {{scan.size}}
+                                                            </span>
+                                                        </div>
+                                                    </span>
+                                                </td>
+                                                <td class="vertical-align-middle text-left" *ngFor="let subnode3 of getSubNodeflow(nodeID); let s3 = index">
+                                                    <div class="text-base"
+                                                        *ngFor="let qtyZone of getQTYSubNodeZoneColorSize(scan.orderID, nodeID, subnode3.subNodeID, scan.color, scan.size);
+                                                        let i = index">
+                                                        <span class="text-400 font-semibold text-sm">
+                                                            {{qtyZone.zone}}.
+                                                        </span>
+                                                        <span class="">
+                                                            {{qtyZone.qty}}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </p-tabPanel>
+
+                            </p-tabView>
+
+                        </div>
+
+                        <!-- <div class="surface-card p-5 shadow-2 border-round flex-auto" *ngIf="menuSelect==='menu2'">
+                            <div class="px-2 py-0 my-0  md:px-2 lg:px-2">
+                                <div class="card flex flex-column md:flex-row gap-3 m-0 p-0 border-none ">
+                                    <span>
+                                        <div class="p-inputgroup">
+                                            <p-calendar [(ngModel)]="date12" selectionMode="range"
+                                                [readonlyInput]="readonlyInput"
+                                                [numberOfMonths]="3"
+                                                [dateFormat]="dateFormat"
+                                                onselect="selectDate()"></p-calendar>
+                                            <button type="button" pButton styleClass="p-button-warn"
+                                                (click)="selectDate()">
+                                                {{userService.translateCode('btn', 'btn-show-report')}}
+                                            </button>
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                2222 report personal who worked , finish sub job
+                            </div>
+
+                            <br>
+                            menu2 <br>
+                            ..... <br>
+                            ..... <br>
+                            ..... <br>
+                            ..... <br>
+                            ..... <br>
+                            ..... <br>
+                            ..... <br>
+                        </div> -->
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

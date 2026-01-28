@@ -1,0 +1,78 @@
+
+
+
+
+<div class="" >
+    <div class="flex flex-row-reverse align-items-start mb-5">
+        <!-- <div class="ml-3">
+            <span class="block text-900 mb-1 text-xl font-medium">Zone overview</span>
+        </div> -->
+        <div class="ml-6">
+            <div class="flex  align-content-center" >
+                <div class="flex align-items-center justify-content-center mr-5" *ngFor="let daTa1 of colorBArTxt; let i = index">
+                    <span class="{{daTa1.barColor}} mr-2" style="height: 8px;width: 30px;"></span>
+                    {{daTa1.barTxt}}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="text-center" *ngIf="blockedPanel">
+        <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+    </div>
+    <div class="surface-0 p-2 mb-4" *ngIf="!blockedPanel">
+        <div class="text-center">
+            <span class="orderID-head2">
+                {{orderID}}
+            </span>
+        </div>
+        <p-table [value]="dataOrderSelected"
+            class="w-full border-none xbody"
+            styleClass="p-datatable-sm border-none">
+            <ng-template class="" pTemplate="body" let-targetPlace let-idx="rowIndex">
+                <tr class="text-sm border-none" >
+                    <td style="width: 3%" class="white-space-nowrap">
+
+                    </td>
+                    <td style="width: 10%" class="text-center py-0 pl-1 pr-0">
+                        <div class="text-xs font-medium text-500 text-center m-0">
+                            overview
+                        </div>
+                    </td>
+                    <td>
+                        <app-s-cc-progressbar
+                            [data]="dataOrderSelected"
+                            [colorBArTxt]="colorBArTxt">
+                        </app-s-cc-progressbar>
+                    </td>
+                    <td style="width: 5%"></td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+    </div>
+    <div class="surface-0 p-2" *ngIf="!blockedPanel">
+        <p-table [value]="targetPlaces"
+            class="w-full"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="body" let-targetPlace let-idx="rowIndex">
+                <tr class="text-sm" >
+                    <td style="width: 3%" class="white-space-nowrap">
+                        {{idx+1}} .
+                    </td>
+                    <td style="width: 10%" class="text-center py-0 pl-1 pr-0">
+                        <div class="text-xs font-medium text-500 text-center m-0">
+                            {{targetPlace.targetPlace.targetPlaceID}}
+                        </div>
+                    </td>
+                    <td>
+                        <app-s-cc-progressbar
+                            [data]="findDataOrder(order.orderID, targetPlace.targetPlace.targetPlaceID)"
+                            [colorBArTxt]="colorBArTxt">
+                        </app-s-cc-progressbar>
+                    </td>
+                    <td style="width: 5%"></td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>

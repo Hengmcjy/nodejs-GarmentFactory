@@ -1,0 +1,19 @@
+
+
+<div class="grid formgrid p-fluid ">
+    <div class="field mb-5 col-6 md:col-3 lg:col-2 " *ngFor="let color of colorS; let i = index">
+        <span class="flex flex-column align-items-center  align-items-stretch">
+            <div class="" [ngClass]="userService.getClassColorSetName(color.setName)">
+                {{color.setName}}
+            </div>
+            <button pButton pRipple type="button"
+                class="p-button-rounded p-button-lg mx-2 mt-2 mb-1 w-auto"
+                [style]="getColor(color.color.colorValue)"
+                (click)="selectColor(color)">
+                &nbsp;
+            </button>
+            <span class="mb-1">{{color.color.colorName}}</span>
+            <div class="color-code">{{color.color.colorCode}}</div>
+        </span>
+    </div>
+</div>

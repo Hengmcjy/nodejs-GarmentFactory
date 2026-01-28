@@ -1,0 +1,585 @@
+
+
+
+
+<div class="">
+    <p-toolbar class="" styleClass="p-2">
+        <div class="p-toolbar-group-start">
+            <p-button *ngIf="false"
+                styleClass="p-button-rounded p-button-info p-button-text text-4xl font-bold m-0 p-0 ml-2"
+                (onClick)="addnewYarnLotID()">
+                &nbsp;
+                +
+                &nbsp;
+                <span class="text-sm text-blue-500">
+                    add new Yarn Lot ID
+                </span>
+            </p-button>
+        </div>
+        <div class="p-toolbar-group-center">
+            <span class="yarn-season-head">
+                YARN
+                &nbsp;
+                <span class="" >
+                    Lot
+                    <span class="">
+                        [
+                        &nbsp;
+                        <span class="">
+                            add/edit
+                        </span>
+                        &nbsp;
+                        ]
+                    </span>
+                </span>
+            </span>
+            &nbsp;&nbsp;
+            <span class="txt-m-gray">
+                [
+                &nbsp;
+                <span class="txt-m-gray">
+                    {{yarnSeason}}
+                </span>
+                &nbsp;
+                ]
+            </span>
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <div class="text-lg txt-m-gray ml-4 my-2">
+                {{yarnPlan.yarnID}}
+            </div>
+        </div>
+        <div class="p-toolbar-group-center">
+
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [ngClass]="mode==='create'?'cursor-pointer':''"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip>
+
+            <p-chip
+                class="" styleClass="surface-0 text-900 text-2xl  m-1 pl-4 ml-4"
+                [label]="colorS.color.colorCode +' '+ colorS.color.colorName">
+                <p-avatar class="" label="" styleClass="border-gray  mr-2"
+                    [style]="{ 'background-color': colorS.color.colorValue, color: 'gray' }"
+                    shape="circle">
+                </p-avatar>
+            </p-chip>
+
+        </div>
+        <div class="p-toolbar-group-center">
+
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+</div>
+<div class="grid mt-2">
+
+    <div class="col-3">
+        <div class="sticky-top">
+            <div class="p-2 ">
+                <div class="yarnlot-head sm-0 p-0">
+                    Date:
+                    &nbsp;
+                    <span class="yarnlotID">
+                        {{mmddSelect}}
+                    </span>
+                    <span class="font-italic text-red-200 text-xs" *ngIf="countingDel > 0 && yarnLotMode==='edit'">
+                        {{countingDel}}
+                    </span>
+                    &nbsp;
+                    <p-button *ngIf="yarnLotMode==='edit'"
+                        icon="pi pi-trash"
+                        styleClass="p-button-rounded p-button-danger p-button-text"
+                        (onClick)="clickCountingDelete()"></p-button>
+                </div>
+            </div>
+
+
+            <!-- <div class="p-2 mt-1" *ngIf="yarnLotMode==='edit' || yarnLotMode==='confirm' || yarnLotMode==='view'">
+                <div class="yarnlot-head sm-0 p-0">
+                    Invoice ID:
+                    &nbsp;
+                    <span class="yarnlotID" (dblclick)="setInvoiceIDInputShow()" *ngIf="!invoiceIDInputShow">
+                        {{invoiceIDSelect}}
+                    </span>
+                    <div class="" (dblclick)="setInvoiceIDInputShow()" *ngIf="invoiceIDInputShow">
+                        <input type="text" pInputText
+                            (keypress)="userService.numberAZazMinusOnly($event);"
+                            onClick="this.select();"
+                            [(ngModel)]="invoiceIDSelect"
+                            (keyup)="invoiceIDSelect= invoiceIDSelect.toUpperCase();">
+                        <small class="p-invalid txt-err" *ngIf="invoiceIDSelectErrCode!==''">err !!</small>
+                    </div>
+                </div>
+            </div>
+            <div class="p-2 mt-1" *ngIf="yarnLotMode==='edit' || yarnLotMode==='confirm' || yarnLotMode==='view'">
+                <div class="yarnlot-head sm-0 p-0">
+                    Yarn Lot ID:
+                    &nbsp;
+                    <span class="yarnlotID">
+                        {{yarnLotIDSelect}}
+                    </span>
+                </div>
+            </div>
+            <div class="p-2 mt-1" *ngIf="yarnLotMode==='edit' || yarnLotMode==='confirm' || yarnLotMode==='view'">
+                <div class="yarnlot-head sm-0 p-0">
+                    Carton weight:
+                    &nbsp;
+                    <span class="yarnlotID" (dblclick)="setCartonWeightShow()" *ngIf="!cartonWeightShow">
+                        {{packageInfo.boxWeight}}
+                    </span>
+                    <div class="" (dblclick)="setCartonWeightShow()" *ngIf="cartonWeightShow">
+                        <p-inputNumber
+                            class="bg1"
+                            styleClass="bg1"
+                            inputStyleClass="bg1"
+                            (onFocus)="$event.target.select()"
+                            [(ngModel)]="packageInfo.boxWeight"
+                            [size]="8"
+                            [minFractionDigits]="3"
+                            [maxFractionDigits]="3"
+                            [useGrouping]="false"></p-inputNumber>
+                    </div>
+                </div>
+            </div>
+            <div class="p-2 mt-1" *ngIf="yarnLotMode==='edit' || yarnLotMode==='confirm' || yarnLotMode==='view'">
+                <div class="yarnlot-head sm-0 p-0">
+                    Cone weight:
+                    &nbsp;
+                    <span class="yarnlotID" (dblclick)="setConeWeightShow()" *ngIf="!coneWeightShow">
+                        {{packageInfo.coneWeight}}
+                    </span>
+                    <div class="" (dblclick)="setConeWeightShow()" *ngIf="coneWeightShow">
+                        <p-inputNumber
+                            class="bg1"
+                            styleClass="bg1"
+                            inputStyleClass="bg1"
+                            (onFocus)="$event.target.select()"
+                            [(ngModel)]="packageInfo.coneWeight"
+                            [size]="8"
+                            [minFractionDigits]="3"
+                            [maxFractionDigits]="3"
+                            [useGrouping]="false"></p-inputNumber>
+                    </div>
+                </div>
+            </div> -->
+
+
+            <!-- <div class="p-2" *ngIf="yarnLotMode==='add'"> -->
+            <div class="p-2">
+                <div class="m-0 p-0">
+                    Inovoice ID:
+                </div>
+                <div class="">
+                    <input type="text" pInputText
+                        (keypress)="userService.numberAZazMinusOnly($event);"
+                        onClick="this.select();"
+                        [(ngModel)]="invoiceIDSelect"
+                        (keyup)="invoiceIDSelect= invoiceIDSelect.toUpperCase();">
+                    <small class="p-invalid txt-err" *ngIf="invoiceIDSelectErrCode!==''">err !!</small>
+                </div>
+            </div>
+            <div class="p-2 mt-1">
+                <div class="m-0 p-0">
+                    Yarn Lot ID:
+                </div>
+                <div class="">
+                    <input type="text" pInputText
+                        (keypress)="userService.numberAZazMinusOnly($event);"
+                        onClick="this.select();"
+                        [(ngModel)]="yarnLotIDSelect"
+                        (keyup)="yarnLotIDSelect= yarnLotIDSelect.toUpperCase();">
+                    <small class="p-invalid txt-err" *ngIf="yarnLotIDSelectErrCode!==''">err !!</small>
+                </div>
+            </div>
+            <div class="p-2 mt-1">
+                <div class="m-0 p-0">
+                    Carton weight:
+                </div>
+                <div class="">
+                    <p-inputNumber
+                        class="bg1"
+                        styleClass="bg1"
+                        inputStyleClass="bg1"
+                        (onFocus)="$event.target.select()"
+                        [(ngModel)]="packageInfo.boxWeight"
+                        [size]="8"
+                        [minFractionDigits]="3"
+                        [maxFractionDigits]="3"
+                        [useGrouping]="false"></p-inputNumber>
+                    <small class="p-invalid txt-err" *ngIf="yarnLotIDSelectErrCode!==''">err !!</small>
+                </div>
+            </div>
+        </div>
+        <div class="p-2 mt-1">
+            <div class="m-0 p-0">
+                Cone weight:
+            </div>
+            <div class="">
+                <p-inputNumber
+                    class="bg1"
+                    styleClass="bg1"
+                    inputStyleClass="bg1"
+                    (onFocus)="$event.target.select()"
+                    [(ngModel)]="packageInfo.coneWeight"
+                    [size]="8"
+                    [minFractionDigits]="3"
+                    [maxFractionDigits]="3"
+                    [useGrouping]="false"></p-inputNumber>
+                <small class="p-invalid txt-err" *ngIf="yarnLotIDSelectErrCode!==''">err !!</small>
+            </div>
+        </div>
+
+
+
+
+        <div class="grid mt-1" *ngIf="dataValidateOK && buttonPressed">
+            <div class="col-1"></div>
+            <div class="col-10">
+                <p-button *ngIf="dataValidateOK"
+                    label="{{btnLabel}}"
+                    styleClass="w-full"
+                    (onClick)="updateYarnLot()"></p-button>
+            </div>
+            <div class="col-1"></div>
+        </div>
+
+        <div class="grid mt-1" *ngIf="yarnLotMode==='confirm'">
+            <div class="col-1"></div>
+            <div class="col-10">
+                <p-button *ngIf="dataValidateOK"
+                    label="{{btnLabel}}"
+                    styleClass="w-full"
+                    (onClick)="updateYarnLot()"></p-button>
+            </div>
+            <div class="col-1"></div>
+        </div>
+
+        <div class="px-3" *ngIf="!dataValidateOK && packageInfo.yarnBoxInfo.length > 0 && buttonPressed">
+            <div class="w-full">
+                <div class="card01 bg-red-100 w-full text-center">
+                    <div class="text-red-600 py-3">
+                        <i class="pi pi-times-circle"></i>
+                        &nbsp;
+                        Data not correct!!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-9">
+        <div class="sticky-top z-5">
+            <p-toolbar class="" styleClass="p-1">
+                <div class="p-toolbar-group-start">
+                    <p-button *ngIf="yarnLotMode !== 'confirm' && yarnLotMode !== 'view'"
+                        styleClass="p-button-rounded p-button-help p-button-text text-4xl font-bold m-0 p-0 ml-4"
+                        (onClick)="buttonPressed=true; validateData();">
+                        <span class="material-symbols-outlined">
+                            rule
+                        </span>
+                    </p-button>
+                    <p-button *ngIf="yarnLotMode !== 'confirm' && yarnLotMode !== 'view'"
+                        styleClass="p-button-rounded p-button-help p-button-text text-4xl font-bold m-0 p-0 ml-4"
+                        (onClick)="autoNumber()">
+                        <span class="material-symbols-outlined">
+                            format_list_numbered
+                        </span>
+                    </p-button>
+                </div>
+
+                <div class="p-toolbar-group-center">
+                    <div class="text-600">
+                        <span class="">
+                            box all:
+                        </span>
+                        &nbsp;
+                        <span class="">
+                            {{packageInfo.yarnBoxInfo.length}}
+                        </span>
+                    </div>
+                    <div class="text-green-400 mx-4">
+                        <span class="">
+                            verified:
+                        </span>
+                        &nbsp;
+                        <span class="font-semibold">
+                            {{packageInfo.boxVerified}}
+                        </span>
+                    </div>
+                    <div class="text-yellow-600">
+                        <span class="">
+                            wait:
+                        </span>
+                        &nbsp;
+                        <span class="font-semibold">
+                            {{packageInfo.boxWait}}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-toolbar-group-end">
+                    <p-inputNumber
+                        class="bg1"
+                        styleClass="bg1"
+                        inputStyleClass="bg1"
+                        (onFocus)="$event.target.select()"
+                        [(ngModel)]="boxQty"
+                        [size]="2"
+                        [min]="1"
+                        [max]="100"
+                        [minFractionDigits]="0"
+                        [maxFractionDigits]="0"
+                        [useGrouping]="false"></p-inputNumber>
+
+                    <p-button *ngIf="yarnLotMode !== 'confirm' && yarnLotMode !== 'view'"
+                        styleClass="p-button-rounded p-button-help p-button-text text-4xl font-bold m-0 p-0 mr-2"
+                        (onClick)="addnewBoxID('new', boxQty)">
+                        &nbsp;
+                        +
+                        <span class="text-sm text-purple-400">
+                            add new Box ID
+                        </span>
+                    </p-button>
+                </div>
+            </p-toolbar>
+
+            <p-toolbar class="" styleClass="p-1">
+                <p-paginator
+                    class = "surface-section w-full p-0"
+                    styleClass = "surface-section w-full p-0"
+                    (onPageChange)="onPageChange($event)"
+                    [first]="first"
+                    [rows]="rows"
+                    [totalRecords]="packageInfo.yarnBoxInfo.length"
+                    [rowsPerPageOptions]="rowsPerPageOptions">
+                </p-paginator>
+            </p-toolbar>
+
+            <p-toolbar class="" styleClass=" p-1">
+                <div class="p-toolbar-group-start">
+                    <div class="text-400 ">
+                        <span class="">
+                            Total KG:
+                        </span>
+                    </div>
+                </div>
+                <div class="p-toolbar-group-center">
+                    <div class="text-600 ">
+                        <span class="">
+                            invoice KG:
+                        </span>
+                        &nbsp;
+                        <span class="font-semibold">
+                            {{packageInfo.yarnPlanWeightTotal | number : '1.2-2'}}
+                        </span>
+                    </div>
+                    <div class="text-600 mx-4">
+                        <span class="">
+                            actual KG:
+                        </span>
+                        &nbsp;
+                        <span class="font-semibold">
+                            {{packageInfo.yarnWeightTotal | number : '1.2-2'}}
+                        </span>
+                    </div>
+                    <div class="text-600 mx-4">
+                        <span class="">
+                            Dif KG:
+                        </span>
+                        &nbsp;
+                        <span class="font-semibold">
+                            {{packageInfo.yarnWeightDifTotal | number : '1.2-2'}}
+                        </span>
+                    </div>
+                    <div class="text-600">
+                        <span class="">
+                            Dif%:
+                        </span>
+                        &nbsp;
+                        <span class="font-semibold">
+                            {{packageInfo.yarnWeightTotalPercent | number : '1.2-2'}}%
+                        </span>
+                    </div>
+                </div>
+                <div class="p-toolbar-group-end">
+                    <div class=" text-600 ">
+                        <span class="">
+                            CC KG:
+                        </span>
+                        &nbsp;
+                        <span class="text-yellow-500 font-semibold">
+                             - {{packageInfo.yarnCCWeightTotal | number : '1.2-2'}}
+                        </span>
+                    </div>
+                    <div class=" text-600 mx-4">
+                        <span class="">
+                            Net KG:
+                        </span>
+                        &nbsp;
+                        <span class="txt-green-600 font-semibold">
+                            {{packageInfo.yarnWeightNetTotal | number : '1.2-2'}}
+                        </span>
+                    </div>
+                </div>
+            </p-toolbar>
+        </div>
+        <div class="p-0">
+            <p-table [value]="getBox()"
+                [tableStyle]="{ 'min-width': '50rem' }">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="text-center" style="width: 1%;"></th>
+                        <th class="text-center" style="width: 1%;">###</th>
+                        <th class="text-center" style="width: 15%;">boxID</th>
+                        <th class="text-center cursor-pointer" style="width: 10%;" (dblclick)="invHeadCopyW()">
+                            Invoice.kg
+                        </th>
+                        <th class="text-center" style="width: 10%;">Actual.kg</th>
+                        <th class="text-center" style="width: 10%;">Dif.%</th>
+                        <th class="text-center cursor-pointer" (dblclick)="coneHeadCopyW()">
+                            cone
+                        </th>
+                        <th class="text-center txt-cc"> - CC.kg</th>
+                        <th class="text-center">Net.kg</th>
+                        <th class="text-center cursor-pointer" (dblclick)="verifiedAll()">verify</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-box let-idx="rowIndex">
+                    <tr>
+                        <td class="text-center m-0 p-0" [ngClass]="box.state==='new'?'row-state-new':''">
+                            <span>
+                                <p-button *ngIf="!box.weightVerified"
+                                    icon="pi pi-times"
+                                    styleClass="p-button-danger p-button-text p-button-sm text-red-100"
+                                    (onClick)="delYarnBoxInfo1(idx)"></p-button>
+                            </span>
+                        </td>
+                        <td class="text-center" [ngClass]="box.state==='new'?'row-state-new':''">
+                            {{ +idx+1 }}.
+                        </td>
+                        <td class="text-center" [ngClass]="box.state==='new'?'row-state-new':''">
+                            <div class="m-0 p-0" *ngIf="box.errCode!==''">
+                                <small class="p-invalid txt-err">err!!</small>
+                            </div>
+                            <span class="">
+                                <input type="text" pInputText
+                                    class="w-12"
+                                    (keypress)="userService.numberAZazMinusOnly($event);"
+                                    (mousedown)="getIdx($event, idx)"
+                                    onClick="this.select();"
+                                    [(ngModel)]="box.boxID"
+                                    (keyup)="packageInfo.yarnBoxInfo[idx].boxID= packageInfo.yarnBoxInfo[idx].boxID.toUpperCase();"
+                                    [disabled]="box.weightVerified">
+                            </span>
+                        </td>
+                        <td class="text-center" [ngClass]="box.state==='new'?'row-state-new':''">
+                            <div class="m-0 p-0" *ngIf="box.errCode!==''">
+                                <small class="p-invalid txt-err">err!!</small>
+                            </div>
+                            <span>
+                                <p-inputNumber
+                                    class="bg1"
+                                    styleClass="bg1"
+                                    inputStyleClass="bg1"
+                                    (onFocus)="$event.target.select()"
+                                    [(ngModel)]="box.yarnPlanWeight"
+                                    [size]="3"
+                                    [minFractionDigits]="2"
+                                    [maxFractionDigits]="2"
+                                    [useGrouping]="false"
+                                    [disabled]="box.weightVerified"></p-inputNumber>
+                            </span>
+
+                        </td>
+                        <td class="text-center" [ngClass]="box.state==='new'?'row-state-new':''">
+                            <div class="m-0 p-0" *ngIf="box.errCode!==''">
+                                <small class="p-invalid txt-err">err!!</small>
+                            </div>
+                            <span>
+                                <p-inputNumber
+                                    class="bg1"
+                                    styleClass="bg1"
+                                    inputStyleClass="bg1"
+                                    (onInput)="onInput(idx)"
+                                    (onFocus)="$event.target.select()"
+                                    [(ngModel)]="box.yarnWeight"
+                                    [size]="3"
+                                    [minFractionDigits]="2"
+                                    [maxFractionDigits]="2"
+                                    [useGrouping]="false"
+                                    [disabled]="box.weightVerified"></p-inputNumber>
+                            </span>
+                        </td>
+                        <td class="text-center" [ngClass]="box.state==='new'?'row-state-new':''">
+                            <span class="text-500 text-sm font-italic"
+                            [ngClass]="box.yarnWeightDif >= 100?'text-red-200':''">
+                                <!-- {{calDiffPercent(idx)}} -->
+                                {{box.yarnWeightDif}}
+                            </span>
+                        </td>
+                        <td class="text-center" [ngClass]="box.state==='new'?'row-state-new':''">
+                            <div class="m-0 p-0" *ngIf="box.errCode!==''">
+                                <small class="p-invalid txt-err">err!!</small>
+                            </div>
+                            <span>
+                                <p-inputNumber
+                                    class="bg1"
+                                    styleClass="bg1"
+                                    inputStyleClass="bg1"
+                                    (onInput)="onInput(idx)"
+                                    (onFocus)="$event.target.select()"
+                                    [(ngModel)]="box.coneQty"
+                                    [size]="2"
+                                    [minFractionDigits]="0"
+                                    [maxFractionDigits]="0"
+                                    [useGrouping]="false"
+                                    [disabled]="box.weightVerified"></p-inputNumber>
+                            </span>
+
+                        </td>
+                        <td class="text-center" [ngClass]="box.state==='new'?'row-state-new':''">
+                            <span class="txt-cc">
+                                - {{box.cCWeight}}
+                            </span>
+                        </td>
+                        <td class="text-center " [ngClass]="box.state==='new'?'row-state-new':''">
+                            <span class="" [ngClass]="box.yarnWeightNet <= 0 ? 'text-yellow-500' : 'txt-green-600'">
+                                {{box.yarnWeightNet}}
+                            </span>
+                        </td>
+                        <td class="text-center" [ngClass]="box.state==='new'?'row-state-new':''">
+                            <!-- {{ box.weightVerified }} -->
+                            <p-button *ngIf="box.weightVerified"
+                                icon="pi pi-check"
+                                label="verified"
+                                styleClass="p-button-success p-button-text"
+                                (onClick)="updateBoxVerify(idx, false)"
+                                [disabled]="yarnLotMode === 'confirm' || yarnLotMode === 'view'"></p-button>
+                            <p-button *ngIf="!box.weightVerified"
+                                icon="pi pi-hourglass"
+                                label="waiting"
+                                styleClass="p-button-warning p-button-text"
+                                (onClick)="updateBoxVerify(idx, true)"></p-button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>

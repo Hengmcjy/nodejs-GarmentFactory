@@ -1,0 +1,182 @@
+
+
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-ground p-0" >
+    <div class="surface-ground p-0 shadow-2 border-round p-fluid">
+        <div class="grid formgrid p-fluid">
+            <div class="field col-12">
+
+                <div class="surface-ground px-0 py-0 md:px-2 lg:px-2">
+                    <div class="p-fluid flex flex-column lg:flex-row">
+                        <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly
+                            md:justify-content-between lg:justify-content-start m-0 lg:pr-8 lg:mb-0 ">
+                            <li>
+                                <a pripple="" (click)="selectMenu('overall')"
+                                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors">
+                                    <span class="font-medium hidden md:block">
+                                        overall
+                                    </span>
+                                    <span class="p-ink" style="height: 149px; width: 149px; top: -24.3001px; left: -3.3px;"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a pripple="" (click)="selectMenu('overall-staff')"
+                                    class="p-ripple p-element flex align-items-center cursor-pointer
+                                        p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                                        >
+                                    <span class="font-medium hidden md:block">
+                                        overall [staff]
+                                    </span>
+                                    <span class="p-ink" style="height: 149px; width: 149px; top: -24.3001px; left: -3.3px;"></span>
+                                </a>
+                            </li>
+
+                            <li class="h-full " *ngIf="staffListSelect.userID !== ''">
+
+
+                                <!-- <img [src]="genImagePath(staffListSelect.pic)" class="sticky m-0 p-0 mb-1" style="width: 100px;" />
+                                <div class="m-1 text-center text-sm font-semibold text-500">
+                                    <span>{{staffListSelect.userID}}</span>
+                                </div>
+                                <div class="m-1 text-center text-sm font-semibold text-500">
+                                    <span>{{staffListSelect.userName}}</span>
+                                </div> -->
+
+                                <div class="container h-full m-0 p-0">
+                                    <div class="sticky1 py-10">
+
+                                        <img [src]="genImagePath(staffListSelect.pic)" class=" m-0 p-0 mb-1" style="width: 100px;" />
+                                        <div class="">
+                                            <div class="m-1 text-center text-sm  font-semibold text-500">
+                                                <span>{{staffListSelect.userID}}</span>
+                                            </div>
+                                            <div class="m-1 text-center text-sm font-semibold text-500">
+                                                <span>{{staffListSelect.userName}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </li>
+
+                            <li *ngIf="false">
+                                <a pripple=""
+                                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors">
+                                    <span class="font-medium hidden md:block">...</span>
+                                    <span class="p-ink" style="height: 149px; width: 149px; top: -24.3001px; left: -3.3px;"></span>
+                                </a>
+                            </li>
+                            <li *ngIf="false">
+                                <a pripple=""
+                                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors">
+                                    <span class="font-medium hidden md:block">...</span>
+                                    <span class="p-ink" style="height: 149px; width: 149px; top: -24.3001px; left: -3.3px;"></span>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="surface-card p-5 shadow-2 border-round flex-auto" *ngIf="menuSelect==='overall'">
+                            <app-smd-rep-workload-overall1
+                                [nodeStation]="nodeStation"
+                                [stationID]="stationID">
+                            </app-smd-rep-workload-overall1>
+                        </div>
+
+                        <div class="surface-card p-5 shadow-2 border-round flex-auto" *ngIf="menuSelect==='overall-staff'">
+                            <app-smd-rep-workload-overallstaff1
+                                [nodeStation]="nodeStation"
+                                [stationID]="stationID">
+                            </app-smd-rep-workload-overallstaff1>
+                        </div>
+
+
+
+                        <div class="surface-card p-5 shadow-2 border-round flex-auto" *ngIf="false">
+                            <div class="text-900 font-semibold text-lg mt-3">
+                                <span >
+                                    ( {{userService.translateCode('mn', 'mn-edit')}} )
+                                </span>
+                                &nbsp;&nbsp;
+                                {{userService.translateCode('nu', 'nu-hr-staff-according-job-regist')}}
+                            </div>
+                            <p-divider class="p-element">
+                                <div role="separator" class="p-divider p-component p-divider-horizontal p-divider-solid p-divider-left">
+                                    <div class="p-divider-content"></div>
+                                </div>
+                            </p-divider>
+                            <div class="flex gap-5 flex-column-reverse md:flex-row">
+                                <div class="flex-auto p-fluid">
+                                    <div class="mb-4">
+                                        <label for="userID" class="block font-medium text-900 mb-2">ID</label>
+                                        <div class="p-inputgroup" id="userID">
+                                            <span class="p-inputgroup-addon">
+                                                123
+                                            </span>
+                                            <!-- <input
+                                                type="text" pinputtext=""
+                                                class="p-inputtext p-component p-element"
+                                                (keyup.enter)="getStaff1Company01(userID)"
+                                                [(ngModel)]="userID"/> -->
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="qrcode" class="block font-medium text-900 mb-2">QRcode</label>
+                                        <!-- <input id="qrcode"
+                                            type="text" pinputtext=""
+                                            class="p-inputtext p-component p-element"
+                                            [(ngModel)]="user.qrCode"/> -->
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="name" class="block font-medium text-900 mb-2">Name</label>
+                                        <!-- <input id="name"
+                                            type="text" pinputtext=""
+                                            class="p-inputtext p-component p-element"
+                                            [(ngModel)]="user.uInfo.userName"/> -->
+                                    </div>
+
+                                    <div class="mb-4" *ngIf="false">
+                                        <label for="state" class="block font-medium text-900 mb-2">Department</label>
+                                        <input id="state" type="text" pinputtext="" class="p-inputtext p-component p-element">
+                                    </div>
+                                    <div>
+                                        <button pbutton="" pripple="" label="Update Profile"
+                                            class="p-element p-ripple w-auto p-button p-component"
+                                            >
+                                            <span class="p-button-label">
+                                                Update
+                                                Profile
+                                            </span>
+                                            <span class="p-ink"></span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- <div class="flex flex-column align-items-center flex-or">
+                                    <img [src]="genImagePath(user.uInfo.pic)" class="h-10rem w-10rem" />
+                                    <button pbutton="" type="button" icon="pi pi-pencil"
+                                        class="p-element p-button-rounded -mt-4 p-button p-component p-button-icon-only"
+                                        (click)="showFileUploadModal(false)"
+                                        *ngIf="mode==='edit'">
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span class="p-button-icon pi pi-image" aria-hidden="true"></span>
+                                        <span aria-hidden="true" class="p-button-label">&nbsp;</span>
+                                    </button>
+                                </div> -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+
+
+
+<div class="m-0 " *ngFor="let sub1 of subNodeFlowChoice; let i = index">
+    <p-button  styleClass="p-button-info p-button-text" (dblclick)="selectSubNode(sub1)">
+        {{sub1.subNodeID}} &nbsp;:&nbsp;&nbsp;&nbsp;  {{sub1.subNodeName}}
+    </p-button>
+</div>

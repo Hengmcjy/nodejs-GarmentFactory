@@ -1,0 +1,65 @@
+<app-s-work-station-head></app-s-work-station-head>
+
+<div class="surface-ground px-4 py-5 md:px-6 lg:px-8">
+    <div class="grid ">
+        <div class="col-12 lg:col-3 p-2">
+            <div class="card">
+                <div class="text-900 text-xl font-semibold mb-3">Product</div>
+                <ul class="list-none p-0 m-0">
+                    <li class="flex align-items-center p-3 mb-3 border-bottom-1 surface-border"
+                        *ngFor="let prod of orderProductQtyByOrderIDProductIDRep; let a = index">
+                        <img [src]="genImagePathProduct(nsService.findProduct(prod.productID).imageProfile)" class="w-3rem flex-shrink-0 mr-3">
+                        <div class="flex flex-column">
+                            <span class="text-xl font-medium text-900 mb-1">{{nsService.findProduct(prod.productID).productName}}</span>
+                            <span>{{nsService.findProduct(prod.productID).productCustomerCode}}</span>
+                        </div>
+                        <span class="text-xl text-900 ml-auto font-semibold">{{prod.sumProductQty}}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-9 p-2">
+            <p-paginator [rows]="limit" [totalRecords]="countProductionsAll" [rowsPerPageOptions]="[20,50]"
+                (onPageChange)="paginate($event)"></p-paginator>
+            <p-table [value]="currentProductAllDetailCFN"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <!-- <ng-template pTemplate="caption">
+                    <div>Total all Queue :  {{countProductionQueueAll}} </div>
+                    <div>Item : {{sumProductionQueueAll}}</div>
+                </ng-template> -->
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="px-0" style="width: 30%">Code</th>
+                        <th class="px-0" style="width: 10%">Date</th>
+                        <th class="px-0" style="width: 8%">bun No</th>
+                        <!-- <th class="px-0" style="width: 17%;">factory</th> -->
+                        <!-- <th class="px-0" style="width: 15%">toNode</th> -->
+                        <!-- <th class="px-0" style="width: 5%">Qty</th> -->
+                        <!-- <th class="px-0" style="width: 5%">start</th> -->
+                        <!-- <th class="px-0" style="width: 5%">end</th> -->
+                        <th class="px-0" style="width: 5%">user</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-prod let-idx="rowIndex">
+                    <tr class="text-sm">
+                        <td>{{userService.formatProductBarcodeString(prod.productBarcodeNo)}}</td>
+                        <td class="text-xs ">
+                            {{prod.datetime | date: 'dd-MM-yyyy hh:mm'}}
+                        </td>
+                        <td>{{prod.bundleNo}}</td>
+
+                        <!-- <td>{{prod.toNode}}</td> -->
+                        <!-- <td>{{prod.productCount}}</td> -->
+                        <!-- <td>{{prod.numberFrom}}</td> -->
+                        <!-- <td>{{prod.numberTo}}</td> -->
+                        <td>{{userService.strFirstAndDot(prod.createBy.userName, 10)}}</td>
+                </ng-template>
+            </p-table>
+        </div>
+
+    </div>
+</div>
+
+

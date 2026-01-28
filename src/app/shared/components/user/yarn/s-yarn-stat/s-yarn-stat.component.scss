@@ -1,0 +1,15 @@
+input{
+    font-size: 14px;
+    color: var(--surface-400);
+    border: none;
+}
+input:focus {
+    outline: none !important;
+    border-color: var(--red-900);
+    box-shadow: 0 0 10px var(--red-500);
+    background-color: var(--yellow-100);
+}
+.pcw{
+    font-size: 15px;
+    color: var(--primary-500);
+}

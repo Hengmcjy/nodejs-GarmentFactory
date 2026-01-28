@@ -1,0 +1,117 @@
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-card p-4 shadow-2 border-round p-fluid">
+    <p-table [value]="orderStyleColorSize"
+        rowGroupMode="rowspan"  groupRowsBy="colorSeq"
+        class="w-full"
+        styleClass="p-datatable-sm">
+        <ng-template pTemplate="caption">
+            <div class="grid ">
+                <div class="col-6 m-0 p-0 mt-3">
+                    <span class="text-left ml-5">
+                        Order - {{style}}
+                    </span>
+                </div>
+                <div class="col-3 m-0 p-0 mt-3">
+                    <span class="text-right ">
+                        <button pButton pRipple type="button" label="set all 0"
+                            class=" p-button-warning w-11 p-1"
+                            (click)="set0OrderMaxQtyAll()"
+                        ></button>
+                    </span>
+                </div>
+                <div class="col-3 m-0 p-0 mt-3">
+                    <span class="text-right ">
+                        <button pButton pRipple type="button" label="save" class="p-button-success w-11 p-1"
+                        (click)="updateOrderMaxQtyView()"></button>
+                    </span>
+                </div>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="text-center" style="width: 20%">color</th>
+                <th class="" >size</th>
+                <th class="" *ngFor="let zone of mainZone; let n = index">
+                    {{zone.targetPlaceID}}
+                </th>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-order let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+            <tr class="text-sm " *ngIf="idx !== 0 && checkColorShow(order.productColor, false, idx) ">
+                <td class="border-none border-bottom-3"></td>
+                <td class="border-none border-bottom-3"></td>
+                <td class="border-none border-bottom-3" *ngFor="let zone of mainZone; let n = index"></td>
+
+            </tr>
+            <tr>
+                <td class="text-center border-none" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                    <span *ngIf="checkColorShow(order.productColor, true, idx)">
+                        <span *ngFor="let colorName of order.productColor.split(','); let m = index">
+                            {{userService.getColorNameByColorCode(colorName, setName)}}
+                            &nbsp;
+                        </span>
+                        <div *ngFor="let colorName of order.productColor.split(','); let m2 = index">
+                            {{userService.getCodeColorNameByColorCode(colorName, setName)}}
+
+                        </div>
+                    </span>
+                </td>
+                <td>
+                    {{userService.strReplaceAll(order.productSize, '-', '')}}
+                </td>
+
+                <td *ngFor="let zone1 of mainZone; let p = index"
+                    (click)="selectProduct(order.productColor, order.productSize,zone1.targetPlaceID);">
+                    <span class=""
+                            [ngClass]="checkSetOrderPropertySelect(order.productColor, order.productSize,zone1.targetPlaceID)">
+                        {{getOrderQty(order.companyID, order.productID, style,
+                            order.productColor,
+                            order.productSize,
+                            zone1.targetPlaceID)}}
+                    </span>
+                    <div class="frac ml-1 txt-sm-gray "
+                        *ngIf="+getOrderQty(order.companyID, order.productID, style,
+                        order.productColor,
+                        order.productSize,
+                        zone1.targetPlaceID)>0">
+                        <span>
+
+                        </span>
+                        <span class="bottom cursor-pointer"
+                            [ngClass]="getMaxQTY(order.productColor, order.productSize, zone1.targetPlaceID)>0?'text-red-500':''"
+                            (dblclick)="showDialog(order.productColor, order.productSize, zone1.targetPlaceID);">
+                            {{getMaxQTY(order.productColor, order.productSize, zone1.targetPlaceID)}}
+                        </span>
+                        <p-dialog header="{{header}}" [(visible)]="visible" [style]="{ width: '50vw' }">
+                            <div class="flex py-2 justify-content-center">
+                                <input type="text" pInputText
+                                    (keypress)="userService.numberOnly($event);"
+                                    (keyup.enter)="editMaxQTY()"
+                                    onClick="this.select();"
+                                    [(ngModel)]="value1">
+                            </div>
+                        </p-dialog>
+
+                    </div>
+
+                </td>
+
+            </tr>
+        </ng-template>
+        <!-- <ng-template pTemplate="footer">
+            <tr>
+                <td>total</td>
+                <td></td>
+                <td *ngFor="let zone2 of mainZone; let q = index">
+                    {{getOrderQtyColumnTotal(group[0], q)}}
+                </td>
+                <td>
+                    {{getOrderQtyGrandTotal(group[0])}}
+                </td>
+            </tr>
+        </ng-template> -->
+    </p-table>
+</div>

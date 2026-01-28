@@ -1,0 +1,27 @@
+
+<div class="" *ngFor="let daTa1 of data; let m = index" >
+    <div class="flex justify-content-between align-items-center">
+        <span class="text-900 inline-flex justify-content-between align-items-center">
+            <span class="font-medium text-900">{{daTa1.caption1}}</span>
+        </span>
+        <span class="text-cyan-400 text-sm font-italic letter-spacing2">
+            {{daTa1.total1}}
+            <span class="text-cyan-300 font-normal text-sm">{{daTa1.totalUnit}}</span>
+        </span>
+    </div>
+
+    <div class="flex flex-row flex-wrap card-container blue-container m-0" style="width: 100%">
+        <div *ngFor="let dX of daTa1.dataObjectArr; let i = index"
+            [style]="dX.varTxt1"
+            class="flex align-items-center justify-content-center {{dX.barColor}} {{dX.fontBarColor}} font-bold  m-0 "
+            [ngClass]="checkBarPositon(dX.barPosition)">
+            {{dX.var1}}
+        </div>
+    </div>
+    <div class="flex flex-row flex-wrap card-container blue-container bg-tran m-0" style="width: 100%" >
+        <div *ngFor="let dY of daTa1.dataObjectArr; let i2 = index" pTooltip="{{dY.qty1}}" tooltipPosition="top"
+            [style]="dY.varTxt1" class="flex align-items-center justify-content-center bg-tran font-italic text-xs text-500 m-0">
+            {{dY.qty1}}
+        </div>
+    </div>
+</div>

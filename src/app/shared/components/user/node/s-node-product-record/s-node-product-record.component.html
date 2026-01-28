@@ -1,0 +1,93 @@
+
+
+
+<!-- onClick="this.select();" -->
+<div class="surface-ground px-4 py-5 md:px-6 lg:px-8">
+    <div class="grid ">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <div class="text-2xl text-red-700 font-bold text-center" *ngIf="mode==='set-lost'">
+                SET LOST
+            </div>
+        </div>
+        <div class="col-2"></div>
+
+        <div class="col-2"></div>
+        <div class="col-8">
+            <input type="text" pInputText  class="w-full pw"
+                [(ngModel)]="productBarcodeNoInput"
+                (keyup.enter)="getDatarecordProductBarcodeNo();"
+
+                #input1>
+                <div class="text-sm text-600">{{productBarcodeNoInput}}</div>
+        </div>
+        <div class="col-2"></div>
+
+        <div class="col-12">
+            <p-table [value]="orderProduct.productionNode"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <!-- <ng-template pTemplate="caption">
+                    <div>Total all Queue :  {{countProductionQueueAll}} </div>
+                    <div>Item : {{sumProductionQueueAll}}</div>
+                </ng-template> -->
+                <ng-template pTemplate="caption">
+                    {{productBarcodeNoInput}}
+                    <div class="text-500 text-base"
+                        *ngIf="orderProduct.productBarcodeNo !== orderProduct.productBarcodeNoReal">
+                        {{orderProduct.productBarcodeNoReal}}
+                    </div>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="text-2xl font-bold text-red-500" *ngIf="orderProduct.productStatus==='lost'">
+                        ... LOST ...
+                    </span>
+
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="px-0" style="width: 5%">#</th>
+                        <th class="px-0" style="width: 15%"></th>
+                        <th class="px-0" style="width: 20%">Scan time</th>
+                        <th class="px-0" style="width: 25%">From node</th>
+                        <th class="px-0" style="width: 25%;">To node</th>
+                        <th class="px-0" style="width: 10%">user</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-productionNode let-idx="rowIndex">
+                    <tr class="text-base">
+                        <td>{{+idx + 1}}</td>
+                        <td class="">
+                            <span class="outsource-caption-select">
+                                <!-- {{productionNode.isOutsource?getFactoryName(productionNode.outsourceData[0].factoryID):''}} -->
+                                {{productionNode.isOutsource?getFactoryName(productionNode):''}}
+
+                            </span>
+                            <span class="txt-my-factory">
+                                {{!productionNode.isOutsource?getFactoryName(productionNode):''}}
+                                <!-- {{!productionNode.isOutsource?'':''}} -->
+                            </span>
+                        </td>
+                        <td class=""
+                            [ngClass]="productionNode.status === 'problem' ? 'font-italic text-red-700' : ''"
+                        >
+                            {{productionNode.datetime | date: 'dd-MM-yyyy hh:mm'}}
+                        </td>
+                        <td class="text-600" [ngClass]="productionNode.status === 'problem' ? 'font-italic text-red-700' : ''">{{productionNode.fromNode}}</td>
+                        <td class="font-semibold"
+                            [ngClass]="checkToNode(productionNode, idx)">
+                            {{productionNode.toNode}}
+                        </td>
+                        <td class="text-600">{{productionNode.createBy.userName}}</td>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>
+
+<div class="bg-red-50 px-4 py-5 md:px-6 lg:px-8" *ngIf="mode==='set-lost'">
+    <app-s-order-setlost-edit
+    [productBarcodeNo]="productBarcodeNo"
+    [orderProduct]="orderProduct">
+
+    </app-s-order-setlost-edit>
+</div>

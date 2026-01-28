@@ -1,0 +1,631 @@
+
+
+<p-toast position="top-right" ></p-toast>
+<p-confirmDialog header="Confirmation yarn transfer to ..." icon="pi pi-exclamation-triangle"></p-confirmDialog>
+
+<div class="">
+    <p-toolbar class="" styleClass="p-2">
+        <div class="p-toolbar-group-start">
+            <!-- <p-button *ngIf="false"
+                styleClass="p-button-rounded p-button-info p-button-text text-4xl font-bold m-0 p-0 ml-2"
+                (onClick)="addnewYarnLotID()">
+                &nbsp;
+                +
+                &nbsp;
+                <span class="text-sm text-blue-500">
+                    add new Yarn Lot ID
+                </span>
+            </p-button> -->
+        </div>
+        <div class="p-toolbar-group-center">
+            <span class="yarn-season-head">
+                YARN
+                &nbsp;
+                <span class="" >
+                    Lot
+                    <span class="">
+                        [
+                        &nbsp;
+                        <span class="">
+                            transfer/boxDivide
+                        </span>
+                        &nbsp;
+                        ]
+                    </span>
+                </span>
+            </span>
+            &nbsp;&nbsp;
+            <span class="txt-m-gray">
+                [
+                &nbsp;
+                <span class="txt-m-gray">
+                    {{yarnSeasonID}}
+                </span>
+                &nbsp;
+                ]
+            </span>
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+    <div class="sticky-top" *ngIf="false">
+        <p-toolbar class="" styleClass="p-1">
+            <div class="p-toolbar-group-start">
+                <div class="text-lg txt-m-gray ml-4 my-2">
+                    <!-- {{yarnID}} -->
+                    {{yarnService.getYarnfullName(yarnID)}}
+                </div>
+            </div>
+            <div class="p-toolbar-group-center">
+
+            </div>
+            <div class="p-toolbar-group-end">
+
+            </div>
+        </p-toolbar>
+    </div>
+
+</div>
+
+<div class="">
+    <div class="grid">
+        <div class="col-3">
+            <div class="sticky-top">
+
+                <div class="m-0 p-0 pr-2 col-12">
+                    <div class="p-inputgroup m-0 p-0">
+                        <span class="p-inputgroup-addon w-6">Date</span>
+                        <span class="p-inputgroup-addon w-6 surface-50 font-semibold text-blue-700">
+                            {{mmddSelect}}
+                        </span>
+                    </div>
+                </div>
+                <div class="m-0 p-0 pr-2 col-12">
+                    <div class="p-inputgroup m-0 p-0">
+                        <span class="p-inputgroup-addon w-6">Confirm Data</span>
+                        <span class="p-inputgroup-addon w-6 surface-50 text-sm text-400 font-italic">
+                            {{confirmDate}}
+                        </span>
+                    </div>
+                </div>
+                <div class="m-0 p-0 pr-2 col-12">
+                    <div class="p-inputgroup m-0 p-0">
+                        <span class="p-inputgroup-addon w-6">Invoice ID</span>
+                        <span class="p-inputgroup-addon w-6 surface-50 font-semibold text-blue-700">
+                            {{yarnLotInfo.invoiceID}}
+                        </span>
+                    </div>
+                </div>
+                <div class="m-0 p-0 pr-2 col-12">
+                    <div class="p-inputgroup m-0 p-0">
+                        <span class="p-inputgroup-addon w-6">Yarn Lot ID</span>
+                        <span class="p-inputgroup-addon w-6 surface-50 font-semibold text-blue-700">
+                            {{yarnLotInfo.yarnLotID}}
+                        </span>
+                    </div>
+                </div>
+                <div class="m-0 p-0 pr-2 mt-5 col-12">
+                    <div class="p-inputgroup m-0 p-0">
+                        <span class="p-inputgroup-addon w-6">Style</span>
+                        <span class="w-6 surface-50 font-semibold text-blue-700 text-center">
+                            <div class="my-2" *ngFor="let or of orderID; let o1 = index">
+                                <span class="cursor-pointer"  (click)="selectStyleTransfer(or)">
+                                    {{or}}
+                                </span>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+                <div class="m-0 p-0 pr-2 col-12">
+                    <div class="p-inputgroup m-0 p-0">
+                        <span class="p-inputgroup-addon w-6">Color</span>
+                        <span class="p-inputgroup-addon w-6 surface-50 font-semibold text-blue-700">
+                            {{colorS.color.colorCode +' '+ colorS.color.colorName}}
+                        </span>
+                    </div>
+                </div>
+                <div class="m-0 p-0 pr-2 col-12">
+                    <div class="p-inputgroup m-0 p-0">
+                        <span class="p-inputgroup-addon w-12 surface-50 font-semibold text-blue-700">
+                            <!-- {{yarnID}} -->
+                            {{yarnService.getYarnfullName(yarnID)}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-9">
+            <div class="">
+
+                <div class="">
+                    <p-toolbar class="" styleClass="p-1">
+                        <div class="p-toolbar-group-start">
+
+                            <div class="text-600 mr-2">
+                                <span class="">
+                                    box all:
+                                </span>
+                                &nbsp;
+                                <span class="">
+                                    {{yarnLotInfo.yarnBoxInfo.length}}
+                                </span>
+                            </div>
+                            <div class="text-600 mx-4">
+                                <span class="">
+                                    KGs all:
+                                </span>
+                                &nbsp;
+                                <span class="font-semibold">
+                                    {{kgAll}}
+                                </span>
+                            </div>
+                            <div class="text-yellow-400 mx-4">
+                                <span class="">
+                                    KGs used:
+                                </span>
+                                &nbsp;
+                                <span class="font-semibold">
+                                    {{kgUsed}}
+                                </span>
+                            </div>
+                            <div class="text-green-400 mx-4">
+                                <span class="">
+                                    KGs reamin:
+                                </span>
+                                &nbsp;
+                                <span class="font-semibold">
+                                    {{kgRemain}}
+                                </span>
+                            </div>
+
+                        </div>
+                        <div class="p-toolbar-group-center">
+
+                        </div>
+                        <div class="p-toolbar-group-end">
+                            <div class="" *ngIf="checkSaveTransfer('transfer')">
+                                <span class="text-400 text-xs">
+                                    {{modeArr[0]}}
+                               </span>
+                                <p-button label="save Transfer" styleClass="p-button-rounded py-0" (onClick)="save('transfer')"></p-button>
+                            </div>
+                        </div>
+                    </p-toolbar>
+                </div>
+
+                <div class="grid">
+                    <div class="col-8">
+
+                        <p-scrollPanel [style]="{ width: '100%', height: '100%' }" styleClass="custombar1">
+                            <p-paginator (onPageChange)="onPageChange($event)" [first]="first" [rows]="rows" [totalRecords]="this.yarnLotInfo.yarnBoxInfo.length" ></p-paginator>
+
+                            <!-- transfer -->
+                            <div class="flex flex-wrap mb-3" *ngIf="checkModeArr('transfer')">
+                                <div class="" *ngFor="let yB of yarnBoxInfo; let yi = index">
+                                    <div class=" my-2 mx-2 mb-3 p-0 text-center cursor-pointer"
+                                        style="width: 120px;"
+                                        [ngClass]="checkTransferboxSelected(yB)?'yarn-box-selected':'yarn-box'"
+                                        (click)="yarnBoxTransferSelect(yB)">
+
+                                        <div class="flex justify-content-between m-0 p-0"
+                                            [ngClass]="checkTransferboxSelected(yB)?'box-selected':yB.used?'box-used':'box-upper'">
+                                            <span class="text-sm text-500 p-0 m-0 pt-1 pl-1 ml-1">
+
+                                            </span>
+                                            <span class="text-sm text-500 p-0 m-0 pt-1 pr-1">
+                                                {{yi+1}}
+                                            </span>
+                                        </div>
+
+                                        <div class="flex m-0 p-0"
+                                            [ngClass]="checkTransferboxSelected(yB)?'box-selected':yB.used?'box-used':'box-upper'">
+                                            <div class="w-3 pt-0 mt-0">
+                                                <p-button icon="pi pi-check"
+                                                    styleClass="p-button-rounded p-button-text p-button-sm m-0"
+                                                    *ngIf="false"></p-button>
+                                            </div>
+                                            <div class="flex align-items-center justify-content-center w-9 text-800 text-base font-semibold mt-0">
+                                                {{yB.boxID}}
+                                            </div>
+                                        </div>
+
+                                        <div class="box-lower">
+                                            <div class="py-1">
+                                                <span class="">
+                                                    {{yB.useWeight}}
+                                                </span>
+                                                <span class="text-sm text-500">Kgs.</span>
+                                            </div>
+                                        </div>
+                                        <div class="m-0 p-0 box-lower-devide text-red-400" *ngIf="yB.boxID.split('::').length > 1">
+                                            <div class="m-0 p-0">
+                                                <span class="m-0 p-0">
+                                                    is divide
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- not transfer -->
+                            <div class="flex flex-wrap mb-3" *ngIf="!checkModeArr('transfer')">
+                                <div class="" *ngFor="let yB of yarnBoxInfo; let yi = index">
+                                    <div class=" my-2 mx-2 mb-3 p-0 text-center cursor-pointer"
+                                        style="width: 120px;"
+                                        [ngClass]="yB.boxUUID===yarnBoxInfoSelected.boxUUID?'yarn-box-selected':'yarn-box'"
+                                        (click)="yarnBoxSelect(yB)">
+
+                                        <div class="flex justify-content-between m-0 p-0"
+                                            [ngClass]="yB.boxUUID===yarnBoxInfoSelected.boxUUID?'box-selected':yB.used?'box-used':'box-upper'">
+                                            <span class="text-sm text-500 p-0 m-0 pt-1 pl-1 ml-1">
+
+                                            </span>
+                                            <span class="text-sm text-500 p-0 m-0 pt-1 pr-1">
+                                                {{yi+1}}
+                                            </span>
+                                        </div>
+
+                                        <div class="flex m-0 p-0"
+                                            [ngClass]="yB.boxUUID===yarnBoxInfoSelected.boxUUID?'box-selected':yB.used?'box-used':'box-upper'">
+                                            <div class="w-3 pt-0 mt-0">
+                                                <p-button icon="pi pi-check"
+                                                    styleClass="p-button-rounded p-button-text p-button-sm m-0"
+                                                    *ngIf="false"></p-button>
+                                            </div>
+                                            <div class="flex align-items-center justify-content-center w-9 text-800 text-base font-semibold mt-0">
+                                                {{yB.boxID}}
+                                            </div>
+                                        </div>
+
+                                        <div class="box-lower">
+                                            <div class="py-1">
+                                                <span class="">
+                                                    {{yB.useWeight}}
+                                                </span>
+                                                <span class="text-sm text-500">Kgs.</span>
+                                            </div>
+                                        </div>
+                                        <div class="m-0 p-0 box-lower-devide text-red-400" *ngIf="yB.boxID.split('::').length > 1">
+                                            <div class="m-0 p-0">
+                                                <span class="m-0 p-0">
+                                                    is divide
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </p-scrollPanel>
+
+                    </div>
+<!--  -->
+                    <div class="col-4 text-center">
+
+                        <div class="sticky-top" *ngIf="checkModeArr('transfer')">
+                            <p-scrollPanel [style]="{ width: '100%' }" styleClass="custombar2">
+
+                                <p-toolbar class="" styleClass="p-1">
+                                    <div class="p-toolbar-group-start">
+                                        <div class="text-400 mx-4">
+                                            <span class="text-400 text-sm">
+                                                 Name:
+                                            </span>
+                                            &nbsp;
+                                            <span class="text-400 font-semibold text-sm">
+                                                {{draftName}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="p-toolbar-group-center">
+
+                                    </div>
+                                    <div class="p-toolbar-group-end">
+
+                                    </div>
+                                </p-toolbar>
+
+                                <p-toolbar class="" styleClass="p-1">
+                                    <div class="p-toolbar-group-start">
+                                        <div class="text-600 mx-4">
+                                            <span class="">
+                                                Factory:
+                                            </span>
+                                            &nbsp;
+                                            <span class="font-semibold">
+                                                {{factorySelect.fInfo.factoryName}}
+                                            </span>
+
+                                        </div>
+                                    </div>
+                                    <div class="p-toolbar-group-center">
+
+                                    </div>
+                                    <div class="p-toolbar-group-end">
+                                        <!-- <span class="text-green-400 text-lg m-0 p-0 cursor-pointer">
+                                            <span class="material-symbols-outlined text-lg">quick_reference_all</span>
+                                        </span> -->
+                                    </div>
+                                </p-toolbar>
+
+                                <p-toolbar class="" styleClass="p-1">
+                                    <div class="p-toolbar-group-start">
+                                        <div class="text-orange-600 mx-4">
+                                            <span class="text-600 text-sm">
+                                                 to Factory:
+                                            </span>
+                                            &nbsp;
+                                            <span class="font-semibold text-sm">
+                                                {{factorytransfer.fInfo.factoryName}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="p-toolbar-group-center">
+
+                                    </div>
+                                    <div class="p-toolbar-group-end">
+
+                                    </div>
+                                </p-toolbar>
+
+                                <p-toolbar class="" styleClass="p-1">
+                                    <div class="p-toolbar-group-start">
+                                        <div class="text-orange-600 mx-4">
+                                            <span class="text-600 text-sm">
+                                                 Style:
+                                            </span>
+                                            &nbsp;
+                                            <span class="font-semibold text-sm" *ngIf="orderIDTransfer!==''">
+                                                {{orderIDTransfer}}
+                                            </span>
+                                            <span class="font-semibold text-sm text-center" *ngIf="orderIDTransfer===''">
+                                                <span class="">
+                                                    select Style ...
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="p-toolbar-group-center">
+
+                                    </div>
+                                    <div class="p-toolbar-group-end">
+
+                                    </div>
+                                </p-toolbar>
+
+                                <p-toolbar class="" styleClass="p-1">
+                                    <div class="p-toolbar-group-start">
+                                        <div class="text-600 mx-4">
+                                            <span class="">
+                                                box:
+                                            </span>
+                                            &nbsp;
+                                            <span class="text-yellow-500 text-lg">
+                                                {{yarnDataDraft.yarnDataInfo.packageInfo.yarnBoxInfo.length}}
+                                            </span>
+                                        </div>
+                                        <div class="text-600 mx-4">
+                                            <span class="">
+                                                KGs all:
+                                            </span>
+                                            &nbsp;
+                                            <span class="text-green-400 font-semibold text-lg">
+                                                {{getTotalTransferboxSelected() | number : '1.2-2'}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="p-toolbar-group-center">
+
+                                    </div>
+                                    <div class="p-toolbar-group-end">
+
+                                    </div>
+                                </p-toolbar>
+
+                                <div class="">
+                                    <p-table [value]="yarnDataDraft.yarnDataInfo.packageInfo.yarnBoxInfo"
+                                        [scrollable]="true" scrollHeight="500px"
+                                        styleClass="p-datatable-sm"
+                                        [tableStyle]="{ 'min-width': '20rem', 'max-width': '30rem' }">
+                                        <ng-template pTemplate="body" let-yI let-idx="rowIndex">
+                                            <tr class="bg-yellow-50 text-sm">
+                                                <td class="text-400" style="width: 10%;">
+                                                    <span class="">
+                                                        {{idx+1}}.
+                                                    </span>
+                                                </td>
+                                                <td class="text-600" style="width: 50%;">
+                                                    <span class="">
+                                                        {{yI.boxID}}
+                                                    </span>
+                                                </td>
+                                                <td class="text-green-500 text-lg font-semibold" style="width: 30%;">
+                                                    <span class="">
+                                                        {{yI.useWeight | number : '1.2-2'}}
+                                                    </span>
+                                                </td>
+                                                <td class="" style="width: 10%;">
+                                                    <span class="">
+                                                        <p-button icon="pi pi-times"
+                                                            styleClass="p-button-rounded p-button-danger p-button-text"
+                                                            (onClick)="yarnBoxTransferRemove(idx)"></p-button>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </ng-template>
+                                    </p-table>
+                                </div>
+
+                            </p-scrollPanel>
+                        </div>
+
+                        <div class="sticky-top" *ngIf="yarnBoxInfoSelected.boxID !== '' && checkModeArr('divide')">
+                            <p-scrollPanel [style]="{ width: '100%' }" styleClass="custombar2">
+
+                                <div class="flex justify-content-center flex-wrap"
+                                    *ngIf="yarnBoxInfoSelected.boxID !== '' && checkModeArr('divide')">
+                                    <div class="align-items-center justify-content-center yarn-box-selected my-2 mx-2 mb-3 p-0 text-center "
+                                        style="width: 80%;min-width: 150px;">
+
+                                        <div class="flex justify-content-between box-selected m-0 p-0">
+                                            <span class="text-sm text-500 p-0 m-0 pt-1 pl-1 ml-1">
+                                                <!-- <i class="pi pi-minus" style="font-size: 0.75rem"></i> -->
+                                            </span>
+                                            <span class="text-sm text-500 p-0 m-0 pt-1 pr-1">
+                                                .
+                                            </span>
+                                        </div>
+
+                                        <div class="box-selected flex m-0 p-0">
+                                            <div class="w-3 pt-0 mt-0">
+                                                <p-button icon="pi pi-plus-circle"
+                                                    styleClass="p-button-rounded p-button-text p-button-sm m-0"
+                                                    (onClick)="addYarnBoxInfoDevide1()"></p-button>
+                                            </div>
+                                            <div class="flex align-items-center justify-content-center w-9 text-800 text-base font-semibold mt-0">
+                                                {{yarnBoxInfoSelected.boxID}}
+                                            </div>
+                                        </div>
+                                        <div class="box-lower">
+                                            <div class="py-1">
+                                                <span class="">
+                                                    {{yarnBoxInfoSelected.useWeight}}
+                                                </span>
+                                                <span class="text-sm text-500">Kgs.</span>
+                                            </div>
+                                            <div class="py-1">
+                                                <span class="text-2xl font-semibold text-green-400">
+                                                    {{yarnWeightNew}}
+                                                </span>
+                                                <span class="text-sm text-500">Kgs.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="flex justify-content-center flex-wrap" *ngIf="yarnBoxInfoDevide.length > 0">
+                                    <div class="align-items-center justify-content-center my-3 mt-5 text-center ">
+                                        <span class="">| |</span>
+                                    </div>
+                                </div>
+
+
+                                <div class="flex justify-content-center flex-wrap" *ngIf="yarnBoxInfoDevide.length > 0">
+
+                                    <div class="w-full" *ngFor="let yD of yarnBoxInfoDevide; let ydi = index">
+                                        <div class="align-items-center justify-content-center yarn-box my-2 my-5 text-center "
+                                            style="width: 100%;min-width: 150px;">
+
+                                            <div class="flex justify-content-between box-devide m-0 p-0">
+                                                <span class="text-sm text-500 p-0 m-0 pt-1 pl-1 ml-1">
+                                                    divide box
+                                                </span>
+                                                <span class="text-sm text-500 p-0 m-0 pt-1 pr-1">
+
+                                                </span>
+                                            </div>
+
+                                            <div class="box-devide flex m-0 p-0">
+                                                <div class="w-3 pt-0 mt-0">
+                                                    <p-button icon="pi pi-minus-circle"
+                                                        styleClass="p-button-rounded p-button-text p-button-sm m-0"
+                                                        (onClick)="removeYarnBoxInfoDevide1()"></p-button>
+                                                </div>
+                                                <div class="flex align-items-center justify-content-center w-9 text-800 text-base font-semibold mt-0">
+                                                    <span class="">
+                                                        {{yD.boxID.split(yarnDevideSign)[0]}}
+                                                    </span>
+                                                    <span class="text-green-500">
+                                                        {{yarnDevideSign}}
+                                                    </span>
+                                                    <span class="text-2xl text-green-500">
+                                                        {{yD.boxID.split(yarnDevideSign)[1]}}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="box-lower">
+                                                <div class="py-1">
+                                                    <!-- <span class="">
+                                                        52.22
+                                                    </span>
+                                                    <span class="text-sm text-500">Kgs.</span> -->
+                                                    <div class="">
+                                                        <span>
+                                                            <p-inputNumber
+                                                                class="bg1"
+                                                                styleClass="bg1"
+                                                                inputStyleClass="bg1"
+                                                                (onFocus)="$event.target.select()"
+                                                                [(ngModel)]="yD.useWeight"
+                                                                [size]="12"
+                                                                [minFractionDigits]="2"
+                                                                [maxFractionDigits]="2"
+                                                                [useGrouping]="false"></p-inputNumber>
+                                                        </span>
+                                                        &nbsp;
+                                                        <span class="text-sm text-500">Kgs.</span>
+                                                        <!-- <input type="text" pInputText
+                                                            (keypress)="userService.numberAZazMinusOnly($event);"
+                                                            onClick="this.select();"
+                                                            [(ngModel)]="test1"
+                                                            (keyup)="test1= test1.toUpperCase();"> -->
+                                                        <small class="p-invalid txt-err" *ngIf="test1ErrCode!==''">err !!</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-content-center flex-wrap" *ngIf="yarnBoxInfoDevide.length > 0 && !isValidate">
+                                    <div class="align-items-center justify-content-center">
+                                        <p-button label="validate" styleClass="p-button-warning" (onClick)="calculateWeight()"></p-button>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-content-center flex-wrap" *ngIf="yarnBoxInfoDevide.length > 0 && isValidate">
+                                    <div class="align-items-center justify-content-center">
+                                        <p-button label="confirm Divide"
+                                            styleClass="p-button-info"
+                                            (onClick)="putEditYarnLotIDDevide()"></p-button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-content-center flex-wrap" *ngIf="yarnBoxInfoDevide.length > 0">
+                                    <div class="align-items-center justify-content-center">
+                                        <div class="text-sm font-italic text-500">
+
+                                            <span class="text-800">
+                                                {{yarnBoxInfoSelected.useWeight}}
+                                            </span>
+                                            &nbsp;
+                                            <span class="">
+                                                ==>
+                                            </span>
+                                            &nbsp;
+                                            <span class="text-green-400">
+                                                {{yarnWeightNew}}
+                                            </span>
+                                            &nbsp; + &nbsp;
+                                            <span class="text-orange-600">
+                                                {{yarnBoxInfoDevide[0].useWeight.toFixed(2)}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </p-scrollPanel>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,163 @@
+
+
+<p-dialog header="loading..." [(visible)]="dataFecthing" [modal]="true" [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false" [closable]="true">
+    <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+    <div class="fadein animation-duration-2000 animation-iteration-infinite flex align-items-center justify-content-center
+        font-bold  m-2 px-5 py-0">
+        waiting for generating PDF  ...
+    </div>
+</p-dialog>
+
+<div class="card m-0 p-0 border-none bg-tran">
+    <button pButton pRipple type="button" icon="pi pi-refresh"
+        class="p-button-rounded p-button-text p-button-lg mb-2 mx-1"
+        (dblclick)="inputUserPassPopup()">
+    </button>
+    <button pButton pRipple type="button"  [disabled]="isLoading"
+        class="p-button-rounded p-button-text mb-2 mx-1"
+        (click)="getRepCompanyOrderOutsourceState('refresh')">
+        <span class="text-lg font-semibold">
+            {{reportHeader}}
+        </span>
+    </button>
+</div>
+
+<p-card class="m-10" header="Infomation" *ngIf="blockedPanel">
+    <p class="text-5xl text-600 m-2 p-4">
+        <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+    </p>
+</p-card>
+
+<p-tabView  [scrollable]="true" *ngIf="!blockedPanel">
+    <p-tabPanel *ngFor="let facOuts of dataOutsState; let i = index" header={{facOuts.factoryName}}>
+        <div class="">
+            <p-table [value]="facOuts.dateList" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="text-center">
+                            <span class="">
+                                Date
+                            </span>
+                        </th>
+                        <th class="text-center">
+                            <span class="">
+                                sent out to
+                                <span class="">{{facOuts.factoryName}}</span>
+                            </span>
+                        </th>
+                        <th class="text-center">
+                            <span class="">
+                                received from
+                                <span class="">{{facOuts.factoryName}}</span>
+                            </span>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-outS let-idx="rowIndex">
+                    <tr>
+                        <td class="" >
+                            <span class="" >
+                                {{outS.dateName}}
+                            </span>
+                        </td>
+                        <td class="" >
+                            <!--   [ngClass]="getsTypeOtus(out1.setGroup)==='1'?'bg-yellow-100':''"-->
+                            <div class="card02 bg-yellow-50  mb-2 py-1 text-left"
+                                *ngFor="let out1 of outS.out; let o = index"
+                                [ngClass]="getsTypeOtus(out1.setGroup)==='1'?'bg-yellow-100':''">
+                                <div class="grid">
+                                    <div class="col-9">
+                                        <div class="">
+                                            <span class="ml-2">Style : </span>
+                                            <span class="">{{out1.orderID}}</span>
+                                            &nbsp;&nbsp;
+                                            <span class=""> [ </span>
+                                            <span class="">{{out1.targetPlaceID}}</span>
+                                            <span class=""> ] </span>
+                                            &nbsp;&nbsp;
+                                            <span class="">QTY : </span>
+                                            <span class="">{{out1.qty}}</span>
+                                        </div>
+                                        <div class="">
+                                            <span class="font-semibold text-blue-300 text-lg ml-2">
+                                                {{out1.factoryID2}}
+                                            </span>
+                                            <span class="ml-2">Color : </span>
+                                            <span class="">{{out1.colorCode}}</span>
+                                            &nbsp;
+                                            <span class="">{{out1.colorName}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <button pButton pRipple type="button"
+                                            icon="pi {{getIconsTypeOtus(out1.setGroup)}}"
+                                            styleClass="p-button-sm"
+                                            class="p-button-rounded p-button-success p-button-text m-0"
+                                            (click)="getRepCurrentProductionBundleStateNo2(facOuts, facOuts.factoryName, out1.orderID, out1.bundleNos, out1, outS, 'out')"
+                                            >
+                                            <span class="ml-1 text-green-300 text-sm font-semibold font-italic"
+                                                *ngIf="getsTypeOtus(out1.setGroup)==='1'">
+                                                &nbsp;
+                                                1 BY 1
+                                            </span>
+                                        </button>
+                                        <!-- *ngIf="getsTypeOtus(out1.setGroup)==='b'" -->
+                                    </div>
+                                </div>
+
+                            </div>
+                        </td>
+                        <!-- [ngClass]="getsTypeOtus(rec.setGroup)==='1'?'bg-blue-100':''" -->
+                        <td class="" >
+                            <div class="card02 bg-blue-50 mb-2 py-1 text-left"
+                                *ngFor="let rec of outS.receive; let r = index"
+                                [ngClass]="getsTypeOtus(rec.setGroup)==='1'?'bg-blue-100':''">
+                                <div class="grid">
+                                    <div class="col-9">
+                                        <div class="">
+                                            <span class="ml-2">Style : </span>
+                                            <span class="">{{rec.orderID}}</span>
+                                            &nbsp;&nbsp;
+                                            <span class=""> [ </span>
+                                            <span class="">{{rec.targetPlaceID}}</span>
+                                            <span class=""> ] </span>
+                                            &nbsp;&nbsp;
+                                            <span class="">QTY : </span>
+                                            <span class="">{{rec.qty}}</span>
+                                        </div>
+                                        <div class="">
+                                            <span class="font-semibold text-blue-300 text-lg ml-2">
+                                                {{rec.factoryID2}}
+                                            </span>
+                                            <span class="ml-2">Color : </span>
+                                            <span class="">{{rec.colorCode}}</span>
+                                            &nbsp;
+                                            <span class="">{{rec.colorName}}</span>
+                                        </div>
+
+                                    </div>
+                                    <div class="col-3">
+                                        <button pButton pRipple type="button"
+                                            icon="pi {{getIconsTypeOtus(rec.setGroup)}}"
+                                            styleClass="p-button-sm"
+                                            class="p-button-rounded p-button-success p-button-text m-0"
+                                            (click)="getRepCurrentProductionBundleStateNo2(facOuts, facOuts.factoryName, rec.orderID, rec.bundleNos, rec, outS, 'receive')"
+                                            >
+                                            <span class="ml-1 text-green-300 text-sm font-semibold font-italic"
+                                              *ngIf="getsTypeOtus(rec.setGroup)==='1'">
+                                                &nbsp;
+                                                1 BY 1
+                                            </span>
+                                        </button>
+                                        <!-- *ngIf="getsTypeOtus(rec.setGroup)==='b'" -->
+                                    </div>
+
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </p-tabPanel>
+</p-tabView>

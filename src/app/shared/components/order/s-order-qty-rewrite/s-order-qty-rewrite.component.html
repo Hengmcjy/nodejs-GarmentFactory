@@ -1,0 +1,43 @@
+
+
+<div class="overflow-y-hidden overflow-x-hidden">
+
+    <div class="grid text-center " style="border-radius: 10px;">
+        <div class="col-12 md:col-3 px-5 py-5">
+            <div class="text-900 font-bold text-4xl mb-3 line-height-3">{{order.orderID}}</div>
+        </div>
+        <div class="col-12 md:col-3 px-5 py-5 text-left">
+            <div class="text-500 font-bold text-base mb-3 line-height-3">
+                Zone :&nbsp;&nbsp;{{targetPlace.targetPlaceID}}
+            </div>
+            <div class="text-500 font-bold text-base mb-3 line-height-3">
+                Country :&nbsp;&nbsp; {{targetPlace.countryID}}
+            </div>
+            <div class="text-500 font-bold text-base mb-3 line-height-3">
+                Color :&nbsp;&nbsp;{{color}}
+            </div>
+            <div class="text-500 font-bold text-base mb-3 line-height-3">
+                Size :&nbsp;&nbsp;{{size}}
+            </div>
+            <!-- <p class="text-400 text-sm m-0">ZONE | COUNTRY | COLOR | SIZE</p> -->
+        </div>
+        <div class="col-12 md:col-3 px-5 py-5">
+            <div class="text-900 font-bold text-4xl mb-3 line-height-3">
+                <p-inputNumber  mode="decimal" inputId="withoutgrouping"
+                    [useGrouping]="false"
+                    [showClear]="true"
+                    (onFocus)="$event.target.select()"
+                    [(ngModel)]="orderQTY">
+                </p-inputNumber>
+                <div class="order-qty-old mt-2 text-left">
+                    old order Qty : {{orderQTYOld}}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3 px-5 py-5">
+            <div class="text-900 font-bold text-4xl mb-3 line-height-3">
+                <p-button label="revise order qty" (onClick)="closeDialog()"></p-button>
+            </div>
+        </div>
+    </div>
+</div>

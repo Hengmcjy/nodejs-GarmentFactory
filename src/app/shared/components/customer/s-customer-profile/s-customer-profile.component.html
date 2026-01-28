@@ -1,0 +1,89 @@
+
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-card p-5 shadow-2 border-round flex-auto" >
+    <div class="text-900 font-semibold text-lg mt-3 text-center">Profile</div>
+    <div class="flex gap-5 flex-column-reverse md:flex-row">
+        <div class="mb-4 flex-auto p-fluid">
+            <div class="mb-4">
+                <label for="customerName" class="block font-medium text-900 mb-2">Name</label>
+                <input id="customerName" type="text" pinputtext=""
+                    [(ngModel)]="customer.customerName"
+                    [disabled]="modeView"
+                    class="p-inputtext p-component p-element" />
+            </div>
+
+            <div class="mb-4">
+                <label for="customerDetail" class="block font-medium text-900 mb-2">Detail</label>
+                <textarea id="customerDetail" type="text" pinputtextarea="" rows="5"
+                    class="p-inputtextarea p-inputtext p-component p-element p-inputtextarea-resizable"
+                    style="height: 131px; overflow: hidden"
+                    [disabled]="modeView"
+                    [(ngModel)]="customer.cusInfo.customerDetail">
+                </textarea>
+            </div>
+            <div class="mb-4">
+                <label for="customerEmail" class="block font-medium text-900 mb-2">Email</label>
+                <input id="customerEmail" type="text" pinputtext=""
+                    [(ngModel)]="customer.cusInfo.email"
+                    [disabled]="modeView"
+                    class="p-inputtext p-component p-element" />
+            </div>
+            <div class="mb-4">
+                <label for="tel" class="block font-medium text-900 mb-2">Tel</label>
+                <input id="tel" type="text" pinputtext=""
+                    [(ngModel)]="customer.cusInfo.tel"
+                    [disabled]="modeView"
+                    class="p-inputtext p-component p-element" />
+            </div>
+            <div class="mb-4">
+                <label for="web" class="block font-medium text-900 mb-2">Web</label>
+                <input id="web" type="text" pinputtext=""
+                    [(ngModel)]="customer.cusInfo.web"
+                    [disabled]="modeView"
+                    class="p-inputtext p-component p-element" />
+            </div>
+            <div *ngIf="!modeView">
+                <button pbutton="" pripple="" label="Update Profile"
+                    class="p-element p-ripple w-auto p-button p-component"
+                    (click)="postCustomer()">
+                    <span class="p-button-label">{{modeCus==='create'?'create customer':'update customer'}}</span>
+                    <span class="p-ink"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- <input id="email1" type="text"
+            pInputText
+            class="w-full "
+            [ngClass]="emailCheck ? '' : ' ng-invalid ng-dirty '"
+            [(ngModel)]="email1"
+            (input)="emailChange($event)">
+        <small class="p-invalid txt-err" *ngIf="errID==='erru001-2'">email already use !!</small>
+
+        <label for="pwd1" class="block text-900 font-medium mb-2 mt-5" >Password</label>
+        <input id="pwd1" type="password"
+            pInputText
+            class="w-full  "
+            maxlength="20"
+            minlength="6"
+            (input)="pwdChange($event)"
+            [(ngModel)]="pwd1"
+            [ngClass]="pwdCheck ? '' : ' ng-invalid ng-dirty '"
+            [pKeyFilter]="blockSpecial" >
+
+
+        <label for="pwd2" class="block text-900 font-medium mb-2 mt-3" >Password again</label>
+        <input id="pwd2" type="password"
+            pInputText
+            class="w-full mb-6"
+            maxlength="20"
+            minlength="6"
+            (input)="pwdChange($event)"
+            [(ngModel)]="pwd2"
+            [ngClass]="pwdCheck ? '' : ' ng-invalid ng-dirty '"
+            [pKeyFilter]="blockSpecial"> -->

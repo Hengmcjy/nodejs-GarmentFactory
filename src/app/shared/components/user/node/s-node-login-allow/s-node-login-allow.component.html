@@ -1,0 +1,65 @@
+
+
+<div class="surface-card  p-4">
+    <!-- <div class="flex justify-content-between align-items-center mb-5">
+        <span class="text-xl text-900 font-medium">Recent Invoices</span>
+        <div><button pbutton="" pripple="" icon="pi pi-ellipsis-v"
+                class="p-element p-ripple p-button-text p-button-plain p-button-rounded p-button p-component p-button-icon-only"><span
+                    class="p-button-icon pi pi-ellipsis-v" aria-hidden="true"></span><span class="p-ink"
+                    style="height: 48px; width: 48px; top: 2.0001px; left: 3px;"></span></button><p-menu
+                class="p-element ng-tns-c31-4 ng-star-inserted"></p-menu></div>
+    </div> -->
+    <ul class="list-none p-0 m-0">
+        <li class="flex flex-column md:flex-row md:align-items-center md:justify-content-between p-3 border-1 mb-3 bg-yellow-50 border-yellow-500"
+            style="border-radius: 10px;"
+            *ngFor="let nstlr of nodeStationLoginRequests; let i = index">
+            <div>
+                <div>
+                    <span class="inline-flex justify-content-center align-items-center w-2rem h-2rem border-circle border-1 border-yellow-200">
+                        <i class="pi pi-building text-yellow-700"></i>
+                    </span>
+                    <span class="text-yellow-700 font-bold ml-2">{{nstlr.companyID}}</span>
+                </div>
+                <p class="text-yellow-700 mt-2 mb-0">
+                    <span class="font-medium ml-5">{{nstlr.factoryID}}</span>
+                </p>
+            </div>
+
+            <div>
+                <div>
+                    <span class="inline-flex justify-content-center align-items-center w-2rem h-2rem border-circle border-1 border-yellow-200">
+                        <i class="pi pi-sitemap text-yellow-700"></i>
+                    </span>
+                    <span class="text-yellow-700 font-bold ml-2">{{nstlr.nodeID}} [{{nstlr.stationID}}]</span>
+                </div>
+                <p class="text-yellow-700 mt-2 mb-0">
+                    <span class="text-pink-300 font-medium ml-4">
+                        {{userService.strFirstAndDot(nstlr.uuidUserNodeLoginWaiting, 10)}}
+                    </span>
+                </p>
+            </div>
+
+            <div class="flex align-items-center justify-content-between md:justify-content-end mt-3 md:mt-0">
+                <span class=" font-bold text-sm py-1 px-2"
+                    style="border-radius: 10px;">
+                    <button pButton pRipple type="button" icon="pi pi-check"
+                        class="p-button-rounded p-button-outlined"
+                        (click)="putAllowNodeStationLoginRequest(nstlr)"></button>
+                </span>
+                <span class=" font-bold text-sm py-1 px-2 ml-4"
+                    style="border-radius: 10px;">
+                    <button pButton pRipple type="button" icon="pi pi-times"
+                        class="p-button-rounded p-button-danger p-button-outlined"
+                        (click)="delNodeStationLoginRequest(nstlr)"></button>
+                </span>
+                <!-- <div class="text-right ml-3">
+                    <span class="text-yellow-700 font-bold">120.00</span>
+                    <p class="mt-1 mb-0 text-yellow-700">EUR</p>
+                </div> -->
+            </div>
+        </li>
+
+    </ul>
+</div>
+
+

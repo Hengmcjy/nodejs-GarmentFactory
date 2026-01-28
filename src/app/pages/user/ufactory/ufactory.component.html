@@ -1,0 +1,103 @@
+
+
+<!-- <app-s-select-factory></app-s-select-factory> -->
+
+<div class="surface-ground">
+    <div class="grid">
+
+        <div class="col-12 md:col-6 lg:col-4 xl:col-3 p-2" *ngIf="false">
+            <div class="  p-4 bg-yellow-100">
+                <img src="https://storage.googleapis.com/mystoragegarment/newfactory.png" class="mb-3 w-full" />
+                <ul class="list-none m-0 p-0">
+                    <li class="px-0 py-2 flex justify-content-between align-items-center">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <span class="text-900 font-medium text-sm">
+                            <p-toast [style]="{marginTop: '80px'}"></p-toast>
+                            <button pButton type="button" label="new factory" icon="pi pi-plus"
+                                class="p-button-text w-full" (click)="showCreateFactoryModal()"></button>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- *ngIf="!fac.fInfo.isOutsource"  *ngIf="fac.show"-->
+
+        <div class="col-12 md:col-6 lg:col-4 xl:col-3 p-2" *ngFor="let fac of factories; let i = index">
+            <div class="shadow-2 surface-card border-round p-4 " *ngIf="fac.show || isAdmin === 'HengTest'">
+                <img [src]="genImagePath(fac.fInfo.pic)" class="mb-3 w-full" />
+                <div class="flex justify-content-between align-items-start">
+                    <div>
+                        <div class="text-xl font-medium text-900 mb-2"> {{fac.fInfo.factoryName}} </div>
+                        <p class="mt-0 mb-3 text-600"> {{fac.factoryID}} </p>
+                    </div>
+                    <!-- *ngIf="!fac.fInfo.isOutsource" -->
+                    <button pButton pRipple icon="pi pi-cog" class="p-button-rounded p-button-text"
+                        *ngIf="user.uInfo.addr==='HengTest'"
+                        (click)="setFactory(fac, 'setting');goto('/user/ufactory/setting');" ></button>
+                </div>
+                <ul class="list-none p-0 m-0" *ngIf="getUserfactoryState(fac.factoryID)!=='wait'">
+                    <!-- <li class="mb-5">
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-900 inline-flex justify-content-between align-items-center">
+                                <i class="pi pi-twitter mr-2"></i>
+                                <span class="font-medium text-900">Twitter</span>
+                            </span>
+                            <span class="text-cyan-500 font-medium">64.47%</span>
+                        </div>
+                        <div class="surface-300 w-full mt-2" style="height: 7px; border-radius: 4px">
+                            <div class="bg-cyan-500 h-full" style="width:64%; border-radius: 4px"></div>
+                        </div>
+                    </li>
+                    <li class="mb-5">
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-900 inline-flex justify-content-between align-items-center">
+                                <i class="pi pi-facebook mr-2"></i>
+                                <span class="font-medium text-900">Facebook</span>
+                            </span>
+                            <span class="text-indigo-500 font-medium">75.67%</span>
+                        </div>
+                        <div class="surface-300 w-full mt-2" style="height: 7px; border-radius: 4px">
+                            <div class="bg-indigo-500 h-full" style="width:75%; border-radius: 4px"></div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-900 inline-flex justify-content-between align-items-center">
+                                <i class="pi pi-google mr-2"></i>
+                                <span class="font-medium text-900">Google</span>
+                            </span>
+                            <span class="text-orange-500 font-medium">45.00%</span>
+                        </div>
+                        <div class="surface-300 w-full mt-2" style="height: 7px; border-radius: 4px">
+                            <div class="bg-orange-500 h-full" style="width:45%; border-radius: 4px"></div>
+                        </div>
+                    </li> -->
+                </ul>
+                <ul class="list-none p-0 m-0">
+                    <li class="px-0 py-2 flex justify-content-center flex-wrap" *ngIf="fac.fInfo.isOutsource">
+                        <span class="outsource-caption-head">
+                            {{userService.translateCode('mn', 'mn-outsource') | uppercase}}
+                        </span>
+                    </li>
+                </ul>
+                <ul class="list-none p-0 m-0">
+                    <li class="px-0 py-2 flex justify-content-between align-items-center mt-3" *ngIf="getUserfactoryState(fac.factoryID)!=='wait' && !fac.fInfo.isOutsource">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <button pButton pRipple type="button" class="p-button-rounded  p-button-info p-2"
+                            label="{{userService.translateCode('gn', 'gn-enter')}} "
+                            (click)="setFactory(fac, 'enter');"
+                            *ngIf="showBtnEnter"></button>
+                    </li>
+                    <li class="px-0 py-2 flex justify-content-between align-items-center border-top-1" *ngIf="getUserfactoryState(fac.factoryID)==='wait'">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <button pButton pRipple type="button"
+                            label="join now"
+                            class="p-button-rounded  p-button-warning p-2 "></button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>

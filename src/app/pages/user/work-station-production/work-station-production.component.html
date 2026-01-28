@@ -1,0 +1,206 @@
+
+
+<app-s-work-station-main [viewMode]="viewMode"></app-s-work-station-main>
+
+<!-- <div class="min-h-screen flex surface-ground">
+
+    <div id="app-sidebar-6" class="h-screen block flex-shrink-0 fixed sticky left-0 top-0 z-1
+        select-none w-12rem bg-indigo-800 animation-duration-300 animation-ease-in-out">
+        <div class="flex flex-column h-full overflow-y-auto">
+            <div class="">
+                <ul class="list-none p-3 m-0 flex flex-wrap">
+
+                    <li class="w-6 text-center" (click)="selectPage('home')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-home text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            Home
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center" (click)="selectPage('viewstat')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-users text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            view stat
+                        </div>
+                    </li>
+                    <li class="w-6 text-center mt-3" (click)="selectPage('chart')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-chart-bar text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            Chart
+                        </div>
+                    </li>
+
+
+                </ul>
+            </div>
+
+            <span class="mt-5"></span>
+            <div class="">
+                <ul class="list-none p-0 m-0 flex flex-wrap">
+                    <li class="w-6 text-center" *ngIf="staffLoggedIN" (click)="selectPage('getproduct')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-green-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 20px; ">
+                            <i class="pi pi-download text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            get Product
+                        </div>
+                    </li>
+                    <li class="w-6 text-center" *ngIf="staffLoggedIN" (click)="selectPage('getproduct')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-yellow-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 20px; ">
+                            <i class="pi pi-reply text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            return Product
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="">
+                <ul class="list-none p-0 m-0 flex flex-wrap">
+                    <li class="w-12 text-center mt-3" *ngIf="!staffLoggedIN" (click)="staffLogin()">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-orange-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 30px; ">
+                            <i class="pi pi-sign-in text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            login
+                        </div>
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="flex justify-content-center flex-column lg:flex-row p-2" *ngIf="staffLoggedIN">
+
+                <div class="shadow-2 mb-0  mt-1 surface-card text-center">
+                    <img src="assets/images/blocks/avatars/square/avatar-f-1.jpg" class="mb-3 w-full" />
+                    <div class="flex justify-content-between
+                        align-items-center">
+                        <div class="pr-">
+                            <div class="text-xl text-900 font-medium mb-2">
+                                Claire Davies
+                            </div>
+                            <div class="text-blue-600">
+                                staff barcode login <br />
+                                - logging and history staff login <br />
+                                dashboard <br />
+                                goods <br />
+                                - view scan in barcode <br />
+                                - current goods store <br />
+                                - history in and out goods <br />
+                                screen <br />
+                                - full screen , out full screen
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="">
+                <ul class="list-none p-0 m-0 flex flex-wrap">
+
+                    <li class="w-12 text-center mt-3" *ngIf="staffLoggedIN" (click)="staffLogout()">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-red-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 30px; ">
+                            <i class="pi pi-sign-out text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            log out
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="mt-auto">
+                <div class="mb-1">
+                    <app-web-footer></app-web-footer>
+                </div>
+                <div class="border-top-1 border-indigo-700 p-3 flex justify-content-between">
+                    <a pRipple class="cursor-pointer inline-flex align-items-center
+                        justify-content-center border-2 border-indigo-500
+                        hover:bg-indigo-700 active:bg-indigo-400 text-red-500
+                        hover:text-red-400 transition-colors
+                        transition-duration-150" style="width: 40px; height: 40px; border-radius: 10px" (click)="logout()">
+
+                        <i class="pi pi-times text-xl"></i>
+
+                    </a>
+                    <a pRipple class="cursor-pointer inline-flex align-items-center
+                        justify-content-center border-2 border-indigo-500
+                        hover:bg-indigo-700 active:bg-indigo-400 text-indigo-200
+                        hover:text-indigo-100 transition-colors
+                        transition-duration-150" style="width: 40px; height: 40px; border-radius: 10px"
+                        (click)="openFullscreen()">
+                        <i class="pi pi-window-maximize text-xl"></i>
+                    </a>
+                    <a pRipple class="cursor-pointer inline-flex align-items-center
+                        justify-content-center border-2 border-indigo-500
+                        hover:bg-indigo-700 active:bg-indigo-400 text-indigo-200
+                        hover:text-indigo-100 transition-colors
+                        transition-duration-150" style="width: 40px; height: 40px; border-radius: 10px"
+                        (click)="closeFullscreen()">
+                        <i class="pi pi-window-minimize text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="min-h-screen flex flex-column relative flex-auto">
+        <div class="flex flex-column flex-auto">
+            <div class="border-2 p-2 border-dashed surface-border border-round
+                surface-section flex-auto">
+
+
+                <app-node-home *ngIf="pageActive==='home'"></app-node-home>
+                <app-s-work-station *ngIf="pageActive==='getproduct'"></app-s-work-station>
+                <app-node-view-stat *ngIf="pageActive==='viewstat'"></app-node-view-stat>
+                <app-node-chart *ngIf="pageActive==='chart'"></app-node-chart>
+
+
+            </div>
+        </div>
+    </div>
+</div> -->
+
+

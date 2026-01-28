@@ -1,0 +1,116 @@
+
+
+<div class="surface-card shadow-2 p-3 m-1 border-round">
+    <div class="flex justify-content-between mb-3">
+        <div class="w-full">
+            <span class="block text-900 font-medium text-xl mb-3">
+                {{bundleSetGroup.color.colorCode}} {{bundleSetGroup.color.colorName}}
+            </span>
+            <ul class="list-none m-0 pl-2">
+                <li class="px-0 py-2 surface-border">
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon surface-card">Group name</span>
+                        <input type="text" pInputText [(ngModel)]="bundleSetGroup.groupName" />
+                    </div>
+                    <!-- <span class="text-600 font-medium text-sm">Group name</span>
+                    <span class="text-900 font-medium text-sm">
+                        <input type="text" class="p-inputtext-sm" pInputText [(ngModel)]="bundleSetGroup.groupName" />
+                    </span> -->
+                </li>
+                <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                    <span class="text-600 font-medium text-sm">Sequence</span>
+                    <span class="text-900 font-medium text-sm">
+                        <input type="text" pInputText class="p-inputtext-sm"
+                            (keypress)="userService.numberOnly($event);"
+                            [(ngModel)]="bundleSetGroup.seq" />
+                    </span>
+                </li>
+                <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                    <span class="text-600 font-medium text-sm">Style</span>
+                    <span class="text-900 font-medium text-sm">
+                        {{bundleSetGroup.orderID}}
+                    </span>
+                </li>
+                <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                    <span class="text-600 font-medium text-sm">Zone</span>
+                    <span class="text-900 font-medium text-sm">
+                        {{bundleSetGroup.targetPlaceID}}
+                    </span>
+                </li>
+                <!-- <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                    <span class="text-600 font-medium text-sm">Color</span>
+                    <span class="text-900 font-medium text-sm">
+                        #XXX Color name
+                    </span>
+                </li> -->
+                <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                    <span class="text-600 font-medium text-sm">Yarn Lot ID</span>
+                    <span class="text-900 font-medium text-sm">
+                        <textarea rows="2" cols="20" pInputTextarea [(ngModel)]="bundleSetGroup.yarnLotID"></textarea>
+                    </span>
+                </li>
+                <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                    <span class="text-600 font-medium text-sm">
+                        <span class="cursor-pointer" (dblclick)="validateBundleNoQty()">
+                            bundle no.
+                            &nbsp;&nbsp;
+                            <span class="text-sm font-semibold font-italic text-blue-300 ">
+                                [
+                                {{bundleSetGroup.bundleNoQty}}
+                            </span>
+                            &nbsp;
+                            <span class="text-xs font-italic text-blue-300 ">
+                                bundle.
+                                ]
+                            </span>
+                        </span>
+                    </span>
+                    <span class="text-900 font-medium text-sm">
+                        <span class="text-900 font-medium text-sm">
+                            <textarea rows="5" cols="20" pInputTextarea
+                                (keypress)="userService.numberMinusCommaOnly($event);"
+                                [(ngModel)]="bundleSetGroup.bundleNoSet"></textarea>
+                        </span>
+                    </span>
+                </li>
+                <li class="px-0 py-2 flex justify-content-between align-items-center surface-border">
+                    <span class="text-600 font-medium text-sm"> </span>
+                    <span class="text-900 font-medium text-sm flex justify-content-between">
+                        <button pButton pRipple type="button" label="add new"
+                            class="p-button-rounded p-button-info mr-4 p-1 text-sm "
+                            *ngIf="bundleSetGroup.bundleNoQty>0"
+                            (click)="postBundleSetGroupCreateNew()">
+                        </button>
+                        <button pButton pRipple type="button" label="cancel"
+                            class="p-button-rounded p-button-danger p-1 text-sm text-900"
+                            (click)="closeDialog()">
+                        </button>
+                    </span>
+                </li>
+            </ul>
+        </div>
+        <div>
+            <!-- ligth green warning danger -->
+            <i class="pi pi-circle-fill text-2xl" [ngStyle]="{color: bundleSetGroup.color.colorValue}"></i>
+            <!-- <i class="pi pi-circle-fill text-green-500 text-2xl"></i> -->
+            <!-- <i class="pi pi-circle-fill text-red-500 text-2xl"></i> -->
+            <!-- <i class="pi pi-circle-fill text-yellow-500 text-2xl"></i> -->
+            <!-- <i class="pi pi-circle-fill text-gray-500 text-2xl"></i> -->
+        </div>
+    </div>
+    <!-- <div class="px-0 py-0 mt-2 text-right">
+        <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+            class="p-element p-ripple p-button-rounded p-button-text p-button-primary p-button p-component p-2 px-5">
+            <span class="p-button-icon p-button-icon-left pi pi-eye text-xs" aria-hidden="true"></span>
+            <span class="p-button-label text-base">view</span>
+            <span class="p-ink"></span>
+        </button>
+        <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+            class="p-element p-ripple p-button-rounded p-button-text p-button-warning p-button p-component p-2">
+            <span class="p-button-icon p-button-icon-left pi pi-th-large text-xs" aria-hidden="true"></span>
+            <span class="p-button-label text-base">manage</span>
+            <span class="p-ink"></span>
+        </button>
+    </div> -->
+
+</div>

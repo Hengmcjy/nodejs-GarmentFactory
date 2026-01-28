@@ -1,0 +1,63 @@
+
+
+<div class="text-xl font-bold text-700 text-center mb-4">
+    {{headerPage}}
+</div>
+<div class="border-none bg-tran">
+    <span class="flex flex-column md:flex-row gap-3 m-0 p-0 border-none " *ngIf="repMode === 'rep-fac-scan-bundle-state'">
+
+        <div class="field mb-4 w-3">
+            <div class="cursor-pointer" (click)="showProductSelectionModal()">
+                <app-s-product-card [product]="product"></app-s-product-card>
+            </div>
+        </div>
+
+        <div class="">
+            <p-toast></p-toast>
+            <p-menu #menu [model]="items" [popup]="true"></p-menu>
+            <button pButton type="button" class="p-button-warning" (click)="menu.toggle($event);clearData();">
+                {{userGroupScan1.groupScanID}}
+            </button>
+        </div>
+
+        <span>
+            <div class="p-inputgroup">
+                <p-calendar [(ngModel)]="date12" selectionMode="range"
+                    [readonlyInput]="readonlyInput"
+                    [numberOfMonths]="3"
+                    [dateFormat]="dateFormat"
+                    (onShow)="dateChange()"></p-calendar>
+                <button type="button" pButton styleClass="p-button-warn"
+                    (click)="selectDate()">
+                    get data
+                </button>
+            </div>
+        </span>
+
+        <button type="button" pButton styleClass="p-button-warn" *ngIf="bundleStatePDF.length>0" (click)="bundleStatePDFPrint()">
+            Bundle state PDF
+        </button>
+
+        <div class="text-center border-1 surface-border border-round p-4" *ngIf="bundleStatePDF.length===0">
+            <!-- <i class="pi pi-twitter text-5xl text-blue-500"></i> -->
+            <!-- <div class="text-900 text-2xl font-700 my-3 font-bold">12.40K</div> -->
+            <span class="font-medium text-600">No Data</span>
+        </div>
+
+    </span>
+</div>
+
+<div class="flex flex-column md:flex-row gap-3 m-0 p-0 my-4 border-none">
+    <span class="">
+        create group of lock job for bundleNo list
+    </span>
+
+    <!-- <button type="button" pButton styleClass="p-button-warn">
+        PDF
+    </button> -->
+    <!-- <button type="button" pButton styleClass="p-button-warn">
+        PDF
+    </button> -->
+
+</div>
+

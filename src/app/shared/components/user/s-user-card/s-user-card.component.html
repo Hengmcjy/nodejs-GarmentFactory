@@ -1,0 +1,31 @@
+<div class="surface-card shadow-2 p-4 m-0
+    flex flex-column align-items-center md:flex-row md:align-items-stretch h-full "
+    style="border-radius: 10px;max-width: 600px;min-width: 400px;">
+    <span>
+        <img [src]="genImagePath(user.uInfo.pic)" class="w-5rem" >
+    </span>
+    <div class="flex flex-column align-items-center md:align-items-stretch ml-4 mt-4 md:mt-0">
+        <p class="mt-0 mb-3 line-height-3 text-center md:text-left  white-space-normal">
+            <span>Type : </span>
+            <span>{{userService.getUserType(user.type)}}</span>
+        </p>
+        <p class="mt-0 mb-3 line-height-3 text-center md:text-left  white-space-normal">
+            <span>userID : </span>
+            <span>{{user.userID}}</span>
+        </p>
+        <p class="mt-0 mb-3 line-height-3 text-center md:text-left  white-space-normal">
+            <span>register date : </span>
+            <span>{{user.uInfo.registDate |  date: 'dd-MM-yyyy'}}</span>
+        </p>
+        <p class="mt-0 mb-3 line-height-3 text-center md:text-left  white-space-normal">
+            <span>tel : </span>
+            <span>{{user.uInfo.tel}}</span>
+        </p>
+        <!-- <p class="mt-0 mb-3 line-height-3 text-center md:text-left  white-space-normal">
+            No matter where you go, Blocks is the coolest, most
+            happening thing around! We can't understand how we've been living without Blocks.
+        </p> -->
+        <span class="text-900 font-medium mb-1 mt-auto">{{user.uInfo.userName}}</span>
+        <div class="text-600 text-sm">Belton, Inc</div>
+    </div>
+</div>

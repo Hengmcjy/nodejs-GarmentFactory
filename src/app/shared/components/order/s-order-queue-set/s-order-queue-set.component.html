@@ -1,0 +1,90 @@
+
+
+<p-menu #menu [popup]="true" [model]="items" styleClass="bg-yellow-50"></p-menu>
+
+<p-toast position="top-right" ></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<p-paginator [rows]="limit" [totalRecords]="countOrderQueueSetAll" [rowsPerPageOptions]="[10,20,50]"
+                (onPageChange)="paginate($event)"></p-paginator>
+
+<p-table [value]="orderProductionQueueList"  [tableStyle]="{'min-width': '60rem'}">
+    <ng-template pTemplate="caption">
+        {{order.orderID}}
+    </ng-template>
+    <ng-template pTemplate="header">
+        <tr>
+            <th>factory</th>
+            <th>Datetime</th>
+            <th>Zone/Color/Size</th>
+            <th>Number</th>
+            <th>Qty</th>
+            <th>forLossQty</th>
+            <th>yarnLotID</th>
+            <th>user</th>
+
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-queue let-idx="rowIndex">
+        <tr class="m-0 p-0"
+            [ngClass]="getRowClass(queue.isOutsource)">
+            <td [ngClass]="getRowClass(queue.isOutsource)"
+                (click)="selectOrderProductionQueueList(queue);"
+                (dblclick)="setMenuPopup(queue);
+                menu.toggle($event);">
+                <span>
+                    {{userService.getFactoryIDArrByFactoryID(userService.factories, queue.factoryID).fInfo.factoryName}}
+                </span>
+
+                <div class="text-sm" *ngIf="queue.isOutsource">
+                    <div *ngFor="let os of queue.outsourceData; let a = index">
+                        &nbsp;&nbsp;&nbsp;&nbsp;{{userService.getFactoryNameByFactoryID(os.factoryID)}}
+                        <span class="txt-subcontact-cell">(sub)</span>
+                    </div>
+                </div>
+            </td>
+            <td [ngClass]="getRowClass(queue.isOutsource)">
+                <span>{{queue.queueDate | date: 'dd-MM-yyyy'}}</span>
+                <div>{{queue.queueDate | date: 'hh:mm'}}</div>
+            </td>
+            <td [ngClass]="getRowClass(queue.isOutsource)">
+                <div class="text-xs">{{getInfoFromProductBarcode(queue.productBarcode, 'targetPlaceID')}}</div>
+                <div class="text-xs">{{getInfoFromProductBarcode(queue.productBarcode, 'color')}}</div>
+                <div class="text-xs">{{getInfoFromProductBarcode(queue.productBarcode, 'size')}}</div>
+            </td>
+            <td [ngClass]="getRowClass(queue.isOutsource)">
+                <div class="text-xs">
+                    <span>{{queue.numberFrom}}</span>
+                    &nbsp;-&nbsp;
+                    <span>{{queue.numberTo}}</span>
+                </div>
+                <div class="txt-sm-gray" (dblclick)="cancelOrderQueue(queue)">{{queue.bundleNoFrom}}</div>
+                <div class="txt-sm-gray" (dblclick)="cancelOrderQueue(queue)">{{queue.bundleNoTo}}</div>
+            </td>
+            <td [ngClass]="getRowClass(queue.isOutsource)">
+                <span>{{+queue.numberTo - +queue.numberFrom + 1}}</span>
+            </td>
+            <td [ngClass]="getRowClass(queue.isOutsource)">
+                <span>
+                    {{queue.forLossQty}}
+                </span>
+            </td>
+            <td [ngClass]="getRowClass(queue.isOutsource)">
+                <div *ngFor="let yarn of queue.yarnLot; let i = index">
+                    <span>{{yarn.yarnLotID}}</span>
+                </div>
+            </td>
+            <td [ngClass]="getRowClass(queue.isOutsource)">
+                <span>
+                    {{queue.createBy.userName}}
+                </span>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+        <div class="flex align-items-center justify-content-between">
+            In total there are  products queue.
+        </div>
+    </ng-template>
+</p-table>
+

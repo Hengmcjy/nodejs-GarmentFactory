@@ -1,0 +1,37 @@
+
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-card p-5   w-12" >
+    <div class="w-12">
+        <div class="mb-4  p-fluid">
+            <div class="mb-4">
+                <label for="pass1" class="block font-medium text-900 mb-2">userID</label>
+                <input id="pass1" type="text" pinputtext=""
+                    class="p-inputtext p-component p-element"
+
+                    [(ngModel)]="userID"
+                    (keyup)="userID = userID.toUpperCase();"
+                    disabled="true"/>
+            </div>
+            <div class="mb-4">
+                <label for="pass2" class="block font-medium text-900 mb-2">Password</label>
+                <input id="pass2" type="text" pinputtext="" autocomplete="off"
+                    class="pw p-inputtext p-component p-element"
+                    autofocus
+                    [(ngModel)]="userPass"/>
+                <small class="p-invalid txt-err" *ngIf="authTxt!==''">{{authTxt}}</small>
+            </div>
+        </div>
+    </div>
+    <div>
+        <button pbutton="" pripple="" label="Update Profile"
+            class="p-element p-ripple w-auto p-button p-component"
+            (click)="staffCheckConfirm()"
+            [disabled]="!btnConfirmActive">
+            <span class="p-button-label">confirm / apply</span>
+            <span class="p-ink"></span>
+        </button>
+    </div>
+</div>
+

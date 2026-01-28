@@ -1,0 +1,220 @@
+
+
+
+<p-toast position="top-right" ></p-toast>
+<p-confirmDialog header="Confirmation replacement QRCode" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+
+<div class="surface-ground px-2 py-2 md:px-2 lg:px-2">
+    <div class="p-fluid flex flex-column lg:flex-row">
+        <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly md:justify-content-between lg:justify-content-start mb-5 lg:pr-8 lg:mb-0">
+            <li>
+                <span class="order-id">
+                    <!-- {{order.orderID}} -->
+                </span>
+            </li>
+
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('gen-qrcode');">
+                    <i
+                        class="pi pi-bolt md:mr-2"></i>
+                        <span class="font-medium hidden md:block">create QR Code</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('product-scan');">
+                    <i
+                        class="pi pi-qrcode md:mr-2"></i>
+                        <span class="font-medium hidden md:block">scan product</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('qrcode-info');">
+                    <i
+                        class="pi pi-info-circle md:mr-2"></i>
+                        <span class="font-medium hidden md:block">QR code info & replacement</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+
+            <!-- <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('qrcode-replace');">
+                    <i
+                        class="pi pi-info-circle md:mr-2"></i>
+                        <span class="font-medium hidden md:block">QR code replacement</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li> -->
+
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('logging');">
+                    <i
+                        class="pi pi-eye md:mr-2"></i>
+                        <span class="font-medium hidden md:block">logging</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+
+
+        </ul>
+
+        <app-s-node-product-record
+            [productBarcodeNoInput]="productBarcodeNoInput"
+            class="w-full"
+            *ngIf="mode==='product-scan'">
+        </app-s-node-product-record>
+
+        <app-s-gen-qrcode
+            class="w-full"
+            *ngIf="mode==='gen-qrcode'">
+        </app-s-gen-qrcode>
+
+        <!-- <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='qrcode-replace'">
+            qrcode-replace
+        </div> -->
+
+        <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='logging'">
+            <p-table [value]="orderProduction.productionNode"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <!-- <ng-template pTemplate="caption">
+                    <div>Total all Queue :  {{countProductionQueueAll}} </div>
+                    <div>Item : {{sumProductionQueueAll}}</div>
+                </ng-template> -->
+                <ng-template pTemplate="caption">
+                    {{productBarcodeNoInput}}
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="px-0" style="width: 5%">#</th>
+                        <th class="px-0" style="width: 20%">Scan time</th>
+                        <th class="px-0" style="width: 30%">From node</th>
+                        <th class="px-0" style="width: 30%;">To node</th>
+                        <th class="px-0" style="width: 15%">user</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-productionNode let-idx="rowIndex">
+                    <tr class="text-base">
+                        <td>{{+idx + 1}}</td>
+                        <td class=""
+                            [ngClass]="productionNode.status === 'problem' ? 'font-italic text-red-700' : ''"
+                        >
+                            {{productionNode.datetime | date: 'dd-MM-yyyy hh:mm'}}
+                        </td>
+                        <td class="text-600" [ngClass]="productionNode.status === 'problem' ? 'font-italic text-red-700' : ''">{{productionNode.fromNode}}</td>
+                        <td class="font-semibold" [ngClass]="productionNode.status === 'problem' ? 'font-italic text-red-700' : ''">{{productionNode.toNode}}</td>
+                        <td class="text-600">{{productionNode.createBy.userName}}</td>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='qrcode-info'">
+            <div class="grid justify-content-center flex-column lg:flex-row">
+
+                <div class="col-12 lg:col-6 lg:pl-4 py-4">
+                    <p-card>
+                        <div class="w-full hidden lg:block">
+                            <div class="text-900 text-xl font-medium">{{orderProduction.productBarcodeNo}}</div>
+                            <div class="text-500 text-base"
+                                *ngIf="orderProduction.productBarcodeNo !== orderProduction.productBarcodeNoReal">
+                                {{orderProduction.productBarcodeNoReal}}
+                            </div>
+                        </div>
+                        <table class="w-full">
+                            <tr>
+                                <td w-7="" class="text-900 text-xl p-2 font-medium">Zone</td>
+                                <td class="text-600 p-2">{{data.zone}}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-900 text-xl p-2 font-medium w-7">Size</td>
+                                <td class="text-600 p-2">{{data.size}}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-900 text-xl p-2 font-medium w-7">Color</td>
+                                <td class="text-600 p-2">{{userService.getCodeColorNameByColorCode(data.color1, setName)}}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-900 text-xl p-2 font-medium w-7"></td>
+                                <td class="text-600 p-2">{{data.color1}}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-900 text-xl p-2 font-medium w-7"></td>
+                                <td class="text-600 p-2">{{userService.getColorNameByColorCode(data.color1, setName)}}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-900 text-xl p-2 font-medium w-7">Bundle no</td>
+                                <td class="text-600 p-2">{{orderProduction.bundleNo}}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-900 text-xl p-2 font-medium w-7">Yarn Lot</td>
+                                <td class="text-600 p-2">
+                                    <div *ngFor="let yarn of orderProduction.yarnLot; let a = index">
+                                        <span>{{a+1}} : </span>
+                                        <span>{{yarn.yarnLotID}}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </p-card>
+                </div>
+                <div class="col-12 lg:col-6 lg:pl-4 py-4">
+                    <p-card>
+                        <div class="p-inputgroup mb-3">
+                            <input type="text" pInputText [(ngModel)]="productBarcodeNoReplace">
+                            <button type="button" pButton pRipple icon="pi pi-sync" styleClass="p-button-warn"
+                                (click)="confirmReplace()"></button>
+                        </div>
+
+                        <p-table [value]="orderProduction.productBarcodeNoReserve"
+                            class="w-full"
+                            styleClass="p-datatable-sm">
+                            <!-- <ng-template pTemplate="caption">
+                                <div>Total all Queue :  {{countProductionQueueAll}} </div>
+                                <div>Item : {{sumProductionQueueAll}}</div>
+                            </ng-template> -->
+                            <ng-template pTemplate="caption">
+                                <div>
+                                    replacement
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th class="px-0" style="width: 5%">#</th>
+                                    <th class="px-0" style="width: 20%">date</th>
+                                    <th class="px-0" style="width: 30%">node</th>
+                                    <th class="px-0" style="width: 30%;">Qr code</th>
+                                    <th class="px-0" style="width: 15%">user</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-rep let-idx="rowIndex">
+                                <tr class="text-base">
+                                    <td>{{+idx + 1}}</td>
+                                    <td class="font-italic text-red-700">
+                                        {{rep.datetime | date: 'dd-MM-yyyy hh:mm'}}
+                                    </td>
+                                    <td class="text-600">{{rep.nodeID}}</td>
+                                    <td class="font-semibold">{{rep.productBarcodeNo}}</td>
+                                    <td class="text-600">{{rep.createBy.userName}}</td>
+                            </ng-template>
+                        </p-table>
+                    </p-card>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+

@@ -1,0 +1,54 @@
+
+<app-s-work-station-head></app-s-work-station-head>
+
+<div class="surface-ground px-4 py-1  md:px-6 lg:px-8">
+    <div class="surface-ground mt-3">
+        <div class="grid p-fluid">
+            <div class="col-12">
+                <div class="card card-w-title p-0 m-0">
+                    <p-megaMenu [model]="megaMenuItems"></p-megaMenu>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <app-s-rep-fac-node-station
+        [factory]="factory"
+        [callFrom]="nodeStation.nodeID"
+        *ngIf="repActive==='node-report'">
+    </app-s-rep-fac-node-station>
+</div>
+
+<div>
+    <app-s-rep-fac-node-station
+        [factory]="factory"
+        *ngIf="repActive==='all-node-report'">
+    </app-s-rep-fac-node-station>
+</div>
+
+<div>
+    <app-s-rep-fac-node-scan
+        [factory]="factory"
+        *ngIf="repActive==='scan-report'">
+    </app-s-rep-fac-node-scan>
+</div>
+
+<div>
+    <app-s-rep-fac-node-bundle
+        [factory]="factory"
+        [nodeID]="nodeStation.nodeID"
+        *ngIf="repActive==='bundleInfo-report'">
+    </app-s-rep-fac-node-bundle>
+</div>
+
+<div>
+    <app-s-rep-fac-process-period-zone
+    *ngIf="repActive==='factory-scan-product-period'"
+    [repMode]="'factory-scan-product-period'"
+    [repModeArr]="['factory-scan-product-period']">
+</app-s-rep-fac-process-period-zone>
+</div>
+
+

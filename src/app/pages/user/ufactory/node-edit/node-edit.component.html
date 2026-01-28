@@ -1,0 +1,295 @@
+
+
+<p-toast position="top-right" ></p-toast>
+
+<p-tabView [(activeIndex)]="indexTab" *ngIf="nodeStation.nodeID !== ''" (onChange)="handleChange($event)">
+    <p-tabPanel header="info">
+        <div class="surface-card p-4 shadow-2 border-round" >
+            <ul class="list-none p-0 m-0 border-300">
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">company</div>
+                    <div class="text-900 w-full md:w-10">{{company.cInfo.companyName}}</div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">factory</div>
+                    <div class="text-900 w-full md:w-10">{{factory.fInfo.factoryName}}</div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium ">
+                        nodeID
+                    </div>
+                    <div class="text-900 w-full md:w-10 text-red-700 font-semibold">
+                        {{nodeStation.nodeID}}
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">status</div>
+                    <div class="text-900 w-full md:w-10" >
+                        <p-menu #menu [popup]="true" [model]="statusItems"></p-menu>
+                        <button pButton pRipple type="button"
+                            label="{{nsService.getNodeStatusName(nodeStation.status)}}"
+                            class=" p-button-info p-button-outlined text-center w-4"
+                            [ngClass]="nodeStation.status==='c'?'p-button-warning':nodeStation.status==='d'?'p-button-danger':'p-button-info'"
+                            (click)="menu.toggle($event)">
+                        </button>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">node type</div>
+                    <div class="text-900 w-full md:w-10">
+                        <p-menu #menuNodeType [popup]="true" [model]="nodeTypeItems"></p-menu>
+                        <button pButton pRipple type="button"
+                            label="{{nodeStation.nodeInfo.nodeType}}"
+                            class=" p-button-info p-button-outlined  w-4"
+                            [ngClass]="nodeStation.nodeInfo.nodeType==='main'?'p-button-info':nodeStation.nodeInfo.nodeType==='none'?'p-button-danger':'p-button-warning'"
+                            (click)="menuNodeType.toggle($event)">
+                        </button>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">have sub flow</div>
+                    <div class="text-900 w-full md:w-10">
+                        <p-menu #menuHaveSubWorkflow [popup]="true" [model]="haveSubWorkflowItems"></p-menu>
+                        <button pButton pRipple type="button"
+                            label="{{nodeStation.nodeInfo.haveSubWorkflow?'Yes':'No'}}"
+                            class=" p-button-info p-button-outlined  w-4"
+                            [ngClass]="nodeStation.nodeInfo.haveSubWorkflow?'p-button-warning':'p-button-info'"
+                            (click)="menuHaveSubWorkflow.toggle($event)">
+                        </button>
+                        <button pButton pRipple type="button" label="manage"
+                            class="p-button-secondary p-button-text text-sm ml-2"
+                            *ngIf="nodeStation.nodeInfo.haveSubWorkflow"></button>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">Bundle Scan</div>
+                    <div class="text-900 w-full md:w-10">
+                        <p-menu #menuMustBundleScan [popup]="true" [model]="mustBundleScanItems"></p-menu>
+                        <button pButton pRipple type="button"
+                            label="{{nodeStation.nodeInfo.mustBundleScan?'Yes':'No'}}"
+                            class=" p-button-info p-button-outlined  w-4"
+                            [ngClass]="nodeStation.nodeInfo.mustBundleScan?'p-button-warning':'p-button-info'"
+                            (click)="menuMustBundleScan.toggle($event)">
+                        </button>
+                        <!-- <button pButton pRipple type="button" label="manage"
+                            class="p-button-secondary p-button-text text-sm ml-2"
+                            *ngIf="nodeStation.nodeInfo.mustBundleScan"></button> -->
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">location</div>
+                    <div class="text-900 w-full md:w-10">
+                        <textarea id="location" type="text" pinputtextarea="" rows="2"
+                            class="p-inputtextarea p-inputtext p-component p-element p-inputtextarea-resizable w-8"
+                            style="height: 131px; overflow: hidden;"
+                            [(ngModel)]="nodeStation.nodeInfo.location">
+                        </textarea>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">stationNo</div>
+                    <div class="text-900 w-full md:w-10">
+                        <!-- <textarea id="stationNo" type="text" pinputtextarea="" rows="2"
+                            class="p-inputtextarea p-inputtext p-component p-element p-inputtextarea-resizable w-8"
+                            style="height: 131px; overflow: hidden;"
+                            [(ngModel)]="nodeStation.nStation.stationNo">
+                        </textarea> -->
+                        <input type="text" pInputText
+                            (keypress)="userService.numberOnly($event); userService.valueMax(nodeStation.nStation.stationNo, 6);"
+                            (keyup)="manageUserNode();"
+                            [(ngModel)]="nodeStation.nStation.stationNo"/>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">description</div>
+                    <div class="text-900 w-full md:w-10">
+                        <textarea id="location" type="text" pinputtextarea="" rows="2"
+                            class="p-inputtextarea p-inputtext p-component p-element p-inputtextarea-resizable w-8"
+                            style="height: 131px; overflow: hidden;"
+                            [(ngModel)]="nodeStation.nodeInfo.nodeDescription">
+                        </textarea>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">user create</div>
+                    <div class="text-900 w-full md:w-10">{{nodeStation.nodeInfo.createBy.userName}}</div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium"></div>
+                    <div class="text-900 w-full md:w-10">
+                        <button pbutton="" pripple="" label="Save Changes"
+                            class="p-element p-ripple w-auto mt-3 p-button p-component"
+                            (click)="putNodeStationEdit()">
+                            <span class="p-button-label">Save Changes</span>
+                            <span class="p-ink"></span>
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="surface-card mt-4 p-4 shadow-2 border-round" *ngIf="false">
+            problem setting zone
+            <!-- <div class="grid formgrid p-fluid">
+                <div class="field mb-4 col-12">
+                    <label for="nickname2" class="font-medium text-900">Nickname</label>
+                    <input id="nickname2" type="text" pinputtext="" class="p-inputtext p-component p-element">
+                </div>
+                <div class="surface-border border-top-1 opacity-50 mb-3 col-12"></div>
+                <div class="field mb-4 col-12 md:col-6">
+                    <label for="bio2" class="font-medium text-900">Bio</label>
+                    <textarea id="bio2" type="text" pinputtextarea="" rows="5"
+                        class="p-inputtextarea p-inputtext p-component p-element p-inputtextarea-resizable"
+                        style="height: 131px; overflow: hidden;">
+                    </textarea>
+                </div>
+                <div class="surface-border border-top-1 opacity-50 mb-3 col-12"></div>
+                <div class="field mb-4 col-12 md:col-6">
+                    <label for="email2" class="font-medium text-900">Email</label>
+                    <input id="email2" type="text" pinputtext="" class="p-inputtext p-component p-element">
+                </div>
+                <div class="field mb-4 col-12 md:col-6">
+                    <label for="country2" class="font-medium text-900">Country</label>
+                </div>
+                <div class="field mb-4 col-12 md:col-6">
+                    <label for="city2" class="font-medium text-900">City</label>
+                    <input id="city2" type="text" pinputtext="" class="p-inputtext p-component p-element">
+                </div>
+                <div class="field mb-4 col-12 md:col-6">
+                    <label for="state2" class="font-medium text-900">State</label>
+                    <input id="state2" type="text" pinputtext="" class="p-inputtext p-component p-element">
+                </div>
+                <div class="surface-border border-top-1 opacity-50 mb-3 col-12"></div>
+                <div class="field mb-4 col-12">
+                    <label for="website2" class="font-medium text-900">Website</label>
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon">www</span>
+                        <input id="website2" type="text" pinputtext="" class="p-inputtext p-component p-element">
+                    </div>
+                </div>
+                <div class="surface-border border-top-1 opacity-50 mb-3 col-12"></div>
+                <div class="field mb-4 col-12">
+                    <label for="privacy2" class="font-medium text-900">Privacy</label>
+                    <div class="flex align-items-center">
+                        <p-inputSwitch  inputid="privacy2" class="p-element">
+                            <div class="p-inputswitch p-component">
+                                <div class="p-hidden-accessible">
+                                    <input type="checkbox" role="switch" id="privacy2" aria-checked="false">
+                                </div>
+                                <span class="p-inputswitch-slider"></span>
+                            </div>
+                        </p-inputSwitch>
+                        <span class="ml-2 text-900">Share my data with contacts</span>
+                    </div>
+                </div>
+                <div class="surface-border border-top-1 opacity-50 mb-3 col-12"></div>
+                <div class="col-12">
+                    <button pbutton="" pripple="" label="Save Changes" class="p-element p-ripple w-auto mt-3 p-button p-component">
+                        <span class="p-button-label">Save Changes</span>
+                        <span class="p-ink"></span>
+                    </button>
+                </div>
+            </div> -->
+        </div>
+    </p-tabPanel>
+    <p-tabPanel
+        *ngFor="let usrNode of nodeStation.userNode; let i = index"
+        header="station [{{i+1}}]" >
+        <div class="surface-card p-4 shadow-2 border-round" >
+            <ul class="list-none p-0 m-0 border-300">
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">company</div>
+                    <div class="text-900 w-full md:w-10">
+                        {{company.cInfo.companyName}}
+                        <span class="text-500 text-sm">[ {{company.cInfo.abbreviation}} ]</span>
+
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">factory</div>
+                    <div class="text-900 w-full md:w-10">
+                        {{factory.fInfo.factoryName}}
+                        <span class="text-500 text-sm">[ {{factory.fInfo.abbreviation}} ]</span>
+
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium ">nodeID</div>
+                    <div class="text-900 w-full md:w-10 text-red-700 font-semibold">
+                        {{nodeStation.nodeID}} --> [ station{{i+1}} ]
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium ">UUID</div>
+                    <div class="text-900 w-full md:w-10 text-red-700 font-semibold">
+
+                    </div>
+                </li>
+
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">can ScanNode</div>
+                    <div class="text-900 w-full md:w-10">
+                        <p-menu #menuCanScanNode [popup]="true" [model]="canScanNodeScanItems"></p-menu>
+                        <button pButton pRipple type="button"
+                            label="{{nodeStation.userNode[i].canScanNode?'Yes':'No'}}"
+                            class=" p-button-info p-button-outlined  w-4"
+                            [ngClass]="nodeStation.userNode[i].canScanNode?'p-button-info':'p-button-warning'"
+                            (click)="menuCanScanNode.toggle($event);selectCanScanNode(nodeStation, 'canScanNode', i)">
+                        </button>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium">can scanSubNode</div>
+                    <div class="text-900 w-full md:w-10">
+                        <p-menu #menuCanScanSubNode [popup]="true" [model]="canScanSubNodeScanItems"></p-menu>
+                        <button pButton pRipple type="button"
+                            label="{{nodeStation.userNode[i].canScanSubNode?'Yes':'No'}}"
+                            class=" p-button-info p-button-outlined  w-4"
+                            [ngClass]="nodeStation.userNode[i].canScanSubNode?'p-button-info':'p-button-warning'"
+                            (click)="menuCanScanSubNode.toggle($event);selectCanScanNode(nodeStation, 'canScanSubNode', i)">
+                        </button>
+                    </div>
+                </li>
+
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium ">userID</div>
+                    <div class="text-900 w-full md:w-10 text-red-700 font-semibold">
+                        <div class="p-inputgroup">
+                            <span class="p-inputgroup-addon" *ngIf="user.state !== 'userEmail'">
+                                {{factory.fInfo.abbreviation}}
+                            </span>
+                            <input id="userID" type="text" pinputtext=""
+                                class="p-inputtext p-component p-element"
+                                [(ngModel)]="nodeStation.userNode[i].userNodeID">
+                            <button type="button" pButton pRipple icon="pi pi-check-square" styleClass="p-button-warn"
+                                (click)="getCheckExistNodeCompanyFactoryUserID(nodeStation.userNode[i].userNodeID)">
+                                &nbsp;
+                                check
+                            </button>
+                        </div>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-2 font-medium ">password</div>
+                    <div class="text-900 w-full md:w-10 text-red-700 font-semibold">
+                        <input type="text" pInputText
+                            class="w-12"
+                            [(ngModel)]="nodeStation.userNode[i].userNodePass"/>
+                    </div>
+                </li>
+                <li class="flex align-items-center py-3 px-2 flex-wrap surface-card">
+                    <div class="text-500 w-full md:w-8 font-medium text-right"></div>
+                    <div class="text-900 w-full md:w-4 text-center">
+                        <button pButton pRipple type="button" label="save"
+                            class="w-6 text-center"
+                            (click)="putNodeUserPassStationEdit()">
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </p-tabPanel>
+
+</p-tabView>
+
+

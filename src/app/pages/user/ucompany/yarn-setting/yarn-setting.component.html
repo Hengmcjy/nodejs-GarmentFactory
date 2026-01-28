@@ -1,0 +1,157 @@
+
+<app-ucompany-menu></app-ucompany-menu>
+
+<!-- <p-toast position="top-right" ></p-toast> -->
+<div class="container">
+    <div class="topright z-index1000">
+        <span class="">
+            {{yarnService.getyarnMainMode(viewMode)}}
+        </span>
+    </div>
+</div>
+
+<div class="grid">
+    <div class="col-12 md:col-3 lg:col-2 m-0 pr-0">
+        <div class="sticky-top150">
+            <!-- <div class="w-full pt-2 px-2 cursor-pointer sticky-top" (click)="showFactorySelectionModal()">
+                <app-spns-yarn-factory [factorySelect]="factorySelect"></app-spns-yarn-factory>
+            </div> -->
+            <div class="w-full pt-2 px-2 cursor-pointer" (click)="showYarnSeasonsList()">
+                <app-spns-yarn-seasonyear [yarnSeason]="yarnSeason"></app-spns-yarn-seasonyear>
+            </div>
+            <div class="w-full pt-2 px-2 cursor-pointer" (click)="showCustomerSelectionModal()">
+                <app-spns-yarn-customer [customer]="customer"></app-spns-yarn-customer>
+            </div>
+
+            <div class="w-full py-2 px-2">
+                &nbsp;
+            </div>
+
+            <!-- <div class="w-full pt-2 px-2 cursor-pointer"
+                (click)="changeMode('yarn-create')">
+                <div class="card01 bg-teal-50 w-full p-2 mb-2 text-center">
+                    <div class="txt-green-600">
+                        &nbsp;
+                        create Yarn list
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- <div class="w-full pt-2 px-2 cursor-pointer"
+                (click)="changeMode('yarn-season')">
+                <div class="card01 bg-orange-100 w-full p-2 mb-2 text-center">
+                    <div class="text-orange-600">
+                        &nbsp;
+                        create Yarn season
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- <div class="w-full pt-2 px-2 cursor-pointer" *ngIf="mode==='list' && viewMode==='plan'"
+                (click)="mode='create'">
+                <div class="card01 bg-teal-50 w-full p-2 mb-2 text-center">
+                    <div class="txt-green-600">
+                        + New plan
+                    </div>
+                </div>
+            </div> -->
+
+        </div>
+    </div>
+
+    <div class="col-12 md:col-9 lg:col-10 m-0 pl-4">
+        <!-- <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='yarn-create'">
+            yarn new create
+        </div>
+        <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='yarn-season'">
+            yarn season
+        </div>
+        <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='supplier'">
+            supplier
+        </div>
+        <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='yarn-color'">
+            Yarn color
+        </div> -->
+        <div class="surface-ground px-0 py-2 md:px-2 lg:px-2">
+            <div class="p-fluid flex flex-column lg:flex-row">
+                <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly
+                    md:justify-content-between lg:justify-content-start mb-5 lg:pr-8 lg:mb-0">
+                    <li (click)="changeMode('yarn-create')">
+                        <a pripple=""
+                            class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors">
+                            create Yarn
+                        </a>
+                    </li>
+                    <li (click)="changeMode('yarn-season')">
+                        <a pripple=""
+                            class="p-ripple p-element flex align-items-center cursor-pointer
+                                p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                                >
+                            create Yarn season
+                        </a>
+                    </li>
+                </ul>
+                <div class="surface-card p-5 shadow-2 border-round flex-auto">
+                    <!-- <div class="text-900 font-semibold text-lg mt-3">
+                        <span *ngIf="mode==='edit'">
+                            create / update
+                        </span>
+                        &nbsp;&nbsp;
+                        <span class="">
+                            {{modeName}}
+                        </span>
+                    </div> -->
+                    <!-- <p-divider class="p-element">
+                        <div role="separator" class="p-divider p-component p-divider-horizontal p-divider-solid p-divider-left">
+                            <div class="p-divider-content"></div>
+                        </div>
+                    </p-divider> -->
+                    <div class="flex gap-5 flex-column-reverse md:flex-row">
+                        <div class="flex-auto p-fluid">
+                            <div class="mb-4">
+                                <label for="qrcode" class="block font-medium text-900 mb-2">{{modeName}}</label>
+                                <input id="yarn-create" *ngIf="mode==='yarn-create'"
+                                    type="text" pinputtext=""
+                                    class="p-inputtext p-component p-element"
+                                    [(ngModel)]="yarnID"/>
+                                <input id="yarn-season" *ngIf="mode==='yarn-season'"
+                                    type="text" pinputtext=""
+                                    class="p-inputtext p-component p-element"
+                                    [(ngModel)]="yarnSeasonID"/>
+                            </div>
+                            <div *ngIf="customer.customerID !== '' && yarnSeason !== '';">
+                                <button pbutton="" pripple=""
+                                    class="p-element p-ripple w-auto p-button p-component"
+                                    >
+                                    <span class="p-button-label">
+                                        {{modeName}}
+                                    </span>
+                                    <span class="p-ink"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- <div class="flex flex-column align-items-center flex-or">
+                            <button pbutton="" type="button" icon="pi pi-pencil"
+                                class="p-element p-button-rounded -mt-4 p-button p-component p-button-icon-only"
+
+                                *ngIf="mode==='edit'">
+                                &nbsp;&nbsp;&nbsp;
+                                <span class="p-button-icon pi pi-image" aria-hidden="true"></span>
+                                <span aria-hidden="true" class="p-button-label">&nbsp;</span>
+                            </button>
+                        </div> -->
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+</div>
+
+
+
+

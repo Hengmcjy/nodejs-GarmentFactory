@@ -1,0 +1,76 @@
+
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-ground py-2" >
+    <div class="surface-card p-4 shadow-2 border-round p-fluid">
+        <div class="grid formgrid p-fluid">
+
+            <div class="field col-12 order-set-zone text-center flex justify-content-center flex-wrap">
+                <span class="flex align-items-center justify-content-center">Set Zone/Country</span>
+                <span class="flex align-items-center justify-content-center mx-4">
+                    <button pButton pRipple type="button" (click)="putOrderZoneUpdate()">
+                        save
+                    </button>
+                </span>
+            </div>
+            <div class="field col-4">
+                <p-table [value]="targetPlaces"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr class="text-center">
+                        <th class="px-0 text-center" style="width: 95%">Zone/Country</th>
+                        <th class="px-0" style="width: 5%"></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-zone let-idx="rowIndex">
+                    <tr class="text-sm" (dblclick)="addZone(zone)">
+                        <td class="">
+                            {{zone.targetPlace.targetPlaceName}} / {{zone.targetPlace.countryName}}
+                        </td>
+                        <td class="">
+                            <i class="pi pi-chevron-right" style="font-size: 0.5rem"></i>
+                        </td>
+                </ng-template>
+
+                </p-table>
+            </div>
+
+            <div class="field col-8">
+                <p-table [value]="orderTargetPlace"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr class="text-center">
+                        <th class="px-0 text-center" style="width: 10%">##</th>
+                        <th class="px-0 text-center" style="width: 80%">Set Zone/Country</th>
+                        <th class="px-0" style="width: 10%"></th>
+                        <th class="px-0" style="width: 10%"></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-zone let-idx="rowIndex">
+                    <tr class="text-sm m-0 " (dblclick)="deleteZone(zone, idx)">
+                        <td class="m-0 text-center row-number">{{idx+1}}</td>
+                        <td class="m-0 ">
+                            {{zone.targetPlace.targetPlaceName}} / {{zone.targetPlace.countryName}}
+                        </td>
+                        <td class="m-0 ">
+                            <i class="pi pi-arrow-circle-up cursor-pointer text-blue-500" style="font-size: 1.5rem"
+                                (click)="swapIndex(orderTargetPlace, idx, idx-1)"
+                                *ngIf="idx!==0"></i>
+                        </td>
+                        <td class="m-0 ">
+                            <i class="pi pi-arrow-circle-down cursor-pointer text-yellow-500" style="font-size: 1.5rem"
+                                (click)="swapIndex(orderTargetPlace, idx, idx+1)"
+                                *ngIf="idx!==orderTargetPlace.length-1"></i>
+                        </td>
+                </ng-template>
+
+                </p-table>
+            </div>
+
+        </div>
+    </div>
+</div>
+

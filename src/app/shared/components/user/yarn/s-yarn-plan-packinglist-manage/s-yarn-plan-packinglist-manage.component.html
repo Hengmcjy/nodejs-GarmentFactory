@@ -1,0 +1,347 @@
+
+
+<p-menu #menu  [popup]="true" [model]="items" styleClass="bg-yellow-50 w-4"></p-menu>
+<p-menu #menu2 [popup]="true" [model]="items" styleClass="bg-blue-50 w-4"></p-menu>
+
+<!-- <p-contextMenu #menu   [model]="items" styleClass="bg-yellow-50 w-4"></p-contextMenu> -->
+<!-- <p-contextMenu #menu2  [model]="items" styleClass="bg-blue-50 w-4"></p-contextMenu> -->
+<!-- <p-contextMenu [model]="items" [global]="true"></p-contextMenu> -->
+<!-- <p-contextMenu [target]="p22"  [model]="items" styleClass="bg-blue-50 w-4"></p-contextMenu> -->
+
+
+<div class="">
+    <p-toolbar class="" styleClass="p-2">
+        <div class="p-toolbar-group-start">
+            <p-button
+                styleClass="p-button-rounded p-button-info p-button-text text-4xl font-bold m-0 p-0 ml-2"
+                (onClick)="showYarnDataInfoManage()">
+                &nbsp;
+                +
+                &nbsp;
+                <span class="text-sm text-blue-500">
+                    add packing list
+                </span>
+            </p-button>
+        </div>
+        <div class="p-toolbar-group-center">
+            <span class="yarn-season-head">
+                YARN
+
+                <span class="" >
+                     packing list
+                </span>
+            </span>
+            &nbsp;&nbsp;
+            <span class="txt-m-gray">
+                [
+                &nbsp;
+                <span class="txt-m-gray">
+                    {{yarnSeason}}
+                </span>
+                &nbsp;
+                ]
+            </span>
+        </div>
+        <div class="p-toolbar-group-end">
+            <p-button
+                styleClass="p-button-rounded p-button-warning p-button-text text-2xl m-0 p-0 mr-3"
+                (onClick)="closePage()">
+                <span class="material-symbols-outlined">
+                    arrow_back
+                </span>
+            </p-button>
+        </div>
+    </p-toolbar>
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <div class="text-lg txt-m-gray ml-4 my-2">
+                <!-- {{yarnPlan.yarnID}} -->
+                {{yarnService.getYarnfullName(yarnPlan.yarnID)}}
+            </div>
+        </div>
+        <div class="p-toolbar-group-center">
+
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [ngClass]="mode==='create'?'cursor-pointer':''"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip>
+
+            <p-chip
+                class="" styleClass="surface-0 text-900 text-2xl  m-1 pl-4 ml-4"
+                [label]="colorS.color.colorCode +' '+ colorS.color.colorName">
+                <p-avatar class="" label="" styleClass="border-gray  mr-2"
+                    [style]="{ 'background-color': colorS.color.colorValue, color: 'gray' }"
+                    shape="circle">
+                </p-avatar>
+            </p-chip>
+
+        </div>
+        <div class="p-toolbar-group-center">
+
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+
+    <div class="">
+        <p-table [value]="yarnDataInfo" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+            <!-- <ng-template pTemplate="caption">
+
+            </ng-template> -->
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="text-center" rowspan="2" colspan="2">
+                        <span class="">
+                            Date
+                        </span>
+                    </th>
+                    <th class="text-center" colspan="2">
+                        <span class="">
+                            weight
+                        </span>
+                    </th>
+                </tr>
+                <tr>
+                    <th class="text-center">
+                        <span class="">
+                            invoice
+                        </span>
+                    </th>
+                    <th class="text-center">
+                        <span class="">
+                            actual
+                        </span>
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-yarnData let-idx="rowIndex">
+                <tr *ngIf="loading && idx===0">
+                    <div class="text-center" *ngIf="loading">
+                        <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+                    </div>
+                </tr>
+                <tr *ngIf="!loading">
+                    <td class="text-right border-right-none pr-0" style="width: 1%;">
+                        <span class="m-0 p-0">
+                            <p-button *ngIf="yarnData.packageInfo.length === 0"
+                                icon="pi pi-minus-circle"
+                                styleClass="p-button-rounded p-button-text p-button-sm p-button-danger m-0 p-0"
+                                (onClick)="putCancelYarnPackingList1(yarnData.yarnDataUUID)">
+                            </p-button>
+                        </span>
+                    </td>
+                    <td class="text-left border-left-none pl-0 " >
+                        <span class="cursor-pointer" (dblclick)="showSelectDate1(yarnData.yarnDataUUID)">
+                            {{getMonthShortName(yarnData.mmdd)}}
+                        </span>
+                    </td>
+
+                    <td class="text-center">
+                        <span class="">
+                            <p-button *ngIf="yarnData.packageInfo.length === 0"
+                                label="update packing list" icon="pi pi-file-edit"
+                                styleClass="p-button-info p-button-text"
+                                (onClick)="showYarnLotManage(getMonthShortName(yarnData.mmdd), yarnData, 'add', '*')"></p-button>
+                            <div class="" *ngIf="yarnData.packageInfo.length > 0">
+                                <div class="cursor-pointer text-left" *ngFor="let yp1 of yarnData.packageInfo; let p1 = index">
+                                    <div class="card02 bg-yellow-50 mb-2"
+                                        (dblclick)="setMenuPopup('invoice', yarnData.mmdd, yarnData, 'edit', yp1.yarnLotID, yp1.yarnLotUUID, yp1);
+                                        menu.toggle($event);">
+
+                                        <span class="text-green-500 mr-1" *ngIf="yp1.state==='verified'">
+                                            <i class="pi pi-check" style="font-size: 1.5rem"></i>
+                                        </span>
+                                        <p-tag class="ml-1" severity="success" value="" *ngIf="yp1.boxIDAllVerified"></p-tag>
+                                        <p-tag class="ml-1" severity="warning" value="" *ngIf="!yp1.boxIDAllVerified"></p-tag>
+
+
+                                        &nbsp;
+                                        <span class="text-gray-700 font-semibold">
+                                            {{yp1.yarnLotID}}
+                                        </span>
+                                        &nbsp;
+                                        <span class="text-gray-400">=</span>
+                                        &nbsp;
+                                        <span class="font-semibold">
+                                            {{yp1.yarnPlanWeightTotal | number : '1.2-2'}}
+                                        </span>
+                                        &nbsp;
+                                        <span class="text-gray-400">
+                                            KG
+                                        </span>
+                                        <div class="text-gray-400 text-xs">
+                                            {{yp1.invoiceID}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="" *ngIf="yarnData.packageInfo.length > 0">
+                                <p-button
+                                    label="update packing list" icon="pi pi-file-edit"
+                                    styleClass="p-button-info p-button-text text-blue-100"
+                                    (onClick)="showYarnLotManage(getMonthShortName(yarnData.mmdd), yarnData, 'add', '*')"></p-button>
+                            </div>
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="">
+                            <!-- <p-button *ngIf="yarnData.packageInfo.length === 0"
+                                label="update packing list" icon="pi pi-file-edit"
+                                styleClass="p-button-info p-button-text"
+                                (onClick)="showYarnLotManage(yarnData, 'add', '*')"></p-button> -->
+                            <div  class="" *ngIf="yarnData.packageInfo.length > 0">
+
+                                <div  class="cursor-pointer text-left" *ngFor="let yp2 of yarnData.packageInfo; let p2 = index" >
+
+                                    <div class="card02 bg-blue-50 mb-2"
+                                        (dblclick)="setMenuPopup('actual', yarnData.mmdd, yarnData, 'edit', yp2.yarnLotID, yp2.yarnLotUUID, yp2);
+                                        menu2.toggle($event);">
+
+                                        <span class="text-green-500 mr-1" *ngIf="yp2.state==='verified'">
+                                            <i class="pi pi-check" style="font-size: 1.5rem"></i>
+                                        </span>
+
+                                        <p-tag class="ml-1" severity="success" value="" *ngIf="yp2.boxIDAllVerified"></p-tag>
+                                        <p-tag class="ml-1" severity="warning" value="" *ngIf="!yp2.boxIDAllVerified"></p-tag>
+
+
+                                        &nbsp;
+                                        <span class="text-gray-700 font-semibold">
+                                            {{yp2.yarnLotID}}
+                                        </span>
+                                        &nbsp;
+                                        <span class="text-gray-400">=</span>
+                                        &nbsp;
+                                        <span class="font-bold">
+                                            {{yp2.yarnWeightTotal | number : '1.2-2'}}
+                                        </span>
+                                        &nbsp;
+                                        <span class="text-gray-400">
+                                            KG
+                                        </span>
+                                        &nbsp;
+                                        <span class="text-gray-300" *ngIf="yp2.yarnWeightTotalPercent!==''">|</span>
+                                        &nbsp;
+                                        <span class="text-gray-500 text-sm">
+                                            {{yp2.yarnWeightTotalPercent | number : '1.2-2'}}
+                                            <span *ngIf="yp2.yarnWeightTotalPercent!==''">%</span>
+                                        </span>
+
+                                        <span *ngIf="yp2.yarnWeightNetTotal > 0">
+                                            &nbsp;
+                                            <span class="text-gray-300" >|</span>
+                                            &nbsp;
+                                            <span class="text-green-300 text-sm">
+                                                [ NET ]
+                                            </span>
+                                            &nbsp;
+                                            <span class="text-gray-400">=</span>
+                                            &nbsp;
+                                            <span class="text-green-600 text-sm font-semibold">
+                                                {{yp2.yarnWeightNetTotal | number : '1.2-2'}}
+                                            </span>
+                                            &nbsp;
+                                            <span class="text-gray-400">
+                                                KG
+                                            </span>
+                                            &nbsp;
+                                        </span>
+
+                                        <div class="text-gray-400 text-xs">
+                                            {{yp2.invoiceID}}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="" *ngIf="yarnData.packageInfo.length > 0">
+                                <p-button
+                                    label="update packing list" icon="pi pi-file-edit"
+                                    styleClass="p-button-info p-button-text text-blue-50"
+                                    (onClick)="showYarnLotManage(getMonthShortName(yarnData.mmdd), yarnData, 'add', '*')"
+                                    [disabled]="true"></p-button>
+                            </div>
+                        </span>
+                    </td>
+
+                    <!-- <td>
+                        <div>
+                            <p-button icon="pi pi-plus-circle"
+                                styleClass="p-button-rounded p-button-text p-button-sm m-0 p-0"
+                                (onClick)="addYarnDataInfo(color1)">
+                            </p-button>
+                            <p-button icon="pi pi-list"
+                                styleClass="p-button-rounded p-button-warning p-button-text p-button-sm m-0 p-0 ml-1"
+                                (onClick)="yarnPackingListManageSelect(color1)">
+                            </p-button>
+                            <p-chip
+                                class="m-1 pl-3" styleClass="surface-0 text-500 text-sm  m-1 pl-0"
+                                [label]="color1.color.colorCode +' '+ color1.color.colorName">
+                                <p-avatar class="" label="" styleClass="border-gray mr-2"
+                                    [style]="{ 'background-color': color1.color.colorValue, color: 'gray' }"
+                                    shape="circle">
+                                </p-avatar>
+                            </p-chip>
+                        </div>
+                    </td> -->
+
+                    <!-- <td class="text-center " *ngFor="let date2 of yarnPlanDateGroup; let d2 = index">
+                        <span class="">
+                            {{getWeight(color1, date2)}}
+                        </span>
+                    </td> -->
+
+                    <!-- <td class="surface-100 text-center font-bold" *ngIf="yarnPlanDateGroup.length>0">
+                        <span class="">
+                            {{getColorTotalPlan(color1)}}
+                        </span>
+                    </td> -->
+                    <!-- <td class="text-center">
+                        <span class="">
+
+                        </span>
+                    </td> -->
+                </tr>
+            </ng-template>
+
+            <!-- <ng-template pTemplate="footer">
+                <tr class="" style="height: 50px;">
+                    <th class="surface-100 text-center">
+                        <span>
+
+                        </span>
+                    </th>
+                    <th class="surface-100 text-center " *ngFor="let date1 of yarnPlanDateGroup; let d1 = index">
+                        <div class="">
+                            {{getMMDDTotalFooter(date1.mmdd)}}
+                        </div>
+                    </th>
+                    <th class="surface-100 text-center underline" *ngIf="yarnPlanDateGroup.length>0">
+                        <span class="">
+                            {{totalPlanFooter}}
+                        </span>
+                    </th>
+
+                </tr>
+            </ng-template> -->
+
+            <ng-template pTemplate="summary">
+                <span class="">
+
+                </span>
+            </ng-template>
+        </p-table>
+    </div>
+</div>

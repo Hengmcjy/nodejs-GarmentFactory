@@ -1,0 +1,819 @@
+
+<app-ucompany-menu></app-ucompany-menu>
+
+<!-- <p>transport works!</p> -->
+
+<p-toast position="top-right" ></p-toast>
+
+
+<div class="surface-ground px-2 py-2 md:px-2 lg:px-2">
+    <div class="p-fluid flex flex-column lg:flex-row">
+        <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly md:justify-content-between lg:justify-content-start mb-5 lg:pr-8 lg:mb-0">
+            <li>
+                <span class="order-id">
+                    <!-- {{order.orderID}} -->
+                </span>
+            </li>
+
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('delivery-list');">
+                    <i
+                        class="pi pi-file-edit md:mr-2"></i>
+                        <span class="font-medium hidden md:block">delivery list</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('delivery-create');">
+                    <i
+                        class="pi pi-list md:mr-2"></i>
+                        <span class="font-medium hidden md:block">delivery create</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+
+            <!-- <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('box-size-edit');">
+                    <i
+                        class="pi pi-list md:mr-2"></i>
+                        <span class="font-medium hidden md:block">box size edit</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li> -->
+        </ul>
+
+
+
+        <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='delivery-list'">
+            <div class="">
+                <p-table [value]="dPackings" styleClass="p-datatable-striped p-datatable-sm" >
+                    <ng-template pTemplate="header">
+                        <tr class="text-center">
+                            <th style="width: 5%">###</th>
+                            <th style="width: 8%">Season</th>
+                            <th style="width: 5%">Cus</th>
+                            <th style="width: 10%">Deli.Date</th>
+                            <th style="width: 8%">Pro.Date</th>
+                            <th style="width: 11%">Style</th>
+                            <th style="width: 14%">Country</th>
+                            <th style="width: 9%">Name</th>
+                            <th style="width: 8%">Carton</th>
+                            <th style="width: 8%">status</th>
+
+                            <th style="width: 14%"></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-c>
+                        <tr>
+                            <td class="">
+                                <span class="text-500 text-sm">
+                                    {{c.seq}}
+                                </span>
+                            </td>
+                            <td class="">
+                                <span class="text-500 text-sm">
+                                    {{c.seasonYear}}
+                                </span>
+                            </td>
+                            <td class="">
+                                <span class="text-500 text-sm font-semibold">
+                                    {{userService.getCustomerName(c.customerID)}}
+                                </span>
+                            </td>
+                            <td class="">
+                                <span class="text-700 text-base font-semibold">
+                                    {{c.dDate | date: 'dd-MM-yyyy'}}
+                                </span>
+                            </td>
+                            <td class="">
+                                <span class="text-500 text-sm">
+                                    {{c.productionDate | date: 'dd-MM-yyyy'}}
+                                </span>
+                            </td>
+
+                            <td class="">
+                                <span class="text-700 text-base font-semibold">
+                                    {{c.orderID}}
+                                </span>
+                            </td>
+                            <td class="">
+                                <span class="text-700 text-sm font-semibold">
+                                    {{c.dCountryID}}
+                                </span>
+                            </td>
+                            <td class="">
+                                <span class="text-sm font-bold">
+                                    {{c.dID}}
+                                </span>
+                            </td>
+                            <td class="">
+                                <span class="text-sm ">
+                                    {{c.dCarton.length}}
+                                </span>
+                            </td>
+                            <td class="">
+                                <span class="text-sm font-semibold"
+                                    [ngClass]="deliService.getClassDPacking(c.dStatus)">
+                                    {{c.dStatus}}
+                                </span>
+                            </td>
+
+
+                            <td>
+                                <p-button icon="pi pi-desktop"
+                                    styleClass="p-button-sm p-button-rounded p-button-help p-button-text"
+                                    (onClick)="packingEdit()"></p-button>
+                                <p-button icon="pi pi-eye-slash"
+                                    styleClass="p-button-sm p-button-rounded p-button-warning p-button-text"
+                                    (onClick)="packingEdit()"></p-button>
+                                <p-button icon="pi pi-pencil"
+                                    styleClass="p-button-sm p-button-rounded p-button-success p-button-text"
+                                    (onClick)="packingEdit()"></p-button>
+                                <p-button icon="pi pi-check-circle"
+                                    styleClass="p-button-sm p-button-rounded p-button-danger p-button-text"
+                                    (onClick)="packingEdit()"></p-button>
+                                <!-- <p-button icon="pi pi-times" styleClass="p-button-sm p-button-rounded p-button-danger p-button-text"></p-button> -->
+                            </td>
+
+
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+
+
+
+
+
+        <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='delivery-create'">
+
+            <div class="surface-card p-4 shadow-2 border-round p-fluid">
+                <div class="grid formgrid p-fluid m-0 p-0">
+
+                    <div class="col-1 surface-card m-0 p-0">
+                        <div class="">
+                            <p-button icon="pi {{dPacking1.isLock?'pi-lock':'pi-lock-open'}}"
+                                styleClass=" bg-tran border-none text-2xl {{dPacking1.isLock?'text-red-600 font-bold':'text-blue-400 font-base'}}"
+                                class=""
+                                (onClick)="setDPackingLock(true)">
+                            </p-button>
+                        </div>
+                        <div class="">
+                            <p-button icon="pi pi-refresh" styleClass=" bg-tran border-none text-teal-600 text-2xl"
+                                class=""
+                                (onClick)="refreshDCarton1()">
+                            </p-button>
+                        </div>
+                        <div class="">
+                            <p-button icon="pi pi-save" styleClass="bg-tran border-none text-blue-600 text-2xl"
+                                class=""
+                                (onClick)="packingEdit()">
+                            </p-button>
+                        </div>
+                    </div>
+
+                    <div class="col-11 surface-card">
+                        <div class="grid surface-card">
+
+                            <div class="field mb-4 col-12 w-6">
+                                <span class="font-medium text-900 mb-2">
+                                    Season :
+                                </span>
+                                <span class="">
+                                    <p-button styleClass="p-button-raised p-button-text" (onClick)="showSeasonsList() ">
+                                        {{dPacking1.seasonYear}}
+                                    </p-button>
+                                </span>
+                            </div>
+                            <div class="field mb-4 col-12 w-6">
+                                <span class="font-medium text-900 mb-2">
+                                    Customer :
+                                </span>
+                                <span class="">
+                                    <p-button styleClass="p-button-raised p-button-text" (onClick)="showCustomerSelectionModal()">
+                                        {{userService.findCustomerName(customer)}}
+                                    </p-button>
+                                </span>
+                            </div>
+                            <div class="field mb-4 col-12 w-6">
+                                <span class="font-medium text-900 mb-2">
+                                    Style :
+                                </span>
+                                <span class="">
+                                    <p-button styleClass="p-button-raised p-button-text" (onClick)="showStyleSelector('orderID-selector', 0)">
+                                        {{dPacking1.orderID}}
+                                    </p-button>
+                                </span>
+                            </div>
+                            <div class="field mb-4 col-12 w-6">
+                                <span class="font-medium text-900 mb-2">
+                                    Destination :
+                                </span>
+                                <span class="">
+                                    <p-button styleClass="p-button-raised p-button-text" (onClick)="showDCountrySelector('')">
+                                        {{dCountry.dCountryID}}
+                                    </p-button>
+                                </span>
+                            </div>
+                            <div class="field mb-4 col-12 w-6">
+                                <label for="deliveryname1" class="font-medium text-900">
+                                    Delivery name :
+                                    <span class="text-400 font-italic font-light text-xs ml-2">
+                                        ( assort-1 , assort-2, ... )
+                                    </span>
+                                </label>
+                                <input id="deliveryname1" type="text" pInputText placeholder=""
+                                        (keypress)="userService.numberAZazMinusOnly($event);"
+                                        [(ngModel)]="dPacking1.dID">
+                            </div>
+                            <div class="field mb-4 col-12 w-6">
+                                <label for="seq1" class="font-medium text-900">
+                                    ### :
+                                    <span class="text-400 font-italic font-light text-xs ml-2">
+                                        ( Sequence ==> 100, 200, 300, ...)
+                                    </span>
+                                </label>
+                                <input id="seq1" type="text" pInputText placeholder=""
+                                        class="text-300"
+                                        (keypress)="userService.numberOnly($event);"
+                                        [(ngModel)]="dPacking1.seq">
+                            </div>
+
+                            <div class="field mb-4 col-12 w-6">
+                                <label for="deliverydate1" class="font-medium text-900">
+                                    delivery date :
+                                    <span class="text-green-500 font-italic font-light text-xs ml-2">
+                                        ( real transport day )
+                                    </span>
+                                </label>
+                                <p-calendar [(ngModel)]="dPacking1.dDate"
+                                    [readonlyInput]="readonlyInput"
+                                    [numberOfMonths]="3"
+                                    [dateFormat]="dateFormat"
+                                    (onShow)="deliDateChange()"></p-calendar>
+                            </div>
+                            <div class="field mb-4 col-12 w-6">
+                                <label for="deliveryproduction1" class="font-medium text-900">
+                                    Production date :
+                                    <span class="text-orange-300 font-italic font-light text-xs ml-2">
+                                        ( for show
+                                        <span class="text-orange-600 font-semibold text-xs "> production </span>
+                                        line only )
+                                    </span>
+                                </label>
+                                <p-calendar [(ngModel)]="dPacking1.productionDate" class=""
+                                    [readonlyInput]="readonlyInput"
+                                    [numberOfMonths]="3"
+                                    [dateFormat]="dateFormat"
+                                    (onShow)="productionDateChange()"></p-calendar>
+                            </div>
+
+
+                            <div class="field mb-4 col-12">
+                                <div class="surface-card p-4 shadow-2 border-round w-full">
+
+                                    <div class="bg-primary-50 shadow-2  border-rounded mx-3 p-3" style="border-radius: 6px">
+                                        <div class="grid mt-3">
+                                            <div class="col-5">
+                                                <div class="grid">
+                                                    <div class="col-4 text-right">
+                                                        Season :
+                                                    </div>
+                                                    <div class="col-8">
+                                                        {{dPacking1.seasonYear}}
+                                                    </div>
+
+                                                    <div class="col-4 text-right">
+                                                        Customer :
+                                                    </div>
+                                                    <div class="col-8">
+                                                        {{userService.getCustomerName(dPacking1.customerID)}}
+                                                    </div>
+
+                                                    <div class="col-4 text-right">
+                                                        Style :
+                                                    </div>
+                                                    <div class="col-8">
+                                                        {{dPacking1.orderID}}
+                                                    </div>
+
+                                                    <div class="col-4 text-right">
+                                                        D Name :
+                                                    </div>
+                                                    <div class="col-8">
+                                                        {{dPacking1.dID}}
+                                                    </div>
+
+                                                    <div class="col-4  text-right">
+                                                        Destination :
+                                                    </div>
+                                                    <div class="col-8">
+                                                        {{dPacking1.dCountryID}}
+                                                    </div>
+
+                                                    <div class="col-4  text-right">
+                                                        Completed :
+                                                    </div>
+                                                    <div class="col-8">
+                                                        90%
+                                                    </div>
+
+                                                    <div class="col-12">&nbsp;</div>
+
+                                                    <div class="col-4 text-right">
+                                                        total carton:
+                                                    </div>
+                                                    <div class="col-8">
+                                                        {{dPacking1.totalCarton}}
+                                                    </div>
+
+                                                    <div class="col-4 text-right">
+                                                        total QTY:
+                                                    </div>
+                                                    <div class="col-8">
+                                                        {{dPacking1.totalDPQty}}
+                                                    </div>
+                                                    <!-- <div class="col-12"></div> -->
+                                                    <!-- <div class="col-4 text-right">
+
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <div class=" border-200">
+                                                            &nbsp;
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-12">&nbsp;</div> -->
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="col-7">
+                                                <div class="grid">
+                                                    <!-- <div class="col-12">&nbsp;</div> -->
+
+
+                                                    <div class="col-12">
+                                                        <p-table [value]="dbTest" [tableStyle]="{  }" [styleClass]="'p-datatable-sm'">
+                                                            <ng-template pTemplate="header">
+                                                                <tr class="text-xs">
+                                                                    <th>Color</th>
+                                                                    <th>XS</th>
+                                                                    <th>S</th>
+                                                                    <th>M</th>
+                                                                    <th>L</th>
+                                                                    <th>XL</th>
+                                                                    <th>2XL</th>
+                                                                </tr>
+                                                            </ng-template>
+                                                            <ng-template pTemplate="body" let-product>
+                                                                <tr class="text-xs">
+                                                                    <td>{{ product.cartonID }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                </tr>
+                                                            </ng-template>
+                                                        </p-table>
+                                                    </div>
+
+                                                    <!-- <div class="col-3 text-right">
+                                                        color1:
+                                                    </div>
+                                                    <div class="col-9">
+                                                        xxxxx
+                                                    </div> -->
+
+                                                    <!-- <div class="col-3 text-right">
+                                                        color2:
+                                                    </div>
+                                                    <div class="col-9">
+                                                        xxxxx
+                                                    </div> -->
+
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-1 text-right"></div> -->
+                                        </div>
+                                    </div>
+
+                                    <div class=" bg-teal-50 shadow-2  border-rounded mx-3 mt-2 p-3" style="border-radius: 6px">
+                                        <div class="grid mt-3">
+                                            <div class="col-5">
+                                                <div class="border-none w-full p-2 mb-2 text-center">
+                                                    <div class="txt-season-cap">
+                                                        carton completed
+                                                    </div>
+
+                                                    <div class="grid">
+
+                                                        <div class="col-12">&nbsp;</div>
+                                                        <div class="col-12">&nbsp;</div>
+
+                                                        <div class="col-4 text-right">
+                                                            total carton:
+                                                        </div>
+                                                        <div class="col-8 text-left">
+                                                            {{dPackingCompleted.totalCarton}}
+                                                        </div>
+
+                                                        <div class="col-4 text-right">
+                                                            total QTY:
+                                                        </div>
+                                                        <div class="col-8 text-left">
+                                                            {{dPackingCompleted.totalDPQty}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-7">
+                                                <div class="grid">
+                                                    <div class="col-12">
+                                                        <p-table [value]="dbTest" [tableStyle]="{  }" [styleClass]="'p-datatable-sm'">
+                                                            <ng-template pTemplate="header">
+                                                                <tr class="text-xs">
+                                                                    <th>Color</th>
+                                                                    <th>XS</th>
+                                                                    <th>S</th>
+                                                                    <th>M</th>
+                                                                    <th>L</th>
+                                                                    <th>XL</th>
+                                                                    <th>2XL</th>
+                                                                </tr>
+                                                            </ng-template>
+                                                            <ng-template pTemplate="body" let-product>
+                                                                <tr class="text-xs">
+                                                                    <td>{{ product.cartonID }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                </tr>
+                                                            </ng-template>
+                                                        </p-table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+
+                                    <div class=" bg-orange-50 shadow-2  border-rounded mx-3 mt-2 p-3" style="border-radius: 6px">
+                                        <div class="grid mt-3">
+                                            <div class="col-5">
+                                                <div class="border-none w-full p-2 mb-2 text-center">
+                                                    <div class="txt-season-cap">
+                                                        carton for waiting..
+                                                    </div>
+
+                                                    <div class="grid">
+
+                                                        <div class="col-12">&nbsp;</div>
+                                                        <div class="col-12">&nbsp;</div>
+
+                                                        <div class="col-4 text-right">
+                                                            total carton:
+                                                        </div>
+                                                        <div class="col-8 text-left">
+                                                            {{dPackingWaiting.totalCarton}}
+                                                        </div>
+
+                                                        <div class="col-4 text-right">
+                                                            total QTY:
+                                                        </div>
+                                                        <div class="col-8 text-left">
+                                                            {{dPackingWaiting.totalDPQty}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-7">
+                                                <div class="grid">
+                                                    <div class="col-12">
+                                                        <p-table [value]="dbTest" [tableStyle]="{  }" [styleClass]="'p-datatable-sm'">
+                                                            <ng-template pTemplate="header">
+                                                                <tr class="text-xs">
+                                                                    <th>Color</th>
+                                                                    <th>XS</th>
+                                                                    <th>S</th>
+                                                                    <th>M</th>
+                                                                    <th>L</th>
+                                                                    <th>XL</th>
+                                                                    <th>2XL</th>
+                                                                </tr>
+                                                            </ng-template>
+                                                            <ng-template pTemplate="body" let-product>
+                                                                <tr class="text-xs">
+                                                                    <td>{{ product.cartonID }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                    <td>{{ product.cartonName }}</td>
+                                                                </tr>
+                                                            </ng-template>
+                                                        </p-table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid mt-4 mb-2">
+                                        <div class="col-5">
+                                            <label for="cartons1" class="font-medium text-900">
+                                                Cartons :
+                                            </label>
+                                            <p-button icon="pi {{dPacking1.isLockDCarton?'pi-lock':'pi-lock-open'}}"
+                                                styleClass="p-button-sm bg-tran border-none text-2xl {{dPacking1.isLockDCarton?'text-red-600 font-bold':'text-blue-400 font-base'}}"
+                                                class=""
+                                                (onClick)="setDPackingDCartonLock(true)">
+                                            </p-button>
+                                            <p-button icon="pi pi-plus" styleClass="p-button-sm p-button-success"
+                                                class="m-2"
+                                                (onClick)="showAddCartonBoxNum()">
+                                            </p-button>
+                                            <p-button icon="pi pi-refresh" styleClass="p-button-sm p-button-primary"
+                                                class="m-2"
+                                                (onClick)="refreshDCarton1()"
+                                                *ngIf="false">
+                                            </p-button>
+                                        </div>
+
+                                        <div class="col-7">
+                                            <span class="p-inputgroup w-full">
+                                                <span class=" w-11 text-right">
+                                                    <p-paginator #paginator (onPageChange)="onPageChange($event)"
+                                                        [first]="first"
+                                                        [rows]="rows"
+                                                        [totalRecords]="totalRecords"
+                                                        [showJumpToPageInput]="true"
+                                                        >
+                                                    </p-paginator>
+                                                </span>
+                                            </span>
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="flex flex-row flex-wrap border-none  w-full" style="min-height: 20rem;">
+                                        <!-- carton zone -->
+                                        <div class="col-12 md:col-4 lg:col-4 xl:col-4 p-3" *ngFor="let ct of dCartonPage; let i2 = index">
+                                            <div class="surface-card shadow-2  border-rounded p-3" style="border-radius: 6px">
+                                                {{newCartonSetColor()}}
+
+                                                <div class="flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <div class="mt-0 mb-3 text-sm text-500 mb-2" >
+                                                            <span class="">
+                                                                {{dPacking1.orderID}}
+                                                            </span>
+                                                            &nbsp;
+                                                            <span class="text-xs">
+                                                                -
+                                                                &nbsp;
+                                                                <span class="">{{dPacking1.dCountryID}}</span>
+                                                            </span>
+                                                        </div>
+
+                                                        <p class="text-xl font-medium text-900 mb-1">
+                                                            <span class="p-inputgroup w-full">
+                                                                <input id="deliveryname1" type="text" pInputText placeholder=""
+                                                                    class="w-6"
+                                                                    (keypress)="userService.numberOnly($event);"
+                                                                    [(ngModel)]="ct.dCartonID">
+                                                                <input type="text" pInputText placeholder=""
+                                                                    class="w-3 text-200"
+                                                                    (keypress)="userService.numberOnly($event);"
+                                                                    [(ngModel)]="ct.seq">
+                                                                <span class="w-3">
+                                                                    <p-button icon="pi pi-plus"
+                                                                        styleClass="p-button-rounded p-button-text p-button-sm text-green-300 mb-0 pb-0"
+                                                                        class=""
+                                                                        (onClick)="addDBox1(i2)">
+                                                                    </p-button>
+                                                                </span>
+                                                            </span>
+                                                        </p>
+
+                                                        <div class="p-inputgroup w-full text-center">
+                                                            <span class=" w-9">
+                                                                <p-button label="{{dPacking1.dCarton[currentCartonIDX(i2)].cartonID === ''?'select carton size ..':dPacking1.dCarton[currentCartonIDX(i2)].cartonID}}"
+                                                                    styleClass="p-button-raised p-button-text {{dPacking1.dCarton[currentCartonIDX(i2)].cartonID === '' ? 'w-full text-500' : 'w-full'}}"
+                                                                    class="w-full"
+                                                                    (onClick)="showCartonIDBoxSizeSelector(i2)">
+                                                                </p-button>
+                                                            </span>
+                                                            <span class="text-2xl font-bold  w-3"
+                                                            [ngClass]="ct.totalQTY <= 0 ? 'text-400':'text-pink-600'">
+                                                                {{ct.totalQTY}}
+                                                            </span>
+                                                        </div>
+
+                                                    </div>
+                                                    <button pButton pRipple icon="pi pi-trash"
+                                                        class="p-button-rounded p-button-text text-red-300"
+                                                        (click)="delDBox1(i2)">
+                                                    </button>
+                                                </div>
+
+                                                <div class="surface-100 p-2 " style="border-radius: 5px;">
+                                                    <div class=" p-1">
+                                                        <p-button icon="pi pi-refresh" styleClass="p-button-sm bg-tran border-none text-green-600 mr-2"
+                                                            class="m-2"
+                                                            (onClick)="refreshDCarton1()">
+                                                        </p-button>
+                                                        <p-button icon="pi pi-fast-forward"
+                                                            styleClass="p-button-sm bg-blue-300 border-none mr-2"
+                                                            (onClick)="autoDCartonID(i2, ct)">
+                                                        </p-button>
+                                                        <p-button icon="pi pi-copy"
+                                                            styleClass="p-button-sm bg-green-300 border-none mr-2"
+                                                            (onClick)="copyCartonToTemp(i2, ct)"></p-button>
+                                                        <p-button icon="pi pi-file-import"
+                                                            styleClass="p-button-sm bg-cyan-300 border-none mr-2"
+                                                            (onClick)="pasteCartonToTemp(i2, ct)"></p-button>
+                                                    </div>
+                                                </div>
+
+
+                                                <div class="p-inputgroup w-full" *ngFor="let dB of ct.dBox; let i3 = index">
+                                                    <span class="p-inputgroup-addon surface-50 w-5 ">
+                                                        {{getColorCode(ct, dB)}}
+                                                        &nbsp;
+                                                        {{getColorName(ct, dB)}}
+                                                   </span>
+                                                    <span class="p-inputgroup-addon surface-50 w-3">
+                                                        {{userService.getSizeName(userService.strReplaceAll(dB.productSize, '-', ''))}}
+                                                    </span>
+                                                    <input type="text" pInputText placeholder=""
+                                                        class="text-900"
+                                                        (keypress)="userService.numberOnly($event);"
+                                                        [(ngModel)]="dB.productQty">
+                                                    <p-button label="X" styleClass="p-button-text text-red-100"
+                                                        (onClick)="del1OrderCartonBox(i2, i3)">
+                                                    </p-button>
+                                                </div>
+                                                <!-- <div class="p-inputgroup w-full">
+                                                    <span class="p-inputgroup-addon surface-50 w-5">
+                                                        color...
+                                                   </span>
+                                                    <span class="p-inputgroup-addon surface-50 w-3">
+                                                         S
+                                                    </span>
+                                                    <input type="text" pInputText placeholder="qty" />
+                                                    <p-button label="X" styleClass="p-button-text text-red-100"></p-button>
+                                                </div> -->
+                                                <!-- <div class="p-inputgroup w-full">
+                                                    <span class="p-inputgroup-addon surface-50 w-5">
+                                                        color...
+                                                   </span>
+                                                    <span class="p-inputgroup-addon surface-50 w-3">
+                                                         SSSSSS
+                                                    </span>
+                                                    <input type="text" pInputText placeholder="qty" />
+                                                    <p-button label="X" styleClass="p-button-text text-red-100"></p-button>
+                                                </div> -->
+
+                                                <!-- <ul class="list-none m-0 p-0 ml-4 mr-8">
+                                                    <li class="px-0 py-2 flex justify-content-between align-items-center  surface-border">
+                                                        <span class="text-600 font-medium text-sm">
+                                                            ccc
+                                                        </span>
+                                                        <span class="text-900 font-medium text-sm text-right">
+                                                            <span class="">
+                                                                ddd
+                                                            </span>
+                                                        </span>
+                                                    </li>
+                                                    <li class="px-0 py-2 flex justify-content-between align-items-center  surface-border">
+                                                        <span class="text-600 font-medium text-sm mr-2">&nbsp;&nbsp;&nbsp;</span>
+                                                        <span class="text-400 font-medium text-sm">
+                                                            eee
+
+                                                        </span>
+                                                    </li>
+                                                </ul> -->
+                                                <!-- <ul class="list-none m-0 p-0 ml-4 mr-8">
+                                                    <li class="px-0 py-2 flex justify-content-between align-items-center">
+                                                        <span class="text-600 font-medium text-sm">ff1</span>
+                                                        <span class="text-800 font-medium text-sm">ff2</span>
+                                                    </li>
+                                                </ul> -->
+                                                <!-- <ul class="list-none m-0 p-0">
+                                                    <li class="px-0 py-2 flex justify-content-between align-items-center">
+                                                        <span class="text-600 font-medium text-sm"></span>
+                                                        <button pButton pRipple type="button"
+                                                            label="zzz"
+                                                            class="p-button-rounded  p-button-info p-2"></button>
+                                                    </li>
+                                                    <li class="px-0 py-2 flex justify-content-between align-items-center border-top-1">
+                                                        <span class="text-600 font-medium text-sm"></span>
+                                                        <button pButton pRipple type="button"
+                                                            label="yyy"
+                                                            class="p-button-rounded  p-button-warning p-2 "></button>
+
+                                                        <small class="p-invalid txt-err">
+                                                            <br>
+                                                            Err
+                                                        </small>
+                                                    </li>
+                                                </ul> -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="grid mt-3">
+                                        <div class="col-5"></div>
+                                        <div class="col-7">
+                                            <span class="p-inputgroup w-full">
+                                                <span class=" w-11 text-right">
+                                                    <p-paginator #paginator (onPageChange)="onPageChange($event)"
+                                                        [first]="first"
+                                                        [rows]="rows"
+                                                        [totalRecords]="totalRecords"
+                                                        [showJumpToPageInput]="true"
+                                                        >
+                                                    </p-paginator>
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            <button pbutton="" pripple="" label="Edit Carton" icon="pi pi-file"
+                                class="p-element p-ripple w-auto p-button p-component ml-4"
+                                (click)="packingEdit()">
+                                <span class="p-button-icon p-button-icon-left pi pi-save"
+                                    aria-hidden="true">
+                                </span>
+                                <span class="p-button-label">Edit Carton</span>
+                                <span class="p-ink"></span>
+                            </button>
+                            <p-button icon="pi pi-times"
+                                styleClass="p-button-rounded p-button-warning p-button-text">
+
+                            </p-button>
+
+                        </div>
+                    </div>
+
+
+
+
+
+
+                </div>
+            </div>
+            <!--  -->
+        </div>
+        <!-- <div class="surface-ground flex-auto py-2  w-11" *ngIf="mode==='box-size-edit'">
+            box-size-edit
+        </div> -->
+    </div>
+</div>
+
+
+<!-- <div class="surface-ground pb-2 mt-0" >
+    <div class="surface-card p-4 shadow-2 border-round p-fluid">
+        <div class="grid formgrid p-fluid">
+            <div class="field col-12 order-set-zone text-center flex justify-content-center flex-wrap">
+                <span class="flex align-items-center justify-content-center">transport</span>
+                <span class="flex align-items-center justify-content-center mx-4">
+                    <button pButton pRipple type="button" >
+                        save
+                    </button>
+                </span>
+            </div>
+
+            <div class="field col-3">
+
+            </div>
+
+            <div class="field col-9">
+
+            </div>
+
+        </div>
+    </div>
+</div> -->

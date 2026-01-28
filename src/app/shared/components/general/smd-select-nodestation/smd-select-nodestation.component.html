@@ -1,0 +1,7 @@
+
+
+<div class="m-0 " *ngFor="let node of nodeStations; let i = index">
+    <p-button  styleClass="p-button-info p-button-text" (dblclick)="selectNode(node)">
+        {{node.nodeID}}
+    </p-button>
+</div>

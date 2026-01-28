@@ -1,0 +1,162 @@
+
+
+
+
+<div class="surface-section px-4 py-5 md:px-6 lg:px-8">
+    <div class="text-900 font-medium text-3xl mb-3">
+        <button pButton pRipple type="button" icon="pi pi-refresh"
+            class="p-button-rounded p-button-text"
+            (click)="refreshWeb()">
+
+        </button>
+        <span class="text-900 text-6xl">
+            {{nodeStation.nodeID}}
+        </span>
+        <span class="text-500">
+            [ {{stationID}} ]
+        </span>
+        <span class="text-red-800">
+            &nbsp;
+            [ {{factory.fInfo.factoryName}} ]
+        </span>
+
+    </div>
+    <ul class="list-none p-0 m-0 surface-100 flex overflow-y-hidden overflow-x-auto border-round" *ngIf="!isOutsourceMode">
+        <li class="relative py-3 pl-6 pr-3 flex flex-column justify-content-center">
+            <div class="text-xl font-medium text-900 mb-1">{{allProductQty}}</div>
+            <span class="text-600 white-space-nowrap">
+                total Qty
+            </span>
+        </li>
+        <li class="relative py-3 pl-6 pr-3 flex flex-column justify-content-center">
+            <div class="absolute left-0 top-0 z-1"
+                style="border-left: 20px solid var(--surface-100); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+            <div class="text-xl font-medium text-900 mb-1" *ngIf="false">{{totalBundle}}</div>
+            <span class="text-600 white-space-nowrap">total bundle</span>
+            <div class="absolute top-0"
+                style="left: 1px; border-left: 20px solid var(--surface-300); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+        </li>
+        <li class="relative py-3 pl-6 pr-3 flex flex-column justify-content-center">
+            <div class="absolute left-0 top-0 z-1"
+                style="border-left: 20px solid var(--surface-100); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+            <div class="text-xl font-medium text-900 mb-1">{{countOrderID}}</div>
+            <span class="text-600 white-space-nowrap">order #</span>
+            <div class="absolute top-0"
+                style="left: 1px; border-left: 20px solid var(--surface-300); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+        </li>
+        <li class="relative py-3 pl-6 pr-3 flex flex-column justify-content-center">
+            <div class="absolute left-0 top-0 z-1"
+                style="border-left: 20px solid var(--surface-100); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+            <div class="text-xl font-medium text-900 mb-1">{{countProductID}}</div>
+            <span class="text-600 white-space-nowrap">product #</span>
+            <div class="absolute top-0"
+                style="left: 1px; border-left: 20px solid var(--surface-300); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+        </li>
+        <li class="relative py-3 pl-6 pr-3 flex flex-column justify-content-center">
+            <div class="absolute left-0 top-0 z-1"
+                style="border-left: 20px solid var(--surface-100); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+            <div class="text-xl font-medium text-900 mb-1">{{nodeStation.nodeInfo.mustBundleScan?'Yes':'No'}}</div>
+            <span class="text-600 white-space-nowrap">bundle check</span>
+            <div class="absolute top-0"
+                style="left: 1px; border-left: 20px solid var(--surface-300); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+        </li>
+
+        <li class="relative py-3 pl-6 pr-3 pt-0 flex flex-column justify-content-center">
+            <div class="absolute left-0 top-0 z-1"
+                style="border-left: 20px solid var(--surface-100); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+            <div class="text-xl font-medium text-900 mb-0 mt-0 pt-0">
+                <span class="">
+                    <p-button icon="pi pi-eye" styleClass=" p-button-warning p-button-text p-button-lg"
+                        class="py-0 my-0"
+                        (onClick)="showSProductRecord()">
+                    </p-button>
+                </span>
+                <span class="ml-10">
+                    <p-button  styleClass=" p-button-warning p-button-text p-button-lg"
+                        class="py-0 my-0"
+                        (onClick)="showSProductRecordBundle()">
+                        <span class="material-symbols-outlined">table_eye</span>
+                    </p-button>
+                </span>
+                <span class="ml-4" *ngIf="nodeStation.nodeInfo.haveSubWorkflow">
+                    <p-button styleClass="p-button-text p-button-lg"
+                        class="py-0 my-0 text-purple-400"
+                        (onClick)="showSubNodeScanned()">
+                        <span class="material-symbols-outlined">fact_check</span>
+                    </p-button>
+                </span>
+            </div>
+
+            <!-- <span class="text-600 white-space-nowrap">logging</span> -->
+            <div class="absolute top-0"
+                style="left: 1px; border-left: 20px solid var(--surface-300); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+        </li>
+
+        <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <li class="ml-10 py-3 pl-10 pr-3 flex flex-column flex-wrap justify-content-end">
+            <p-button icon="pi pi-eye" styleClass=" p-button-warning p-button-text p-button-lg"
+                class="py-0 my-0"
+                (onClick)="showSProductRecord()"></p-button>
+            logging
+        </li> -->
+
+        <!-- <li class="relative py-3 pl-6 pr-3 flex flex-column justify-content-center">
+            <div class="absolute left-0 top-0 z-1"
+                style="border-left: 20px solid var(--surface-100); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+            <div class="text-xl font-medium text-900 mb-1">5</div>
+            <span class="text-600 white-space-nowrap">Hired</span>
+            <div class="absolute top-0"
+                style="left: 1px; border-left: 20px solid var(--surface-300); border-top: 45px solid transparent; border-bottom: 45px solid transparent; width: 0; height: 0;">
+            </div>
+        </li> -->
+    </ul>
+    <div class="w-12 bg-yellow-100 text-center py-2" *ngIf="isOutsourceMode">
+        <span class="text-4xl font-semibold text-yellow-600">
+            Outsource [ {{nsService.outsourceModeName}} ]
+            <span class="ml-10">
+                <p-button icon="pi pi-eye" styleClass=" p-button-warning p-button-text p-button-lg"
+                    class="py-0 my-0"
+                    (onClick)="showSProductRecord()">
+                </p-button>
+            </span>
+            <span class="ml-10">
+                <p-button  styleClass=" p-button-warning p-button-text p-button-lg"
+                    class="py-0 my-0"
+                    (onClick)="showSProductRecordBundle()">
+                    <span class="material-symbols-outlined">table_eye</span>
+                </p-button>
+            </span>
+        </span>
+    </div>
+
+    <div class="w-12 bg-primary-100 text-center py-2" *ngIf="isFactoryAffiliate">
+        <span class="text-4xl font-semibold text-primary-600">
+            Factory Affiliate โรงงานในเครือ
+            <span class="ml-10">
+            </span>
+        </span>
+    </div>
+
+    <div class="w-12 bg-purple-50 text-center py-2" *ngIf="isScanSubnode">
+        <span class="text-4xl font-semibold text-purple-600">
+            scan sub Node
+            <span class="ml-10">
+            </span>
+        </span>
+    </div>
+</div>
+
+

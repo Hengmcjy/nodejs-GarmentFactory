@@ -1,0 +1,148 @@
+
+<app-ucompany-menu *ngIf="!modeView"></app-ucompany-menu>
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-ground px-4 py-2 md:px-6 lg:px-4">
+    <div class="p-fluid flex flex-column lg:flex-row">
+        <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly md:justify-content-between lg:justify-content-start mb-5 lg:pr-8 lg:mb-0">
+            <li>
+                <div class="flex flex-column align-items-center flex-or">
+                    <img [src]="genImagePath(product.imageProfile)" class="h-auto w-10rem" />
+                    <button pbutton="" type="button" icon="pi pi-pencil"
+                        class="p-element p-button-rounded -mt-4 p-button p-component p-button-icon-only"
+                        (click)="showFileUploadModal(false)"
+                        *ngIf="!modeView">
+                        &nbsp;&nbsp;&nbsp;
+                        <span class="p-button-icon pi pi-image" aria-hidden="true"></span>
+                        <span aria-hidden="true" class="p-button-label">&nbsp;</span>
+                    </button>
+                    <div>{{product.productID}}</div>
+                </div>
+            </li>
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('productInfo')">
+                    <i
+                        class="pi pi-id-card md:mr-2"></i>
+                        <span class="font-medium hidden md:block">product info</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -59.9445px;left: 14.0555px;"></span>
+                </a>
+            </li>
+            <li>
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('images')">
+                    <i class="pi pi-user md:mr-2"></i>
+                    <span class="font-medium hidden md:block">Images</span>
+                    <span class="p-ink" style="height: 149px;width: 149px;top: -60.2778px;left: 47.0555px;"></span>
+                </a>
+            </li>
+            <li *ngIf="!modeView">
+                <a pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="changeMode('order')">
+                    <i class="pi pi-wrench md:mr-2"></i>
+                        <span class="font-medium hidden md:block">Order</span>
+                        <span class="p-ink" style="height: 149px;width: 149px;top: -60.6111px;left: 13.0555px;"></span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="surface-ground px-4 py-2 md:px-4 lg:px-4 w-12" *ngIf="mode==='productInfo'">
+            <div class="text-900 font-medium text-xl mb-3">edit Product</div>
+            <div class="surface-card p-4 shadow-2 border-round p-fluid ">
+                <div class="grid formgrid p-fluid ">
+                    <div class="field mb-4 col-6">
+                        <div class="field mb-4 col-12">
+                            <label for="company_name" class="font-medium text-900">Product Name</label>
+                            <input id="company_name"
+                                type="text" pinputtext=""
+                                class="p-inputtext p-component p-element"
+                                [disabled]="modeView"
+                                [(ngModel)]="product.productName"/>
+                        </div>
+                        <div class="field mb-4 col-12">
+                            <div class="font-medium text-900 mb-1">season year</div>
+                            <button pButton pRipple type="button"  class="p-button-outlined"
+                                (click)="showYearSelectionModal()">
+                                {{product.seasonYear}}
+                            </button>
+                        </div>
+                        <div class="field mb-4 col-12" *ngIf="false">
+                            <label for="customer_name" class="font-medium text-900">Product style code</label>
+                            <input appNoSpace id="customer_name"
+                                type="text" pinputtext=""
+                                class="p-inputtext p-component p-element"
+                                (keypress)="userService.numberAZazOnly($event);userService.lengthMax(product.productCustomerCode, 8)"
+                                [disabled]="modeView"
+                                [(ngModel)]="product.productCustomerCode"/>
+                        </div>
+                        <div class="field mb-4 col-12" *ngIf="false">
+                            <label for="customer_email" class="font-medium text-900">Product group code</label>
+                            <input appNoSpace
+                                id="customer_email" type="text" pinputtext=""
+                                class="p-inputtext p-component p-element"
+                                (keypress)="userService.numberAZazOnly($event);userService.lengthMax(product.productGroupCode, 8)"
+                                [disabled]="modeView"
+                                [(ngModel)]="product.productGroupCode"/>
+                        </div>
+
+                        <div class="field mb-4 col-12">
+                            <label for="notes" class="font-medium text-900">Notes</label>
+                            <textarea id="notes" pinputtextarea=""
+                                class="p-inputtextarea p-inputtext p-component p-element p-inputtextarea-resizable" rows="5"
+                                style="height: 131px; overflow: hidden"
+                                [disabled]="modeView"
+                                [(ngModel)]="product.productDetail">
+                            </textarea>
+                        </div>
+                    </div>
+                    <div class="field mb-4 col-6">
+                        <p-orderList [value]="productFeature" [listStyle]="{'height':'auto'}" header="" [dragdrop]="isdragdrop"
+                            [controlsPosition] ="'rigth'" [disabled]="modeView" (onReorder)="onOrderActivity()">
+                            <ng-template let-product pTemplate="header" class="m-0 p-0">
+                                <div class="m-0 p-0 flex justify-content-between flex-wrap">
+                                    <span class="text-lg font-medium text-700">Features</span>
+                                    <button type="button" pButton pRipple icon="pi pi-plus"
+                                        class="p-button-success ml-1"
+                                        *ngIf="!modeView"
+                                        (click)="addProductFeature()"></button>
+                                </div>
+                            </ng-template>
+                            <ng-template let-productFeature1 let-idx="index" pTemplate="item" class="m-0 p-0">
+                                <div class="p-inputgroup m-0 p-0">
+                                    <input type="text" pInputText  [(ngModel)]="productFeature[idx].featureName">
+                                    <span class="p-inputgroup-addon m-0 p-0">:</span>
+                                    <input type="text" pInputText  [(ngModel)]="productFeature[idx].featureDetail">
+                                    <button type="button" pButton pRipple icon="pi pi-minus"
+                                        class="bg-red-200 ml-1"
+                                        (click)="deleteProductFeature(idx)"></button>
+                                </div>
+                            </ng-template>
+                        </p-orderList>
+
+                    </div>
+                </div>
+                <button pbutton="" pripple="" label="Create Invoice" icon="pi pi-file"
+                    class="p-element p-ripple w-auto p-button p-component"
+                    *ngIf="!modeView "
+                    (click)="putEditProduct()">
+                    <span class="p-button-icon p-button-icon-left pi pi-file" aria-hidden="true"></span>
+                    <span class="p-button-label">edit Product</span><span class="p-ink"></span>
+                </button>
+            </div>
+        </div>
+        <div class="surface-ground px-4 py-2 md:px-4 lg:px-4" *ngIf="mode==='images'">
+            <app-s-product-image></app-s-product-image>
+        </div>
+        <div class="surface-ground px-4 py-2 md:px-4 lg:px-4" *ngIf="mode==='order'">
+            order
+        </div>
+    </div>
+</div>
+
+
+
+

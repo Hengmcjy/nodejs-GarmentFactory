@@ -1,0 +1,17 @@
+
+<div>
+    <div class="">
+
+    </div>
+    <div class="">
+        <span>
+            <input type="text" pInputText  class="w-full"
+                (keypress)="userService.numberOnly($event);"
+                (keyup.enter)="confirmNumber1()"
+                (keyup)="checkNumber()"
+                onClick="this.select();"
+                [(ngModel)]="number1"
+                #input1>
+        </span>
+    </div>
+</div>

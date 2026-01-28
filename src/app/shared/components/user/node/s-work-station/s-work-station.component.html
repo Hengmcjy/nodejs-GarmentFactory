@@ -1,0 +1,184 @@
+
+<p-toast position="top-right" ></p-toast>
+
+<app-s-work-station-head></app-s-work-station-head>
+
+<div class="surface-section px-4 py-0 pt-0 my-0 md:px-6 lg:px-8">
+    <ul class="list-none p-0 m-0 surface-100 flex overflow-y-hidden overflow-x-auto border-round py-0">
+        <li class="relative py-1 pl-3 pr-3 flex flex-column justify-content-center py-0 w-1">
+            <!-- <p-toggleButton [(ngModel)]="isShowBundleList" onLabel="show-list" offLabel="no-show"></p-toggleButton> -->
+        </li>
+        <li class="relative py-1 pl-3 pr-3 flex flex-column justify-content-center py-0 w-8">
+            <div class="p-inputgroup">
+                <input type="text" pInputText  class="w-full pw"
+                    [(ngModel)]="productBarcodeNoInput"
+                    (keyup.enter)="putScanOrderProductionBarcodeNo(productBarcodeNoInput, 'scan')"
+                    [readOnly]="scan1ForAll && loading"
+                    [disabled]="stackBarcodeFull"
+                    #input1>
+                <button type="button" pButton pRipple  class="w-4 text-xl"
+                    label="new scan"
+                    (click)="newScan()"></button>
+                <p-toggleButton [(ngModel)]="isShowBundleList" onLabel="show-list" offLabel="no-show"
+                    (click)="setVisible()"></p-toggleButton>
+            </div>
+        </li>
+        <li class="relative py-1 pl-3 pr-3 flex flex-column justify-content-center text-center py-0 w-3">
+            <span class=" font-bold text-red-500  m-0 p-0" style="font-size:100px;">
+                {{qtyCount}}
+            </span>
+        </li>
+    </ul>
+</div>
+<!-- [readOnly]="scan1ForAll && loading" -->
+
+<!-- border-bottom-1 -->
+<div class="surface-section px-4  md:px-4 lg:px-4 ">
+    <div class="grid">
+
+        <div class="sm:col-12 xl:col-4">
+            <div class="card mx-4 p-0 mb-0">
+                <p-table [value]="orderProductionScanAll.scanItem" styleClass="p-datatable-sm p-datatable-gridlines" >
+                    <ng-template pTemplate="header">
+                        <tr class="text-center">
+                            <th style="width:20%" class=" text-center">bundle No</th>
+                            <th style="width:55%" class=" text-center">Barcode</th>
+                            <!-- <th style="width:20%" class=" text-center">###</th> -->
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-product let-rowIndex="rowIndex">
+                        <tr>
+                            <td style="width:20%"
+                                class="bg-bundleno text-center"
+                                [ngClass]="product.status==='err' ? 'table-font-err' : ''">
+                                {{product.bundleNo}}
+                            </td>
+                            <td style="width:80%"
+                                class=" surface-50"
+                                [ngClass]="product.status==='err' ? 'table-font-err' : ''">
+                                {{product.productBarcodeNo}}
+                                <div class="text-500 text-base"
+                                    *ngIf="product.productBarcodeNo !== product.productBarcodeNoReal">
+                                    {{product.productBarcodeNoReal}}
+                                </div>
+                            </td>
+                            <!-- <td style="width:20%" class=" surface-50 text-center">{{product.status}}</td> -->
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+            <!-- <div class="grid text-center mt-0 pt-0">
+                <div class="col-6">
+                    <button pButton pRipple type="button" label="Warning" class="p-button-warning"></button>
+                </div>
+                <div class="col-6">
+                    <button pButton pRipple type="button" label="Primary"></button>
+                </div>
+            </div> -->
+        </div>
+
+        <div class="sm:col-12 xl:col-8">
+            <div class="grid text-center mt-0 pt-0" >
+                <div class="col-12 m-0 p-0" *ngIf="fullyItem1">
+                    fully bundle pack
+                </div>
+                <div class="col-12 mt-0 pt-0 " >
+                    <button pButton pRipple type="button" label="clear" class="p-button-warning"
+                        *ngIf="clearBtnShow1"
+                        (click)="clearOrderProductionBarcodeNoToTemp('orderProductionScan1')">
+
+                    </button>
+                    <!-- <span class="ml-4 mt-0 pt-0">
+                        <span class="text-2xl text-600 mt-0 pt-0 pb-2">
+                            QTY :
+                        </span>
+                        <span class=" font-bold text-red-500  mt-0 pt-0" style="font-size:100px;">
+                            {{qtyCount}}
+                        </span>
+                    </span> -->
+                </div>
+            </div>
+            <div class="card mx-4 p-0 mb-0">
+                <p-table [value]="orderProductionScan1.scanItem" styleClass="p-datatable-sm p-datatable-gridlines" >
+                    <ng-template pTemplate="header">
+                        <tr class="text-center">
+                            <th style="width:20%" class=" text-center">bundle No</th>
+                            <th style="width:5%" class=" text-center">No.</th>
+                            <th style="width:55%" class=" text-center">
+                                <button pButton pRipple type="button" icon="pi pi-sort-numeric-down"
+                                    class="p-button-rounded p-button-text ml-3"
+                                    (click)="barcodeSort()">&nbsp;&nbsp; Barcode</button>
+                            </th>
+                            <th style="width:20%" class=" text-center">###</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-product let-rowIndex="rowIndex">
+                        <tr [ngClass]="getColorBundleGroupColorScan(product.bundleNo)">
+                            <td style="width:20%" class="bg-bundleno text-center">
+                                <span class="">{{product.bundleNo}}</span>
+                                &nbsp;
+                                <span class="text-sm text-600 text-rigth">[ {{product.bundleCount}} pcs]</span>
+
+                            </td>
+                            <td style="width:5%" class=" text-center">{{rowIndex+1}}</td>
+                            <td style="width:55%" class=" ">
+                                {{product.productBarcodeNo}}
+                                <div class="text-500 text-base"
+                                    *ngIf="product.productBarcodeNo !== product.productBarcodeNoReal">
+                                    {{product.productBarcodeNoReal}}
+                                </div>
+                            </td>
+                            <td style="width:20%" class=" text-center">{{product.status}}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+        </div>
+
+        <div class="sm:col-12 xl:col-4" *ngIf="false">
+            <div class="grid text-center mt-0 pt-0" >
+                <div class="col-12" *ngIf="fullyItem2">
+                    fully bundle pack
+                </div>
+                <div class="col-6" >
+                    <button pButton pRipple type="button" label="clear" class="p-button-warning"
+                        *ngIf="clearBtnShow2"
+                        (click)="clearOrderProductionBarcodeNoToTemp('orderProductionScan2')"></button>
+                </div>
+                <div class="col-6">
+                    <button pButton pRipple type="button" label="confirm"
+                        *ngIf="fullyItem2"
+                        (click)="putScanNextDepCompleteOrderProductionBarcodeNo('orderProductionScan2', orderProductionScan2)">
+                    </button>
+                </div>
+            </div>
+            <div class="card mx-4 p-0 mb-0">
+                <p-table [value]="orderProductionScan2.scanItem" styleClass="p-datatable-sm p-datatable-gridlines" >
+                    <ng-template pTemplate="header">
+                        <tr class="text-center">
+                            <th style="width:20%" class=" text-center">bundle No</th>
+                            <th style="width:5%" class=" text-center">No.</th>
+                            <th style="width:55%" class=" text-center">Barcode</th>
+                            <th style="width:20%" class=" text-center">###</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-product let-rowIndex="rowIndex">
+                        <tr>
+                            <td style="width:20%" class="bg-bundleno text-center">{{product.bundleNo}}</td>
+                            <td style="width:5%" class=" text-center">{{rowIndex+1}}</td>
+                            <td style="width:55%" class=" ">{{product.productBarcodeNo}}</td>
+                            <td style="width:20%" class=" text-center">{{product.status}}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-dialog header="Bundle list" [(visible)]="visible" [position]="position" [style]="{ width: '15vw' }">
+    <app-s-product-bundle-info></app-s-product-bundle-info>
+</p-dialog>
+
+

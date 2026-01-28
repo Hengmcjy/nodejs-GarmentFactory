@@ -1,0 +1,168 @@
+
+<div style="background: url('assets/images/blocks/signin/signin.jpg') no-repeat; background-size: cover" class="px-4 py-8 md:px-6 lg:px-8">
+    <div class="flex flex-wrap">
+        <div class="w-full lg:w-6 p-4 lg:p-4" style="background-color: rgba(255,255,255,.7)">
+            <img [src]="sweaterGCSPath" alt="Image" height="120" class="mb-3">
+            <div class="text-xl text-900 font-500 mb-3">{{userService.translateCode('gn', 'gn-w002')}}</div>
+            <p class="text-600 line-height-3 mt-0 mb-6">{{userService.translateCode('gn', 'gn-w003')}}</p>
+            <ul class="list-none p-0 m-0">
+                <li class="flex align-items-start mb-4">
+                    <div>
+                        <span class="flex align-items-center justify-content-center bg-purple-400" style="width:38px;height:38px;border-radius:10px">
+                            <i class="text-xl text-white pi pi-inbox"></i>
+                        </span>
+                    </div>
+                    <div class="ml-3">
+                        <span class="font-medium text-900">{{keyConfirmlink}}</span>
+                        <p class="mt-2 mb-0 text-600 line-height-3">Apparel production management. </p>
+                    </div>
+                </li>
+                <li class="flex align-items-start mb-4">
+                    <div>
+                        <span class="flex align-items-center justify-content-center bg-purple-400" style="width:38px;height:38px;border-radius:10px">
+                            <i class="text-xl text-white pi pi-shield"></i>
+                        </span>
+                    </div>
+                    <div class="ml-3">
+                        <span class="font-medium text-900">Working Process</span>
+                        <p class="mt-2 mb-0 text-600 line-height-3">The garment manufacturing industry is one of the most important sectors of the global economy.</p>
+                    </div>
+                </li>
+                <li class="flex align-items-start">
+                    <div>
+                        <span class="flex align-items-center justify-content-center bg-purple-400" style="width:38px;height:38px;border-radius:10px">
+                            <i class="text-xl text-white pi pi-globe"></i>
+                        </span>
+                    </div>
+                    <div class="ml-3">
+                        <span class="font-medium text-900">Global world</span>
+                        <p class="mt-2 mb-0 text-600 line-height-3">The first step in any garment manufacturing process is fabric selection.</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="w-full lg:w-6 p-4 lg:p-7 surface-card">
+            <div class="text-900 text-2xl font-medium mb-6" (dblclick)="showLogin=!showLogin">
+                {{userService.translateCode('gn', 'login2')}}
+            </div>
+            <span *ngIf="showLoginCheck()">
+                <label for="userID2" class="block text-900 font-medium mb-2">
+                    {{userService.translateCode('gn', 'email2')}} / {{userService.translateCode('gn', 'userID2')}}
+                </label>
+                <input id="userID2" type="text" pInputText class="w-full " [(ngModel)]="userID1" autocomplete="off">
+                <small class="p-invalid txt-err" *ngIf="errID==='erru002'">Email/userID not found !!</small>
+            </span>
+
+            <span *ngIf="showLoginCheck()">
+                <label for="password3" class="block text-900 font-medium mb-2 mt-4">
+                    {{userService.translateCode('gn', 'password2')}}
+                </label>
+                <input id="password3" type="text" pInputText class="w-full pw" autocomplete="off"  [(ngModel)]="pwd1">
+                <small class="p-invalid txt-err" *ngIf="errID==='erru003'">password incorrect !!</small>
+            </span>
+
+            <span *ngIf="showLoginCheck()">
+                <button pButton pRipple label="{{translateCode('gn', 'login2')}} " icon="pi pi-user" class="w-full mt-5 text-center"
+                    (click)="login()"></button>
+                <div class="mt-6 text-center text-600" *ngIf="false">
+                    {{userService.translateCode('gn', 'gn-w001')}}
+                    <a tabindex="0" class="font-medium text-blue-500" >
+                        {{userService.translateCode('gn', 'signup')}}
+                    </a>
+                </div>
+            </span>
+
+            <!-- <p-divider align="center" styleClass="my-6" *ngIf="hasUUIDForNodeLogin && showLoginCheck()">
+                <span class="text-600 font-normal text-sm">OR</span>
+            </p-divider> -->
+
+            <button pButton pRipple label="work station" icon="pi pi-github"
+                class="w-full p-button-secondary"
+                *ngIf="hasUUIDForNodeLogin"
+                (click)="postLoginNodeStationByUUID()"></button>
+        </div>
+    </div>
+</div>
+
+
+<div class="surface-section px-4 py-2 md:px-6 lg:px-8">
+    <div class="border-300 text-center">
+        <!-- <img src="assets/images/blocks/logos/hyper.svg" alt="Image" height="36"> -->
+        <ul class="list-none p-0 mx-0 my-5 flex justify-content-center flex-column align-items-center lg:flex-row">
+            <li><a class="text-600 cursor-pointer line-height-3 lg:mr-5">About Us</a></li>
+            <li><a class="text-600 cursor-pointer line-height-3 lg:mr-5">News</a></li>
+            <li><a class="text-600 cursor-pointer line-height-3 lg:mr-5">Investor Relations</a></li>
+            <li><a class="text-600 cursor-pointer line-height-3 lg:mr-5">Careers</a></li>
+
+            <p-menu #menu [popup]="true" [model]="menuItems"></p-menu>
+            <!-- <span  pButton (click)="menu.toggle($event)">Profile</span> -->
+            <li><a class="text-600 cursor-pointer line-height-3" (click)="menu.toggle($event)">Language ({{lang|uppercase}})</a></li>
+        </ul>
+        <!-- <div class="flex align-items-center justify-content-center mb-5">
+            <a class="cursor-pointer border-circle bg-bluegray-100 text-bluegray-500 block inline-flex justify-content-center align-items-center mr-5" style="width:2.5rem; height: 2.5rem">
+                <i class="pi pi-twitter"></i>
+            </a>
+            <a class="cursor-pointer border-circle bg-bluegray-100 text-bluegray-500 block inline-flex justify-content-center align-items-center mr-5" style="width:2.5rem; height: 2.5rem">
+                <i class="pi pi-facebook"></i>
+            </a>
+            <a class="cursor-pointer border-circle bg-bluegray-100 text-bluegray-500 block inline-flex justify-content-center align-items-center" style="width:2.5rem; height: 2.5rem">
+                <i class="pi pi-github"></i>
+            </a>
+        </div> -->
+        <div class="text-center">
+            <a class="mr-5 text-sm text-600 cursor-pointer">Privacy Policy</a>
+            <a class="text-sm text-600 cursor-pointer">Terms of Service</a>
+        </div>
+    </div>
+</div>
+
+
+<!-- <p-dialog header="" [(visible)]="display" [modal]="true"
+    styleClass="w-11 md:w-8 lg:w-6"
+    (onHide)="onHideDialog()">
+
+    <div class="surface-card mb-3 h-full flex-column justify-content-between flex">
+
+        <div class="p-4" *ngIf="mailVerifyErr.length===0">
+            <div class="flex align-items-center">
+                <span class="inline-flex border-circle align-items-center justify-content-center bg-green-100 mr-3"
+                    style="width: 38px; height: 38px;">
+                    <i class="pi pi-globe text-xl text-green-600"></i>
+                </span>
+                <span class="text-900 font-medium text-2xl">verified email</span>
+            </div>
+            <div class="text-900 my-3 text-xl font-medium">You can access KOJ.</div>
+            <p class="mt-0 mb-3 text-700 line-height-3">
+                Eget sit amet tellus cras adipiscing enim. At quis risus sed
+                vulputate odio. Proin libero nunc consequat interdum varius sit amet.
+            </p>
+        </div>
+
+        <div class="p-4" *ngIf="mailVerifyErr.length > 0">
+            <div class="flex align-items-center">
+                <span class="inline-flex border-circle align-items-center justify-content-center bg-red-100 mr-3"
+                    style="width: 38px; height: 38px;">
+                    <i class="pi pi-globe text-xl text-red-600"></i>
+                </span>
+                <span class="text-900 font-medium text-2xl text-red-500">verified email expired</span>
+            </div>
+            <div class="text-900 my-3 text-xl font-medium">Error to verify email</div>
+            <p class="mt-0 mb-3 text-700 line-height-3">
+                Eget sit amet tellus cras adipiscing enim. At quis risus sed
+                vulputate odio. Proin libero nunc consequat interdum varius sit amet.
+            </p>
+        </div>
+
+        <div class="px-4 pt-3  text-right">
+            <button pbutton="" pripple="" icon="pi pi-arrow-right" iconpos="right"
+                label="More" class="p-element p-ripple p-button-rounded p-button-success p-button p-component"
+
+                (click)="onHideDialog()">
+                <span class="p-button-label">ok</span>
+                <span class="p-ink"></span>
+            </button>
+        </div>
+    </div>
+
+</p-dialog> -->
+

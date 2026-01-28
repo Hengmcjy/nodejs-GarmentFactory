@@ -1,0 +1,268 @@
+
+
+<div *ngIf="viewMode === 'yarn-stat'">
+
+    <p-toolbar class="" styleClass="p-2">
+        <div class="p-toolbar-group-start">
+            <!-- <div class="txt-m-gray">
+                {{yarnPlan.yarnID}}
+            </div> -->
+        </div>
+        <div class="p-toolbar-group-center">
+            <span class="yarn-season-head">
+                YARN all weight detail
+            </span>
+            &nbsp;&nbsp;
+            <span class="txt-m-gray">
+                [
+                &nbsp;
+                <span class="txt-m-gray">
+                    {{yarnSeason}}
+                </span>
+                &nbsp;
+                ]
+            </span>
+        </div>
+        <div class="p-toolbar-group-end">
+            <p-button
+                styleClass="p-button-rounded p-button-warning p-button-text text-2xl m-0 p-0 mr-3"
+                (onClick)="closePage()">
+                <span class="material-symbols-outlined">
+                    arrow_back
+                </span>
+            </p-button>
+        </div>
+    </p-toolbar>
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <div class="text-lg txt-m-gray ml-4 my-2">
+                <!-- {{yarnPlan.yarnID}} -->
+                {{yarnService.getYarnfullName(yarnPlan.yarnID)}}
+            </div>
+        </div>
+        <div class="p-toolbar-group-center">
+            <!-- <div class="txt-m-gray">
+                {{yarnPlan.yarnID}}
+            </div> -->
+        </div>
+        <div class="p-toolbar-group-end">
+            <!-- <p-button icon="pi pi-search" class="mr-2"></p-button> -->
+        </div>
+    </p-toolbar>
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip>
+        </div>
+        <div class="p-toolbar-group-center">
+            <!-- <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [ngClass]="mode==='create'?'cursor-pointer':''"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip> -->
+        </div>
+        <div class="p-toolbar-group-end">
+            <!-- <p-button icon="pi pi-refresh" class="mr-2" (onClick)="saveAndRefreshData()"></p-button> -->
+        </div>
+    </p-toolbar>
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <div class="ml-3 my-0 py-0 cursor-pointer" (dblclick)="exportPDF()">
+                <span class="material-symbols-outlined text-green-400 text-2xl font-light">
+                    picture_as_pdf
+                </span>
+            </div>
+        </div>
+        <div class="p-toolbar-group-center">
+            <!-- <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [ngClass]="mode==='create'?'cursor-pointer':''"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip> -->
+        </div>
+        <div class="p-toolbar-group-end">
+            <p-button icon="pi pi-save" class="mr-2" (onClick)="saveAndRefreshData('save')"></p-button>
+        </div>
+    </p-toolbar>
+
+    <p-card class="m-10" header="Infomation" *ngIf="loading">
+        <p class="text-5xl text-600 m-2 p-4">
+            <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+        </p>
+    </p-card>
+
+    <div class="" *ngIf="!loading">
+        <div class="mb-4" *ngFor="let yS of yarnStatCal; let i = index">
+
+            <!-- <p-table [value]="getMainZoneYarn1(yS.mainZoneYarn[1])" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }" -->
+            <p-table [value]="yS.mainZoneYarn" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }"
+                rowGroupMode="rowspan" groupRowsBy="color.colorID">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="text-center" style="width: 20%;">
+                            <span class="">Color</span>
+                        </th>
+                        <th class="text-center" style="width: 9%;" *ngIf="false">
+                            <span class="">##</span>
+                        </th>
+                        <th class="text-center">
+                            <span class="">Style</span>
+                        </th>
+                        <th class="text-center">
+                            <span class="">Size</span>
+                        </th>
+                        <th class="text-center">
+                            <span class="">Orders</span>
+                        </th>
+                        <th class="text-center">
+                            <span class="">
+                                <span class="">
+                                    weight
+                                </span>
+                                <div class="">
+                                    (pc)
+                                </div>
+                            </span>
+                        </th>
+                        <th class="text-center">
+                            <span class="">
+                                <span class="">
+                                    Neccesary
+                                </span>
+                                <div class="">
+                                    (kgs)
+                                </div>
+                            </span>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-dt let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                    <tr>
+                        <td class="text-center border-none" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                            <div class="">
+                                <p-chip
+                                    class="m-1 pl-3 white-space-normal"
+                                    styleClass="surface-0 text-500 text-sm  m-1 pl-0 white-space-normal">
+                                    <p-avatar class="" label="" styleClass="border-gray mr-2"
+                                        [style]="{ 'background-color': dt.color.colorValue, color: 'gray' }"
+                                        shape="circle">
+                                    </p-avatar>
+                                </p-chip>
+                                <div class="text-500 text-sm">
+                                    {{dt.color.colorCode}}
+                                </div>
+                                <div class="text-500 text-sm white-space-normal">
+                                    {{dt.color.colorName}}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="" *ngIf="false">
+                            <span class="" *ngIf="dt.orderQty>0">
+                                <input type="number" min="0" max="20"
+                                    pInputText  class="w-full"
+                                    (keypress)="userService.numberOnly($event);"
+                                    onClick="this.select();"
+                                    [(ngModel)]="dt.seqCut">
+                            </span>
+                        </td>
+                        <td class="">
+                            <span class="" *ngIf="dt.orderQty>0">{{dt.orderID}}</span>
+                            <span class="" *ngIf="dt.orderQty>0"> / </span>
+                            <span class="cursor-pointer">
+                                {{dt.targetPlaceID}}
+                            </span>
+                        </td>
+                        <td class="">
+                            <span class="">{{dt.sizeStr}}</span>
+                        </td>
+                        <td class="">
+                            <span class="">{{dt.orderQty===0?'':dt.orderQty}}</span>
+                        </td>
+                        <td class="">
+                            <span class="" *ngIf="dt.orderQty>0">
+                                <input type="text"
+                                    pInputText  class="w-full pcw"
+                                    (keypress)="userService.numberDotOnly($event);"
+                                    onClick="this.select();"
+                                    [(ngModel)]="dt.pcWeight">
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="">
+                                {{dt.orderQty===0?'':dt.totalWeight | number : '1.2-2' }}
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="footer">
+
+                    <tr>
+                        <td class="text-center" [colSpan]="3">
+                            <span class="">Total</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="">
+                                {{findTotalReceive(yS.color, 'orderqty')}}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="">
+
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="">
+                                {{findTotalReceive(yS.color, 'neccesary')}}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center" [colSpan]="5">
+                            <span class="">
+                                Total
+                                <span class="">
+                                    ( Actual . NET )
+                                </span>
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="">
+                                {{findTotalReceive(yS.color, 'receive')}}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center" [colSpan]="5">
+                            <span class="">
+                                shortage
+                                &nbsp;&nbsp;
+                                <span class="">
+                                    ( {{findTotalReceive(yS.color, 'percent')}}% )
+                                </span>
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="">
+                                {{findTotalReceive(yS.color, 'shortage')}}
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="summary">
+                    <span class="">
+
+                    </span>
+                </ng-template>
+            </p-table>
+
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,18 @@
+<div class="surface-section">
+    <ul class="list-none p-0 m-0">
+        <li class="flex align-items-center py-3 px-2  flex-wrap">
+            <div class="text-500 w-6 md:w-3 font-medium">nodeFlowID</div>
+            <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                <input id="companyName" type="text" pInputText class="w-full " [(ngModel)]="nodeFlowID">
+                <span class="txt-err" *ngIf="errID !== ''">
+                    create Node flow error [ NodeFlowID Existed ]
+                </span>
+            </div>
+        </li>
+    </ul>
+    <div class="surface-section mt-3 px-4  md:px-6 lg:px-8 border-top-1 surface-border" >
+        <div class="border-300 text-center mt-3">
+            <p-button label="create new" (click)="postNodeFlowCreateNew()"></p-button>
+        </div>
+    </div>
+</div>

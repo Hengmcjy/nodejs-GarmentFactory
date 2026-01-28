@@ -1,0 +1,28 @@
+
+
+<div class="grid formgrid p-fluid">
+    <div class="field mb-4 col-4">
+        <p-button styleClass="px-3 p-button-outlined" (onClick)="selectSex('m')">
+            <ng-template pTemplate="content ">
+                <img alt="" src="https://storage.googleapis.com/mystoragegarment/male.png" class="w-12"/>
+            </ng-template>
+        </p-button>
+    </div>
+    <div class="field mb-4 col-4">
+        <p-button styleClass="px-3 p-button-outlined" class="p-button-outlined" (onClick)="selectSex('f')">
+            <ng-template pTemplate="content ">
+                <img alt="" src="https://storage.googleapis.com/mystoragegarment/female.png" class="w-12"/>
+            </ng-template>
+        </p-button>
+    </div>
+    <div class="field mb-4 col-4">
+        <p-button styleClass="px-3 p-button-text" class="p-button-text" (onClick)="selectSex('-')">
+            <ng-template pTemplate="content ">
+                <img alt="" src="https://storage.googleapis.com/mystoragegarment/clear-sex1.png" class="w-12"/>
+            </ng-template>
+        </p-button>
+    </div>
+</div>
+
+
+

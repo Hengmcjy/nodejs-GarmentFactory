@@ -1,0 +1,306 @@
+
+
+<div class="surface-ground flex-auto py-2 " >
+
+
+    <div class="bg-primary-50 shadow-2  border-rounded mx-3 p-3" style="border-radius: 6px">
+        <div class="grid mt-3 ">
+            <div class="col-5 line-h-80">
+                <div class="grid ">
+                    <div class="col-4 text-right   py-2">
+                        Season :
+                    </div>
+                    <div class="col-8  py-2">
+                        {{dPacking1.seasonYear}}
+                    </div>
+
+                    <div class="col-4 text-right  py-2">
+                        Customer :
+                    </div>
+                    <div class="col-8 py-2">
+                        {{userService.getCustomerName(dPacking1.customerID)}}
+                    </div>
+
+                    <div class="col-4 text-right  py-2">
+                        Style :
+                    </div>
+                    <div class="col-8  py-2">
+                        {{dPacking1.orderID}}
+                    </div>
+
+                    <div class="col-4 text-right py-2">
+                        D Name :
+                    </div>
+                    <div class="col-8 py-2">
+                        {{dPacking1.dID}}
+                    </div>
+
+                    <div class="col-4  text-right py-2">
+                        Destination :
+                    </div>
+                    <div class="col-8 py-2">
+                        {{dPacking1.dCountryID}}
+                    </div>
+
+                    <div class="col-4  text-right py-2">
+                        Completed :
+                    </div>
+                    <div class="col-8 py-2">
+                        90%
+                    </div>
+
+                    <div class="col-12 py-2">&nbsp;</div>
+
+                    <div class="col-4 text-right py-2">
+                        total carton:
+                    </div>
+                    <div class="col-8 py-2">
+                        {{dPacking1.totalCarton}}
+                    </div>
+
+                    <div class="col-4 text-right py-2">
+                        total QTY:
+                    </div>
+                    <div class="col-8 py-2">
+                        {{dPacking1.totalDPQty}}
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="col-7">
+                <div class="grid">
+                    <!-- <div class="col-12">&nbsp;</div> -->
+
+
+                    <div class="col-12">
+                        <p-table [value]="dbTest" [tableStyle]="{  }" [styleClass]="'p-datatable-sm'">
+                            <ng-template pTemplate="header">
+                                <tr class="text-xs">
+                                    <th>Color</th>
+                                    <th>XS</th>
+                                    <th>S</th>
+                                    <th>M</th>
+                                    <th>L</th>
+                                    <th>XL</th>
+                                    <th>2XL</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-product>
+                                <tr class="text-xs">
+                                    <td>{{ product.cartonID }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class=" bg-teal-50 shadow-2  border-rounded mx-3 mt-2 p-3" style="border-radius: 6px">
+        <div class="grid mt-3">
+            <div class="col-5">
+                <div class="border-none w-full p-2 mb-2 text-center">
+                    <div class="txt-season-cap">
+                        carton completed
+                    </div>
+
+                    <div class="grid">
+
+                        <div class="col-12 py-0">&nbsp;</div>
+                        <div class="col-12 py-0">&nbsp;</div>
+
+                        <div class="col-4 text-right py-0">
+                            total carton:
+                        </div>
+                        <div class="col-8 text-left py-0">
+                            {{dPackingCompleted.totalCarton}}
+                        </div>
+
+                        <div class="col-4 text-right py-0">
+                            total QTY:
+                        </div>
+                        <div class="col-8 text-left py-0">
+                            {{dPackingCompleted.totalDPQty}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-7">
+                <div class="grid">
+                    <div class="col-12">
+                        <p-table [value]="dbTest" [tableStyle]="{  }" [styleClass]="'p-datatable-sm'">
+                            <ng-template pTemplate="header">
+                                <tr class="text-xs">
+                                    <th>Color</th>
+                                    <th>XS</th>
+                                    <th>S</th>
+                                    <th>M</th>
+                                    <th>L</th>
+                                    <th>XL</th>
+                                    <th>2XL</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-product>
+                                <tr class="text-xs">
+                                    <td>{{ product.cartonID }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class=" bg-orange-50 shadow-2  border-rounded mx-3 mt-2 p-3" style="border-radius: 6px">
+        <div class="grid mt-3">
+            <div class="col-5">
+                <div class="border-none w-full p-2 mb-2 text-center">
+                    <div class="txt-season-cap">
+                        carton for waiting..
+                    </div>
+
+                    <div class="grid">
+
+                        <div class="col-12 py-0">&nbsp;</div>
+                        <div class="col-12 py-0">&nbsp;</div>
+
+                        <div class="col-4 text-right py-0">
+                            total carton:
+                        </div>
+                        <div class="col-8 text-left py-0">
+                            {{dPackingWaiting.totalCarton}}
+                        </div>
+
+                        <div class="col-4 text-right py-0">
+                            total QTY:
+                        </div>
+                        <div class="col-8 text-left py-0">
+                            {{dPackingWaiting.totalDPQty}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-7">
+                <div class="grid">
+                    <div class="col-12">
+                        <p-table [value]="dbTest" [tableStyle]="{  }" [styleClass]="'p-datatable-sm'">
+                            <ng-template pTemplate="header">
+                                <tr class="text-xs">
+                                    <th>Color</th>
+                                    <th>XS</th>
+                                    <th>S</th>
+                                    <th>M</th>
+                                    <th>L</th>
+                                    <th>XL</th>
+                                    <th>2XL</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-product>
+                                <tr class="text-xs">
+                                    <td>{{ product.cartonID }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                    <td>{{ product.cartonName }}</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<<<<<<< HEAD
+    <div class="w-12 mt-2 ml-3">
+=======
+    <!-- <div class="w-12 mt-2 ml-3">
+>>>>>>> 7d6aa60 (20241224-1)
+        <p-table [value]="dPacking1.dCarton" [tableStyle]="{  }" [styleClass]="'p-datatable-sm w-11'">
+            <ng-template pTemplate="header">
+                <tr class="text-xs">
+                    <th>####</th>
+                    <th>Destination</th>
+                    <th>box-size</th>
+                    <th>Total QTY</th>
+                    <th class="font-bold text-green-600">
+                        {{dPacking1.orderID}}
+                    </th>
+                </tr>
+            </ng-template>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7d6aa60 (20241224-1)
+            <ng-template pTemplate="body" let-dC>
+                <tr class="text-xs">
+                    <td class="">
+                        <span class="text-2xl font-bold">
+                            {{ dC.dCartonID }}
+                        </span>
+                        <span class="">
+                            <p-button icon="pi pi-search"
+                                styleClass="p-button-rounded p-button-text p-button-sm text-teal-300">
+                            </p-button>
+                        </span>
+                    </td>
+                    <td class="">
+                        <span class="text-sm font-semibold text-600">
+                            {{ dPacking1.dCountryID }}
+                        </span>
+                    </td>
+                    <td class="">
+                        <span class="">
+                            {{ dC.cartonID }}
+                        </span>
+                    </td>
+                    <td class="">
+                        <span class="text-2xl">
+                            {{ dC.totalQTY }}
+                        </span>
+                    </td>
+                    <td class="">
+                        <span class="">
+                            <span class="">
+                                <p-button label="waiting"
+                                    styleClass="p-button-raised p-button-warning p-button-sm w-3 mx-2">
+                                </p-button>
+                            </span>
+                            <span class="">
+                                <p-button label="completed"
+                                    styleClass="p-button-outlined p-button-secondary p-button-sm w-3 mx-2">
+                                </p-button>
+                            </span>
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+<<<<<<< HEAD
+    </div>
+=======
+    </div> -->
+>>>>>>> 7d6aa60 (20241224-1)
+
+</div>

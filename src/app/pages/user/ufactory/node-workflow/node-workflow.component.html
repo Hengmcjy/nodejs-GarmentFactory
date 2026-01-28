@@ -1,0 +1,24 @@
+
+<app-ufactory-dashboard-menu></app-ufactory-dashboard-menu>
+
+<div class="grid">
+    <div class="col-offset-2 col-8">
+        <p-orderList [value]="test" [listStyle]="{'height':'auto'}" header="Node flow" [dragdrop]="isdragdrop"
+            [listStyle]="{'height':'500px'}" (onReorder)="onOrderActivity()">
+            <ng-template let-product pTemplate="item">
+                <div class="product-item">
+                    <div class="product-list-detail">
+                        <h5 class="mb-2">{{product.id}}</h5>
+                        <i class="pi pi-tag product-category-icon"></i>
+                        <span class="product-category">{{product.a}}</span>
+                    </div>
+                    <div class="product-list-action">
+                        <h6 class="mb-2">${{product.b}}</h6>
+                        <!-- <span [class]="'product-badge status-' + product.inventoryStatus.toLowerCase()">{{product.inventoryStatus}}</span> -->
+                    </div>
+                </div>
+            </ng-template>
+        </p-orderList>
+    </div>
+</div>
+

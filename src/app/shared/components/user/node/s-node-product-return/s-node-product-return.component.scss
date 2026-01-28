@@ -1,0 +1,9 @@
+input{
+    font-size: 20px;
+}
+input:focus {
+    outline: none !important;
+    border-color: var(--red-900);
+    box-shadow: 0 0 10px var(--red-500);
+    background-color: var(--yellow-100);
+}

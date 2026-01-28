@@ -1,0 +1,80 @@
+
+
+<p-paginator [rows]="limit" [totalRecords]="queueListCount" [rowsPerPageOptions]="[10,20,50]"
+                (onPageChange)="paginate($event)"></p-paginator>
+
+                <!-- export class OrderProductionQueueList {
+                    constructor(
+                                    public companyID: string,
+                                    public orderID: string,
+                                    public productID: string,
+                                    public factoryID: string,
+                                    public productBarcode: string,
+                                    public queueDate: Date,
+                        public forLossQty: number,
+                                    public toNode: string,
+                                    public numberFrom: number,
+                                    public numberTo: number,
+                        public bundleNoFrom: number,
+                        public bundleNoTo: number,
+                        public yarnLot: YarnLot[],
+                                    public createBy: CreateBy
+                    ) {}
+                } -->
+<p-table [value]="queueList"  [tableStyle]="{'min-width': '60rem'}">
+    <ng-template pTemplate="caption">
+        {{productBarcode}}
+    </ng-template>
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Datetime</th>
+            <th>Number</th>
+            <th>Qty</th>
+            <th>forLossQty</th>
+            <th>yarnLotID</th>
+            <th>user</th>
+
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-queue let-idx="rowIndex">
+        <tr class="m-0 p-0">
+            <td>
+                <span>{{queue.queueDate | date: 'dd-MM-yyyy hh:mm'}}</span>
+            </td>
+            <td>
+                <span>{{queue.numberFrom}}</span>
+                &nbsp;-&nbsp;
+                <span>{{queue.numberTo}}</span>
+            </td>
+            <td>
+                <span>{{+queue.numberTo - +queue.numberFrom + 1}}</span>
+            </td>
+            <td>
+                <span>
+                    {{queue.forLossQty}}
+                </span>
+            </td>
+            <td>
+                <div *ngFor="let yarn of queue.yarnLot; let i = index">
+                    <span>{{yarn.yarnLotID}}</span>
+                </div>
+            </td>
+            <td>
+                <span>
+                    {{queue.createBy.userName}}
+                </span>
+            </td>
+            <!-- <td>
+                <button pButton pRipple type="button" icon="pi pi-file-edit"
+                    class="p-button-rounded p-button-success"
+                    (click)="goto('/user/ucompany/order/edit', order, order.customerOR.customerID, order.productOR.productID)">
+                </button>
+            </td> -->
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+        <div class="flex align-items-center justify-content-between">
+            In total there are  products queue.
+        </div>
+    </ng-template>
+</p-table>

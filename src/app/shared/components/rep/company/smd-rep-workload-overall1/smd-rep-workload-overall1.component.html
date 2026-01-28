@@ -1,0 +1,132 @@
+
+<!-- {{userService.strFirstAndDot(nodeID1, 15)}}  {{nodeID1}} -->
+
+<div class="px-2 py-0 my-0  md:px-2 lg:px-2">
+    <div class="card flex flex-column md:flex-row gap-3 m-0 p-0 border-none ">
+        <span>
+            <div class="p-inputgroup">
+                <!-- <input type="text" pInputText placeholder="Keyword" /> -->
+                <p-calendar [(ngModel)]="date12" selectionMode="range"
+                    [readonlyInput]="readonlyInput"
+                    [numberOfMonths]="3"
+                    [dateFormat]="dateFormat"
+                    onselect="selectDate()"></p-calendar>
+                <button type="button" pButton styleClass="p-button-warn"
+                    (click)="selectDate()">
+                    {{userService.translateCode('btn', 'btn-show-report')}}
+                </button>
+            </div>
+        </span>
+    </div>
+</div>
+
+<div class="grid text-base text-500 text-rigth mt-1">
+    <div class="col-4"></div>
+    <div class="col-4"></div>
+    <div class="col-4"><span class="">{{note}}</span></div>
+</div>
+<p-tabView>
+    <p-tabPanel *ngFor="let nodeID1 of nodeIDs; let i = index" header={{nodeIDs2[i]}}>
+
+        <p-table [value]="getOrderIDFromNodeID(nodeID1)"
+            class="w-full"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="caption">
+                {{date1}} - {{date2}}
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr class=" text-left">
+                    <th class="" style="width: 1%"></th>
+                    <th class="text-left" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                    <th class="text-left" *ngFor="let subnode of getSubNodeflow(nodeID1); let s0 = index">
+                        {{subnode.subNodeID}}
+                        .
+                        {{userService.strFirstAndDot(subnode.subNodeName, 10)}}
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-style1 let-idx="rowIndex">
+                <tr class="text-sm text-center">
+                    <td>
+
+                    </td>
+                    <td class="text-left font-bold">
+                        <span>
+                            {{style1}}
+                        </span>
+                    </td>
+                    <td class="vertical-align-middle text-left" *ngFor="let subnode of getSubNodeflow(nodeID1); let s1 = index">
+                        <span>
+                            {{getQTYSubNode(nodeID1, subnode.subNodeID, style1)}}
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+    </p-tabPanel>
+
+    <p-tabPanel header="Style/Color/Size">
+        <p-table [value]="subNodeStaffScanStyleZoneColorSizeData"
+            rowGroupMode="rowspan"  groupRowsBy="orderID"
+            class="w-full"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="caption">
+                {{date1}} - {{date2}}
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr class=" text-left">
+                    <th class="" style="width: 1%"></th>
+                    <th class="text-left" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                    <th class="text-left" >color | size</th>
+                    <th class="text-left" *ngFor="let subnode2 of getSubNodeflow(nodeID); let s2 = index">
+                        {{subnode2.subNodeID}}
+                        .
+                        {{userService.strFirstAndDot(subnode2.subNodeName, 10)}}
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-scan let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                <tr class="text-sm text-center">
+                    <td>
+
+                    </td>
+                    <td class="text-left font-bold" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                        <span>
+                            {{scan.orderID}}
+                        </span>
+                    </td>
+                    <td class="text-left font-bold text-500" >
+                        <span class="text-xs text-500">
+                            <div class="txt-sm-gray">
+                                {{userService.getCodeColorNameByColorCode(scan.color, userService.getSetNameColorByOrderID(scan.orderID))}}
+                            </div>
+                            <div class="">
+                                <span class="">
+                                    {{userService.strFirstAndDot(userService.getColorNameByColorCode(scan.color, userService.getSetNameColorByOrderID(scan.orderID)), 10)}}
+                                </span>
+                                <span class="">|</span>
+                                <span class="font-bold text-900 text-lg">
+                                    {{scan.size}}
+                                </span>
+                            </div>
+                        </span>
+                    </td>
+                    <td class="vertical-align-middle text-left" *ngFor="let subnode3 of getSubNodeflow(nodeID); let s3 = index">
+                        <div class="text-base"
+                            *ngFor="let qtyZone of getQTYSubNodeZoneColorSize(scan.orderID, nodeID, subnode3.subNodeID, scan.color, scan.size);
+                            let i = index">
+                            <span class="text-400 font-semibold text-sm">
+                                {{qtyZone.zone}}.
+                            </span>
+                            <span class="">
+                                {{qtyZone.qty}}
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-tabPanel>
+
+</p-tabView>

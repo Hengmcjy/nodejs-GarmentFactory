@@ -1,0 +1,10 @@
+
+
+<div class="m-3" *ngFor="let fs of flowSeq; let i = index">
+    <p-button
+        label="{{fs.nodeID}}"
+        styleClass="p-button-warning {{checkNodeSelected(fs)}} w-12"
+        (onClick)="selectFlowSeq(fs)">
+    </p-button>
+</div>
+<p-button label="select" class="" styleClass="p-button-rounded p-button-warning mt-5 w-12" (onClick)="selectCommit()"></p-button>

@@ -1,0 +1,86 @@
+
+
+<p-menu #menu [popup]="true" [model]="items" styleClass="bg-yellow-50"></p-menu>
+
+<div class="surface-ground p-2" >
+    <div *ngFor="let group of currentCompanyOrderStyleGroup; let i1 = index">
+        <p-table [value]="orderStyleColorSizeFilter(i1)"
+            rowGroupMode="rowspan"  groupRowsBy="colorSeq"
+            class="w-full"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="caption">
+                Order - {{order.orderID}}
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="text-center" style="width: 20%">color</th>
+                    <th class="" >size</th>
+                    <!-- <th class="" *ngFor="let zone of targetPlaces; let n = index">{{zone.targetPlace.countryID}}</th> -->
+                    <th class="" *ngFor="let zone of getOrderTargetPlace(order.orderID); let n = index">
+                        {{zone.targetPlace.countryID}}
+                    </th>
+                    <th class="" >total</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-orderx let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                <tr class="text-sm " *ngIf="idx !== 0 && checkColorShow(orderx.productColor, false, idx) ">
+                    <td class="border-none border-bottom-3"></td>
+                    <td class="border-none border-bottom-3"></td>
+                    <!-- <td class="border-none border-bottom-3" *ngFor="let zone of targetPlaces; let n = index"></td> -->
+                    <td class="border-none border-bottom-3" *ngFor="let zone of getOrderTargetPlace(order.orderID); let n = index"></td>
+                    <td class="border-none border-bottom-3"></td>
+                </tr>
+                <tr>
+                    <!-- <td class="border-none" rowspan="100" *ngIf="idx===0"> -->
+                    <td class="text-center border-none" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                        <span *ngIf="checkColorShow(orderx.productColor, true, idx)">
+                            <span *ngFor="let colorName of orderx.productColor.split(','); let m = index">
+                                {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(orderx.style))}}
+                                &nbsp;
+                            </span>
+                            <div *ngFor="let colorName of orderx.productColor.split(','); let m2 = index">
+                                {{userService.getCodeColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(orderx.style))}}
+
+                            </div>
+                        </span>
+                    </td>
+                    <td>
+                        <!-- {{userService.strReplaceAll(orderx.productSize, '-', '')}} -->
+                        {{userService.getSizeName(userService.strReplaceAll(orderx.productSize, '-', ''))}}
+                    </td>
+                    <!-- <td *ngFor="let zone1 of targetPlaces; let p = index"> -->
+                    <td *ngFor="let zone1 of getOrderTargetPlace(order.orderID); let p = index"
+                            (click)="selectProduct(orderx.productColor, orderx.productSize,zone1.targetPlace);"
+                            (dblclick)="setMenuPopup(orderx.productColor, orderx.productSize,zone1.targetPlace);
+                            menu.toggle($event);">
+                        <span [ngClass]="checkOrderQtyRewrite(orderx.productColor, orderx.productSize,zone1.targetPlace)?'bg-teal-100':''">
+                            {{getOrderQty(orderx.companyID, orderx.orderID, orderx.productID, orderx.style,
+                                orderx.productColor, orderx.productSize, p)}}
+                        </span>
+                        <!-- <span class="text-red-800 text-xl"
+                            *ngIf="checkOrderQtyRewrite(orderx.productColor, orderx.productSize,zone1.targetPlace)">
+                            *
+                        </span> -->
+                    </td>
+                    <td>
+                        {{getOrderQtyRowTotal(orderx.companyID, orderx.orderID, orderx.productID, orderx.style,
+                            orderx.productColor, orderx.productSize)}}
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+                <tr>
+                    <td>total</td>
+                    <td></td>
+                    <!-- <td *ngFor="let zone2 of targetPlaces; let q = index"> -->
+                    <td *ngFor="let zone2 of getOrderTargetPlace(order.orderID); let q = index">
+                        {{getOrderQtyColumnTotal(group[0], q)}}
+                    </td>
+                    <td>
+                        {{getOrderQtyGrandTotal(group[0])}}
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>

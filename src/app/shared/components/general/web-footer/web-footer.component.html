@@ -1,0 +1,6 @@
+<div class=" text-center flex justify-content-center flex-wrap ">
+    <ul class="list-none p-0 mx-0 mt-2 flex justify-content-center flex-column align-items-center lg:flex-row">
+        <p-menu #menu [popup]="true" [model]="menuItems"></p-menu>
+        <li><a class="text-600 cursor-pointer line-height-3" (click)="menu.toggle($event)">Language ({{lang|uppercase}})</a></li>
+    </ul>
+</div>

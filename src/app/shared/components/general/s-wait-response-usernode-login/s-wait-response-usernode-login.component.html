@@ -1,0 +1,90 @@
+
+
+<div class="grid m-0 p-0">
+    <div class="col-3 text-center ">
+        <div class="text-8xl font-bold text-500">
+            {{secondTimer}}
+        </div>
+        <p-progressSpinner
+            [style]="{ width: '50px', height: '50px' }"
+            styleClass="custom-spinner"
+            strokeWidth="8"
+            fill="#EEEEEE"
+            animationDuration="1s"
+            *ngIf="secondTimer > 0"
+            ></p-progressSpinner>
+    </div>
+    <div class="col-9 text-center" *ngIf="secondTimer > 0">
+        <p-card>
+            <table class="w-full ">
+                <!-- *ngFor="let feature of product.productFeature; let i = index" -->
+                <tr class="text-rigth m-2">
+                    <td w-7="" class="text-900 text-xl  font-medium text-rigth">company : </td>
+                    <td class="text-600 text-xl text-left">{{company.cInfo.companyName}}</td>
+                </tr>
+                <tr class="text-rigth m-2">
+                    <td w-7="" class="text-900 text-xl  font-medium text-rigth">factory : </td>
+                    <td class="text-600 text-xl text-left">{{factory.fInfo.factoryName}}</td>
+                </tr>
+                <tr class="text-rigth m-2">
+                    <td w-7="" class="text-900 text-xl  font-medium text-rigth">nodeID : </td>
+                    <td class="text-600 text-xl text-left">{{nodeID}}</td>
+                </tr>
+                <tr class="text-rigth m-2">
+                    <td w-7="" class="text-900 text-xl  font-medium text-rigth">stationID : </td>
+                    <td class="text-600 text-xl text-left">{{stationID}}</td>
+                </tr>
+                <tr class="text-rigth m-2">
+                    <td w-7="" class="text-900 text-xl  font-medium text-rigth">token : </td>
+                    <td class="text-pink-300 text-xl text-left">
+                        {{userService.strFirstAndDot(uuidUserNodeLoginWaiting, 10)}}
+                    </td>
+                </tr>
+
+            </table>
+            <div class="grid m-0 p-0">
+                <div class="col-12 text-center blinking m-0 p-0 mt-4">
+                    <span class="blinking text-5xl text-red-700">
+                        waiting for allow log in
+                    </span>
+                </div>
+                <!-- <div class="col-6 text-center "></div> -->
+            </div>
+        </p-card>
+
+    </div>
+    <div class="col-9 text-center" *ngIf="secondTimer <= 0 || modeIO === 'reject' || modeIO === 'allow'">
+        <p-card>
+            <ng-template pTemplate="header">
+
+            </ng-template>
+            <span class="text-4xl text-600" *ngIf="secondTimer <= 0 && modeIO !== 'reject' && modeIO !== 'allow'">
+                time expired!
+            </span>
+            <span class="text-4xl text-600" *ngIf=" modeIO === 'reject'">
+                <span class="text-4xl text-600" >
+                    reject by
+                </span>
+                <br>
+                <span class="text-4xl text-600">
+                    company
+                </span>
+            </span>
+            <span class="text-4xl text-600" *ngIf=" modeIO === 'allow'">
+                <span class="text-4xl text-600" >
+                    allow by
+                </span>
+                <br>
+                <span class="text-4xl text-600">
+                    company
+                </span>
+            </span>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple type="button" label="close"
+                    class="p-button-raised p-button-danger p-button-text"
+                    (click)="closeDialog()"></button>
+            </ng-template>
+        </p-card>
+    </div>
+</div>

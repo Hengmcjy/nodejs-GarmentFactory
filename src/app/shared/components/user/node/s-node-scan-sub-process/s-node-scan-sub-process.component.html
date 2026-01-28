@@ -1,0 +1,296 @@
+
+
+<app-s-work-station-head></app-s-work-station-head>
+
+<p-toast position="top-right" ></p-toast>
+<p-confirmDialog header="Confirmation" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+<p-blockUI [blocked]="blockUI">
+    <i class="pi pi-lock" style="font-size: 3rem"></i>
+    <div class="txt-ui-block">waiting a moment</div>
+</p-blockUI>
+
+<div class="surface-ground px-4 py-5 md:px-6 lg:px-8">
+    <div class="grid ">
+
+        <div class="col-12 m-0 p-0">
+            <div class="card m-0 p-0">
+                <div class="grid m-0 p-0">
+                    <div class="col-3  text-center">
+                        <!-- mustBundleScan = {{mustBundleScan}} -->
+                        <div class="text-3xl font-medium text-900 mb-1">{{mustBundleScan?'Yes':'No'}}</div>
+                        <div class="text-xl text-600 white-space-nowrap">bundle check</div>
+                    </div>
+                    <div class="col-9 m-0 p-0">
+                        <div class="grid m-0 p-0">
+                            <div class="col-3 border-left-1 surface-border text-center m-0 p-0">
+                                <div class="text-5xl font-bold text-yellow-500 m-0 p-0 my-2">
+                                    {{productBarcodeNos.length}}
+                                </div>
+                                <div class="text-xl text-yellow-900 m-0 p-0 mb-2">
+                                    QTY
+                                </div>
+                            </div>
+                            <div class="col-3 border-left-1 surface-border text-center m-0 p-0">
+                                <div class="text-5xl font-bold text-green-500 m-0 p-0 my-2">
+                                    <!-- {{mustBundleScan? bundleNoScan.length : 'X'}} -->
+                                </div>
+                                <div class="text-xl text-green-900 m-0 p-0 mb-2">
+                                    <!-- Bundle -->
+                                </div>
+
+                            </div>
+                            <div class="col-4 border-left-1 surface-border   text-center m-0 p-0">
+
+                            </div>
+                            <div class="col-2 border-left-1 surface-border   text-center m-0 p-0">
+
+                                <div class="text-5xl font-bold text-green-500 m-0 p-0 mb-4">
+
+                                </div>
+                                <div class=" m-0 p-0 mb-2">
+                                    <p-button label="clear" (onClick)="clearAll()"></p-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-2 p-2 pb-0">
+            <div class="card m-0 p-0  mb-2" >
+                <div class="scan-subnode-caption-head text-center" >
+
+                    <div class=" m-2 mt-4 surface-card text-center">
+                        <div class="p-inputgroup mb-2">
+                            <button type="button" pButton label="clear" (click)="clearAll()"></button>
+                            <input type="text" pInputText  class="w-full pw" autocomplete="off"
+                                [(ngModel)]="staffID"
+                                (keyup.enter)="getWorkerInfoByQRCode1('scan')"
+                                #input1>
+                        </div>
+
+                        <img [src]="genImagePath(staffSelect.uInfo.pic)" class="mb-3 w-full" />
+                        <div class="flex justify-content-center
+                            align-items-center">
+                            <div class="text-center justify-content-center">
+                                <div class="text-xl text-900 font-medium mb-2 text-center">
+                                    <span>{{staffSelect.userID}}</span>
+                                </div>
+                                <div class="text-xl text-900 font-medium mb-2 text-center">
+                                    <span>{{staffSelect.uInfo.userName}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-3 p-2 pb-0">
+            <div class="card m-0 p-4 pb-0 mb-2" *ngIf="staffSelect.userID !== ''">
+
+                <!-- ## in case mustBundleScan = false ==> no need to scan bundle -->
+                <div>
+                    <div class="p-inputgroup">
+                        <button type="button" pButton label="clear" (click)="clearToken()"></button>
+                        <input type="text" pInputText  class="w-full pw" autocomplete="off"
+                            [(ngModel)]="tokenScan"
+                            (keyup.enter)="scanQRCode('token')"
+                            #input2>
+                    </div>
+
+                    <div class="mt-2 text-rigth" >
+                        <table style="width:100%">
+                            <tr class="text-rigth">
+                                <td class="">STYLE : </td>
+                                <td class="text-purple-600 text-left">
+                                    &nbsp;
+                                    <span class="">
+                                        {{orderID}}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="text-rigth">
+                                <td class="">Zone : </td>
+                                <td class="text-purple-600 text-left">
+                                    &nbsp;
+                                    <span class="">
+                                        {{zone}}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="text-rigth">
+                                <td class="">Color : </td>
+                                <td class="text-purple-600 text-left">
+                                    &nbsp;
+                                    <span class="">
+                                        {{colorCode}}&nbsp;&nbsp;&nbsp;{{userService.strFirstAndDot(color, 9)}}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="text-rigth">
+                                <td class="">Size : </td>
+                                <td class="text-purple-600 text-left">
+                                    &nbsp;
+                                    <span class="">
+                                        {{size}}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="text-rigth">
+                                <td class="">BunQTY : </td>
+                                <td class="text-purple-600 text-left">
+                                    &nbsp;
+                                    <span class="">
+                                        {{productCount===0?'':productCount}}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="text-rigth">
+                                <td class="">Bundle no. : </td>
+                                <td class="text-purple-600 text-left">
+                                    &nbsp;
+                                    <span class="">
+                                        {{bundleNo===0?'':bundleNo}}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="" *ngIf="subNodeFlowCost.length > 0 && orderID !== ''">
+                                <td colspan="2">
+                                    <p-button class="w-12 text-center" styleClass="p-button-sm w-12 text-center"
+                                        label="edit staff work load"
+                                        (onClick)="showSubNodeScanned('token')">
+
+                                    </p-button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <div class="card m-0 p-4 cursor-pointer mb-2"
+                *ngIf="subNodeFlowCost.length > 0 && orderID !== '' ">
+                <div *ngIf="subNodeFlowCostSelect.length === 0" (click)="showSubNodeSelect()">
+                    <p-button label="select sub node" styleClass="p-button-help p-button-text"></p-button>
+                </div>
+                <div class="text-left txt-product-qr" >
+                    <div class="" *ngFor="let sub1 of subNodeFlowCostSelect; let i = index">
+                        {{sub1.subNodeID}}
+                        &nbsp;&nbsp;&nbsp;
+                        <!-- userService.strFirstAndDot(color, 9) -->
+                        {{userService.strFirstAndDot(userService.getSubNodeFlowName(nodeID, sub1.subNodeID, userService.subNodeflowC), 18)}}
+                        <!-- {{sub1.subNodeID}} -->
+                        <!-- getSubNodeFlowName(nodeID: string, subNodeID: string, subNodeFlow: SubNodeFlow[]) -->
+                    </div>
+                </div>
+
+                <div *ngIf="subNodeFlowCostSelect.length > 0" (click)="showSubNodeSelect()">
+                    <p-button label="clear sub node" styleClass="p-button-danger p-button-text"
+                        (onClick)="subNodeFlowCostSelect=[]">
+                    </p-button>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-7 p-2 pb-0" *ngIf="subNodeFlowCost.length === 0 && orderID !== ''">
+            <div class="card m-0 p-4 text-center" >
+                <span class="my-10 text-4xl font-bold text-red-300 scalein animation-duration-3000 animation-iteration-infinite">
+                    no have sub node flow  !!!!!
+                </span>
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-7 p-2 pb-0" *ngIf="subNodeFlowCost.length > 0 && orderID !== ''">
+
+            <!-- *ngIf="getOrderProductionLoading" -->
+            <div class="card m-0 p-4 text-center" *ngIf="getOrderProductionLoading">
+                <span class="my-10 text-4xl font-bold text-purple-300 scalein animation-duration-500 animation-iteration-infinite">
+                    Loading ...
+                </span>
+            </div>
+
+            <div class="card m-0 p-4" *ngIf="!getOrderProductionLoading">
+
+                <div class="m-2 mt-0">
+                    <div class="grid">
+                        <div class="col-4">
+                            <p-button class="w-10" label="check list"
+                                styleClass="p-button-warning w-10"
+                                *ngIf="subNodeFlowCostSelect.length > 0 && orderProductionScan1.scanItem.length > 0 && orderID !== ''"
+                                (onClick)="checkScanTemp()"></p-button>
+                        </div>
+                        <div class="col-5">
+                            <p-button class="w-10" label="update sub node"
+                                styleClass="p-button-success w-10"
+                                *ngIf="checkListComplete"
+                                (onClick)="updateOrderProductionSubNode()"></p-button>
+                        </div>
+                        <div class="col-3">
+                            <p-button class="w-10" label="clear list" styleClass=" w-10"
+                                (onClick)="clearScanTemp()"></p-button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-inputgroup" *ngIf="!nodeStation.nodeInfo.mustBundleScan">
+                    <input type="text" pInputText  class="w-full" autocomplete="off"
+                        [(ngModel)]="productBarcodeNoInput"
+                        (keyup.enter)="putScanOrderProductionBarcodeNoSubNode(productBarcodeNoInput, 'scan-sub-node')"
+                        #input3>
+                </div>
+
+                <p-table [value]="orderProductionScan1.scanItem" styleClass="p-datatable-sm p-datatable-gridlines mt-2" >
+                    <ng-template pTemplate="header">
+                        <tr class="text-center">
+                            <th style="width:20%" class=" text-center">bundle No</th>
+                            <th style="width:5%" class=" text-center">No.</th>
+                            <!-- <th style="width:5%" class=" text-center">Outsource</th> -->
+                            <th style="width:55%" class=" text-center">
+                                <button pButton pRipple type="button" icon="pi pi-sort-numeric-down"
+                                    class="p-button-rounded p-button-text ml-3"
+                                    (click)="barcodeSort()">&nbsp;&nbsp; Barcode</button>
+                            </th>
+                            <th style="width:20%" class=" text-center">###</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-product let-rowIndex="rowIndex">
+                        <tr [ngClass]="getColorBundleGroupColorScan(product.bundleNo)">
+                            <td style="width:20%" class="bg-bundleno text-center">
+                                <span class="">{{product.bundleNo}}</span>
+                                &nbsp;
+                                <span class="text-sm text-600 text-rigth">[ {{product.bundleCount}} pcs]</span>
+
+                            </td>
+                            <td style="width:5%" class=" text-center">{{rowIndex+1}}</td>
+                            <!-- <td style="width:15%" class=" text-center txt-subcontact-cell text-yellow-500 font-semibold">
+                                to.. {{userService.getFactoryNameByFactoryID(product.factoryIDForm)}}
+                            </td> -->
+                            <td style="width:40%" class=" ">
+                                {{product.productBarcodeNo}}
+                                <div class="text-500 text-base"
+                                    *ngIf="product.productBarcodeNo !== product.productBarcodeNoReal">
+                                    {{product.productBarcodeNoReal}}
+                                </div>
+                            </td>
+                            <td style="width:20%" class=" text-center">
+                                <span class="cursor-pointer  font-semibold"
+                                    [ngClass]="statusScan1[rowIndex]==='ok'?'text-green-400':'text-red-400'">
+                                    {{statusScan1[rowIndex]}}
+                                </span>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+

@@ -1,0 +1,339 @@
+
+
+<p-menu #menu  [popup]="true" [model]="items" styleClass="bg-yellow-50 w-4"></p-menu>
+
+<div class="">
+    <p-toolbar class="" styleClass="p-2">
+        <div class="p-toolbar-group-start">
+            <span class="text-green-400 text-xl m-0 p-0 ml-5 cursor-pointer" *ngIf="false">
+                <span class="material-symbols-outlined text-xl">quick_reference_all</span>
+            </span>
+
+        </div>
+        <div class="p-toolbar-group-center">
+
+            <span class="yarn-season-head">
+                YARN
+
+                <span class="" >
+                     stock card
+                </span>
+            </span>
+            &nbsp;&nbsp;
+            <span class="txt-m-gray">
+                [
+                &nbsp;
+                <span class="txt-m-gray">
+                    {{yarnSeason}}
+                </span>
+                &nbsp;
+                ]
+            </span>
+        </div>
+        <div class="p-toolbar-group-end">
+            <p-button
+                styleClass="p-button-rounded p-button-warning p-button-text text-2xl m-0 p-0 mr-3"
+                (onClick)="closePage()">
+                <span class="material-symbols-outlined">
+                    arrow_back
+                </span>
+            </p-button>
+        </div>
+    </p-toolbar>
+
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <div class="text-lg txt-m-gray ml-4 my-2">
+                <!-- {{yarnID}} -->
+                {{yarnService.getYarnfullName(yarnID)}}
+            </div>
+        </div>
+        <div class="p-toolbar-group-center">
+
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+
+    <p-toolbar class="" styleClass="p-2" *ngIf="mode==='view'">
+        <div class="flex cursor-pointer">
+            <button pButton pRipple type="button" icon="pi pi-search"
+                class=" p-button-raised p-button-text p-button-secondary"
+                (click)="showYarnfilterModal()">
+                &nbsp;Yarn
+            </button>
+            <button pButton pRipple type="button" icon="pi pi-search"
+                class=" p-button-raised p-button-text p-button-secondary ml-2"
+                (click)="showStyleSelector('orderID-selector', 0)">
+                &nbsp;Style
+            </button>
+            &nbsp;
+
+            <p-chip *ngFor="let yn of yarnSelects; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [label]="yarnService.getYarnfullName(yn.yarnID)"
+                [removable]="true"
+                (onRemove)="yarnRemove(i1)">
+            </p-chip>
+
+            <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath "
+                [removable]="true"
+                (onRemove)="styleRemove(i1)"
+                (dblclick)="showStyleSelector('orderID-selector', i1)">
+            </p-chip>
+
+        </div>
+    </p-toolbar>
+    <p-toolbar class="" styleClass="p-1" >
+        <div class="p-toolbar-group-start">
+            <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip>
+
+            <p-chip
+                class="" styleClass="surface-0 text-900 text-2xl  m-1 pl-4 ml-4"
+                [label]="colorS.color.colorCode +' '+ colorS.color.colorName">
+                <p-avatar class="" label="" styleClass="border-gray  mr-2"
+                    [style]="{ 'background-color': colorS.color.colorValue, color: 'gray' }"
+                    shape="circle">
+                </p-avatar>
+            </p-chip>
+
+        </div>
+        <div class="p-toolbar-group-center">
+
+        </div>
+        <div class="p-toolbar-group-end">
+            <div *ngIf="mode==='yarn-packaging-list-stock-card'">
+                <p-button label="show all"
+                    styleClass="p-button-secondary p-1"
+                    (onClick)="showAllYarnLotUsageRow()"></p-button>
+                <!-- <p-button label="transfer"  *ngIf="false"
+                    styleClass="p-button-secondary p-1"
+                    (onClick)="getYarnLotUsageRow('')"></p-button> -->
+            </div>
+        </div>
+    </p-toolbar>
+
+    <div class="">
+        <p-table [value]="yarnLotUsageRow" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+            <ng-template pTemplate="header">
+                <tr class="my-0 py-0" >
+                    <th class="text-center" rowspan="2">
+                        <div class="my-0 py-0 cursor-pointer" (dblclick)="exportPDFStockCard()">
+                            <span class="material-symbols-outlined text-green-400 text-xl font-light">
+                                picture_as_pdf
+                            </span>
+                        </div>
+                        Date
+                        <div class="text-xs text-400">confirm</div>
+                    </th>
+                    <th class="text-center" rowspan="2">Issue note</th>
+                    <th class="text-center" rowspan="2">Invoice</th>
+                    <th class="text-center" rowspan="2">Lot ID</th>
+                    <th class="text-center border-right-3" colspan="2">Received</th>
+
+                    <th class="text-center" rowspan="2">Send to</th>
+                    <th class="text-center" rowspan="2">Style</th>
+                    <th class="text-center" rowspan="2">Lot ID</th>
+                    <th class="text-center" rowspan="2">Pcs.</th>
+                    <th class="text-center" rowspan="2">Kgs.</th>
+                    <th class="text-center" rowspan="2">Balance</th>
+                </tr>
+                <tr class="my-0 py-0" >
+                    <th class="text-center" >Invoice</th>
+                    <th class="text-center border-right-3" >NET.Actual</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-uS let-idx="rowIndex">
+                <tr class=""
+                    [ngClass]="uS.usageMode === 't'?'txt-transfer-row':''"
+                    *ngIf="uS.usageMode!==''">
+                    <td class="text-center">
+
+                        <span class="text-sm " *ngIf="uS.usageMode !=='t'"
+                            [ngClass]="uS.ddmmyyyyIssue !== yarnLotUsageRowCurrent.ddmmyyyyIssue?'text-600':'text-200'">
+                            {{uS.ddmmyyyyIssue}}
+                        </span>
+                        <span class="text-green-500 text-xs cursor-pointer" *ngIf="uS.usageMode ==='t'"
+                            [ngClass]="uS.ddmmyyyyIssue !== yarnLotUsageRowCurrent.ddmmyyyyIssue?'text-600':'text-200'"
+                            (dblclick)="showSelectDate1(uS)">
+                            {{uS.ddmmyyyyIssue}}
+                        </span>
+                        <span class="text-red-400 text-xs " *ngIf="uS.usageMode ==='p'"
+                            [ngClass]="uS.ddmmyyyyIssue !== yarnLotUsageRowCurrent.ddmmyyyyIssue?'text-red-600':'text-red--200'">
+                            {{uS.ddmmyyyyIssue}}
+                        </span>
+
+                    </td>
+                    <td class="">
+                        <span class="text-green-500 text-sm" *ngIf="uS.usageMode ==='t'">
+                            {{uS.issueNote}}
+                        </span>
+                        <span class="text-red-400 text-sm" *ngIf="uS.usageMode ==='p'">
+                            {{uS.issueNote}}
+                        </span>
+                    </td>
+                    <td class="">
+                        <span class="text-xs cursor-pointer" *ngIf="uS.usageMode ==='ct'"
+                            [ngClass]="uS.invoiceID !== yarnLotUsageRowCurrent.invoiceID?'text-600':'text-200'"
+                            (click)="selectYarnLotUsageRow('invoiceID',uS.invoiceID)">
+                            {{uS.invoiceID}}
+                        </span>
+                        <span class="text-green-500 text-xs cursor-pointer" *ngIf="uS.usageMode ==='t'"
+                            [ngClass]="uS.invoiceID !== yarnLotUsageRowCurrent.invoiceID?'text-600':'text-200'"
+                            (click)="selectYarnLotUsageRow('invoiceID',uS.invoiceID)">
+                            {{uS.invoiceID}}
+                        </span>
+                        <span class="text-red-400 text-xs" *ngIf="uS.usageMode ==='p'"
+                            [ngClass]="uS.invoiceID !== yarnLotUsageRowCurrent.invoiceID?'text-red-400':'text-red--200'">
+                            {{uS.invoiceID}}
+                        </span>
+                    </td>
+                    <td class="">
+                        <span class="text-xs text-600 cursor-pointer" *ngIf="uS.usageMode ==='ct'"
+                            (dblclick)="setYarnLotMenuPopup(uS.yarnLotID, uS.yarnLotUUID, uS.ddmmyyyyIssue);menu.toggle($event);">
+                            {{uS.yarnLotID}}
+                        </span>
+                        <span class="text-green-500 text-xs text-600 cursor-pointer" *ngIf="uS.usageMode ==='t'"
+                            (dblclick)="setYarnLotMenuPopup(uS.yarnLotID, uS.yarnLotUUID, uS.ddmmyyyyIssue);menu.toggle($event);">
+                            {{uS.yarnLotID}}
+                        </span>
+                    </td>
+                    <td class="text-sm text-600 text-center">
+                        <span class="" *ngIf="uS.usageMode === 'ct'">
+                            {{uS.yarnInvoiceWeight | number : '1.2-2'}}
+                        </span>
+                    </td>
+                    <td class="font-semibold text-800 border-right-3 text-center">
+                        <span class="" *ngIf="uS.usageMode === 'ct'">
+                            {{uS.useWeight | number : '1.2-2'}}
+                        </span>
+                        <span class="text-green-500 text-sm"
+                            *ngIf="mode==='fac-lot' && uS.usageMode === 't' && factorySelect.factoryID !== uS.usageInfo.fromFactoryID">
+                            {{uS.useWeight | number : '1.2-2'}}
+                        </span>
+                    </td>
+
+
+                    <td class="bg-yellow-50" >
+                        <span class="text-xs " *ngIf="uS.usageMode ==='ct'">
+                            {{uS.toFactoryID}}
+                        </span>
+                        <span class="text-green-500 text-xs cursor-pointer"
+                            *ngIf="uS.usageMode ==='t'"
+                            (dblclick)="showStaffImportantConfirmModal(uS);">
+                            {{uS.toFactoryID}}
+                        </span>
+                        <span class="text-red-400 text-xs" *ngIf="uS.usageMode ==='p'">
+                            {{uS.toFactoryID}}
+                        </span>
+                    </td>
+                    <td class="bg-yellow-50">
+                        <span class="text-red-400 text-xs" *ngIf="uS.usageMode ==='p'">
+                            {{uS.usageInfo.orderID}}
+                        </span>
+                        <span class="text-green-400 text-xs"
+                            *ngIf="mode==='fac-lot' && uS.usageMode ==='t' && factorySelect.factoryID === uS.usageInfo.fromFactoryID">
+                            <span class="">
+                                {{uS.usageInfo.orderID}}
+                            </span>
+                        </span>
+                        <span class="text-green-400 text-xs"
+                            *ngIf="mode==='fac-lot' && uS.usageMode ==='t'">
+                            {{uS.usageInfo.orderID}}
+                        </span>
+                        <span *ngIf="mode==='yarn-packaging-list-stock-card' && uS.usageMode ==='t'"
+                            class="text-green-400 text-xs">
+                            <!-- {{uS.usageInfo.orderID}} -->
+                            <span class="" (dblclick)="showSelectionZone1Modal(uS)">
+                                {{uS.usageInfo.orderID}}
+                                <span class="text-indigo-500" *ngIf="uS.targetPlaceID !== '' ">
+                                    / {{uS.targetPlaceID}}
+                                </span>
+                            </span>
+                        </span>
+                    </td>
+                    <td class="bg-yellow-50">
+                        <span class="text-red-400 text-xs cursor-pointer" *ngIf="uS.usageMode ==='p'"
+                            (dblclick)="setYarnLotMenuPopup(uS.yarnLotID, uS.yarnLotUUID, uS.ddmmyyyyIssue);menu.toggle($event);">
+                            {{uS.yarnLotID2}}
+                        </span>
+                        <span class="text-green-400 text-xs cursor-pointer"
+                            *ngIf="mode==='fac-lot' && uS.usageMode ==='t' && factorySelect.factoryID === uS.usageInfo.fromFactoryID"
+                            (dblclick)="setYarnLotMenuPopup(uS.yarnLotID, uS.yarnLotUUID, uS.ddmmyyyyIssue);menu.toggle($event);">
+                            {{uS.yarnLotID2}}
+                        </span>
+                        <span *ngIf="mode==='yarn-packaging-list-stock-card' && uS.usageMode ==='t'"
+                            class="text-green-400 text-xs cursor-pointer"
+                            (dblclick)="setYarnLotMenuPopup(uS.yarnLotID, uS.yarnLotUUID, uS.ddmmyyyyIssue);menu.toggle($event);">
+                            {{uS.yarnLotID2}}
+                        </span>
+                        <!-- <span class="text-green-500 text-xs text-600" *ngIf="uS.usageMode ==='t'"
+                            (dblclick)="setYarnLotMenuPopup(uS.yarnLotID, uS.yarnLotUUID, uS.ddmmyyyyIssue);menu.toggle($event);">
+                            {{uS.yarnLotID}}
+                        </span> -->
+                    </td>
+                    <td class="bg-yellow-50 text-center" (dblclick)="showInputNumber1Modal(uS)">
+                        <span class="text-sm font-italic text-600"
+                            *ngIf="uS.usageMode ==='t'">
+                            <span class="" *ngIf="+uS.pcs > 0">
+                                {{uS.pcs}}
+                            </span>
+                        </span>
+                    </td>
+                    <td class="bg-yellow-50 text-center">
+
+                        <span class="text-red-400 text-xs" *ngIf="mode==='fac-lot' &&  uS.usageMode ==='p'">
+                            {{uS.useYarnWeight | number : '1.2-2'}}
+                        </span>
+
+                        <span *ngIf="mode==='yarn-packaging-list-stock-card' && uS.usageMode ==='t'"
+                            class="text-red-400 text-xs font-semibold">
+                            - {{uS.useYarnWeight | number : '1.2-2'}}
+                        </span>
+
+                        <!-- <span class="text-green-500 text-sm"
+                            *ngIf="uS.usageMode === 't' && factorySelect.factoryID !== uS.usageInfo.fromFactoryID">
+                            {{uS.useYarnWeight | number : '1.2-2'}}
+                        </span> -->
+
+                        <span *ngIf="mode==='fac-lot' && uS.usageMode ==='t' && factorySelect.factoryID !== uS.usageInfo.toFactoryID"
+                            class="text-xs font-semibold"
+                            [ngClass]="factorySelect.factoryID===uS.usageInfo.toFactoryID?'text-green-500 ':'text-orange-500 '">
+                            {{factorySelect.factoryID===uS.usageInfo.toFactoryID?'+':'-'}}
+                            {{uS.useYarnWeight | number : '1.2-2'}}
+                        </span>
+                    </td>
+                    <td class="bg-yellow-100 text-center" >
+                        <span class="text-600 text-lg" *ngIf="uS.usageMode === 'ct' && uS.balance > 0"
+                            [ngClass]="idxLastLine === idx ?'font-bold text-800':''">
+                            {{getBalance(uS, idx) | number : '1.2-2'}}
+                        </span>
+                        <span class="text-600 text-lg" *ngIf="uS.usageMode === 't' || uS.usageMode === 'p'"
+                            [ngClass]="idxLastLine === idx ?'font-bold text-800':''">
+                            {{getBalance(uS, idx)}}
+                        </span>
+                        <!-- {{getddmmyyy(uS, idx)}} -->
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <span class="">
+                    ................
+                </span>
+            </ng-template>
+
+        </p-table>
+    </div>
+</div>
+

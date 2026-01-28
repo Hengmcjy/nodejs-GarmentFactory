@@ -1,0 +1,540 @@
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="min-h-screen flex surface-ground">
+
+    <div id="app-sidebar-6" class="h-screen block flex-shrink-0 fixed sticky left-0 top-0 z-1
+        select-none w-12rem bg-indigo-800 animation-duration-300 animation-ease-in-out">
+        <div class="flex flex-column h-full overflow-y-auto">
+            <div class="">
+                <ul class="list-none p-3 m-0 flex flex-wrap">
+
+                    <li class="w-6 text-center " (click)="selectPage('home')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-home text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            Home
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center "
+                        (click)="selectPage('production-queue')"
+                        *ngIf="starterLoaded">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-list text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            Queue
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center mt-3" (click)="selectPage('production-record')" *ngIf="false">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-eye text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            logging
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center mt-3" (click)="selectPage('production-history')" *ngIf="false">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-history text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            history
+                        </div>
+                    </li>
+
+                    <!-- <li class="w-6 text-center mt-3" (click)="selectPage('production-repair')" >
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-wrench text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            repair
+                        </div>
+                    </li> -->
+
+                    <li class="w-6 text-center mt-3 "
+                        (click)="selectPage('production-report')"
+                        *ngIf="starterLoaded">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-book text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            report
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center mt-3 "
+                        (click)="selectPage('workload-overall-report')"
+                        *ngIf="starterLoaded">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-purple-300
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <!-- <i class="pi pi-book text-2xl"></i> -->
+                            <span class="material-symbols-outlined">clinical_notes</span>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            workload report
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center mt-3" (click)="selectPage('viewstat')" *ngIf="false">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-users text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            view stat
+                        </div>
+                    </li>
+                    <li class="w-6 text-center mt-3" (click)="selectPage('chart')" *ngIf="false">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-indigo-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 10px; ">
+                            <i class="pi pi-chart-bar text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            Chart
+                        </div>
+                    </li>
+
+
+                </ul>
+            </div>
+
+            <span class="mt-5 border-bottom-2"></span>
+            <div class="mt-2" *ngIf="starterLoaded">
+                <ul class="list-none p-0 m-0 flex flex-wrap">
+
+                    <li class="w-6 text-center" *ngIf="staffLoggedIN && canScanNode" (click)="selectPage('getproduct')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-green-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 20px; ">
+                            <!-- <i class="pi pi-download text-2xl"></i> -->
+                            <i class="pi pi-qrcode text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            scan Product
+                        </div>
+                    </li>
+
+                    <!-- <li class="w-6 text-center mt-3" *ngIf="staffLoggedIN">
+
+                    </li> -->
+
+                    <li class="w-6 text-center" *ngIf="staffLoggedIN && canScanSubNode" (click)="selectPage('scan-subnode')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-purple-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 20px; ">
+                            <!-- <i class="pi pi-download text-2xl"></i> -->
+                            <!-- <i class="pi pi-qrcode text-2xl"></i> -->
+                            <span class="material-symbols-outlined">fact_check</span>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            scan sub Node
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center item-badge-ns"  *ngIf="staffLoggedIN && false" (click)="selectPage('production-return')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-yellow-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150
+                            "
+                            style=" width: 60px; height: 60px; border-radius: 20px; ">
+                            <i class="pi pi-reply text-2xl" ></i>
+
+
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-base">
+                            return Product
+                        </div>
+                        <div class="notify-badge-ns text-yellow-500 font-medium text-base ">
+                            {{productionProblemCount.length===0?0:productionProblemCount[0].countProductQty}}
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center mt-3" *ngIf="staffLoggedIN">
+
+                    </li>
+
+                    <li class="w-6 text-center mt-3 item-badge-ns" *ngIf="staffLoggedIN && false" (click)="selectPage('production-repair')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-red-300
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 20px; "
+                            >
+                            <i class="pi pi-wrench text-2xl" ></i>
+                            <!-- <p-badge value="44444"  severity="warning" styleClass="text-red-600 text-base "></p-badge> -->
+
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-base">
+                            repair Product
+                        </div>
+                        <div class="notify-badge-ns text-yellow-500 font-medium text-base ">
+                            {{productionRepairCount.length===0?0:productionRepairCount[0].countProductQty}}
+                        </div>
+                    </li>
+
+                    <li class="w-6 text-center mt-3" *ngIf="staffLoggedIN">
+
+                    </li>
+
+                    <li class="w-6 text-center mt-3 item-badge-ns"
+                        *ngIf="checkOutSourceLocationDepartment() && staffLoggedIN && false"
+                            (click)="selectPage('factory-affiliate')">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-primary-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 20px; "
+                            >
+                            <span class="material-symbols-outlined">real_estate_agent</span>
+
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-base">
+                            <span class="">scan receive </span>
+                            <div class="">
+                                factory affiliate
+                            </div>
+                        </div>
+                        <!-- <div class="notify-badge-ns text-yellow-500 font-medium text-base ">
+                            {{productionRepairCount.length===0?0:productionRepairCount[0].countProductQty}}
+                        </div> -->
+                    </li>
+
+                </ul>
+            </div>
+
+            <div class="border-bottom-2" *ngIf="starterLoaded">
+                <ul class="list-none p-0 m-0 flex flex-wrap">
+                    <li class="w-12 text-center mt-3" *ngIf="!staffLoggedIN" (click)="staffLogin()">
+                        <a pRipple class="cursor-pointer inline-flex align-items-center
+                            justify-content-center border-2 border-orange-500
+                            hover:bg-indigo-700 active:bg-indigo-400
+                            text-indigo-200 hover:text-indigo-100
+                            transition-colors transition-duration-150"
+                            style=" width: 60px; height: 60px; border-radius: 30px; ">
+                            <i class="pi pi-sign-in text-2xl"></i>
+                        </a>
+                        <div class="mt-2 text-indigo-200 font-medium text-sm">
+                            login
+                        </div>
+                    </li>
+
+                </ul>
+
+                <div class="mb-1">
+                    <div class="flex justify-content-center flex-column lg:flex-row p-2" *ngIf="staffLoggedIN">
+                        <div class="shadow-2 mb-0  mt-1 surface-card text-center">
+                            <img [src]="genImagePath(staff.uInfo.pic)" class="mb-3 w-full" />
+                            <div class="flex justify-content-center
+                                align-items-center">
+                                <div class="text-center justify-content-center">
+                                    <div class="text-xl text-900 font-medium mb-2 text-center">
+                                        <span>{{staff.uInfo.userName}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="">
+                        <ul class="list-none p-0 m-0 flex flex-wrap">
+                            <li class="w-12 text-center mt-3" *ngIf="staffLoggedIN" (click)="staffLogout()">
+                                <a pRipple class="cursor-pointer inline-flex align-items-center
+                                    justify-content-center border-2 border-red-500
+                                    hover:bg-indigo-700 active:bg-indigo-400
+                                    text-indigo-200 hover:text-indigo-100
+                                    transition-colors transition-duration-150"
+                                    style=" width: 60px; height: 60px; border-radius: 30px; ">
+                                    <i class="pi pi-sign-out text-2xl"></i>
+                                </a>
+                                <div class="mt-2 text-indigo-200 font-medium text-sm">
+                                    log out
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+
+            <!--  -->
+
+
+            <!--  -->
+
+            <div class="mt-auto">
+                <div class="mt-2 mb-1">
+                    <div class="">
+                        <ul class="list-none p-0 m-0 flex flex-wrap">
+
+                            <li class="w-6 text-center" *ngIf="staffScanOutsourceLoggedIN" (click)="selectPage('receive-outsource')">
+                                <a pRipple class="cursor-pointer inline-flex align-items-center
+                                    justify-content-center border-2 border-green-500
+                                    hover:bg-indigo-700 active:bg-indigo-400
+                                    text-indigo-200 hover:text-indigo-100
+                                    transition-colors transition-duration-150"
+                                    style=" width: 60px; height: 60px; border-radius: 20px; ">
+                                    <span class="material-symbols-outlined">inpatient</span>
+                                </a>
+                                <div class="mt-2 text-indigo-200 font-medium text-sm">
+                                    receive outsource
+                                </div>
+                            </li>
+
+                            <li class="w-6 text-center item-badge-ns"  *ngIf="staffScanOutsourceLoggedIN" (click)="selectPage('send-outsource')">
+                                <a pRipple class="cursor-pointer inline-flex align-items-center
+                                    justify-content-center border-2 border-yellow-500
+                                    hover:bg-indigo-700 active:bg-indigo-400
+                                    text-indigo-200 hover:text-indigo-100
+                                    transition-colors transition-duration-150
+                                    "
+                                    style=" width: 60px; height: 60px; border-radius: 20px; ">
+                                    <span class="material-symbols-outlined">outpatient</span>
+                                </a>
+                                <div class="mt-2 text-indigo-200 font-medium text-base">
+                                    send to outsource
+                                </div>
+                            </li>
+
+                            <li class="w-6 text-center item-badge-ns"  *ngIf="staffScanOutsourceLoggedIN" (click)="selectPage('report-outsource')">
+                                <a pRipple class="cursor-pointer inline-flex align-items-center
+                                    justify-content-center border-2 border-yellow-500
+                                    hover:bg-indigo-700 active:bg-indigo-400
+                                    text-indigo-200 hover:text-indigo-100
+                                    transition-colors transition-duration-150
+                                    "
+                                    style=" width: 60px; height: 60px; border-radius: 20px; ">
+                                    <!-- <span class="material-symbols-outlined">outpatient</span> -->
+                                    <i class="pi pi-book text-2xl"></i>
+                                </a>
+                                <div class="mt-2 text-indigo-200 font-medium text-base">
+                                    report outsource
+                                </div>
+                            </li>
+
+                            <li class="w-6 text-center item-badge-ns"  *ngIf="staffScanOutsourceLoggedIN" (click)="selectPage('report-date-outsource')">
+                                <a pRipple class="cursor-pointer inline-flex align-items-center
+                                    justify-content-center border-2 border-primary-400
+                                    hover:bg-indigo-700 active:bg-indigo-400
+                                    text-indigo-200 hover:text-indigo-100
+                                    transition-colors transition-duration-150
+                                    "
+                                    style=" width: 60px; height: 60px; border-radius: 20px; ">
+                                    <!-- <span class="material-symbols-outlined">outpatient</span> -->
+                                    <i class="pi pi-book text-2xl"></i>
+                                </a>
+                                <div class="mt-2 text-indigo-200 font-medium text-base">
+                                    report Date outsource
+                                </div>
+                            </li>
+
+                            <li class="w-6 text-center mt-3" *ngIf="staffScanOutsourceLoggedIN">
+
+                            </li>
+
+                            <li class="w-6 text-center mt-3 item-badge-ns" *ngIf="staffScanOutsourceLoggedIN">
+
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <ul class="list-none p-0 m-0 flex flex-wrap" *ngIf="starterLoaded">
+                        <li class="w-12 text-center mt-3"
+                            *ngIf="checkOutSourceLocationDepartment() && !staffScanOutsourceLoggedIN"
+                            (click)="showOutsourceStaffLoginModal()">
+                            <a pRipple class="cursor-pointer inline-flex align-items-center
+                                justify-content-center border-2 border-yellow-500
+                                hover:bg-indigo-700 active:bg-indigo-400
+                                text-indigo-200 hover:text-indigo-100
+                                transition-colors transition-duration-150"
+                                style=" width: 60px; height: 60px; border-radius: 30px; ">
+                                <i class="pi pi-sign-in text-2xl text-yellow-500"></i>
+                            </a>
+                            <div class="mt-2 text-indigo-200 font-medium text-sm text-yellow-500">
+                                <div class="txt-subcontact-btn">Login</div>
+                                <div class="txt-subcontact-btn">Outsource</div>
+                                <div class="txt-subcontact-btn">(sub-contactor)</div>
+                            </div>
+                        </li>
+                        <li class="w-12 text-center mt-3" *ngIf="staffScanOutsourceLoggedIN"
+                            (click)="staffOutsourceLogout()">
+                            <a pRipple class="cursor-pointer inline-flex align-items-center
+                                    justify-content-center border-2 border-yellow-500
+                                    hover:bg-indigo-700 active:bg-indigo-400
+                                    text-indigo-200 hover:text-indigo-100
+                                    transition-colors transition-duration-150"
+                                    style=" width: 60px; height: 60px; border-radius: 30px; ">
+                                    <i class="pi pi-sign-out text-2xl"></i>
+                                </a>
+                            <div class="mt-2 text-indigo-200 font-medium text-sm text-yellow-500">
+                                <div class="txt-subcontact-btn">log out</div>
+                                <div class="txt-subcontact-btn">Outsource</div>
+                                <div class="txt-subcontact-btn">(sub-contactor)</div>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                    <!-- <div class="flex justify-content-center flex-column lg:flex-row p-2" *ngIf="staffLoggedIN">
+                        <div class="shadow-2 mb-0  mt-1 surface-card text-center">
+                            <img [src]="genImagePath(staff.uInfo.pic)" class="mb-3 w-full" />
+                            <div class="flex justify-content-center
+                                align-items-center">
+                                <div class="text-center justify-content-center">
+                                    <div class="text-xl text-900 font-medium mb-2 text-center">
+                                        <span>{{staff.uInfo.userName}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+                    <!-- <div class="">
+                        <ul class="list-none p-0 m-0 flex flex-wrap">
+                            <li class="w-12 text-center mt-3" *ngIf="staffLoggedIN" (click)="staffLogout()">
+                                <a pRipple class="cursor-pointer inline-flex align-items-center
+                                    justify-content-center border-2 border-red-500
+                                    hover:bg-indigo-700 active:bg-indigo-400
+                                    text-indigo-200 hover:text-indigo-100
+                                    transition-colors transition-duration-150"
+                                    style=" width: 60px; height: 60px; border-radius: 30px; ">
+                                    <i class="pi pi-sign-out text-2xl"></i>
+                                </a>
+                                <div class="mt-2 text-indigo-200 font-medium text-sm">
+                                    log out
+                                </div>
+                            </li>
+                        </ul>
+                    </div> -->
+
+                    <app-web-footer></app-web-footer>
+                </div>
+                <div class="border-top-1 border-indigo-700 p-3 flex justify-content-between" *ngIf="false">
+                    <a pRipple class="cursor-pointer inline-flex align-items-center
+                        justify-content-center border-2 border-indigo-500
+                        hover:bg-indigo-700 active:bg-indigo-400 text-red-500
+                        hover:text-red-400 transition-colors
+                        transition-duration-150" style="width: 40px; height: 40px; border-radius: 10px" (click)="logout()">
+
+                        <i class="pi pi-times text-xl"></i>
+                        <!-- <img src="assets/images/blocks/avatars/circle/avatar-f-6.png" style="width: 24px; height: 24px"/> -->
+                    </a>
+                    <a pRipple class="cursor-pointer inline-flex align-items-center
+                        justify-content-center border-2 border-indigo-500
+                        hover:bg-indigo-700 active:bg-indigo-400 text-indigo-200
+                        hover:text-indigo-100 transition-colors
+                        transition-duration-150" style="width: 40px; height: 40px; border-radius: 10px"
+                        (click)="openFullscreen()">
+                        <i class="pi pi-window-maximize text-xl"></i>
+                    </a>
+                    <a pRipple class="cursor-pointer inline-flex align-items-center
+                        justify-content-center border-2 border-indigo-500
+                        hover:bg-indigo-700 active:bg-indigo-400 text-indigo-200
+                        hover:text-indigo-100 transition-colors
+                        transition-duration-150" style="width: 40px; height: 40px; border-radius: 10px"
+                        (click)="closeFullscreen()">
+                        <i class="pi pi-window-minimize text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="min-h-screen flex flex-column relative flex-auto">
+        <div class="flex flex-column flex-auto">
+    <!-- <div>
+        <div class="min-h-screen w-full flex flex-column"> -->
+            <div class="border-2 p-2 border-dashed surface-border border-round
+                surface-section ">
+                <!--  -->
+
+                <app-node-home *ngIf="pageActive==='home'"></app-node-home>
+                <app-s-show-qrcode *ngIf="pageActive==='qrcode-list'"></app-s-show-qrcode>
+                <app-s-work-station *ngIf="pageActive==='getproduct'"></app-s-work-station>
+                <app-node-view-stat *ngIf="pageActive==='viewstat'"></app-node-view-stat>
+                <app-node-chart *ngIf="pageActive==='chart'"></app-node-chart>
+                <app-s-rep-workload-overall *ngIf="pageActive==='workload-overall-report'"
+                    [callFromType]="'node'">
+                </app-s-rep-workload-overall>
+
+                <app-node-production-queue *ngIf="pageActive==='production-queue'"></app-node-production-queue>
+                <app-node-product-record *ngIf="pageActive==='production-record'"></app-node-product-record>
+                <app-s-node-product-report *ngIf="pageActive==='production-report'"></app-s-node-product-report>
+                <app-s-node-product-repair *ngIf="pageActive==='production-repair'"></app-s-node-product-repair>
+                <app-s-node-product-return *ngIf="pageActive==='production-return'"></app-s-node-product-return>
+                <app-s-node-product-history *ngIf="pageActive==='production-history'"></app-s-node-product-history>
+                <app-s-factory-affiliate-receive *ngIf="pageActive==='factory-affiliate'"></app-s-factory-affiliate-receive>
+                <app-s-node-scan-sub-process *ngIf="pageActive==='scan-subnode'"></app-s-node-scan-sub-process>
+
+
+                <app-s-outsource-receive *ngIf="pageActive==='receive-outsource'"></app-s-outsource-receive>
+                <app-s-outsource-sendout *ngIf="pageActive==='send-outsource'"></app-s-outsource-sendout>
+                <app-s-rep-outs-overall2 *ngIf="pageActive==='report-outsource'"></app-s-rep-outs-overall2>
+                <app-s-rep-outs-date *ngIf="pageActive==='report-date-outsource'"></app-s-rep-outs-date>
+                <!--  -->
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <app-footer></app-footer> -->
+

@@ -1,0 +1,394 @@
+
+<div class="surface-ground ">
+    <div class="grid p-fluid ">
+        <div class="field col-12">
+            <div class="card card-w-title p-0 m-0">
+                <p-megaMenu [model]="megaMenuItems"></p-megaMenu>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-toast position="top-right" ></p-toast>
+
+
+
+<div class="surface-card p-4 shadow-2 border-round p-fluid" *ngIf="pageShow === 'order-queue-production'">
+
+    <span class="m-0 p-0 text-center" *ngIf="isOutsource">
+        <div class="mb-2 p-0 txt-outsource-head text-center">
+            OUTSOURCE (SUB CONTACTOR)
+        </div>
+    </span>
+
+    <div class="grid formgrid p-fluid">
+        <div class="field col-8">
+            <app-s-orderview
+                [currentCompanyOrder]="currentCompanyOrder"
+                [orderStyleColorSize]="orderStyleColorSizeF"
+                [currentProductQtyAllC]="currentProductQtyAllC"
+                [order]="order">
+            </app-s-orderview>
+        </div>
+        <div class="field col-4">
+            <span class="font-medium">Factory</span>
+            <app-s-factory-card class="cursor-pointer"  *ngIf="productORInfo"
+                [factory]="factory"
+                (click)="showFactorySelectionModal()">
+            </app-s-factory-card>
+
+            <div *ngIf="isOutsource && false">
+                <div class="font-medium ml-2 mt-4">Node production:</div>
+                <div class="surface-card shadow-2 p-4 my-2
+                    flex flex-column align-items-center md:flex-row md:align-items-stretch cursor-pointer text-center"
+                    style="border-radius: 10px;max-width: 600px;min-width: 400px;"
+                    (click)="showDepartmentProductionSelectionModal()">
+                    <div class="outsource-caption-head text-center" *ngIf="flowSeqOutsourceSelect.length === 0">
+                        <span>select Node</span>
+                    </div>
+                    <div class="outsource-caption-select text-left" *ngIf="flowSeqOutsourceSelect.length > 0">
+                        <div class="" *ngFor="let fs of flowSeqOutsourceSelect; let ii= index">
+                            <span class="outsource-caption-select">
+                                {{fs.nodeID}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid shadow-2 p-4 my-4 bg-yellow-50" style="border-radius: 10px;" >
+                <div class="col-4 text-right font-medium">Style : </div>
+                <div class="col-8">{{order.productOR.productID}}</div>
+                <!-- genProductBarcode(style: string, targetPlaceID: string, countryID: string, year: string,color: string, sex: string) -->
+                <!-- this.userService.strReplaceAll('aa,bbb,cc',',','') -->
+                <!-- userService.strReplaceAll(userService.getInfoFromorder(order, 'color'),',',''), -->
+                <!-- setAddBackStrLen(str: string, len: number, strAdd: string) -->
+                <div class="col-4 text-right font-medium">Product Barcode : </div>
+                <div class="col-8">
+                    {{userService.genProductBarcode(order.productOR.productID, orderService.qZone, '-----',
+                    userService.getInfoFromorder(order, 'year'),
+                    userService.strReplaceAll(orderService.qColor,',',''),
+                    orderService.qSize,
+                    userService.getInfoFromorder(order, 'sex'))}}
+                </div>
+
+                <div class="col-4 text-right font-medium">Place : </div>
+                <div class="col-8">{{orderService.qZone}}</div>
+
+                <div class="col-4 text-right font-medium">Size : </div>
+                <div class="col-8 mb-2">{{orderService.qSize}}</div>
+
+                <div class="col-4 text-right font-medium">Color : </div>
+                <div class="col-8 mb-2">{{orderService.qColor}}</div>
+
+
+                <div class="col-4 text-right font-medium">Qty : </div>
+                <div class="col-8 mb-2">{{orderService.qQty}}</div>
+
+            </div>
+            <div class="grid formgrid p-fluid"
+            >
+                <div class="field mb-4 col-12">
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon w-6">send to node</span>
+                        <span class="p-inputgroup-addon w-6 surface-50">{{nodeID}}</span>
+                    </div>
+                </div>
+
+                <div class="field mb-4 col-12" *ngIf="false">
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon w-6">State</span>
+                        <span>
+                            <p-selectButton [options]="stateOptions" [(ngModel)]="forLoss" optionLabel="label" optionValue="value"></p-selectButton>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field mb-4 col-12">
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon w-6">Bundle items</span>
+                        <input type="text" pInputText
+                            (keypress)="userService.numberOnly($event);"
+                            onClick="this.select();"
+                            [(ngModel)]="bundleItems" #input4>
+                    </div>
+                </div>
+
+                <div class="field mb-4 col-12">
+                    <span class="mb-0 pb-0">Max Qty <= {{maxLockJobQty}}</span>
+                    <div class="p-inputgroup">
+                        <span class="p-inputgroup-addon w-6">
+                            Qty
+                            <span class="text-sm text-500 font-italic">
+                                [ {{findProductionQueueBarcodeSumQtyGroupForLoss('remain', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, forLoss)}} ]
+                            </span>
+                        </span>
+                        <input type="text" pInputText
+                            (keypress)="userService.numberOnly($event);"
+
+                            onClick="this.select();"
+                            [(ngModel)]="qty" #input3>
+                    </div>
+                    <div class="txt-err" *ngIf="qty > maxLockJobQty">
+                        Qty over than more {{maxLockJobQty}}
+                    </div>
+                    <span class="txt-err" *ngIf="qty%bundleItems !== 0 && qty !== 0">
+                        fraction = {{qty%bundleItems}}
+                    </span>
+                    <span class="text-blue-600 text-sm font-semibold" *ngIf="qty%bundleItems === 0 && qty !== 0">
+                        bundle = {{qty/bundleItems}}
+                    </span>
+                    <!-- <div class="txt-err" *ngIf="!checkQtyRemainOK('remain', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, forLoss)">
+                        Qty Err!!  more over qty remain.
+                    </div> -->
+                </div>
+
+                <div class="field mb-4 col-12">
+                    <span class="outsource-caption-select" *ngIf="isOutsource">
+                        Outsource
+                    </span>
+                    <button pButton pRipple type="button" label="manage"
+                        *ngIf="qty%bundleItems === 0 && qty !== 0 && orderService.qZone !== '' && orderService.qSize !== ''
+                            && orderService.qColor !== '' && factory.factoryID !== '' && qty <= maxLockJobQty"
+                        (click)="showManageOrderQueueModal()"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="pageShow === 'order-queue-production' && false">
+    <div class="surface-ground py-2" >
+        <div class="surface-card p-4 shadow-2 border-round p-fluid">
+            <div class="grid formgrid p-fluid">
+                <div class="field col-12">
+                    <button pButton pRipple type="button" icon="pi pi-search"
+                        class=" p-button-raised p-button-text p-button-secondary"
+                        (click)="showProductfilterModal()">
+                        &nbsp;
+                        <span class="mx-1" *ngFor="let style of styleS; let i1 = index">
+                            <p-chip label="{{style}}" styleClass="style-chip"></p-chip>
+                        </span>
+                        <span class="mx-1" *ngFor="let targetPlace of targetPlaceS; let i2 = index">
+                            <p-chip label="{{targetPlace}}" styleClass="targetPlace-chip"></p-chip>
+                        </span>
+                        <span class="mx-1" *ngFor="let color of colorS; let i3 = index">
+                            <p-chip label="{{color}}" styleClass="color-chip"></p-chip>
+                        </span>
+                        <span class="mx-1" *ngFor="let size of sizeS; let i4 = index">
+                            <p-chip label="{{size}}" styleClass="size-chip"></p-chip>
+                        </span>
+                    </button>
+                </div>
+                <div class="field mb-4 col-12 md:col-6 lg:col-6">
+                    <p-table [value]="tempFullProductORInfo"
+                        class="w-full"
+                        styleClass="p-datatable-sm">
+                        <ng-template pTemplate="caption">
+                            {{order.productOR.productCustomerCode}}
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th class="px-0" style="width: 8%">Place</th>
+                                <th class="px-0" style="width: 24%;">color</th>
+                                <th class="px-0" style="width: 8%">size</th>
+                                <th class="px-0" style="width: 10%">Qty</th>
+                                <th class="px-0" style="width: 10%">Loss</th>
+                                <th class="px-0" style="width: 10%">total</th>
+                                <th class="px-0" style="width: 10%">Queued</th>
+                                <th class="px-0" style="width: 10%">remain</th>
+                                <th class="px-0" style="width: 5%"></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-productOR let-idx="rowIndex">
+                            <tr class="text-sm"
+                                (click)="rowSelect(idx, 'selectRow')"
+                                [style]="getRowClass(idx)">
+                                <td class="target-small">
+                                    {{productOR.targetPlace.targetPlaceID}}/{{productOR.targetPlace.countryID}}
+                                </td>
+                                <td class="">
+                                    <p-avatarGroup styleClass="mb-3">
+                                        <p-avatar *ngFor="let color of productOR.productColor.split(','); let i = index"
+                                                styleClass="p-mr-2 border-300"
+                                                [style]="{'background-color': userService.getColorByColorCode(color)}"
+                                                shape="circle"
+                                            ></p-avatar>
+                                    </p-avatarGroup>
+                                </td>
+                                <td>{{productOR.productSize}}</td>
+                                <td>{{productOR.productQty}}</td>
+                                <td>{{productOR.productLossQty}}</td>
+                                <td class="font-bold">{{calTotal(productOR.productQty, productOR.productLossQty)}}</td>
+                                <td class="bg-yellow-50 font-italic text-center">
+                                    {{findProductionQueueBarcodeSumQty('qty', productOR.productBarcode, productOR.productQty, productOR.productLossQty)}}
+                                </td>
+                                <td class="bg-yellow-50 font-italic text-center">
+                                    {{findProductionQueueBarcodeSumQty('remain', productOR.productBarcode, productOR.productQty, productOR.productLossQty)}}
+                                </td>
+                                <td class="m-0 p-0">
+                                    <button pButton pRipple type="button" icon="pi pi-search"
+                                        class="p-button-rounded p-button-warning p-button-text"
+                                        (click)="showProductionQueueInfoModal(idx, userService.formatProductBarcodeString(productOR.productBarcode), productOR.productQty)"
+                                        ></button>
+                                </td>
+                        </ng-template>
+                    </p-table>
+                </div>
+                <div class="field mb-4 col-12 md:col-6 lg:col-6" >
+                    <span class="font-medium">Factory</span>
+                    <app-s-factory-card class="cursor-pointer"  *ngIf="productORInfo"
+                        [factory]="factory"
+                        (click)="showFactorySelectionModal()"></app-s-factory-card>
+
+                    <div class="shadow-2 p-4 my-4 bg-yellow-50" style="border-radius: 10px;" *ngIf="productORInfo">
+                        <div class="grid relative">
+                            <div class="absolute">
+                                <button pButton pRipple type="button" icon="pi pi-search"
+                                        class="p-button-rounded p-button-warning p-button-text m-0"
+                                        (click)="showProductionQueueInfoModal(rowSelectedIdx, userService.formatProductBarcodeString(productORInfo.productBarcode), productORInfo.productQty)"
+                                        ></button>
+                            </div>
+
+                            <div class="col-4 text-right font-medium">Product code : </div>
+                            <div class="col-8">{{productORInfo?userService.formatProductBarcodeString(productORInfo.productBarcode):''}}</div>
+
+                            <div class="col-4 text-right font-medium">Place : </div>
+                            <div class="col-8">{{productORInfo?productORInfo.targetPlace.targetPlaceName:''}}</div>
+
+                            <div class="col-4 text-right font-medium">Size : </div>
+                            <div class="col-8 mb-2">{{productORInfo?productORInfo.productSize:''}}</div>
+
+                            <div class="col-4 text-right font-medium">Qty : </div>
+                            <div class="col-8">
+                                {{productORInfo?productORInfo.productQty:''}} -
+                                {{findProductionQueueBarcodeSumQtyGroupForLoss('qty', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, false)}} -
+                                {{findProductionQueueBarcodeSumQtyGroupForLoss('remain', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, false)}}
+                                &nbsp;&nbsp;
+                                <span class="text-sm text-500 font-italic">(Qty - Queued - remain)</span>
+                            </div>
+
+                            <div class="col-4 text-right font-medium">for Loss : </div>
+                            <div class="col-8 mb-4">
+                                {{productORInfo?productORInfo.productLossQty:''}} -
+                                {{findProductionQueueBarcodeSumQtyGroupForLoss('qty', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, true)}} -
+                                {{findProductionQueueBarcodeSumQtyGroupForLoss('remain', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, true)}}
+                                &nbsp;&nbsp;
+                                <span class="text-sm text-500 font-italic">(Qty - Queued - remain)</span>
+                            </div>
+
+                            <div class="col-4 text-right font-bold text-red-700">Total Qty : </div>
+                            <div class="col-8 text-center">
+                                <span class="text-xl font-bold text-red-700">
+                                    {{calTotal(productORInfo.productQty, productORInfo.productLossQty)}}
+                                </span>
+                            </div>
+
+                            <div class="col-4 text-right font-medium">Queued : </div>
+                            <div class="col-8 text-center">
+                                <span class="font-italic">
+                                    {{findProductionQueueBarcodeSumQty('qty', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty)}}
+                                </span>
+                            </div>
+                            <div class="col-4 text-right font-medium">remain : </div>
+                            <div class="col-8 text-center">
+                                <span class="font-italic">
+                                    {{findProductionQueueBarcodeSumQty('remain', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty)}}
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="grid formgrid p-fluid"
+                        *ngIf="factory.factoryID !== ''
+                            && productORInfo.productBarcode !== '-' ">
+                        <div class="field mb-4 col-12">
+                            <div class="p-inputgroup">
+                                <span class="p-inputgroup-addon w-6">send to node</span>
+                                <span class="p-inputgroup-addon w-6 surface-50">{{nodeID}}</span>
+                            </div>
+                        </div>
+
+                        <div class="field mb-4 col-12">
+                            <div class="p-inputgroup">
+                                <span class="p-inputgroup-addon w-6">State</span>
+                                <span>
+                                    <p-selectButton [options]="stateOptions" [(ngModel)]="forLoss" optionLabel="label" optionValue="value"></p-selectButton>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field mb-4 col-12">
+                            <div class="p-inputgroup">
+                                <span class="p-inputgroup-addon w-6">Bundle items</span>
+                                <input type="text" pInputText
+                                    (keypress)="userService.numberOnly($event);"
+                                    onClick="this.select();"
+                                    [(ngModel)]="bundleItems" #input4>
+                            </div>
+                        </div>
+
+                        <div class="field mb-4 col-12">
+                            <div class="p-inputgroup">
+                                <span class="p-inputgroup-addon w-6">
+                                    Qty
+                                    <span class="text-sm text-500 font-italic">
+                                        [ {{findProductionQueueBarcodeSumQtyGroupForLoss('remain', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, forLoss)}} ]
+                                    </span>
+                                </span>
+                                <input type="text" pInputText
+                                    (keypress)="userService.numberOnly($event);"
+                                    onClick="this.select();"
+                                    [(ngModel)]="qty" #input3>
+                            </div>
+                            <span class="txt-err" *ngIf="qty%bundleItems !== 0 && qty !== 0">
+                                fraction = {{qty%bundleItems}}
+                            </span>
+                            <span class="text-blue-600 text-sm font-semibold" *ngIf="qty%bundleItems === 0 && qty !== 0">
+                                bundle = {{qty/bundleItems}}
+                            </span>
+                            <div class="txt-err" *ngIf="!checkQtyRemainOK('remain', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, forLoss)">
+                                Qty Err!!  more over qty remain.
+                            </div>
+                        </div>
+
+                        <div class="field mb-4 col-12">
+                            <button pButton pRipple type="button" label="manage"
+                                *ngIf="qty%bundleItems === 0
+                                    && factory.factoryID !== ''
+                                    && productORInfo.productBarcode !== ''
+                                    && checkQty0()
+                                    && checkQtyRemainOK('remain', productORInfo.productBarcode, productORInfo.productQty, productORInfo.productLossQty, forLoss)"
+                                (click)="showManageOrderQueueModal()"></button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-order-queue-history *ngIf="pageShow === 'order-queue-history'"></app-order-queue-history>
+
+<app-s-order-queue-set *ngIf="pageShow === 'order-queue-set'"></app-s-order-queue-set>
+
+<app-s-order-print-jobcard *ngIf="pageShow === 'order-print-jobcard'"></app-s-order-print-jobcard>
+
+<app-s-set-yarn-production *ngIf="pageShow === 'set-yarn-production'"></app-s-set-yarn-production>
+
+<app-smd-order-maxqty-view *ngIf="pageShow === 'order-maxqty-view'"
+    [currentCompanyOrder]="currentCompanyOrder"
+    [orderStyleColorSize]="orderStyleColorSizeF"
+    [currentProductQtyAllC]="currentProductQtyAllC"
+    [order]="order"
+></app-smd-order-maxqty-view>
+
+
+<!-- <app-s-orderview
+                [currentCompanyOrder]="currentCompanyOrder"
+                [orderStyleColorSize]="orderStyleColorSizeF"
+                [currentProductQtyAllC]="currentProductQtyAllC"
+                [order]="order">
+            </app-s-orderview> -->

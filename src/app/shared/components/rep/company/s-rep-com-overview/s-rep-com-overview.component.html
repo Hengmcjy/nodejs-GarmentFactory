@@ -1,0 +1,113 @@
+<div class="card m-0 p-0 border-none bg-tran">
+    <button pButton pRipple type="button" icon="pi pi-refresh"
+        class="p-button-rounded p-button-text p-button-lg mb-2 mx-1"
+        (click)="getRepCurrentProductionOverview()">
+    </button>
+    <button pButton pRipple type="button" class="p-button-rounded p-button-text mb-2 mx-1" (click)="getRepCurrentProductionOverview()">
+        <span class="text-lg font-semibold">
+            {{reportHeader}}
+        </span>
+    </button>
+</div>
+
+<div class="shadow-2 surface-card border-round p-4 h-full">
+
+    <p-tabView [scrollable]="true">
+
+        <p-tabPanel header="Production overview">
+
+            <div class="flex flex-row-reverse flex-wrap align-items-start mb-5">
+                <!-- <div class="ml-3">
+                    <span class="block text-900 mb-1 text-xl font-medium">Production overview</span>
+                </div> -->
+                <div class="ml-6">
+                    <div class="flex flex-row align-content-center" >
+                        <div class="flex align-items-center justify-content-center mr-5" *ngFor="let daTa1 of colorBArTxt; let i = index">
+                            <span class="{{daTa1.barColor}} mr-2" style="height: 8px;width: 30px;"></span>
+                            {{daTa1.barTxt}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center" *ngIf="blockedPanel">
+                <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+            </div>
+
+            <div class="surface-ground p-2" *ngIf="!blockedPanel">
+                <p-table [value]="currentOrderStyle"
+                    class="w-full"
+                    styleClass="p-datatable-sm">
+                    <!-- <ng-template pTemplate="header">
+                        <tr>
+                            <th class="" style="width: 10%"></th>
+                            <th class="" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-qty-all')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-completed')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-in-production')}}</th>
+                            <th class="text-center" >{{userService.translateCode('hd', 'hd-remain')}}</th>
+                        </tr>
+                    </ng-template> -->
+                    <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                        <tr class="text-sm" >
+                            <td style="width: 3%" class="white-space-nowrap">
+                                {{idx+1}} .
+                            </td>
+                            <td style="width: 10%" class="text-center py-0 pl-1 pr-0">
+                                <div class="m-0">
+                                    <img [src]="genProductImagePath(order.orderID)"
+                                        class="w-4rem cursor-pointer m-0"
+                                        (click)="checkGetProductID(order.orderID, 'view')"/>
+                                </div>
+                                <div class="text-xs font-medium text-500 text-center m-0">
+                                    {{order.orderID}}
+                                </div>
+                            </td>
+                            <td style="width: 10%">
+                                <div class="" *ngFor="let fac1 of getFactoryByOrderID(order.orderID); let f1 = index">
+                                    <span class=""
+                                        [ngClass]="userService.getFactoryIDArrByFactoryID(factories, fac1.factoryID).fInfo.isOutsource?'outsource-caption-small':'factory-txt-small'">
+                                        {{userService.strFirstAndDot(userService.getFactoryIDArrByFactoryID(factories, fac1.factoryID).fInfo.factoryName, 6)}}
+                                    </span>
+                                </div>
+                                <!-- <div class="">fac2</div>  strFirstAndDot(str: string, len: number)
+                                <div class="">fac3</div> -->
+                            </td>
+                            <td>
+                                <app-s-cc-progressbar
+                                    [data]="findDataOrder(order.orderID)"
+                                    [colorBArTxt]="colorBArTxt">
+                                </app-s-cc-progressbar>
+                            </td>
+                            <td style="width: 15%">
+                                <p-button  styleClass="p-button-rounded p-button-text p-button-sm" (click)="showRepProgressZoneModal(order.orderID)">
+                                    <span class="material-symbols-outlined text-xs">
+                                        align_horizontal_right
+                                    </span>
+                                </p-button>
+
+                                <p-button  styleClass="p-button-rounded p-button-text p-button-sm" (click)="showRepProgressNodeModal(order.orderID)">
+                                    <span class="material-symbols-outlined text-xs">
+                                        mitre
+                                    </span>
+                                </p-button>
+
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+        </p-tabPanel>
+
+        <!-- <p-tabPanel header="in Production overview">
+
+        </p-tabPanel> -->
+
+    </p-tabView>
+
+
+
+
+</div>
+

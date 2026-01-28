@@ -1,0 +1,192 @@
+
+
+<div class=" text-xl font-bold text-700 text-center mb-4 ">
+    {{headerPage}}
+</div>
+
+<div class="border-none bg-tran">
+    <span class="flex flex-column md:flex-row gap-3 m-0 p-0 border-none " *ngIf="repMode === 'rep-fac-scan-bundle-state-style-setgroup'">
+
+        <div class="field mb-4 w-3">
+            <div class="cursor-pointer" (click)="showProductSelectionModal()">
+                <app-s-product-card [product]="product"></app-s-product-card>
+            </div>
+        </div>
+
+    </span>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog [style]="{width: '50%'}"></p-confirmDialog>
+
+<!-- <p-button (click)="showDialog()" icon="pi pi-external-link" label="Show"></p-button> -->
+<p-dialog header="loading..." [(visible)]="dataFecthing" [modal]="true" [style]="{ width: '50vw' }" [draggable]="false" [resizable]="false" [closable]="true">
+    <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+    <div class="fadein animation-duration-2000 animation-iteration-infinite flex align-items-center justify-content-center
+        font-bold  m-2 px-5 py-0">
+        waiting for generating PDF  ...
+    </div>
+</p-dialog>
+
+
+<div class="border-none bg-tran">
+    <p-tabView>
+        <p-tabPanel *ngFor="let zone of mainZone; let i = index" header={{zone.targetPlaceName}}>
+            <div class="grid" >
+
+                <div class="col-3 p-3">
+                    <div class="surface-card shadow-2 border-round p-4">
+                        <div class="flex border-bottom-1 surface-border pb-4">
+                            <!-- <img src="assets/images/blocks/avatars/circle/avatar-f-1.png" class="mr-3" style="width: 70px; height: 70px;"> -->
+                            <div class="flex flex-column align-items-start">
+                                <div>
+                                    <i class="pi pi-plus" style="color: slateblue"></i>
+                                    &nbsp;
+                                    <span class="text-xl text-900 font-medium mb-1 ">add group [ {{zone.targetPlaceID}} ]</span>
+                                </div>
+                                <span class="text-600 font-medium mb-2">for tracking bundle production</span>
+                                <span class="bg-blue-50 text-blue-400 border-round inline-flex py-1 px-2 text-sm">{{orderID}}</span>
+                                <p-chip
+                                    class="m-1 cursor-pointer" styleClass="m-1 pl-0"
+                                    [label]="colorSSelect.color.colorCode+' '+colorSSelect.color.colorName"
+                                    (dblclick)="showColorSelector('color-selector')">
+                                    <p-avatar class="" label="" styleClass=" mr-2"
+                                        [style]="{ 'background-color': colorSSelect.color.colorValue, color: '#ffffff' }"
+                                        shape="circle"
+                                        ></p-avatar>
+
+                                </p-chip>
+                            </div>
+                        </div>
+                        <button pbutton="" pripple="" label="add new group" icon="pi pi-plus"
+                            *ngIf="colorSSelect.seq >= 0"
+                            (click)="showAddnewBundleSetgroup(zone.targetPlaceID)"
+                            class="p-element p-ripple p-button-outlined p-button-secondary w-12 mt-2 mr-2 p-button p-component">
+                            <span class="p-button-icon p-button-icon-left pi pi-plus" aria-hidden="true"></span>
+                            <span class="p-button-label">add new group</span><span class="p-ink"></span>
+                        </button>
+                    </div>
+                </div>
+
+
+
+                <div class="col-3" *ngFor="let bsg of bundleSetGroupZone(zone.targetPlaceID); let i = index">
+                    <div class="surface-card shadow-2 p-3 m-1 border-round">
+                        <div class="flex justify-content-between mb-3">
+                            <div class="w-full">
+                                <span class="block text-900 font-medium text-xl mb-3">
+                                    [ {{bsg.targetPlaceID}} ] {{bsg.color.colorCode}} {{bsg.color.colorName}}
+                                </span>
+                                <ul class="list-none m-0 pl-2">
+                                    <li class="px-0 py-2 border-bottom-1 surface-border text-center">
+                                        <span class="text-600 font-medium text-sm">{{bsg.groupName}}</span>
+                                    </li>
+                                    <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm cursor-pointer"
+                                            (dblclick)="editBundleSetGroupComplete(bsg,'seq')">
+                                            Sequence
+                                        </span>
+                                        <span class="text-900 font-medium text-sm">
+                                            <input type="text" pInputText class="p-inputtext-sm"
+                                                (keypress)="userService.numberOnly($event);"
+                                                [(ngModel)]="bsg.seq" />
+                                        </span>
+                                    </li>
+                                    <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm">Yarn Lot ID</span>
+                                        <span class="text-900 font-medium text-sm">
+                                            <div class="" *ngFor="let yarn of bsg.yarnLotID.split(','); let i2 = index">
+                                                {{yarn}}
+                                            </div>
+                                        </span>
+                                    </li>
+                                    <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm">bundle no.</span>
+                                        <span class="text-900 font-medium text-sm">
+                                            <div class="" *ngFor="let bun of bsg.bundleNoSet.split(','); let i3 = index">
+                                                {{bun}}
+                                            </div>
+                                        </span>
+                                    </li>
+                                    <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm">Bundle.</span>
+                                        <span class="text-900 font-medium text-sm">{{bsg.bundleNoQty}}</span>
+                                    </li>
+                                    <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm">State</span>
+                                        <span class="text-900 font-medium text-sm cursor-pointer" (click)="editBundleSetGroupComplete(bsg,'complete')">
+                                            {{bsg.completed?'Completed':'Tracking'}}
+                                        </span>
+                                    </li>
+                                    <!-- <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm">login time</span>
+                                        <span class="text-900 font-medium text-sm">yyyy-mm-dd hh:mm</span>
+                                    </li> -->
+                                    <!-- <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm">have sub</span>
+                                        <span class="text-900 font-medium text-sm">
+                                            <span>
+                                                <button pButton  pripple="" icon="pi pi-sitemap" iconpos="left" label="sub"
+                                                    class="p-element p-ripple p-button-rounded p-button-text p-button-success p-button p-component
+                                                    text-sm p-0 m-0">
+                                                </button>
+                                            </span>
+
+                                            <span class="text-sm text-gray-500">no</span>
+                                        </span>
+                                    </li> -->
+                                    <!-- <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm">status</span>
+                                        <span class="text-900 font-medium text-sm">active</span>
+                                        <span class="text-gray-500">close</span>
+                                    </li> -->
+                                    <!-- <li class="px-0 py-2 flex justify-content-between align-items-center border-bottom-1 surface-border">
+                                        <span class="text-600 font-medium text-sm">request login</span>
+                                        <span class="text-900 font-medium text-sm flex justify-content-between">
+                                            <button pButton pRipple type="button" label="accept"
+                                                class="p-button-rounded p-button-info mr-4 p-1 text-sm ">
+                                            </button>
+                                            <button pButton pRipple type="button" label="reject"
+                                                class="p-button-rounded p-button-danger p-1 text-sm text-900">
+                                            </button>
+                                        </span>
+                                    </li> -->
+                                </ul>
+                            </div>
+                            <div>
+                                <i class="pi pi-circle-fill text-2xl" [ngStyle]="{color: bsg.color.colorValue}"></i>
+                                <!-- ligth green warning danger -->
+                                <!-- <i class="pi pi-circle-fill text-green-500 text-2xl"></i> -->
+                                <!-- <i class="pi pi-circle-fill text-red-500 text-2xl"></i> -->
+                                <!-- <i class="pi pi-circle-fill text-yellow-500 text-2xl"></i> -->
+                                <!-- <i class="pi pi-circle-fill text-gray-500 text-2xl"></i> -->
+                            </div>
+                        </div>
+                        <div class="px-0 py-0 mt-2 text-right">
+                            <button pbutton="" pripple="" icon="pi pi-times-circle" iconpos="right"
+                                class="p-element p-ripple p-button-rounded p-button-text p-button-danger p-button p-component p-2 px-5 mr-5"
+                                (click)="confirmBundleDelete(bsg)">
+                                <span class="p-button-icon p-button-icon-left pi pi-times-circle text-xs" aria-hidden="true"></span>
+                                <span class="p-button-label text-base">Delete</span>
+                                <span class="p-ink"></span>
+                            </button>
+                            <button pbutton="" pripple="" icon="pi pi-eye" iconpos="right"
+                                class="p-element p-ripple p-button-rounded p-button-text p-button-success p-button p-component p-2"
+                                (click)="getRepCurrentProductionBundleStateNo(bsg)">
+                                <span class="p-button-icon p-button-icon-left pi pi-eye text-xs" aria-hidden="true"></span>
+                                <span class="p-button-label text-base">View</span>
+                                <span class="p-ink"></span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+
+
+            </div>
+        </p-tabPanel>
+    </p-tabView>
+</div>
+
+

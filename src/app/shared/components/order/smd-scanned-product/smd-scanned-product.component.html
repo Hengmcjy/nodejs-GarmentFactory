@@ -1,0 +1,75 @@
+
+
+
+<div class="surface-ground p-2">
+    <div class="">
+        <span class="font-semibold">xxxx</span>
+        &nbsp; : &nbsp;
+        <span class="text-primary">xxxxx</span>
+    </div>
+
+    <p-table [value]="nodeScanProductStyleZoneColorSize"
+        class="w-full"
+        styleClass="p-datatable-sm">
+        <ng-template pTemplate="caption">
+            {{style}}
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="text-center" >color</th>
+                <th class="text-center" >size</th>
+                <th class="text-center" *ngFor="let zone of mainZone; let n = index">{{zone.targetPlaceName}}</th>
+                <!-- <th class="text-center" >QTY</th> -->
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-order let-idx="rowIndex">
+            <tr class="text-sm text-center">
+                <td class="text-center border-none"
+                    [ngClass]="checkColorShow(order.color, false, idx) ? 'border-none border-top-1' : ''">
+                    <span *ngIf="checkColorShow(order.color, true, idx)">
+                        <span *ngFor="let colorName of order.color.split(','); let m = index">
+                            {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(style))}}
+                            &nbsp;
+                            <div>
+                                {{userService.getCodeColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(style))}}
+                            </div>
+                        </span>
+                    </span>
+                </td>
+                <td class="text-center">{{userService.strReplaceAll(order.size, '-', '')}}</td>
+                <td class="text-center" *ngFor="let zone2 of mainZone; let m = index">
+        <!-- getNodeIDScannedStyleZoneColorSize(orderID: string, fromNode: string, targetPlace: string, color: string, size: string) -->
+                    <span>
+                        {{getNodeIDScannedStyleZoneColorSize(order.style, nodeID, zone2.targetPlaceID,
+                            order.color, order.size)}}
+                    </span>
+                </td>
+            </tr>
+        </ng-template>
+        <!-- <ng-template pTemplate="footer">
+            <tr>
+                <td>total</td>
+                <td></td>
+                <td class="text-center" *ngFor="let zone2 of mainZone; let q = index">
+                    <span class="text-center">
+                        {{getProductionCompleteQtyColumnTotal(group1[0], q)}}
+                        <span class="text-300 text-center">&nbsp;|&nbsp;</span>
+                        {{getProductionQtyColumnTotal(group1[0], q)}}
+                    </span>
+                </td>
+                <td class="text-center">
+                    {{getProductionQtyGrandTotal(group1[0])}}
+                </td>
+            </tr>
+            <tr>
+                <td>remain</td>
+                <td></td>
+                <td *ngFor="let zone2 of mainZone; let q = index"></td>
+                <td class="text-center">
+                    {{getReaminProductionQtyGrandTotal(group1[0])}}
+                </td>
+            </tr>
+        </ng-template> -->
+    </p-table>
+
+</div>

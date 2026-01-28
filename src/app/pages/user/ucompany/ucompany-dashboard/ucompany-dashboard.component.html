@@ -1,0 +1,120 @@
+<div class="surface-ground">
+    <div class="grid p-fluid">
+        <div class="col-12">
+            <div class="card card-w-title p-0 m-0">
+                <p-megaMenu [model]="megaMenuItems"></p-megaMenu>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<app-s-rep-com-overall *ngIf="repActive==='overall'"></app-s-rep-com-overall>
+<app-s-rep-com-overview *ngIf="repActive==='overview'"></app-s-rep-com-overview>
+<app-s-rep-fac-all-node-scan *ngIf="repActive==='scan-overview'"></app-s-rep-fac-all-node-scan>
+
+<app-s-rep-com-production-overall *ngIf="repActive==='production-all'"></app-s-rep-com-production-overall>
+
+<app-s-rep-fac-overall *ngIf="repActive==='overall-fac'"></app-s-rep-fac-overall>
+
+<!-- factory zone -->
+<app-s-rep-fac-dashboard
+    [factory]="factory"
+    *ngIf="repActive==='fac'">
+</app-s-rep-fac-dashboard>
+<app-s-rep-fac-node-station
+    [factory]="factory"
+    *ngIf="repActive==='node-station-production-info'">
+</app-s-rep-fac-node-station>
+<app-s-rep-fac-node-scan
+    [factory]="factory"
+    [callFrom]="'staff-office'"
+    *ngIf="repActive==='factory-production-scan'">
+</app-s-rep-fac-node-scan>
+
+<app-s-rep-fac-process-period
+    *ngIf="repActive==='rep-fac-process-period'">
+</app-s-rep-fac-process-period>
+<app-s-rep-fac-process-period-zone
+    *ngIf="repActive==='rep-fac-process-period-zone'">
+</app-s-rep-fac-process-period-zone>
+
+<app-s-rep-fac-process-period
+    *ngIf="repActive==='rep-fac-process-period-percent'"
+    [repMode]="'rep-fac-process-period-percent'">
+</app-s-rep-fac-process-period>
+<app-s-rep-fac-process-period-zone
+    *ngIf="repActive==='rep-fac-process-period-zone-percent'"
+    [repMode]="'rep-fac-process-period-zone-percent'">
+</app-s-rep-fac-process-period-zone>
+
+
+<!-- // ## 21 -->
+<app-s-rep-fac-process-period-zone
+    *ngIf="repActive==='rep-fac-production-period'"
+    [repMode]="'rep-fac-production-period'"
+    [repModeArr]="['rep-fac-production-period']">
+</app-s-rep-fac-process-period-zone>
+
+<!-- // ## 21-B -->
+<app-s-rep-fac-process-period-zone
+    *ngIf="repActive==='rep-fac-production-period-edit-qty'"
+    [repMode]="'rep-fac-production-period-edit-qty'"
+    [repModeArr]="['rep-fac-production-period-edit-qty']">
+</app-s-rep-fac-process-period-zone>
+
+<!-- 21-C   -->
+<app-s-rep-fac-process-period-zone
+    *ngIf="repActive==='rep-fac-production-period-qty-plan-adjust'"
+    [repMode]="'rep-fac-production-period-qty-plan-adjust'"
+    [repModeArr]="['rep-fac-production-period-qty-plan-adjust']">
+</app-s-rep-fac-process-period-zone>
+
+
+<app-s-rep-fac-node-bundle
+    *ngIf="repActive==='scan-qctocomplete'"
+    [factory]="factorySelect1"
+    [nodeID]="nodeIDSelect"
+    [option]="option">
+</app-s-rep-fac-node-bundle>
+
+
+
+<!-- ## 22 Factory Scan Production Period -->
+<app-s-rep-fac-process-period-zone
+    *ngIf="repActive==='rep-fac-scan-production-period'"
+    [repMode]="'rep-fac-scan-production-period'"
+    [repModeArr]="['rep-fac-scan-production-period']">
+</app-s-rep-fac-process-period-zone>
+
+<!-- app-s-rep-fac-process-period -->
+
+
+<!-- app-s-rep-fac-scan-bundle-state -->
+<app-s-rep-fac-scan-bundle-state
+    *ngIf="repActive==='rep-fac-scan-bundle-state'"
+    [repMode]="'rep-fac-scan-bundle-state'">
+</app-s-rep-fac-scan-bundle-state>
+
+
+<!-- rep-fac-scan-bundle-state-style  -->
+<app-s-rep-fac-scan-bundle-state-style
+    *ngIf="repActive==='rep-fac-scan-bundle-state-style'"
+    [repMode]="'rep-fac-scan-bundle-state-style'">
+</app-s-rep-fac-scan-bundle-state-style>
+
+<!-- rep-fac-scan-bundle-state-style-setgroup -->
+<app-s-rep-fac-scan-bundle-state-style-setgroup
+    *ngIf="repActive==='rep-fac-scan-bundle-state-style-setgroup'"
+    [repMode]="'rep-fac-scan-bundle-state-style-setgroup'">
+</app-s-rep-fac-scan-bundle-state-style-setgroup>
+
+
+<!-- outsource -->
+<app-s-rep-outs-overall *ngIf="repActive==='overall-outsource'"></app-s-rep-outs-overall>
+<app-s-rep-outs-state
+    *ngIf="repActive==='Outsource-state'"
+    [callFrom]="'staff-office'">
+</app-s-rep-outs-state>
+
+<!-- outsource -->

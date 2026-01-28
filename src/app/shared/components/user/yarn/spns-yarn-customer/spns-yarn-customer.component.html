@@ -1,0 +1,9 @@
+<div class="card01 w-full p-2 mb-2 text-center">
+    <div class="txt-season-cap">
+        Customer:
+    </div>
+    <span class="" [ngClass]="customer.customerName===''?'txt-select-cus':'style-select'">
+        <img [src]="genImagePath(customer.imageProfile)" class="m2-3 w-full" *ngIf="customer.customerName !== ''">
+        {{customer.customerName===''?selectCustTxt:customer.customerName}}
+    </span>
+</div>

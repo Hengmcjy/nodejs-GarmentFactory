@@ -1,0 +1,48 @@
+
+
+<app-ucompany-menu></app-ucompany-menu>
+
+<p-toast position="top-right" ></p-toast>
+
+<div class="surface-ground px-2 py-2 md:px-2 lg:px-2">
+    <div class="p-fluid flex flex-column lg:flex-row">
+        <ul class="list-none m-0 p-0 flex flex-row lg:flex-column justify-content-evenly md:justify-content-between lg:justify-content-start mb-5 lg:pr-8 lg:mb-0">
+            <li>
+                <span class="style-select">
+                    {{styleSelect | uppercase}}
+                </span>
+            </li>
+            <li>
+                <a  pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors">
+                    <i class="pi pi-search md:mr-2"></i>
+                    <span class="font-medium hidden md:block">find style</span>
+                    <span class="p-ink" style="height: 149px;width: 149px;top: -52.3001px;left: 7.7px;"></span>
+                </a>
+            </li>
+            <li>
+                <a  pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="selectStyle('all-style')">
+                    <span class="font-medium hidden md:block">all-style</span>
+                    <span class="p-ink" style="height: 149px;width: 149px;top: -52.3001px;left: 7.7px;"></span>
+                </a>
+            </li>
+            <li *ngFor="let order of orderStyles; let i = index">
+                <a  pripple=""
+                    class="p-ripple p-element flex align-items-center cursor-pointer p-3 border-round text-800 hover:surface-hover transition-duration-150 transition-colors"
+                    (click)="selectStyle('style1')">
+                    <span class="font-medium hidden md:block">{{order.orderID}}</span>
+                    <span class="p-ink" style="height: 149px;width: 149px;top: -52.3001px;left: 7.7px;"></span>
+                </a>
+            </li>
+
+        </ul>
+
+
+        <div class="w-10">
+            <app-s-production-queue-list></app-s-production-queue-list>
+        </div>
+    </div>
+</div>
+

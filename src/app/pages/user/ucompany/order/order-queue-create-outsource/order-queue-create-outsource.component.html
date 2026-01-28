@@ -1,0 +1,27 @@
+<div class="surface-ground ">
+    <div class="grid p-fluid ">
+        <div class="field col-12">
+            <div class="card card-w-title p-0 m-0">
+                <p-megaMenu [model]="megaMenuItems"></p-megaMenu>
+            </div>
+        </div>
+    </div>
+</div>
+
+<p-toast position="top-right" ></p-toast>
+
+<p-splitter [panelSizes]="[75, 25]" [style]="{ height: '300px' }" styleClass="mb-5" (onResizeEnd)="checkSpliterSize($event)">
+    <ng-template pTemplate>
+        <div class="col flex align-items-center justify-content-center">
+            <app-s-orderview
+                [currentCompanyOrder]="currentCompanyOrder"
+                [orderStyleColorSize]="orderStyleColorSizeF"
+                [currentProductQtyAllC]="currentProductQtyAllC"
+                [order]="order">
+            </app-s-orderview>
+        </div>
+    </ng-template>
+    <ng-template pTemplate>
+        <div class="col flex align-items-center justify-content-center">Panel 2</div>
+    </ng-template>
+</p-splitter>

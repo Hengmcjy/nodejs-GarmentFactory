@@ -1,0 +1,118 @@
+
+<p-menu #menu  [popup]="true" [model]="items" styleClass="bg-yellow-50 w-4"></p-menu>
+
+<p-toolbar class="" styleClass="p-1" *ngIf="isShowStylePanel">
+    <div class="p-toolbar-group-start">
+        <p-chip *ngFor="let oi of orderImagesSelectArr[0]; let i1 = index"
+            class="mx-1 pl-3" styleClass=""
+            [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+            [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+        </p-chip>
+    </div>
+    <div class="p-toolbar-group-center">
+
+    </div>
+    <div class="p-toolbar-group-end">
+
+    </div>
+</p-toolbar>
+
+<div class="" >
+    <p-table [value]="yarnLot[0].colorS" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+        <ng-template pTemplate="header">
+            <tr class="">
+                <th class="text-center" >Color</th>
+                <th class="text-center" >NET.Kgs Total</th>
+                <th class="text-center" >yarn lot ID [ NET.Kgs ]</th>
+                <!-- <th class="text-center" >kgs.</th> -->
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-color1 let-idx="rowIndex">
+            <tr >
+                <td>
+                    <div class="">
+                        <!-- <p-button styleClass="p-button-rounded p-button-text p-button-sm  m-0 p-0 ml-2"
+                            >
+                            <span class="material-symbols-outlined text-blue-200">rebase_edit</span>
+                        </p-button> -->
+                        <!-- <p-button styleClass="p-button-rounded  p-button-text p-button-sm  m-0 p-0 ml-4"
+                            >
+                            <span class="material-symbols-outlined text-orange-200">browse</span>
+                        </p-button> -->
+                        <p-button icon="pi pi-book" *ngIf="viewMode !== 'yarn-ct-lot-fac'"
+                            styleClass="p-button-rounded p-button-success p-button-text p-button-sm m-0 p-0"
+                            (onClick)="yarnPackingListStockCardSelect(color1)">
+                        </p-button>
+                        <p-chip
+                            class="m-1 pl-3" styleClass="surface-0 text-500 text-sm  m-1 pl-0"
+                            [label]="color1.color.colorCode +' '+ color1.color.colorName">
+                            <p-avatar class="" label="" styleClass="border-gray mr-2"
+                                [style]="{ 'background-color': color1.color.colorValue, color: 'gray' }"
+                                shape="circle">
+                            </p-avatar>
+                        </p-chip>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <span class="text-xl font-semibold">
+                        {{getColorWeightTotal(color1)}}
+                    </span>
+                </td>
+                <td class="">
+                    <span class="" *ngFor="let yL of getYarnLotTransform1(color1, 0); let y1 = index">
+                        <div class="card02 bg-green-50 mb-3 py-1 cursor-pointer"
+                        (dblclick)="setYarnLotMenuPopup(0, yL.yarnLotID, yL.yarnLotUUID, yL);menu.toggle($event);">
+                            <span class="text-gray-500 font-semibold">
+                                {{yL.yarnLotID}}
+                            </span>
+                            <span class="">
+
+                            </span>
+                            <span class="text-gray-700 text-lg font-semibold ml-4">
+                                {{yL.useWeight | number : '1.2-2'}}
+                            </span>
+                            &nbsp;
+                            <span class="text-xs text-gray-400">
+                                Kgs
+                            </span>
+                            <span class="text-red-100 p-0 m-0  ml-3 text-center">
+                                [
+                                &nbsp;
+                                <span class="text-red-200 font-semibold text-xs">
+                                    {{yL.yarnBoxInfo.length}}
+                                </span>
+                                <span class="text-red-100 text-xs ml-1">
+                                    box{{yL.yarnBoxInfo.length>1?'es':''}}.
+                                </span>
+                                &nbsp;
+                                ]
+                            </span>
+                        </div>
+                    </span>
+                </td>
+                <!-- <td class="">
+                    <span class="">
+                        <div class="card02 bg-yellow-50 mb-3 cursor-pointer">
+                            <span class="">
+                                yyy
+                            </span>
+                        </div>
+                        <div class="card02 bg-yellow-50 mb-3 cursor-pointer">
+                            <span class="">
+                                yyy
+                            </span>
+                        </div>
+                    </span>
+                </td> -->
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="footer">
+
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <span class="">
+
+            </span>
+        </ng-template>
+    </p-table>
+</div>

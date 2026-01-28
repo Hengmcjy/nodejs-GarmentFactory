@@ -1,0 +1,119 @@
+
+
+<div class="">
+    <p-toolbar class="" styleClass="p-2">
+        <div class="p-toolbar-group-start">
+
+        </div>
+        <div class="p-toolbar-group-center">
+            <span class="yarn-season-head">
+                YARN
+                &nbsp;
+                <span class="" >
+                    packing list
+                    <span class="">
+                        [
+                        &nbsp;
+                        <span class="">
+                            add new
+                        </span>
+                        &nbsp;
+                        ]
+                    </span>
+                </span>
+            </span>
+            &nbsp;&nbsp;
+            <span class="txt-m-gray">
+                [
+                &nbsp;
+                <span class="txt-m-gray">
+                    {{yarnSeason}}
+                </span>
+                &nbsp;
+                ]
+            </span>
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <div class="text-lg txt-m-gray ml-4 my-2">
+                {{yarnPlan.yarnID}}
+            </div>
+        </div>
+        <div class="p-toolbar-group-center">
+
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+
+    <p-toolbar class="" styleClass="p-1">
+        <div class="p-toolbar-group-start">
+            <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+                class="mx-1 pl-3" styleClass="m-1 pl-0"
+                [ngClass]="mode==='create'?'cursor-pointer':''"
+                [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+                [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath ">
+            </p-chip>
+
+            <p-chip
+                class="" styleClass="surface-0 text-900 text-2xl  m-1 pl-4 ml-4"
+                [label]="colorS.color.colorCode +' '+ colorS.color.colorName">
+                <p-avatar class="" label="" styleClass="border-gray  mr-2"
+                    [style]="{ 'background-color': colorS.color.colorValue, color: 'gray' }"
+                    shape="circle">
+                </p-avatar>
+            </p-chip>
+
+        </div>
+        <div class="p-toolbar-group-center">
+
+        </div>
+        <div class="p-toolbar-group-end">
+
+        </div>
+    </p-toolbar>
+</div>
+<div class="">
+    <div class="flex flex-row">
+        <div>
+            <p-calendar class="max-w-full" [(ngModel)]="datetime" [inline]="true" [showWeek]="true"
+            (onSelect)="selectDate()"></p-calendar>
+        </div>
+
+        <div class="flex-grow-1 p-4 surface-ground">
+            <div class="grid">
+                <div class="col-4">
+                    <span class="filter-topic">
+                        ETD:
+                    </span>
+                </div>
+                <div class="col-8">
+                    <span class="date-yarn1 text-center">
+                        <span class="underline bg-yellow100">{{datetime |  date:'d-MMM'}}</span>
+                        &nbsp;
+                        <span class="txt-year-yarn1">{{datetime |  date:'y'}}</span>
+                    </span>
+                </div>
+
+
+
+                <div class="col-12 ">
+                    <div class="grid">
+                        <div class="col-4"></div>
+                        <div class="col-6">
+                            <p-button class="w-full" label="add packing list" (onClick)="putAddYarnPackingList1()"></p-button>
+                        </div>
+                        <div class="col-2"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

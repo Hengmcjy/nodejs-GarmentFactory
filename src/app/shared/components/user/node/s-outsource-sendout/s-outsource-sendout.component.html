@@ -1,0 +1,207 @@
+
+<app-s-work-station-head></app-s-work-station-head>
+
+<p-toast position="top-right" ></p-toast>
+
+
+
+<div class="surface-ground px-4 py-5 md:px-6 lg:px-8">
+
+
+    <div class="grid ">
+
+        <div class="col-12 m-0 p-0">
+            <div class="card m-0 p-0">
+                <div class="grid m-0 p-0">
+                    <div class="col-3  text-center">
+                         <div class="cursor-pointer"
+                            [ngClass]="mustBundleScan?'':'bg-red-100'"
+                            (dblclick)="inputUserPassPopup()">
+                             <div class="text-3xl font-medium text-900 mb-1"  >
+                                {{mustBundleScan?'Yes':''}}
+                                <span class="text-2xl text-red-600 ml-2" *ngIf="!mustBundleScan">
+                                   1 by 1
+                                </span>
+                             </div>
+                             <div class="text-xl text-600 white-space-nowrap">
+                                {{mustBundleScan?'bundle check':'check'}}
+                            </div>
+                         </div>
+                    </div>
+                    <div class="col-9 m-0 p-0">
+                        <div class="grid m-0 p-0">
+                            <div class="col-3 border-left-1 surface-border text-center m-0 p-0">
+                                <div class="text-5xl font-bold text-yellow-500 m-0 p-0 my-2">
+                                    {{productBarcodeNos.length}}
+                                </div>
+                                <div class="text-xl text-yellow-900 m-0 p-0 mb-2">
+                                    QTY
+                                </div>
+                            </div>
+                            <div class="col-3 border-left-1 surface-border text-center m-0 p-0">
+                                <div class="text-5xl font-bold text-green-500 m-0 p-0 my-2">
+                                    {{mustBundleScan? bundleNoScan.length : 'X'}}
+                                </div>
+                                <div class="text-xl text-green-900 m-0 p-0 mb-2">
+                                    Bundle
+                                </div>
+
+                            </div>
+                            <div class="col-4 border-left-1 surface-border   text-center m-0 p-0">
+
+                            </div>
+                            <div class="col-2 border-left-1 surface-border   text-center m-0 p-0">
+
+                                <div class="text-5xl font-bold text-green-500 m-0 p-0 mb-4">
+
+                                </div>
+                                <div class=" m-0 p-0 mb-2">
+                                    <p-button label="clear" (onClick)="clearAll()"></p-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-3 p-2 pb-0">
+
+            <div class="card m-0 p-4 cursor-pointer mb-2" [ngClass]="mustBundleScan?'':'bg-red-50'"
+                (click)="showFactorySelectionModal()">
+                <div class="outsource-caption-head text-center" *ngIf="factorySelect.factoryID === ''">
+                    <div>select OUTSOURCE</div>
+                    <div>(Sub-contact)</div>
+                </div>
+                <div class="outsource-caption-head text-center" *ngIf="factorySelect.factoryID !== ''">
+                    <div>{{factorySelect.fInfo.factoryName}}</div>
+                    <div class="txt-subcontact-cell">(OUTSOURCE)</div>
+                </div>
+            </div>
+
+            <div class="card m-0 p-4" [ngClass]="mustBundleScan?'':'bg-red-50'">
+                <div class="font-medium ml-2">
+                    <div class="p-inputgroup w-full md:w-30rem" >
+                        <span class="pt-3">
+                            From Node production:
+                        </span>
+                        <p-button icon="pi pi-times" styleClass="p-button-rounded p-button-danger p-button-text"
+                            (onClick)="clearAll()"></p-button>
+                    </div>
+                </div>
+
+                <div class="surface-card shadow-2 p-2 my-1
+                    flex flex-column align-items-center md:flex-row md:align-items-stretch cursor-pointer text-center"
+                    style="border-radius: 10px;"
+                    (click)="showOutsourceNodeIDSelectionModal()"
+                    *ngIf="flowSeqOutsourceSelect.length === 0">
+                    <div class="outsource-caption-head text-center" *ngIf="flowSeqOutsourceSelect.length === 0">
+                        <span>select Node</span>
+                    </div>
+                    <div class="outsource-caption-select text-left" *ngIf="flowSeqOutsourceSelect.length > 0">
+                        <div class="" *ngFor="let fs of flowSeqOutsourceSelect; let ii= index">
+                            <span class="outsource-caption-select">
+                                {{fs.nodeID}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outsource-caption-select text-left"
+                    *ngIf="flowSeqOutsourceSelect.length > 0">
+                    <div class="" *ngFor="let fs of flowSeqOutsourceSelect; let ii= index">
+                        <span class="outsource-caption-select">
+                            {{fs.nodeID}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card m-0 p-4"
+                *ngIf=" cancelCount=== 0 && flowSeqOutsourceSelect.length === 0 && productBarcodeNos.length===0">
+                <p-button styleClass="p-button-rounded p-button-danger p-button-text"
+                    (onClick)="cancelSendOut()">
+                    cancel sentout
+                </p-button>
+            </div>
+
+        </div>
+
+        <div class="col-12 lg:col-9 p-2">
+
+            <div class="card m-0 p-4" [ngClass]="mustBundleScan?'':'bg-red-50'">
+
+
+                <div class="m-2 mt-0">
+                    <p-button  label="clear"
+                        (onClick)="clearAll()"
+                        *ngIf="flowSeqOutsourceSelect.length > 0 && factorySelect.fInfo.factoryName !== ''"></p-button>
+
+                    <p-toggleButton class="ml-2"
+                        [(ngModel)]="isShowBundleList" onLabel="show-list" offLabel="no-show"
+                        (click)="setVisible()"></p-toggleButton>
+                </div>
+
+                <div class="p-inputgroup"
+                    *ngIf="(flowSeqOutsourceSelect.length > 0 && factorySelect.fInfo.factoryName !== '') || cancelSentoutMode">
+                    <input type="text" pInputText  class="w-full pw"
+                        [(ngModel)]="productBarcodeNoInput"
+                        (keyup.enter)="putScanOrderProductionBarcodeNoReceiveOutsourceSendOut(productBarcodeNoInput, 'scan-sendout-outsource')"
+
+                        [disabled]="stackBarcodeFull"
+                        #input1>
+                </div>
+
+                <div class="outsource-caption-head text-center" *ngIf="cancelSentoutMode">
+                    <span>Cancel Sent out</span>
+                    <span class="ml-4 outsource-caption-head">{{cancelCount}}</span>
+                </div>
+
+                <p-table [value]="orderProductionScan1.scanItemOutsourece" styleClass="p-datatable-sm p-datatable-gridlines mt-2" >
+                    <ng-template pTemplate="header">
+                        <tr class="text-center">
+                            <th style="width:20%" class=" text-center">bundle No</th>
+                            <th style="width:5%" class=" text-center">No.</th>
+                            <th style="width:5%" class=" text-center">Outsource</th>
+                            <th style="width:55%" class=" text-center">
+                                <button pButton pRipple type="button" icon="pi pi-sort-numeric-down"
+                                    class="p-button-rounded p-button-text ml-3"
+                                    (click)="barcodeSort()">&nbsp;&nbsp; Barcode</button>
+                            </th>
+                            <th style="width:20%" class=" text-center">###</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-product let-rowIndex="rowIndex">
+                        <tr [ngClass]="getColorBundleGroupColorScan(product.bundleNo)">
+                            <td style="width:20%" class="bg-bundleno text-center">
+                                <span class="">{{product.bundleNo}}</span>
+                                &nbsp;
+                                <span class="text-sm text-600 text-rigth">[ {{product.bundleCount}} pcs]</span>
+
+                            </td>
+                            <td style="width:5%" class=" text-center">{{rowIndex+1}}</td>
+                            <td style="width:15%" class=" text-center txt-subcontact-cell text-yellow-500 font-semibold">
+                                to.. {{userService.getFactoryNameByFactoryID(product.factoryIDForm)}}
+                            </td>
+                            <td style="width:40%" class=" ">
+                                {{product.productBarcodeNo}}
+                                <div class="text-500 text-base"
+                                    *ngIf="product.productBarcodeNo !== product.productBarcodeNoReal">
+                                    {{product.productBarcodeNoReal}}
+                                </div>
+                            </td>
+                            <td style="width:20%" class=" text-center">{{product.status}}</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<p-dialog header="Bundle list" [(visible)]="visible" [position]="position" [style]="{ width: '15vw' }">
+    <app-s-product-bundle-info></app-s-product-bundle-info>
+</p-dialog>

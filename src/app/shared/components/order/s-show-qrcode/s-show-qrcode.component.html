@@ -1,0 +1,91 @@
+<app-s-work-station-head></app-s-work-station-head>
+
+<div class="block-content">
+    <div class="surface-section">
+        <div class="grid grid-nogutter ">
+
+            <div class="col-12 lg:col-3 px-4 py-8 md:px-6 lg:px-8 surface-50">
+
+                <div class="py-2 mt-3">
+                    <div class="text-center txt-style-head mb-5">
+                        {{productID}}
+                    </div>
+                    <div class="flex justify-content-between align-items-center border-bottom-1 border-200 mb-3 ">
+                        <span class="text-900 font-bold ">Zone</span>
+                        <span class="font-medium text-base">{{zone}}</span>
+                    </div>
+                    <div class="flex justify-content-between align-items-center border-bottom-1 border-200 mb-3 ">
+                        <span class="text-900 font-bold ">Size</span>
+                        <span class="text-900 font-medium text-base ">{{size}}</span>
+                    </div>
+                    <div class="flex justify-content-between align-items-center border-bottom-1 border-200 mb-3 ">
+                        <span class="text-900 font-bold ">Color</span>
+                        <span class="text-900 font-medium text-base ">
+                            {{colorCodeSharp}}
+                        </span>
+
+                    </div>
+                    <div class="flex justify-content-between align-items-center border-bottom-1 border-200 mb-3 ">
+                        <span class="text-900 font-bold ">Color</span>
+                        <span class="text-900 font-medium text-base ">
+                            {{colorCode}}
+                        </span>
+
+                    </div>
+                    <div class="flex justify-content-between align-items-center border-bottom-1 border-200 mb-3 ">
+                        <span class="text-900 font-bold ">Color</span>
+                        <span class="text-900 font-medium text-base ">
+                            {{colorName}}
+                        </span>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 lg:col-9 h-full px-4 py-8 md:px-6 lg:px-8">
+
+                <p-paginator [rows]="limit" [totalRecords]="currentProductStyleCount" [rowsPerPageOptions]="[20,50]"
+                    (onPageChange)="paginate($event)"></p-paginator>
+                <p-table [value]="currentProductStyleQRCodeCFN"
+                    class="w-full"
+                    styleClass="p-datatable-sm">
+                    <ng-template pTemplate="caption">
+                        <div>{{productID}} </div>
+                        <div class="txt-sm-gray">QTY : {{currentProductStyleCount}} </div>
+                    </ng-template>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="px-0 text-center" style="width: 10%">b.No</th>
+                            <th class="px-0 text-center" style="width: 20%">Dept</th>
+                            <th class="px-0 text-center" style="width: 70%">QRCode</th>
+                            <th class="px-0 text-center" style="width: 10%;">action</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-prod let-idx="rowIndex">
+                        <tr class="text-xs">
+                            <td class="text-center">{{prod.bundleNo}}</td>
+                            <td class="text-xs text-center">
+                                {{prod.toNode}}
+                            </td>
+                            <td class="text-center">
+                                <div class="txt-productBarcodeNo">{{prod.productBarcodeNo}}</div>
+                                <div class="txt-productBarcodeNoReal"
+                                    *ngIf="prod.productBarcodeNo !== prod.productBarcodeNoReal">
+                                    {{prod.productBarcodeNoReal}}
+                                </div>
+                            </td>
+                            <td>
+                                <button pButton pRipple type="button" icon="pi pi-file-edit"
+                                    class="p-button-rounded p-button-text"></button>
+                            </td>
+                    </ng-template>
+                </p-table>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+

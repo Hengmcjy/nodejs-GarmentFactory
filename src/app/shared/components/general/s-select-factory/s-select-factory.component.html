@@ -1,0 +1,41 @@
+
+
+<div class="surface-ground px-4 py-4 md:px-4 lg:px-4 w-12">
+    <div class="grid m-0 p-0">
+
+        <div class="col-12 md:col-6 lg:col-4" *ngFor="let fac of factories; let i = index">
+            <div class="surface-card shadow-2 p-2 my-2 mx-2
+                flex flex-column align-items-center md:flex-row md:align-items-stretch "
+                style="border-radius: 10px;">
+                <span>
+                    <img [src]="genImagePath(fac.fInfo.pic)" class="w-10rem h-auto">
+                </span>
+                <div class="flex flex-column align-items-center md:align-items-stretch ml-4 mt-4 md:mt-0">
+                    <p class="mt-0 mb-3 line-height-3 text-center md:text-left  white-space-normal">
+                        {{fac.fInfo.factoryName}}
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span *ngIf="fac.fInfo.isOutsource">
+                            <span class="outsource-caption-head">OUTSOURCE</span>
+                        </span>
+                    </p>
+                    <span class="text-900 font-medium mb-1 mt-auto">{{fac.factoryID}}</span>
+                    <div class="text-600 text-sm">{{fac.factoryID}}</div>
+                    <ul class="list-none p-0 m-0">
+                        <li class="px-0 py-2 flex justify-content-between align-items-center mt-3">
+                            <span class="text-600 font-medium text-sm"></span>
+                            <button pButton pRipple type="button" label="select"
+                                class="p-button-rounded  p-button-info p-2"
+                                (click)="closeDialog(fac)"></button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+
+

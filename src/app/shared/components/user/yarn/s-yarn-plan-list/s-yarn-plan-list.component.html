@@ -1,0 +1,130 @@
+
+
+
+<p-toolbar class="" styleClass="p-2">
+    <div class="flex cursor-pointer">
+        <button pButton pRipple type="button" icon="pi pi-search"
+            class=" p-button-raised p-button-text p-button-secondary"
+            (click)="showYarnfilterModal()">
+            &nbsp;Yarn
+        </button>
+        <button pButton pRipple type="button" icon="pi pi-search"
+            class=" p-button-raised p-button-text p-button-secondary ml-2"
+            (click)="showStyleSelector('orderID-selector', 0)">
+            &nbsp;Style
+        </button>
+        &nbsp;
+        <p-chip *ngFor="let yn of yarnSelects; let i1 = index"
+            class="mx-1 pl-3" styleClass="m-1 pl-0"
+            [ngClass]="mode==='create'?'cursor-pointer':''"
+            [label]="yarnService.getYarnfullName(yn.yarnID)"
+            [removable]="true"
+            (onRemove)="yarnRemove(i1)">
+        </p-chip>
+
+        <p-chip *ngFor="let oi of orderImagesSelect; let i1 = index"
+            class="mx-1 pl-3" styleClass="m-1 pl-0"
+            [ngClass]="mode==='create'?'cursor-pointer':''"
+            [label]="oi.orderID !== ''?oi.orderID:'select style...'"
+            [image]="oi.orderID !== ''?productImageProfileGCSPath+oi.imageProfile : nulltGCSPath "
+            [removable]="true"
+            (onRemove)="styleRemove(i1)"
+            (dblclick)="showStyleSelector('orderID-selector', i1)">
+        </p-chip>
+
+    </div>
+</p-toolbar>
+
+<div class="mt-2" *ngIf="planMode !=='edit'">
+    <p-table [value]="yarnPlans"  [tableStyle]="{'min-width': '60rem'}">
+        <ng-template pTemplate="header">
+            <tr class="" >
+                <th class="yarn-season-head text-center" colspan="5">
+                    <span class="">
+                        Yarn plan :
+                    </span>
+                    <span class="">{{yarnSeason}}</span>
+                    &nbsp;
+                    [ <span class="">{{customer.customerName}}</span> ]
+                </th>
+            </tr>
+            <tr>
+                <th class="text-center" style="width: 3%">##</th>
+                <th class="text-center" style="width: 20%">Style</th>
+                <th class="text-center" style="width: 50%">Yarn ID</th>
+                <th class="text-center" style="width: 22%">Color</th>
+                <th class="text-center" style="width: 5%">**</th>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-yP let-idx="rowIndex">
+            <tr class="m-0 p-0" *ngIf="factorySelect.factoryID === yP.factoryID">
+                <td>
+                    <span class="txt-sm-gray">
+                        {{idx+1}} .
+                    </span>
+                </td>
+                <td>
+                    <span>
+                        <p-chip *ngFor="let oID of yP.orderID; let i1 = index"
+                            class="mx-1 pl-3" styleClass="surface-50 m-1 pl-0"
+                            [ngClass]="mode==='create'?'cursor-pointer':''"
+                            [label]="oID"
+                            [image]="getImage(oID)">
+                        </p-chip>
+                    </span>
+                </td>
+                <td>
+                    <span class="" (dblclick)="showYarnEditNameModal('editYarnName', yP.yarnID)">
+                        <!-- {{yP.yarnID}} -->
+                        {{yarnService.getYarnfullName(yP.yarnID)}}
+                    </span>
+                </td>
+                <td>
+                    <div *ngFor="let color1 of yP.colorS; let i2 = index">
+                        <p-chip
+                            class="m-1 pl-3" styleClass="surface-0 text-500 text-sm  m-1 pl-0"
+                            [label]="color1.color.colorName">
+                            <p-avatar class=" " label="" styleClass=" mr-2"
+                                [style]="{ 'background-color': color1.color.colorValue, color: '#ffffff' }"
+                                shape="circle">
+                            </p-avatar>
+                        </p-chip>
+                    </div>
+                </td>
+                <td>
+                    <div>
+                        <button pButton pRipple type="button" label="Plan" class="p-button-info p-button-text"
+                            (click)="selectYarnPlan1(yP, 'list-manage-plan')"></button>
+                    </div>
+                    <div>
+                        <button pButton pRipple type="button" label="Edit" class=" p-button-text text-blue-100"
+                            (click)="editPlan(yP)"></button>
+                    </div>
+
+                    <!-- <div>
+                        <button pButton pRipple type="button" label="Actual" class="p-button-warning p-button-text"
+                            (click)="selectYarnPlan1(yP, 'list-manage-actual')"></button>
+                    </div> -->
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                yarn plan  : ....
+            </div>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="mt-2">
+    <app-smd-yarn-plan-manage *ngIf="planMode==='edit'"
+        [mode]="'edit'"
+        [yarnSeason]="yarnSeason"
+        [company]="company"
+        [factorySelect]="factorySelect"
+        [customer]="customer"
+        [yarnPlan]="yarnPlanSelected"
+        (selectEvent)="createEditPlanEvent($event)">
+    </app-smd-yarn-plan-manage>
+</div>

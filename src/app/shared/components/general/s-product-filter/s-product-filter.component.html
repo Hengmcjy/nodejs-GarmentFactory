@@ -1,0 +1,99 @@
+
+<p-toolbar styleClass="bg-tran border-none m-0 p-0 mb-2">
+    <div class="p-toolbar-group-start"></div>
+    <div class="p-toolbar-group-center">
+        <button pButton pRipple type="button" icon="pi pi-filter" class="p-button-rounded p-button-info mt-2 mr-3"
+            styleClass="p-button-lg"
+            (click)="closeDialog()"></button>
+        <button pButton pRipple type="button" icon="pi pi-times" class="p-button-rounded p-button-danger mt-2 m-0"
+            styleClass="p-button-lg"
+            (click)="clearSelectItem()"></button>
+    </div>
+    <div class="p-toolbar-group-end"></div>
+</p-toolbar>
+<div class="grid">
+
+    <div class="col-3">
+        <div class="grid" *ngIf="checkStyleListShow('style')">
+            <div class="col-12  text-center">
+                <span class="filter-topic my-1">Style</span>
+            </div>
+            <div class="col-12 m-0 p-0 mb-2 text-center" *ngFor="let style of styleArr; let i1 = index">
+                <button pButton pRipple type="button" class="p-button-raised p-button-info p-button-text"
+                    [ngClass]="checkItem('style',style) ? 'bg-blue-100' : ''"
+                    (click)="selectItem('style',style)">
+                    {{style}}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-3">
+        <div class="grid" *ngIf="checkStyleListShow('zone')">
+            <div class="col-12  text-center">
+                <span class="filter-topic my-1">zone/country</span>
+            </div>
+            <div class="col-12  text-center">
+                <div class="grid">
+                    <div class="col-6 m-0 p-0 mb-1 px-1 text-center" *ngFor="let targetPlace of targetPlaceArr; let i2 = index">
+                        <button pButton pRipple type="button" class="p-button-raised p-button-success p-button-text  w-full"
+                            [ngClass]="checkItem('targetPlace',targetPlace) ? 'bg-green-100' : ''"
+                            (click)="selectItem('targetPlace',targetPlace)">
+                            {{targetPlace}}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-3">
+        <div class="grid" *ngIf="checkStyleListShow('color')">
+            <div class="col-12 m-0 text-center">
+                <span class="filter-topic my-1">color</span>
+            </div>
+            <div class="col-12 m-0 p-0 text-center">
+                <div class="grid m-0 p-0 mb-1" *ngFor="let colorx of colorArr; let i3 = index">
+                    <div class="col-1 m-0 p-0"></div>
+                    <div class="col-10 m-0 p-0  text-center" >
+                        <div pButton pRipple  class="p-button-raised p-button-warning p-button-text w-12"
+                            [ngClass]="checkItem('color',colorx) ? 'bg-yellow-100' : ''"
+                            (click)="selectItem('color',colorx)">
+                            <p-avatarGroup styleClass="text-center">
+                                <p-avatar *ngFor="let color of colorx.split(','); let i = index"
+                                        styleClass="p-mr-2 border-300"
+                                        [style]="{'background-color': userService.getColorByColorCode(color)}"
+                                        shape="circle"
+                                    ></p-avatar>
+                                    &nbsp;&nbsp;
+                                    {{userService.getColorNameByColorCode(colorx, setName)}}
+                            </p-avatarGroup>
+                        </div>
+                    </div>
+                    <div class="col-1 m-0 p-0"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-3">
+        <div class="grid" *ngIf="checkStyleListShow('size')">
+            <div class="col-12 m-0 text-center">
+                <span class="filter-topic my-1">size</span>
+            </div>
+            <div class="col-12 m-0 p-0 text-center">
+                <div class="grid m-0 p-0 mb-1" *ngFor="let size of sizeArr; let i4 = index">
+                    <div class="col-4 m-0 p-0"></div>
+                    <div class="col-4 m-0 p-0 text-center" >
+                        <button pButton pRipple type="button" class="p-button-raised p-button-primary p-button-text w-12"
+                            [ngClass]="checkItem('size',size) ? 'bg-primary-100' : ''"
+                            (click)="selectItem('size',size)">
+                            {{size}}
+                        </button>
+                    </div>
+                    <div class="col-4 m-0 p-0"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

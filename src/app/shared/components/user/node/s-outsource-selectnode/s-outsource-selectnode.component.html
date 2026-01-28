@@ -1,0 +1,30 @@
+
+
+<div class="grid">
+    <div class="col-6 border-right-1">
+        <div class="m-3" *ngFor="let fs of flowSeq1; let i = index">
+            <p-button
+                label="{{fs.nodeID}}"
+                styleClass="p-button-warning {{checkNodeSelected1(fs)}} w-12"
+                (onClick)="selectFlowSeq1(fs)"
+                [disabled]="checkDisableNoOutsource(fs.nodeID)">
+            </p-button>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="m-3" *ngFor="let fs2 of flowSeq2; let i2 = index">
+            <p-button
+                label="{{fs2.nodeID}}"
+                styleClass="p-button-warning {{checkNodeSelected2(fs2)}} w-12"
+                (onClick)="selectFlowSeq2(fs2)"
+                [disabled]="checkDisableNoOutsource(fs2.nodeID)">
+            </p-button>
+        </div>
+    </div>
+    <div class="col-12">
+        <p-button label="select" class="" styleClass="p-button-rounded p-button-warning mt-5 w-12"
+            *ngIf="userService.objectsEqual(flowSeqOutsourceSelect1, flowSeqOutsourceSelect2) && flowSeqOutsourceSelect1.length > 0"
+            (onClick)="selectCommit()">
+        </p-button>
+    </div>
+</div>

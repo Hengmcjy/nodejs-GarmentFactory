@@ -1,0 +1,47 @@
+
+
+<p-table [value]="orderProducts" styleClass="p-datatable-sm p-datatable-gridlines" >
+    <ng-template pTemplate="caption">
+        <div class="text-base font-normal text-orange-300 text-center">
+            <span class="font-bold">
+                bundle No :
+            </span>
+            <span class="">
+                {{bundleNo}}
+            </span>
+
+            <span class="ml-2">
+                ( {{countQty}} )
+            </span>
+        </div>
+        <div class="text-sm font-normal text-teal-700">
+            <span class="">
+                {{productBarcode}}
+            </span>
+        </div>
+
+    </ng-template>
+    <ng-template pTemplate="body" let-product let-rowIndex="rowIndex">
+        <tr>
+            <td class="cursor-pointer" (click)="orderProductSelect(product)">
+                <div class="flex justify-content-left flex-wrap"
+                    [ngClass]="orderProduct.productBarcodeNoReal===product.productBarcodeNoReal?'bg-orange-200':''">
+                    <span class="text-sm text-400 mr-1">
+                        {{rowIndex+1}}.
+                    </span>
+                    <span class="mx-2" [ngClass]="product.productBarcodeNoReal===productBarcodeNo?'font-bold text-green-500 bg-green-100':''">
+                        {{product.productBarcodeNoReal.substr(37, 5)}}
+                    </span>
+                    <span class="flex align-items-left justify-content-left " *ngFor="let pN of product.productionNode; let s = index">
+                        <span class="{{findNodeColor(pN.toNode)}} mr-2"
+                            tooltipPosition="top"
+                            pTooltip="{{pN.toNode}}  {{getFactoryName(pN)}} {{pN.createBy.userID}} {{pN.datetime | date: 'dd-MM-yyyy hh:mm'}} ">
+                            <i class="pi  {{pN.toNode==='completeNode'?'pi-check':'pi-circle-fill'}}" style="font-size: 0.6rem"></i>
+                        </span>
+                    </span>
+                </div>
+            </td>
+
+        </tr>
+    </ng-template>
+</p-table>

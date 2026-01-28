@@ -1,0 +1,131 @@
+
+
+
+<div class="card m-0 p-0 border-none bg-tran">
+    <button pButton pRipple type="button" icon="pi pi-refresh"
+        class="p-button-rounded p-button-text p-button-lg mb-2 mx-1"
+        (click)="getRepCompanyOrder()">
+    </button>
+    <button pButton pRipple type="button" class="p-button-rounded p-button-text mb-2 mx-1" (click)="getRepCompanyOrder()">
+        <span class="text-lg font-semibold">
+            {{reportHeader}}
+        </span>
+    </button>
+</div>
+
+<p-tabView [scrollable]="true" (onChange)="getTabIndex($event)">
+    <p-tabPanel header="Order all">
+        <div class="surface-ground p-2" >
+            <p-table [value]="currentOrderStyle"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="" style="width: 1%"></th>
+                        <th class="" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                        <th class="" >{{userService.translateCode('hd', 'hd-qty-all')}}</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-order let-idx="rowIndex">
+                    <tr class="text-sm">
+                        <td>
+                            <button pButton pRipple type="button" icon="pi pi-user"
+                                class="p-button-rounded p-button-info p-button-text p-0 m-0"
+                                (click)="showCustomerSelectionViewBtn(order.customerOR, 'view')">
+                            </button>
+                        </td>
+                        <td class="vertical-align-middle">
+                            {{order.style}}
+                        </td>
+                        <td>{{order.sumQty}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </p-tabPanel>
+    <p-tabPanel *ngFor="let group of currentCompanyOrderStyleGroup; let i = index" header={{group[0].style}}>
+        <div class="surface-ground p-2" >
+            <p-table [value]="orderStyleColorSizeFilter(i)"
+                rowGroupMode="rowspan"  groupRowsBy="colorSeq"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="caption">
+                    {{userService.translateCode('mn', 'mn-order')}} - {{group[0].style}}
+                    &nbsp;
+                    <span class="text-lg font-semibold text-teal-600 cursor-pointer"
+                        (click)="showRewriteOrderQTYModal(group[0].style, 'all', '', '',targetPlaceEmpty)"
+                        *ngIf="checkIsRewriteOrder(group[0].style)">
+                        R
+                    </span>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="text-center" style="width: 20%">{{userService.translateCode('mn', 'mn-color')}}</th>
+                        <th class="" >{{userService.translateCode('mn', 'mn-size')}}</th>
+                        <th class="" *ngFor="let zone of getOrderTargetPlace(group[0].style); let n = index">
+                            {{zone.targetPlace.countryID}}
+                        </th>
+                        <th class="" >{{userService.translateCode('mn', 'mn-total')}}</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-order let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                    <tr class="text-sm " *ngIf="idx !== 0 && checkColorShow(order.productColor, false, idx) ">
+                        <td class="border-none border-bottom-3"></td>
+                        <td class="border-none border-bottom-3"></td>
+                        <td class="border-none border-bottom-3" *ngFor="let zone of getOrderTargetPlace(group[0].style); let n = index"></td>
+                        <td class="border-none border-bottom-3"></td>
+                    </tr>
+                    <tr>
+                        <td class="text-center border-none" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                            <span *ngIf="checkColorShow(order.productColor, true, idx)">
+                                <span *ngFor="let colorName of order.productColor.split(','); let m = index">
+                                    {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(order.orderID))}}
+                                    &nbsp;
+                                </span>
+                                <div *ngFor="let colorName of order.productColor.split(','); let m2 = index">
+                                    {{userService.getCodeColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(order.orderID))}}
+                                </div>
+                            </span>
+                        </td>
+                        <td>
+                            {{userService.getSizeName(userService.strReplaceAll(order.productSize, '-', ''))}}
+                        </td>
+                        <td class="" *ngFor="let zone1 of getOrderTargetPlace(group[0].style); let p = index">
+                            <span class=""
+                                [ngClass]="checkOrderQtyRewrite(order.orderID, order.productColor, order.productSize,zone1.targetPlace)?'bg-teal-100 cursor-pointer':''"
+                                (click)="showRewriteOrderQTYModal(order.orderID, 'zone-color-size', order.productColor, order.productSize,zone1.targetPlace)">
+                                {{getOrderQty(order.companyID, order.orderID, order.productID, order.style,
+                                    order.productColor, order.productSize, p, zone1)}}
+                            </span>
+                            <span class="text-xs font-semibold text-teal-600 cursor-pointer"
+                                *ngIf="checkOrderQtyRewrite(order.orderID, order.productColor, order.productSize,zone1.targetPlace)"
+                                (click)="showRewriteOrderQTYModal(order.orderID, 'zone-color-size', order.productColor, order.productSize,zone1.targetPlace)">
+                                R
+                            </span>
+
+                        </td>
+                        <td>
+                            {{getOrderQtyRowTotal(order.companyID, order.orderID, order.productID, order.style,
+                                order.productColor, order.productSize)}}
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td>{{userService.translateCode('mn', 'mn-total')}}</td>
+                        <td></td>
+                        <td *ngFor="let zone2 of getOrderTargetPlace(group[0].style); let q = index">
+                            {{getOrderQtyColumnTotal(group[0], q)}}
+                        </td>
+                        <td>
+                            {{getOrderQtyGrandTotal(group[0])}}
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </p-tabPanel>
+</p-tabView>
+
+
+

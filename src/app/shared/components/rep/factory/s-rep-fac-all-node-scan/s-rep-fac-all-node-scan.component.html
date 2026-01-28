@@ -1,0 +1,185 @@
+
+
+
+<p-tabView>
+    <p-tabPanel header="Node scan information">
+
+        <div class="surface-ground px-4 pt-0 pb-4 my-0  md:px-6 lg:px-8">
+            <div class="card flex flex-column md:flex-row gap-3 m-0 p-0 border-none bg-tran">
+                <span class="mr-10">
+                    <div class="p-inputgroup">
+                        <!-- <input type="text" pInputText placeholder="Keyword" /> -->
+                        <p-calendar [(ngModel)]="date12" selectionMode="range"
+                            [readonlyInput]="readonlyInput"
+                            [numberOfMonths]="3"
+                            [dateFormat]="dateFormat"
+                            onselect="selectDate()"></p-calendar>
+                        <button type="button" pButton styleClass="p-button-warn"
+                            [disabled]="isShowReport"
+                            (click)="selectDate()">
+                            {{userService.translateCode('btn', 'btn-show-report')}}
+                        </button>
+                        <button type="button" pButton class="p-button-success" *ngIf="false"
+                            (click)="selectDate()">
+                            Show report - separate date
+                        </button>
+                    </div>
+                </span>
+                <span class="ml-3" *ngFor="let fS of factories; let f2 = index">
+                    <button  (click)="selectFactory(fS)"
+                        pButton pRipple
+                        label="{{fS.fInfo.factoryName}}"
+                        class="p-button-rounded"
+                        [ngClass]="checkFactorySelect(fS)?'p-button-success':'p-button-secondary'"></button>
+                </span>
+            </div>
+        </div>
+
+        <p-tabView>
+
+            <p-tabPanel header="Style">
+                <div class="text-center" *ngIf="loading">
+                    <div class="text-100">{{stepNumber}}</div>
+                    <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+                </div>
+
+                <div class="surface-ground p-2" *ngIf="!loading">
+                    <p-table [value]="styles"
+                        class="w-full"
+                        styleClass="p-datatable-sm">
+                        <ng-template pTemplate="caption">
+                            {{date1}} - {{date2}}
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr class=" text-left">
+                                <th class="" style="width: 1%"></th>
+                                <th class="text-left" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                                <th class="text-center" *ngFor="let dep of flowSeq; let f0 = index">
+                                    <!-- {{nsService.getNodeStationName(nodeStations, dep.nodeID)}} -->
+                                    {{userService.translateCode('nd',nsService.getNodeStationName(nodeStations, dep.nodeID))}}
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-style1 let-idx="rowIndex">
+                            <tr class="text-sm text-center">
+                                <td>
+
+                                </td>
+                                <td class="text-left font-bold">
+                                    <span>
+                                        {{style1}}
+                                    </span>
+                                </td>
+                                <td class="vertical-align-middle text-right" *ngFor="let dep1 of flowSeq; let f1 = index">
+
+                                    <div class="">
+                                        <span class="font-semibold text-green-400">
+                                            {{getFacAllNodeIDScannedStyle(style1, dep1.nodeID)}}
+                                        </span>
+                                    </div>
+                                    <div class="" *ngFor="let facX of getFacsNodeIDScannedStyle(style1, dep1.nodeID); let fx = index">
+                                        <span class="text-xs text-primary-200">
+                                            {{userService.strFirst(facX.facName, 6)}}
+                                        </span>
+                                        &nbsp;
+                                        <span class=" text-primary-300">:</span>
+                                        &nbsp;
+                                        <span class="text-sm text-primary-300">
+                                            {{facX.fTotalQty}}
+                                        </span>
+                                    </div>
+
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+
+            <p-tabPanel header="Style - Zone">
+                <div class="text-center" *ngIf="loading">
+                    <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+                </div>
+                <div class="surface-ground p-2" *ngIf="!loading">
+                    <p-table [value]="styles"
+                        class="w-full"
+                        styleClass="p-datatable-sm">
+                        <ng-template pTemplate="caption">
+                            {{date1}} - {{date2}}
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr class=" text-left">
+                                <th class="" style="width: 1%"></th>
+                                <th class="text-left" >Style</th>
+                                <th class="text-right" *ngFor="let dep of flowSeq; let f0 = index">
+                                    {{userService.translateCode('nd',nsService.getNodeStationName(nodeStations, dep.nodeID))}}
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-style1 let-idx="rowIndex">
+                            <tr class="text-sm text-center">
+                                <td>
+
+                                </td>
+                                <td class="text-left font-bold">
+                                    <span>
+                                        {{style1}}
+                                    </span>
+                                </td>
+                                <td class="vertical-align-middle text-right" *ngFor="let dep1 of flowSeq; let f1 = index">
+
+                                    <div class="">
+                                        <span class="font-semibold text-green-400">
+                                            {{getFacAllNodeIDScannedStyle(style1, dep1.nodeID)}}
+                                        </span>
+                                    </div>
+                                    <div class="" *ngFor="let facX of getFacsNodeIDScannedStyle(style1, dep1.nodeID); let fx = index">
+                                        <span class="text-xs text-primary-200">
+                                            {{userService.strFirst(facX.facName, 6)}}
+                                        </span>
+                                        &nbsp;
+                                        <span class=" text-primary-300">:</span>
+                                        &nbsp;
+                                        <span class="text-sm text-primary-300">
+                                            {{facX.fTotalQty}}
+                                        </span>
+                                        <div class=""
+                                            *ngFor="let zone of getFacsNodeIDScannedStyleZone(facX.factoryID, style1, dep1.nodeID); let n2 = index">
+                                            <span class="txt-smx text-400 font-italic">
+                                                {{zone.targetPlace}}
+                                            </span>
+                                            &nbsp;
+                                            <span class="txt-smx text-400 font-italic" >
+                                                {{zone.countQty}}
+                                            </span>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- <div class="">
+                                        <div class="mb-1" *ngFor="let zone of mainZone; let n = index">
+                                            <div *ngIf="getNodeIDScannedStyleZone(style1, dep1.nodeID, zone.targetPlaceID) !== ''">
+                                                <span class="txt-sm-gray">
+                                                    {{getZoneName(zone.targetPlaceID)}}
+                                                </span>
+                                                &nbsp;&nbsp;
+
+                                                <span class="" >
+                                                    {{getNodeIDScannedStyleZone(style1, dep1.nodeID, zone.targetPlaceID)}}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div> -->
+
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabPanel>
+
+        </p-tabView>
+
+    </p-tabPanel>
+</p-tabView>
+

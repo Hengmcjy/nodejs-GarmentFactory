@@ -1,0 +1,45 @@
+
+<div class="">
+    <div class="m-2 ">
+        <span class="text-xl font-bold text-600">
+            YarnID (old) :
+        </span>
+        &nbsp;&nbsp;
+        <span class="text-xl font-semibold text-800">
+            {{yarnID}}
+        </span>
+    </div>
+    <div class="m-2 ">
+        <span class="text-xl font-bold text-600">
+            YarnName (old) :
+        </span>
+        &nbsp;&nbsp;
+        <span class="text-xl font-semibold text-800">
+            {{yarnFullName}}
+        </span>
+    </div>
+
+    <div class="m-4">
+        <span>
+            <input type="text" pInputText  class="w-full"
+                onClick="this.select();"
+                [(ngModel)]="yarnFullName2"
+                #input1>
+        </span>
+    </div>
+    <!-- <div class="m-4">
+        <span>
+            <input type="text" pInputText  class="w-full"
+                onClick="this.select();"
+                (keyup)="checkEqualString()"
+                [(ngModel)]="invoiceID3"
+                #input2>
+        </span>
+    </div> -->
+    <div class="card flex justify-content-center border-none" *ngIf="yarnFullName2 !== ''">
+        <p-button styleClass="p-button-warning" (onClick)="closeDialog()">
+            change yarn name !!
+        </p-button>
+    </div>
+
+</div>

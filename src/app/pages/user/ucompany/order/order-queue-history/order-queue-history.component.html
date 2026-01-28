@@ -1,0 +1,51 @@
+
+<div class="surface-ground p-2 w-full w-12" >
+    <div class="grid">
+        <div class="col-12 w-full w-12">
+            <p-paginator [rows]="limit" [totalRecords]="countProductionQueueAll" [rowsPerPageOptions]="[20,50]"
+                (onPageChange)="paginate($event)"></p-paginator>
+            <p-table [value]="orderProductionQueue.queueInfo"
+                class="w-full"
+                styleClass="p-datatable-sm">
+                <ng-template pTemplate="caption">
+                    <div>Total all Queue :  {{countProductionQueueAll}} </div>
+                    <div>Item : {{sumProductionQueueAll}}</div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="px-0" style="width: 30%">Code</th>
+                        <th class="px-0" style="width: 10%">Date</th>
+                        <th class="px-0" style="width: 8%">bun No</th>
+                        <th class="px-0" style="width: 17%;">factory</th>
+                        <th class="px-0" style="width: 15%">toNode</th>
+                        <th class="px-0" style="width: 5%">Total.Qty</th>
+                        <th class="px-0" style="width: 5%">start</th>
+                        <th class="px-0" style="width: 5%">end</th>
+                        <th class="px-0" style="width: 5%">user</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-queueInfo let-idx="rowIndex">
+                    <tr class="text-sm">
+                        <td>{{userService.formatProductBarcodeString(queueInfo.productBarcode)}}</td>
+                        <td class="text-xs ">
+                            {{queueInfo.queueDate | date: 'dd-MM-yyyy hh:mm'}}
+                        </td>
+                        <td>{{queueInfo.bundleNo}}</td>
+                        <td [ngClass]="getRowClass(queueInfo.isOutsource)">
+                            {{userService.strFirstAndDot(userService.getUserfactoryName(factories, queueInfo.factoryID), 25)}}
+                        </td>
+                        <td [ngClass]="getRowClass(queueInfo.isOutsource)">{{queueInfo.toNode}}</td>
+                        <td [ngClass]="getRowClass(queueInfo.isOutsource)">{{queueInfo.productCount}}</td>
+                        <td [ngClass]="getRowClass(queueInfo.isOutsource)">{{queueInfo.numberFrom}}</td>
+                        <td [ngClass]="getRowClass(queueInfo.isOutsource)">{{queueInfo.numberTo}}</td>
+                        <td [ngClass]="getRowClass(queueInfo.isOutsource)">
+                            {{userService.strFirstAndDot(queueInfo.createBy.userName, 10)}}
+                        </td>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+
+</div>
+
+<!-- <div class="flex-initial flex align-items-center justify-content-center bg-blue-500 font-bold text-white m-2 px-5 py-3 border-round">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </div> -->

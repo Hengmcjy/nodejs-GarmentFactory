@@ -1,0 +1,10 @@
+
+
+<div class="p-inputgroup">
+    <input type="text" pInputText placeholder=""
+        class="text-900"
+        (keypress)="userService.numberOnly($event);"
+        (keyup.enter)="saveNumber(num1)"
+        [(ngModel)]="num1">
+    <button type="button" pButton icon="pi pi-check" styleClass="p-button-warn" (click)="saveNumber(num1)"></button>
+</div>

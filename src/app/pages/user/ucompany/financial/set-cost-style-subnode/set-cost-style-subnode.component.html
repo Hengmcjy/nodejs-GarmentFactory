@@ -1,0 +1,130 @@
+
+
+<app-ucompany-menu></app-ucompany-menu>
+
+<!-- <p>set-cost-style-subnode works!</p> -->
+
+<p-toast position="top-right" ></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="surface-ground pb-2" >
+    <div class="surface-card p-4 shadow-2 border-round p-fluid">
+        <div class="grid formgrid p-fluid">
+            <div class="field col-12 order-set-zone text-center flex justify-content-center flex-wrap">
+                <span class="flex align-items-center justify-content-center">
+                    set - cost - style
+                </span>
+                <span class="flex align-items-center justify-content-center">
+                    [ {{factorySelected.fInfo.factoryName}} ]
+                </span>
+                <span class="flex align-items-center justify-content-center">
+                    [ {{orderSelect.orderID}} ]
+                </span>
+                <span class="flex align-items-center justify-content-center mx-4">
+                    <button pButton pRipple type="button"
+                        *ngIf="factorySelected.factoryID !== '' && orderSelect.orderID !== ''"
+                        (click)="confirmSaveOrderSubNodeFlow()">
+                        save
+                    </button>
+                </span>
+            </div>
+
+            <div class="field col-3 bg-blue-50">
+                <div class="grid formgrid p-fluid">
+                    <div class="field mb-4 col-12">
+                        <div class="font-medium text-900 mb-2">factory</div>
+                        <div class="cursor-pointer" (click)="showFactorySelectionModal()">
+                            <app-s-factory-card [factory]="factorySelected"></app-s-factory-card>
+                        </div>
+                    </div>
+                    <div class="field mb-4 col-12">
+                        <div class="font-medium text-900 mb-2">style</div>
+                        <div class="cursor-pointer" (click)="showOrderSelectionModal()">
+                            <app-s-order-card [order]="orderSelect"></app-s-order-card>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field col-9 bg-yellow-50" *ngIf="factorySelected.factoryID !== '' && orderSelect.orderID !== ''">
+                <div class="mb-8" *ngFor="let flowSeq1 of flowSeq; let i = index">
+                    <p-table [value]="getSubNode(flowSeq1)"
+                        class="w-full"
+                        styleClass="p-datatable-sm">
+                        <ng-template pTemplate="caption">
+                            <span class="text-right">
+                                <p-button icon="pi pi-plus" styleClass="p-button-sm p-button-outlined p-1" class="p-1"
+                                    (click)="addBlankSubNode(flowSeq1)"></p-button>
+
+                            </span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            {{flowSeq1.nodeID}}
+                        </ng-template>
+                        <!-- <ng-template pTemplate="header">
+                            <tr class="text-center py-0">
+                                <th class="px-0 py-0 text-center" style="width: 10%"></th>
+                                <th class="px-0 py-0 text-left" style="width: 80%">sub node</th>
+                                <th class="px-0 py-0" style="width: 10%">
+                                    <p-button icon="pi pi-times"
+                                        styleClass="p-button-rounded p-button-danger p-button-text p-1"></p-button>
+                                </th>
+                            </tr>
+                        </ng-template> -->
+                        <ng-template pTemplate="body" let-subNode let-idx="rowIndex">
+                            <tr class="text-base">
+                                <td style="width: 10%">
+                                    <span class="text-xs font-italic">
+                                        <button pButton pRipple type="button"
+                                            label="{{subNode.subNodeFlowTypeID?subNode.subNodeFlowTypeID:subNodeFlowTypeID_DF}}"
+                                            class="p-button-secondary p-button-text text-400 text-xs font-italic"
+                                            [ngClass]="!subNode.subNodeFlowTypeID || subNode.subNodeFlowTypeID===subNodeFlowTypeID_DF?'':'text-yellow-500'"
+                                            (click)="editSubNodeFlowTypeID(flowSeq1, subNode.subNodeID, subNode.subNodeFlowTypeID)">
+                                        </button>
+                                    </span>
+                                </td>
+
+                                <!-- <td class="text-600" [ngClass]="productionNode.status === 'problem' ? 'font-italic text-red-700' : ''">{{productionNode.fromNode}}</td> -->
+                                <!-- <td class="font-semibold" [ngClass]="productionNode.status === 'problem' ? 'font-italic text-red-700' : ''">{{productionNode.toNode}}</td> -->
+                                <td class="text-600">
+                                    <!-- {{subNode.nodeID}} -->
+                                    <!-- {{subNode.subNodeID !=='x'?subNode.subNodeName:''}} -->
+                                    <span class="" *ngIf="subNode.subNodeID !=='x'">
+                                        <span class="style-select">{{subNode.subNodeID}}</span>
+                                        &nbsp;&nbsp;&nbsp;
+                                        <span>{{userService.getSubNodeFlowName(subNode.nodeID, subNode.subNodeID, subNodeflowC)}}</span>
+                                    </span>
+                                    <!-- getSubNodeFlowName(nodeID: string, subNodeID: string, subNodeFlow: SubNodeFlow[]) -->
+                                    <span class="" *ngIf="subNode.subNodeID==='x'">
+                                        <p-button label="selelct sub node" styleClass="p-button-raised p-button-text"
+                                            (onClick)="showSubNodeSelect(subNode)">
+                                        </p-button>
+                                    </span>
+                                </td>
+                                <td style="width: 30%">
+                                    <span class="" *ngIf="subNode.subNodeID !=='x'">
+                                        <!-- {{subNode.cost.$numberDecimal}} -->
+                                        <!-- {{parseFloat(data.price.$numberDecimal)}} -->
+                                        {{subNode.cost.$numberDecimal | number:'.2'}}
+                                    </span>
+                                </td>
+                                <td style="width: 5%">
+                                    <span *ngIf="subNode.subNodeID !=='x'">
+                                        bath
+                                    </span>
+                                </td>
+                                <td style="width: 5%">
+                                    <p-button icon="pi pi-times"
+                                        styleClass="p-button-rounded p-button-danger p-button-text p-1"
+                                        (onClick)="deleteSubNode(subNode)">
+                                    </p-button>
+                                </td>
+                            </tr>
+                        </ng-template>
+
+                    </p-table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

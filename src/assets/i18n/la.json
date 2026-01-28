@@ -1,0 +1,90 @@
+{
+    "primeng": {
+        "startsWith": "Starts with",
+        "contains": "Contains",
+        "notContains": "Not contains",
+        "endsWith": "Ends with",
+        "equals": "Equals",
+        "notEquals": "Not equals",
+        "noFilter": "No Filter",
+        "lt": "Less than",
+        "lte": "Less than or equal to",
+        "gt": "Greater than",
+        "gte": "Greater than or equal to",
+        "is": "Is",
+        "isNot": "Is not",
+        "before": "Before",
+        "after": "After",
+        "dateIs": "Date is",
+        "dateIsNot": "Date is not",
+        "dateBefore": "Date is before",
+        "dateAfter": "Date is after",
+        "clear": "Clear",
+        "apply": "Apply",
+        "matchAll": "Match All",
+        "matchAny": "Match Any",
+        "addRule": "Add Rule",
+        "removeRule": "Remove Rule",
+        "accept": "Yes",
+        "reject": "No",
+        "choose": "Choose",
+        "upload": "Upload",
+        "cancel": "Cancel",
+        "dayNames": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "dayNamesShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+        "dayNamesMin": ["Su","Mo","Tu","We","Th","Fr","Sa"],
+        "monthNames": ["January","February","March","April","May","June","July","August","September","October","November","December"],
+        "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        "dateFormat": "mm/dd/yy",
+        "firstDayOfWeek": 0,
+        "today": "Today",
+        "weekHeader": "Wk",
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "passwordPrompt": "Enter a password",
+        "emptyMessage": "No results found",
+        "emptyFilterMessage": "No results found"
+    },
+    "TEST": {
+        "multiLanguage": "ຫຼາຍພາສາ",
+        "language": "ພາສາລາວ"
+    },
+    "HOME": {
+		"xuelek": "ຊື້ເລກ.com",
+		"login": "ລ້ອກອິນ",
+		"signup": "ສະໝັກສະມາຊິກ",
+        "userid": "ຊື່ຜູ້ໃຊ້",
+        "password": "ລະຫັດຜ່ານ",
+        "repassword": "ລະຫັດຜ່ານອີກເທື",
+        "loginby": "ລ້ອກອິນໂດຍ",
+        "signupby": "ສະໝັກໂດຍ",
+        "result": "ລາງວັນ",
+        "faq": "ຄຳຖາມເຫ້ນຖີ່",
+        "erruserid":"ຊື່ຜູ້ໃຊ້ຜິດພາດ",
+        "erruserpass":"ຄວາມຍາວຍ່າງນ້ອຍ 6 ໂຕ",
+        "end": ""
+	},
+	"info": {
+		"info1-head": "ຫັວຂໍ້ 1",
+        "info1": {
+            "info-body1":"<ul> <li>ກາແຟ</li> <li>ຊາ</li> <li>ນມ</li> </ul>",
+            "info-body2":"<h1>ຫັວຂໍ້ທຳອັດ</h1> <p>ຂໍ້ຄວາມທຳອັດ</p>"
+        },
+        "info2-head": "ຫັວຂໍ້ 2",
+        "info2": {
+            "info-body1":"<ul> <li>ໂຄ້ກ</li> <li>ແປ້ປຊີ່</li> <li>ມິລິນດ້າ</li> </ul>",
+            "info-body2":"<h1>ແຊ່ບ</h1> <p>ນ້ຳອັດລົມ</p>"
+        },
+        "info3-head": "ຫັວຂໍ້ 3",
+        "info3": {
+            "info-body1":"<h1>ຄວາມເຊື່ອ</h1> <p>ບໍ່ມີໄຜເກ່ງ!</p>",
+            "info-body2":"<ol> <li>ສະຫລາດໄດ້ຕະລອດ</li> <li>ຫາກແມ່ນຄວາມຈິງ</li> <li>ກັນທັ້ງນັ້ນ</li> <li>ດັງນັ້ນຫາກເປ້ນເຮົາ</li> </ol>  "
+        },
+        "end": ""
+    },
+	"ALERT": {
+		"a1": "ກກກກກ",
+		"a2": "ດດດດດ"
+    }
+}

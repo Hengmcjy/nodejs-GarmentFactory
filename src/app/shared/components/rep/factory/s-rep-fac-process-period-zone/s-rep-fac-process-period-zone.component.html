@@ -1,0 +1,445 @@
+
+
+
+<!-- <p-blockUI [target]="willBlock1" [blocked]="blockedPanel">
+    <div class="">
+        <i class="pi pi-lock" style="font-size: 3rem"></i>
+    </div>
+    <br>
+    <div class="text-5xl text-600 mt-2">
+        wait for a minute
+    </div>
+</p-blockUI> -->
+
+<div class="card flex m-0 p-0 border-none bg-tran">
+    <button pButton pRipple type="button" icon="pi pi-refresh" *ngIf="false"
+        class="p-button-rounded p-button-text p-button-lg mb-2 mx-1"
+        [disabled]="blockedPanel"
+        (click)="getRepCurrentProductionZonePeriod()">
+    </button>
+    <button pButton pRipple type="button"
+        class="p-button-rounded p-button-text mb-2 mx-1"
+        [disabled]="blockedPanel"
+        (click)="modeShowClick('styleZone')">
+        <span class="text-lg font-semibold">
+            {{reportHeader}}
+        </span>
+    </button>
+
+    <button pButton pRipple type="button"
+        class="p-button-rounded p-button-text bg-tran  ml-4"
+        [disabled]="blockedPanel"
+        *ngIf="repMode === 'rep-fac-process-period-zone-percent'"
+        (dblclick)="changeIsMaxQtyView()">
+        <span class="text-sm font-light font-italic text-blue-200">
+            {{isMaxQtyView?' ':'purified'}}
+        </span>
+    </button>
+
+    <button pButton pRipple type="button"
+        class="p-button-rounded p-button-text mb-2 mx-1"
+        [disabled]="blockedPanel"
+        *ngIf="repMode === 'rep-fac-production-period'
+            || (repModeArr.length > 0 && repModeArr[0] === 'rep-fac-scan-production-period')"
+        (click)="modeShowClick('zoneStyle')">
+        <span class="text-lg font-semibold">
+            {{reportHeaderZone}}
+        </span>
+    </button>
+    <button pButton pRipple type="button" icon="pi pi-file-pdf" class="p-button-rounded p-button-success p-button-text p-button-lg text-2xl"
+        [disabled]="blockedPanel"
+        *ngIf="modeShow === 'zoneStyle' && (repMode === 'rep-fac-production-period' || repMode === 'rep-fac-scan-production-period' || repMode === 'factory-scan-product-period')"
+        (click)="printPDF('zone', '')">
+        &nbsp;
+        <span class="text-base">{{tabNameActiveC}}</span>
+    </button>
+
+    <button pButton pRipple type="button" icon="pi pi-file-pdf" class="p-button-rounded p-button-help p-button-text p-button-lg text-2xl"
+        [disabled]="blockedPanel"
+        *ngIf="modeShow === 'zoneStyle' && (repMode === 'rep-fac-production-period' || repMode === 'rep-fac-scan-production-period')"
+        (click)="printPDF('zone-total', '')">
+        &nbsp;
+        <span class="text-base">{{tabNameActiveC}}</span>
+        &nbsp;
+        <span class="text-base"> .total</span>
+    </button>
+
+</div>
+<div>
+    <span class="flex flex-column md:flex-row gap-3 m-0 p-0 border-none "
+        *ngIf="repMode === 'rep-fac-scan-production-period' || repMode === 'factory-scan-product-period'">
+        <div class="">
+            <p-toast></p-toast>
+            <p-menu #menu [model]="items" [popup]="true"></p-menu>
+            <button pButton type="button" class="p-button-warning" (click)="menu.toggle($event)">
+                {{userGroupScan1.groupScanID}}
+            </button>
+        </div>
+        <span>
+            <div class="p-inputgroup">
+                <p-calendar [(ngModel)]="date12" selectionMode="range"
+                    [readonlyInput]="readonlyInput"
+                    [numberOfMonths]="3"
+                    [dateFormat]="dateFormat"
+                    (onShow)="dateChange()"></p-calendar>
+                <button type="button" pButton styleClass="p-button-warn" [disabled]="isShowReport"
+                    (click)="selectDate()">
+                    {{userService.translateCode('btn', 'btn-show-report')}}
+                </button>
+            </div>
+        </span>
+    </span>
+</div>
+
+<p-card class="m-10" header="Infomation" *ngIf="blockedPanel">
+    <p class="text-5xl text-600 m-2 p-4">
+        <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+    </p>
+</p-card>
+
+<p-sidebar [(visible)]="sidebarVisible1" styleClass="w-30rem" position="right">
+    <div class="">
+        <h3>
+            {{orderIDPDFSelect.orderID}}
+            &nbsp;&nbsp;
+            <span class="text-base text-500">[for PDF]</span>
+        </h3>
+    </div>
+    <div class="">
+        <h5>
+            <span class="text-500 text-sm">set QTY production =</span>
+            &nbsp;&nbsp;
+            <span class="text-500 text-2xl">0</span>
+        </h5>
+    </div>
+    <div class="ml-4" *ngFor="let c of orderIDPDFSelect.colorObj; let c1 = index">
+        <button pButton pRipple type="button" class="m-2"
+            [ngClass]="c.show?'p-button-success':'p-button-secondary'"
+            (click)="setColorShow(c1)">
+            {{c.colorCode}}
+            &nbsp;&nbsp;
+            {{c.colorName}}
+        </button>
+    </div>
+</p-sidebar>
+
+<p-accordion *ngIf="modeShow==='zoneStyle'">
+    <p-accordionTab header="Style PDF show">
+        <div class="flex flex-row flex-wrap">
+            <div class="flex align-items-center justify-content-center m-2" *ngFor="let or of orderIDPDFShow; let o1 = index">
+                <div class="">
+                    <button pButton pRipple type="button" class=""
+                        [ngClass]="or.pdfShow?'p-button-success':'p-button-secondary'"
+                        (click)="editPDFShow(o1)">
+                        {{or.orderID}}
+                        &nbsp;
+                        <span class="text-sm" (dblclick)="configColor(o1)">
+                            <span class="material-symbols-outlined text-sm">palette</span>
+                        </span>
+                    </button>
+                    <div class="text-500" *ngFor="let cO of or.colorObj; let o2 = index">
+                        <div class="" *ngIf="!cO.show">
+                            <span class="">X</span>
+                            &nbsp;
+                            <span class="">
+                                {{cO.colorCode}}
+                                &nbsp;&nbsp;
+                                {{cO.colorName}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </p-accordionTab>
+</p-accordion>
+
+<p-tabView #willBlock1 [scrollable]="false" (onChange)="getTabIndexC($event)" *ngIf="modeShow==='zoneStyle' && !blockedPanel" >
+    <p-tabPanel *ngFor="let zoneA of currentProductionZonePeriodGroup2; let s1 = index" header={{zoneA[0].targetPlaceID}}>
+        <div class="surface-ground p-2 mb-6" *ngFor="let styleA of currentProductionZonePeriodGroupZone2[s1]; let s2 = index">
+            <div class="mb-4"  >
+                <!-- {{styleA[0].orderID}} [{{s1}}] [{{s2}}] -->
+                <div class="mb-4" *ngFor="let groupColorA of styleGroupColorFilter2(styleA[0].orderID); let i2 = index">
+                    <p-table [value]="orderStyleColorSizeFilter2(s1, i2, styleA[0].orderID)"
+                        rowGroupMode="rowspan" groupRowsBy="colorSeq"
+                        class="w-full"
+                        styleClass="p-datatable-gridlines p-datatable-sm">
+                        <ng-template pTemplate="caption">
+                            <div class="text-center">
+                                <span class="">
+                                    [ {{zoneA[0].targetPlaceID}} ]
+                                </span>
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                <span class="">
+                                    {{styleA[0].orderID}}
+                                </span>
+                                <span class="ml-2 text-red-700 text-sm font-italic">
+                                    {{getOrderFactory(styleA[0].orderID, 'name2')}}
+                                </span>
+                                <span class="ml-4 text-orange-400 text-sm font-italic" *ngIf="repMode === 'rep-fac-scan-production-period' || repMode === 'factory-scan-product-period'">
+                                    {{date1}} - {{date2}}
+                                </span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th class="text-center" style="width: 20%">{{userService.translateCode('mn', 'mn-color')}}</th>
+                                <th class="text-center" >{{userService.translateCode('mn', 'mn-size')}}</th>
+                                <th class="text-center" >{{userService.translateCode('nd', 'orderQTY')}}</th>
+                                <th class="text-center" *ngFor="let dep of flowSeq; let f0 = index">
+                                    <!-- {{nsService.getNodeStationName(nodeStations, dep.nodeID)}} -->
+                                    {{userService.translateCode('nd',nsService.getNodeStationName(nodeStations, dep.nodeID))}}
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-period let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                            <tr>
+                                <td class="text-center border-none" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                                    <span *ngIf="checkColorShow(period.productColor, true, idx)">
+                                        <span *ngFor="let colorName of period.productColor.split(','); let m = index">
+                                            {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(period.orderID))}}
+                                            &nbsp;
+                                        </span>
+                                        <div *ngFor="let colorName of period.productColor.split(','); let m2 = index">
+                                            {{userService.getCodeColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(period.orderID))}}
+
+                                        </div>
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    {{userService.getSizeName(userService.strReplaceAll(period.productSize, '-', ''))}}
+                                </td>
+                                <td class="text-center">
+                                    <span>
+                                        {{getOrderQtyC(period.companyID, period.orderID, period.orderID,
+                                            period.productColor, period.productSize, zoneA[0].targetPlaceID)}}
+                                    </span>
+                                    <span class="text-xs text-purple-500" *ngIf="checkRepMode('noshowForLoss')">
+                                        &nbsp;
+                                        {{getOrderForLossQtyC(period.companyID, period.orderID, period.orderID,
+                                            period.productColor, period.productSize, zoneA[0].targetPlaceID)}}
+                                    </span>
+                                </td>
+                                <td class="text-center"
+                                    [ngClass]= "getPercentPeriodQtyC('', period.companyID, period.orderID, period.orderID,
+                                        period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID) === '' ? 'txt-percent-100' : ''"
+                                    *ngFor="let dep of flowSeq; let f2 = index">
+                                    <span>
+                                        {{getPeriodQtyC(period.companyID, period.orderID, period.orderID,
+                                            period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID)}}
+                                    </span>
+                                    <span class="text-xs text-purple-500" *ngIf="checkRepMode('noshowForLoss')">
+                                        &nbsp;
+                                        {{getForLossPeriodQtyC(period.companyID, period.orderID, period.orderID,
+                                            period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID)}}
+                                    </span>
+
+                                    <div class=""
+                                        *ngIf="repMode === 'rep-fac-process-period-zone-percent'">
+                                        <span
+                                            class="border-top-1 border-100"
+                                            [ngClass]= "getPercentPeriodQtyC('', period.companyID, period.orderID, period.orderID,
+                                            period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID) === '100%' ? 'txt-percent-100' : 'txt-percent-no-100'"
+                                            *ngIf="getPercentPeriodQtyC('', period.companyID, period.orderID, period.orderID,
+                                            period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID) !== '100%'"
+                                            >
+                                            <span class="txt-percent-qtyCompleted"
+                                                *ngIf="getPercentPeriodQtyC('', period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID) !== ''">
+                                                {{getPercentPeriodQtyC('qtyCompleted', period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID)}}
+                                            </span>
+                                            <span class="text-300 text-center"
+                                                *ngIf="getPercentPeriodQtyC('', period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID) !== ''">
+                                                &nbsp;|&nbsp;
+                                            </span>
+                                            <span class="txt-percent-qty-remain">
+                                                {{getPercentPeriodQtyReaminC(period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, zoneA[0].targetPlaceID)}}
+                                            </span>
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer">
+                            <tr>
+                                <td class="text-center">{{userService.translateCode('mn', 'mn-total')}}</td>
+                                <td></td>
+                                <td class="text-center">
+                                    {{getOrderQtyGrandTotal2(s1, groupColorA, styleA[0].orderID, zoneA[0].targetPlaceID, '')}}
+                                </td>
+                                <td class="text-center" *ngFor="let dep of flowSeq; let f3 = index">
+                                    {{getOrderQtyColumnTotal2(s1, groupColorA, dep.nodeID, styleA[0].orderID, zoneA[0].targetPlaceID)}}
+                                </td>
+
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+
+            </div>
+        </div>
+    </p-tabPanel>
+</p-tabView>
+
+
+<p-tabView #willBlock2 [scrollable]="true" (onChange)="getTabIndexA($event)" *ngIf="modeShow==='styleZone' && !blockedPanel">
+    <p-tabPanel *ngFor="let group of currentProductionZonePeriodGroup; let i = index" header={{group[0].orderID}}>
+        <p-tabView [scrollable]="true" (onChange)="getTabIndexB($event)">
+            <p-tabPanel *ngFor="let place of currentProductionZonePeriodGroupZone[i]; let x = index" header={{place[0].targetPlaceID}}>
+                <div class="surface-ground p-2" >
+                    <div class="mb-4">
+                        <div class="mb-4" *ngFor="let groupColor of styleGroupColorFilter(i, place); let i2 = index">
+                            <p-table [value]="orderStyleColorSizeFilter(i, i2, place)"
+                                rowGroupMode="rowspan"  groupRowsBy="colorSeq"
+                                class="w-full"
+                                styleClass="p-datatable-gridlines p-datatable-sm">
+                                <ng-template pTemplate="caption">
+                                    <div class="text-center">
+                                        <span>
+                                            [ {{place[0].targetPlaceID}} ]
+                                        </span>
+                                        &nbsp;
+                                        <span>
+                                            {{place[0].orderID}}
+                                        </span>
+                                        <span class="ml-2 text-red-700 text-sm font-italic">
+                                            {{getOrderFactory(place[0].orderID, 'name2')}}
+                                        </span>
+                                        <span class="ml-4 text-orange-400 text-sm font-italic" *ngIf="repMode === 'rep-fac-scan-production-period' || repMode === 'factory-scan-product-period'">
+                                            {{date1}} - {{date2}}
+                                        </span>
+                                    </div>
+                                </ng-template>
+
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th class="text-center" style="width: 20%">{{userService.translateCode('mn', 'mn-color')}}</th>
+                                        <th class="text-center" >{{userService.translateCode('mn', 'mn-size')}}</th>
+                                        <th class="text-center" >{{userService.translateCode('nd', 'orderQTY')}}</th>
+                                        <th class="text-center" *ngFor="let dep of flowSeq; let f0 = index">
+                                            <!-- {{nsService.getNodeStationName(nodeStations, dep.nodeID)}} -->
+                                            {{userService.translateCode('nd',nsService.getNodeStationName(nodeStations, dep.nodeID))}}
+                                        </th>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template pTemplate="body" let-period let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                                    <!-- <tr class="text-sm " *ngIf="idx !== 0 && checkColorShow(period.productColor, false, idx) ">
+                                        <td class="border-none border-bottom-3"></td>
+                                        <td class="border-none border-bottom-3"></td>
+                                        <td class="border-none border-bottom-3"></td>
+                                        <td class="border-none border-bottom-3" *ngFor="let dep of flowSeq; let f1 = index"></td>
+                                    </tr> -->
+                                    <tr>
+                                        <!-- <td class="text-center border-none" rowspan="100" *ngIf="idx===0" > -->
+                                        <td class="text-center border-none" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                                            <span *ngIf="checkColorShow(period.productColor, true, idx)">
+                                                <span *ngFor="let colorName of period.productColor.split(','); let m = index">
+                                                    {{userService.getColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(period.orderID))}}
+                                                    &nbsp;
+                                                </span>
+                                                <div *ngFor="let colorName of period.productColor.split(','); let m2 = index">
+                                                    {{userService.getCodeColorNameByColorCode(colorName, userService.getSetNameColorByOrderID(period.orderID))}}
+
+                                                </div>
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            {{userService.getSizeName(userService.strReplaceAll(period.productSize, '-', ''))}}
+                                        </td>
+                                        <td class="text-center">
+                                            <span>
+                                                {{getOrderQty(period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, place[0].targetPlaceID)}}
+                                            </span>
+                                            <span class="text-xs text-purple-500" *ngIf="checkRepMode('noshowForLoss')">
+                                                &nbsp;
+                                                {{getOrderForLossQty(period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, place[0].targetPlaceID)}}
+                                            </span>
+                                        </td>
+
+                                        <td class="text-center"
+                                            [ngClass]= "getPercentPeriodQty('', period.companyID, period.orderID, period.orderID,
+                                                period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID) === '' ? 'txt-percent-100' : ''"
+                                            *ngFor="let dep of flowSeq; let f2 = index"
+                                            (dblclick)="editQTY(period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID)">
+                                            <span class="">
+                                                {{getPeriodQty(period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID)}}
+                                            </span>
+                                            <span class="text-xs text-purple-500" *ngIf="checkRepMode('noshowForLoss')">
+                                                &nbsp;
+                                                {{getForLossPeriodQty(period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID)}}
+                                            </span>
+
+                                            <div class=""
+                                                *ngIf="repMode === 'rep-fac-process-period-zone-percent'">
+                                                <span
+                                                    class="border-top-1 border-100"
+                                                    [ngClass]= "getPercentPeriodQty('', period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID) === '100%' ? 'txt-percent-100' : 'txt-percent-no-100'"
+                                                    *ngIf="getPercentPeriodQty('', period.companyID, period.orderID, period.orderID,
+                                                    period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID) !== '100%'"
+                                                    >
+                                                    <span class="txt-percent-qtyCompleted"
+                                                        *ngIf="getPercentPeriodQty('', period.companyID, period.orderID, period.orderID,
+                                                            period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID) !== ''">
+                                                        {{getPercentPeriodQty('qtyCompleted', period.companyID, period.orderID, period.orderID,
+                                                            period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID)}}
+                                                    </span>
+                                                    <span class="text-300 text-center"
+                                                        *ngIf="getPercentPeriodQty('', period.companyID, period.orderID, period.orderID,
+                                                            period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID) !== ''">
+                                                        &nbsp;|&nbsp;
+                                                    </span>
+                                                    <span class="txt-percent-qty-remain">
+                                                        {{getPercentPeriodQtyReamin(period.companyID, period.orderID, period.orderID,
+                                                            period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID)}}
+                                                    </span>
+                                                </span>
+                                            </div>
+                                            <!-- rep-fac-production-period-edit-qty  rep-fac-production-period-qty-plan-adjust -->
+                                            <div class=""
+                                                *ngIf="repMode === 'rep-fac-production-period-edit-qty' || repMode === 'rep-fac-production-period-qty-plan-adjust'">
+                                                <span class="text-sm font-semibold text-red-600 mx-1">
+                                                    {{getQTYEdit('edit-qty', period.orderID, period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID)}}
+                                                </span>
+                                                <span class="text-sm font-semibold text-green-500 mx-1">
+                                                    {{getQTYEdit('plan-adjust', period.orderID, period.productColor, period.productSize, dep.nodeID, place[0].targetPlaceID)}}
+                                                </span>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                </ng-template>
+
+                                <ng-template pTemplate="footer">
+                                    <tr>
+                                        <td class="text-center">{{userService.translateCode('mn', 'mn-total')}}</td>
+                                        <td></td>
+                                        <td class="text-center">
+                                            {{getOrderQtyGrandTotal(i, groupColor, place[0].targetPlaceID, '')}}
+                                        </td>
+                                        <td class="text-center" *ngFor="let dep of flowSeq; let f3 = index">
+                                            {{getOrderQtyColumnTotal(i, groupColor, dep.nodeID, place[0].targetPlaceID)}}
+                                        </td>
+
+                                    </tr>
+                                </ng-template>
+
+
+                            </p-table>
+                        </div>
+                    </div>
+                </div>
+
+            </p-tabPanel>
+        </p-tabView>
+    </p-tabPanel>
+</p-tabView>

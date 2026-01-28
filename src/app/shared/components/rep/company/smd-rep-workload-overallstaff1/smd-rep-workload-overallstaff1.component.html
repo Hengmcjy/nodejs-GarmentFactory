@@ -1,0 +1,102 @@
+
+<div class="px-2 py-0 my-0  md:px-2 lg:px-2">
+    <div class="card flex flex-column md:flex-row gap-3 m-0 p-0 border-none ">
+        <span>
+            <div class="p-inputgroup">
+                <!-- <input type="text" pInputText placeholder="Keyword" /> -->
+                <p-calendar [(ngModel)]="date12" selectionMode="range"
+                    [readonlyInput]="readonlyInput"
+                    [numberOfMonths]="3"
+                    [dateFormat]="dateFormat"
+                    onselect="selectDate()"></p-calendar>
+                <button type="button" pButton styleClass="p-button-warn"
+                    (click)="selectDate()">
+                    {{userService.translateCode('btn', 'btn-show-report')}}
+                </button>
+            </div>
+        </span>
+    </div>
+</div>
+
+<!-- <p-overlayPanel #op>
+    <img src="https://primefaces.org/cdn/primeng/images/demo/product/bamboo-watch.jpg" alt="product" />
+</p-overlayPanel>
+<p-button (click)="op.toggle($event)" icon="pi pi-image" label="Show"></p-button> -->
+
+<p-tabView [scrollable]="true">
+    <p-tabPanel *ngFor="let nodeID1 of nodeIDs; let i = index" header={{nodeIDs2[i]}}>
+
+        <p-table [value]="getStaffFromNodeID(nodeID1)"
+            rowGroupMode="rowspan"  groupRowsBy="userID"
+            class="w-full"
+            styleClass="p-datatable-sm">
+            <ng-template pTemplate="caption">
+                {{date1}} - {{date2}}
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr class=" text-left">
+                    <th class="" style="width: 1%"></th>
+                    <th class="text-left" >staff</th>
+                    <th class="text-left" >{{userService.translateCode('mn', 'mn-style')}}</th>
+                    <th class="text-left" *ngFor="let subnode of getSubNodeflow(nodeID1); let s0 = index">
+                        {{subnode.subNodeID}}
+                        .
+                        {{userService.strFirstAndDot(subnode.subNodeName, 10)}}
+                    </th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-scan let-idx="rowIndex" let-rowgroup="rowgroup" let-rowspan="rowspan">
+                <tr class="text-sm text-center">
+                    <td>
+
+                    </td>
+                    <td class="text-left font-bold" *ngIf="rowgroup" [attr.rowspan]="rowspan">
+                        <span class="cursor-pointer" (click)="selectStaff(scan.userID)">
+                            <!-- {{getUserNameByQRCode(scan.qrCode)}} -->
+                            <span >
+                                {{scan.userID}}
+                            </span>
+                        </span>
+                    </td>
+                    <td class="text-left font-bold">
+                        <span>
+                            {{scan.orderID}}
+                        </span>
+                    </td>
+                    <td class="vertical-align-middle text-left" *ngFor="let subnode of getSubNodeflow(nodeID1); let s1 = index">
+                        <span>
+                            {{getQTYSubNode(nodeID1, subnode.subNodeID, scan.orderID, scan.userID)}}
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+                <tr class="text-xl text-center">
+                    <td [attr.colspan]="getAllColumn(nodeID1, 3)" class="text-center">
+                        <span class="">
+                            Total
+                        </span>
+                    </td>
+                </tr>
+                <tr class="text-base text-center" *ngFor="let orID of orderIDs; let o2 = index">
+                    <td colspan="3" class="text-center">
+                        <span class="text-center">
+                            {{orID}}
+                        </span>
+                    </td>
+                    <td *ngFor="let subn of getSubNodeflow(nodeID1); let s2 = index">
+                        <span class="">
+                            {{getTotalQTYSubNode(nodeID1, subn.subNodeID, orID)}}
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <span class="">
+
+                </span>
+            </ng-template>
+        </p-table>
+
+    </p-tabPanel>
+</p-tabView>

@@ -1,0 +1,50 @@
+<div class="card p-fluid border-none m-0 p-0">
+    <!-- <div class="grid p-fluid"> -->
+        <!-- <div class="col-12">
+            <div class="p-inputgroup m-0 p-0">
+                <span class="p-inputgroup-addon w-3">Node ID</span>
+                <input type="text" pInputText [(ngModel)]="nodeID">
+            </div>
+        </div> -->
+        <!-- <div class="col-12">
+            <div class="p-inputgroup">
+                <span class="p-inputgroup-addon w-3">Node name</span>
+                <input type="text" pInputText >
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="p-inputgroup">
+                <span class="p-inputgroup-addon w-3">Description</span>
+                <textarea pInputTextarea></textarea>
+            </div>
+        </div> -->
+    <!-- </div> -->
+    <!-- <div class="field">
+        <input pinputtext="" id="name1" type="text"  class="p-inputtext p-component p-element">
+    </div>
+    <div class="field">
+        <input pinputtext="" id="name2" type="text"  class="p-inputtext p-component p-element">
+    </div> -->
+    <div class="p-inputgroup m-0 p-0">
+        <span class="p-inputgroup-addon w-3">Node ID</span>
+        <input appNoSpace type="text" pInputText [(ngModel)]="nodeID"
+            (keypress)="userService.numberAZazOnly($event);">
+    </div>
+    <span class="txt-err" *ngIf="errID !== ''">
+        create Node error [ NodeID Existed ]
+    </span>
+
+    <div class="grid m-0 p-0">
+        <!-- <div class="col-offset-2 col-4">
+            <button pButton pRipple type="button" label="cancel"
+                class="p-button-text text-orange-500 text-xl" (click)="closeDialog()">
+            </button>
+        </div> -->
+        <div class="col-offset-8 col-4 my-0" *ngIf="nodeID !== ''">
+            <button pButton pRipple type="button" label="Create new"
+                class="p-button-text text-xl my-0" (click)="postNodeStationCreateNew()">
+            </button>
+        </div>
+    </div>
+
+</div>

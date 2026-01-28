@@ -1,0 +1,82 @@
+
+<div class="bg-red-50"
+    *ngIf="orderProduct.productionNode.length > 0 &&
+        orderProduct.productionNode[orderProduct.productionNode.length-1].toNode==='completeNode' ">
+    <span class="">
+        Completed.
+    </span>
+</div>
+
+<div class="bg-red-50"
+    *ngIf="orderProduct.productStatus === 'lost'">
+    <span class="">
+        Product set to lost already.
+    </span>
+</div>
+
+<div class="bg-red-50 "
+    *ngIf="userService.getInfoFromProductBarcode(productBarcodeNo, 'style').trim() === order.orderID &&
+            orderProduct.productionNode[orderProduct.productionNode.length-1].toNode !=='completeNode' &&
+            orderProduct.productStatus !== 'lost'">
+
+    <div class="surface-card p-4 shadow-2 border-round">
+        <div class="font-medium text-2xl text-900 mb-3">Edit product lost</div>
+        <ul class="list-none p-0 m-0">
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap">
+                <div class="text-500 w-6 md:w-2 font-medium cursor-pointer " (dblclick)="flowSelect = [];">
+                    Node
+                </div>
+                <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                    <span class="mx-1" *ngFor="let fs of flowSeq; let f1 = index">
+                        <button pButton pRipple type="button"
+                            label="{{fs.nodeID}}"
+                            class=" p-button-text"
+                            [ngClass]="flowSelect.includes(fs.nodeID)?'p-button-raised p-button-success':'p-button-secondary'"
+                            (click)="selectNode(fs.nodeID)">
+                        </button>
+                    </span>
+                </div>
+            </li>
+
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap">
+                <div class="text-500 w-6 md:w-2 font-medium cursor-pointer " (dblclick)="opdLostSelect='';lostGroupIDSelect=''">
+                    Cause
+                </div>
+                <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                    <div class="" *ngFor="let opd of opdLosts; let o = index">
+                        <button pButton pRipple type="button"
+                            label="{{opd.opdLostID}} {{opd.opdLostName}}"
+                            class=" p-button-text"
+                            [ngClass]="opd.opdLostID === opdLostSelect?'p-button-raised p-button-success':'p-button-secondary'"
+                            (click)="opdLostSelect = opd.opdLostID; lostGroupIDSelect = opd.lostGroupID;">
+                        </button>
+                    </div>
+                </div>
+            </li>
+
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap">
+                <div class="text-500 w-6 md:w-2 font-medium">Note</div>
+                <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                    <div class="">
+                        <textarea rows="5"  pInputTextarea [(ngModel)]="note" class="w-12"></textarea>
+                    </div>
+                </div>
+            </li>
+
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap">
+                <div class="text-500 w-6 md:w-2 font-medium"></div>
+                <div class="text-900 w-full md:w-8 md:flex-order-0 flex-order-1">
+                    <div class="">
+                        <button pButton pRipple type="button" label="Save product to lost" class="p-button-danger"
+                            (click)="putOrderLost('set')"></button>
+                    </div>
+                </div>
+            </li>
+
+
+        </ul>
+    </div>
+
+</div>
+
+

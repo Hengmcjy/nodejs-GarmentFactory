@@ -1,0 +1,176 @@
+
+
+<div class="surface-ground">
+    <div class="grid">
+
+        <div class="col-12 md:col-6 lg:col-4 xl:col-3 p-3" *ngIf="false">
+            <div class=" p-3 bg-yellow-100"  >
+                <!-- <img src="assets/images/user/newcompany.png" class="mb-3 w-full" /> -->
+                <img src="https://storage.googleapis.com/mystoragegarment/newcompany.png" class="mb-3 w-full" />
+                <ul class="list-none m-0 p-0">
+                    <li class="px-0 py-2 flex justify-content-between align-items-center">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <span class="text-900 font-medium text-sm">
+                            <p-toast [style]="{marginTop: '80px'}"></p-toast>
+                            <button pButton type="button" label="{{translateCode('gn', 'gn-newcompany')}} " icon="pi pi-plus" class="p-button-text w-full" (click)="showCreateCompanyModal()"></button>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-12 md:col-6 lg:col-4 xl:col-3 p-3" *ngFor="let com of companies; let i = index">
+            <div class="surface-card shadow-2  border-rounded p-3" style="border-radius: 6px">
+
+                <!-- <img [src]="genImagePath(product1.imageProfile)" class="p-2 w-full"> -->
+                <img [src]="genImagePath(com.cInfo.pic)" class="mb-3 w-full"   *ngIf="false"/>
+                <div class="flex justify-content-between align-items-start">
+                    <div>
+                        <div class="mt-0 mb-3 text-600 mb-2" > {{com.companyID | uppercase}} </div>
+                        <p class="text-xl font-medium text-900">
+                            {{com.cInfo.companyName}}
+                        </p>
+                    </div>
+                    <!-- *ngIf="getUserCompanyState(com.companyID)!=='wait'" -->
+                    <button pButton pRipple icon="pi pi-cog" class="p-button-rounded p-button-text"
+                        (click)="selectCompanySetting(com)"
+                        *ngIf="getUserCompanyState(com.companyID)!=='wait'" >
+                    </button>
+                </div>
+                <ul class="list-none m-0 p-0">
+                    <li class="px-0 py-2 flex justify-content-between align-items-center  surface-border" *ngIf="getUserCompanyState(com.companyID)!=='wait'">
+                        <span class="text-600 font-medium text-sm">{{userService.translateCode('mn', 'mn-abbrev')}}</span>
+                        <span class="text-900 font-medium text-sm">{{com.cInfo.abbreviation | uppercase}} </span>
+                    </li>
+                    <li class="px-0 py-2 flex justify-content-between align-items-center  surface-border">
+                        <span class="text-600 font-medium text-sm mr-2">&nbsp;&nbsp;&nbsp;</span>
+                        <span class="text-400 font-medium text-sm">
+                            {{com.cDescription}}
+
+                        </span>
+                    </li>
+                </ul>
+                <ul class="list-none m-0 p-0" *ngIf="getUserCompanyState(com.companyID)!=='wait'">
+                    <li class="px-0 py-2 flex justify-content-between align-items-center">
+                        <span class="text-600 font-medium text-sm">factory</span>
+                        <span class="text-800 font-medium text-sm"></span>
+                    </li>
+                    <!-- <li class="px-0 py-2 flex justify-content-between align-items-center">
+                        <span class="text-600 font-medium text-sm">&nbsp;&nbsp;</span>
+                        <span class="text-800 font-medium text-sm">factory name aaa bbb ccc dddfactory name aaa bbb ccc ddd</span>
+                    </li>
+                    <li class="px-0 py-2 flex justify-content-between align-items-center">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <span class="text-800 font-medium text-sm">factory name</span>
+                    </li>
+                    <li class="px-0 py-2 flex justify-content-between align-items-center">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <span class="text-800 font-medium text-sm">factory name</span>
+                    </li> -->
+                </ul>
+                <ul class="list-none m-0 p-0">
+                    <li class="px-0 py-2 flex justify-content-between align-items-center" *ngIf="getUserCompanyState(com.companyID)!=='wait'">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <button pButton pRipple type="button"
+                            label="{{translateCode('gn', 'gn-enter')}} "
+                            class="p-button-rounded  p-button-info p-2"
+                            (click)="selectCompany(com);"></button>
+                    </li>
+                    <li class="px-0 py-2 flex justify-content-between align-items-center border-top-1" *ngIf="getUserCompanyState(com.companyID)==='wait'">
+                        <span class="text-600 font-medium text-sm"></span>
+                        <button pButton pRipple type="button"
+                            label="{{translateCode('gn', 'gn-joinnow')}} "
+                            class="p-button-rounded  p-button-warning p-2 "
+                            (click)="putUserJoinCompany(com.companyID)"></button>
+
+                        <small class="p-invalid txt-err" *ngIf="errIDJoinMember==='erru007' ">
+                            <br>
+                            {{errIDJoinMemberText}}
+                        </small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div *ngIf="userService.showExportOnCompanyFirstPage">
+    <table id="mytable">
+        <thead>
+            <tr>
+                <th>Country</th>
+                <th>Population</th>
+                <th>Date</th>
+                <th>Age</th>
+                <th>Temp</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>مصر</td>
+                <td>1363480000</td>
+                <td>March 24 2014</td>
+                <td>19.1</td>
+                <td>₹</td>
+            </tr>
+            <tr>
+                <td>ภาษาไทย</td>
+                <td>thai language</td>
+                <td>March 24 2014</td>
+                <td>19.1</td>
+                <td>....</td>
+            </tr>
+            <tr>
+                <td>中国语言</td>
+                <td>china language</td>
+                <td>March 24 2014</td>
+                <td>19.1</td>
+                <td>....</td>
+            </tr>
+            <tr>
+                <td>日本語</td>
+                <td>japan  language</td>
+                <td>March 24 2014</td>
+                <td>19.1</td>
+                <td>....</td>
+            </tr>
+            <tr>
+                <td>မြန်မာဘာသာစကား</td>
+                <td>myanmar  language</td>
+                <td>March 24 2014</td>
+                <td>19.1</td>
+                <td>....</td>
+            </tr>
+            <tr>
+                <td>ພາສາລາວ</td>
+                <td>laos  language</td>
+                <td>March 24 2014</td>
+                <td>19.1</td>
+                <td>....</td>
+            </tr>
+
+            <tr *ngFor="let i of rows">
+                <td>Syria</td>
+                <td>0000000</td>
+                <td>March 24 2014</td>
+                <td>11</td>
+                <td>{{ i }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <button (click)="exportAsString('pdf', 'portrait')">From String</button>
+    <button (click)="exportAs('pdf', 'portrait')">export as pdf</button>
+    <button (click)="exportAs('pdf', 'landscape')">export as pdf landscape</button>
+    <button (click)="exportAs('png')">export as png</button>
+    <button (click)="exportAs('csv')">export as csv</button>
+    <button (click)="exportAs('txt')">export as txt</button>
+    <button (click)="exportAs('xlsx')">export as Ms-Excel</button>
+    <button (click)="exportAs('docx')">export as MS-Word</button>
+    <button (click)="exportAs('json')">export as json</button>
+    <button (click)="exportAs('xml')">export as xml</button>
+</div>
+
+

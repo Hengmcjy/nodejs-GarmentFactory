@@ -1,0 +1,63 @@
+
+
+<!-- <p-blockUI [target]="willBlock" [blocked]="blockedPanel">
+    <div class="">
+        <i class="pi pi-lock" style="font-size: 3rem"></i>
+    </div>
+    <br>
+    <div class="text-5xl text-600 mt-2">
+        wait for a minute
+    </div>
+</p-blockUI> -->
+
+
+<div  class="" >
+    <div class="">
+        <button pButton pRipple  class="p-button-warning"
+            (click)="setQCtoComplete()"
+            [disabled]="btnDisabled">
+            force scan to "COMPELTE.."
+        </button>
+    </div>
+    <div class="">
+        <div class="flex flex-row flex-wrap">
+            <div class="flex align-items-center justify-content-center  h-4rem  font-bold border-round text-orange-600 m-2">
+                QTY: {{qty}}
+            </div>
+            <div class="flex align-items-center justify-content-center  h-4rem  font-bold border-round m-2">
+                {{data.orId}}
+            </div>
+            <div class="flex align-items-center justify-content-center  h-4rem  font-bold border-round m-2">
+                {{data.zoneA}}
+            </div>
+            <div class="flex align-items-center justify-content-center  h-4rem  font-bold border-round m-2">
+                {{data.colorA}}
+            </div>
+            <div class="flex align-items-center justify-content-center  h-4rem  font-bold border-round m-2">
+                {{data.sizeA}}
+            </div>
+        </div>
+    </div>
+
+    <div class="">
+        <span class="flex flex-row flex-wrap" >
+            <p-chip class="m-1" *ngFor="let no of noArr; let i = index">
+                <div class="text-sm m-1 p-1">
+                    <span class="font-semibold text-color">
+                        {{no}}
+                    </span>
+                </div>
+            </p-chip>
+        </span>
+    </div>
+</div>
+
+
+<!-- this.data = {
+    productBarcode: data.proD.productBarcode,
+    orId: data.orId,
+    zoneA: data.zoneA,
+    colorA: data.colorA,
+    no: data.proD.no,
+    toNode: data.proD.toNode,
+}; -->

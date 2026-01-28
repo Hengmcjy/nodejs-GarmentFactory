@@ -1,0 +1,106 @@
+{
+    "primeng": {
+        "startsWith": "Starts with",
+        "contains": "Contains",
+        "notContains": "Not contains",
+        "endsWith": "Ends with",
+        "equals": "Equals",
+        "notEquals": "Not equals",
+        "noFilter": "No Filter",
+        "lt": "Less than",
+        "lte": "Less than or equal to",
+        "gt": "Greater than",
+        "gte": "Greater than or equal to",
+        "is": "Is",
+        "isNot": "Is not",
+        "before": "Before",
+        "after": "After",
+        "dateIs": "Date is",
+        "dateIsNot": "Date is not",
+        "dateBefore": "Date is before",
+        "dateAfter": "Date is after",
+        "clear": "Clear",
+        "apply": "Apply",
+        "matchAll": "Match All",
+        "matchAny": "Match Any",
+        "addRule": "Add Rule",
+        "removeRule": "Remove Rule",
+        "accept": "Yes",
+        "reject": "No",
+        "choose": "Choose",
+        "upload": "Upload",
+        "cancel": "Cancel",
+        "dayNames": ["อาทิตย์", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "dayNamesShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+        "dayNamesMin": ["Su","Mo","Tu","We","Th","Fr","Sa"],
+        "monthNames": ["มกราคม","February","March","April","May","June","July","August","September","October","November","December"],
+        "monthNamesShort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        "dateFormat": "mm/dd/yy",
+        "firstDayOfWeek": 0,
+        "today": "Today",
+        "weekHeader": "Wk",
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "passwordPrompt": "Enter a password",
+        "emptyMessage": "No results found",
+        "emptyFilterMessage": "No results found"
+    },
+    "TEST": {
+        "multiLanguage": "หลายภาษา",
+        "language": "ภาษาไทย",
+        "login": "ล๊อกอิน",
+        "signup": "สมัคร"
+    },
+    "HOME": {
+		"xuelek": "ซื้อเลข.com",
+		"login": "ล็อกอิน",
+		"signup": "สมัครสมาชิก",
+        "userid": "ชื่อผู้ใช้",
+        "password": "รหัสผ่าน",
+        "repassword": "รหัสผ่่านอีกครั้ง",
+        "loginby": "ล็อกอินโดย",
+        "signupby": "สมัครโดย",
+        "result": "ผลลางวัล",
+        "faq": "คำถามที่พบบ่อย",
+        "erruserid":"ชื่อผู้ใช้ผิดพลาด",
+        "erruserpass":"ความยาวอย่างน้อย 6 ตัวอักษร",
+        "end": ""
+	},
+	"info": {
+		"info1-head": "หัวข้อ 1",
+        "info1": {
+            "info-body1":"<ul> <li>กาแฟ</li> <li>ชา</li> <li>นม</li> </ul>",
+            "info-body2":"<h1>หัวข้อแรก</h1> <p>ข้อความแรก</p>"
+        },
+        "info2-head": "หัวข้อ 2",
+        "info2": {
+            "info-body1":"<ul> <li>โค๊ก</li> <li>แป๊ปซี่</li> <li>มิลินด้า</li> </ul>",
+            "info-body2":"<h1>อร่อย</h1> <p>น้ำอัดลม</p>"
+        },
+        "info3-head": "หัวข้อ 3",
+        "info3": {
+            "info-body1":"<h1>ความเชื่อที่ว่า</h1> <p>ไม่มีใครเก่ง!</p>",
+            "info-body2":"<ol> <li>ฉลาดได้ตลอด</li> <li>หากมันเป็นจริง</li> <li>กันมาทั้งนั้น</li> <li>ดังนั้นคงดีกว่าหากเราเป็น</li> </ol>  "
+        },
+        "end": ""
+    },
+	"ALERT": {
+		"a1": "ออออออ",
+		"a2": "งงงงงงง"
+    },
+    "public": {
+        "testhtml":" และมีโอกาสแค่ไหนที่รั<br> <strong>เซียจะใช้ในยูเครน!</strong>",
+        "xuelek.com": "ซื้อเลข.com",
+        "xuelek": "ซื้อเลข {{value}} + {{value2}}",
+        "xuelek game": "เกมซื้อเลข",
+        "number game": "เกมเลข"
+    },
+
+    "indexPage": {
+        "idx-001": "ข่าวสาร",
+        "idx-002": "อิอิ",
+        "idx-003": "ไรไร",
+        "idx-004": "งึดหลาย"
+    }
+}

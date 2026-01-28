@@ -1,0 +1,71 @@
+
+
+<p-toast position="top-right" [baseZIndex]="10000"></p-toast>
+
+<div class="surface-card p-5 shadow-2 border-round flex-auto" >
+    <div class="text-900 font-semibold text-lg mt-3 text-center">Profile</div>
+    <div class="flex gap-5 flex-column-reverse md:flex-row">
+        <div class="mb-4 flex-auto p-fluid">
+            <div class="mb-4">
+                <label for="userID" class="block font-medium text-900 mb-2">userID</label>
+                <div class="p-inputgroup">
+                    <span class="p-inputgroup-addon" *ngIf="user.state !== 'userEmail'">
+                        {{factory.fInfo.abbreviation}}
+                    </span>
+                    <input id="userID" type="text" pinputtext=""
+                        class="p-inputtext p-component p-element"
+                        [disabled]="picMode === 'view'"
+                        [(ngModel)]="userIDCut">
+                    <button type="button" pButton pRipple icon="pi pi-check-square" styleClass="p-button-warn"
+                        (click)="checkUserIDExisted()"
+                        *ngIf="picMode !== 'view'">
+                        &nbsp;
+                        check
+                    </button>
+                </div>
+                <small class="p-invalid txt-err" *ngIf="userIDExisted">Err! userID Existed !!</small>
+            </div>
+            <div class="mb-4">
+                <label for="name" class="block font-medium text-900 mb-2">Name</label>
+                <input id="name" type="text" pinputtext="" class="p-inputtext p-component p-element"
+                    [disabled]="picMode === 'view'"
+                    [(ngModel)]="user.uInfo.userName"/>
+            </div>
+            <div class="mb-4">
+                <label for="barcode" class="block font-medium text-900 mb-2">Barcode / QRcode</label>
+                <input id="barcode" type="text" pinputtext="" class="p-inputtext p-component p-element"
+                    [disabled]="picMode === 'view'"/>
+            </div>
+            <div class="mb-4">
+                <label for="Detail" class="block font-medium text-900 mb-2">Detail</label>
+                <textarea id="Detail" type="text" pinputtextarea="" rows="5"
+                    class="p-inputtextarea p-inputtext p-component p-element p-inputtextarea-resizable"
+                    style="height: 131px; overflow: hidden"
+                    [disabled]="picMode === 'view'">
+                </textarea>
+            </div>
+            <div class="mb-4">
+                <p-menu #menu [popup]="true" [model]="positionItems"></p-menu>
+                <span class="block font-medium text-900 mb-2">Position</span>
+                <button pButton pRipple type="button" class="p-button-warning p-button-outlined" (click)="menu.toggle($event)">
+                    {{userPositon}}
+                </button>
+            </div>
+            <div class="mb-4">
+                <label for="nation" class="block font-medium text-900 mb-2">Nation</label>
+                <input id="nation" type="text" pinputtext="" class="p-inputtext p-component p-element"
+                    [disabled]="picMode === 'view'"/>
+            </div>
+            <div class="flex align-items-center justify-content-center">
+                <button pbutton="" pripple=""
+                    class="p-element p-ripple w-auto p-button p-component"
+                    (click)="editUserProfile()">
+                    <span class="p-button-label">{{editMode==='create'?'create':'Update'}}</span>
+                    <span class="p-ink"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

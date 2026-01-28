@@ -1,0 +1,52 @@
+
+
+<div class="grid">
+    <div class="col-2">
+        <button pButton pRipple type="button" label="Set Lost" class="" (click)="showSProductRecord_SetLost()">
+        </button>
+    </div>
+    <div class="col-8"></div>
+    <div class="col-2"></div>
+</div>
+
+<div>
+    <p-table [value]="orderProductions"
+        class="w-full"
+        styleClass="p-datatable-sm">
+        <!-- <ng-template pTemplate="caption">
+            <div>Total all Queue :  {{countProductionQueueAll}} </div>
+            <div>Item : {{sumProductionQueueAll}}</div>
+        </ng-template> -->
+        <ng-template pTemplate="caption">
+            <span class="">
+                production lost
+                <span class=""> ( {{orderProductions.length}}  qty.)</span>
+            </span>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="px-0" style="width: 5%">#</th>
+                <th class="px-0" style="width: 35%">Product Code</th>
+                <th class="px-0" style="width: 20%">date-time</th>
+                <th class="px-0" style="width: 15%"></th>
+                <th class="px-0" style="width: 15%;"></th>
+                <th class="px-0" style="width: 10%">user</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-pd let-idx="rowIndex">
+            <tr class="text-base">
+                <td>{{+idx + 1}}</td>
+                <td class="">
+                    <span class="">
+                        {{pd.productBarcodeNoReal}}
+                    </span>
+                </td>
+
+                <td class="text-600">{{pd.orLost.datetime | date: 'dd-MM-yyyy HH:mm'}}</td>
+                <td class="text-600"></td>
+                <td class="text-600"></td>
+
+                <td class="text-600">{{pd.orLost.createBy.userName}}</td>
+        </ng-template>
+    </p-table>
+</div>

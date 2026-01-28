@@ -1,0 +1,33 @@
+
+<div class="flex flex-row flex-wrap card-container blue-container">
+    <span class="m-0 p-0" *ngFor="let yb of yearBefore; let i = index">
+        <button pButton pRipple type="button"
+            label=""
+            class="p-button-outlined m-2" styleClass="p-button-lg"
+            (click)="selectYear(yb)">
+            {{yb}}
+        </button>
+    </span>
+</div>
+
+<div class="flex flex-row flex-wrap card-container blue-container">
+    <span class="m-0 p-0" *ngFor="let yn of yearNow; let j = index">
+        <button pButton pRipple type="button"
+            label=""
+            class="p-button-outlined m-2" styleClass="p-button-lg"
+            (click)="selectYear(yn)">
+            {{yn}}
+        </button>
+    </span>
+</div>
+
+<div class="flex flex-row flex-wrap card-container blue-container">
+    <span class="m-0 p-0" *ngFor="let ya of yearAfter; let k = index">
+        <button pButton pRipple type="button"
+            label=""
+            class="p-button-outlined m-2" styleClass="p-button-lg"
+            (click)="selectYear(ya)">
+            {{ya}}
+        </button>
+    </span>
+</div>

@@ -1,0 +1,124 @@
+
+
+
+
+<p-menu #menu  [popup]="true" [model]="items" styleClass="bg-yellow-50 w-4"></p-menu>
+
+<div class="text-center" *ngIf="loading">
+    <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="8" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+</div>
+
+<div class="" *ngIf="!loading">
+    <div class="container">
+        <div class="topright-yarn-rep z-index1000" *ngIf="false">
+            <span class="">
+                <p-button icon="pi pi-book"
+                    styleClass="p-button-rounded p-button-success p-button-text p-button-lg m-0 p-0"
+                    >
+                </p-button>
+            </span>
+        </div>
+    </div>
+    <div class="">
+        <p-table [value]="yarnTransferUsageRow" styleClass="p-datatable-gridlines" [tableStyle]="{ 'min-width': '50rem' }">
+            <ng-template pTemplate="header">
+                <!-- <tr class="">
+                    <th colspan="6" class="m-0 p-0 pl-3" >
+                        <p-button icon="pi pi-book"
+                            styleClass="p-button-rounded p-button-success p-button-text p-button-sm m-0 p-0"
+                            >
+                        </p-button>
+                    </th>
+                </tr> -->
+                <tr class="">
+                    <th class="text-center" >Date</th>
+                    <th class="text-center" >
+                        <!-- <span class="text-teal-500 m-0 p-0 mr-3">
+                            <span class="material-symbols-outlined text-lg m-0 p-0">content_paste_go</span>
+                        </span> -->
+                        Yarn
+                    </th>
+                    <th class="text-center" >Color</th>
+
+                    <th class="text-center" >Lot ID</th>
+                    <th class="text-center" >Carton</th>
+                    <th class="text-center" >NET.Kgs</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-uS let-idx="rowIndex">
+                <tr >
+                    <td class="text-center"
+                        [ngClass]="uS.rowState==='t' || uS.rowState==='gt'?'border-right-none border-y-none'
+                                                    :uS.rowState==='eof'?'border-right-none border-top-none'
+                                                    :uS.rowState==='b'?'border-right-none border-y-none':''">
+                        <span class="">
+                            {{uS.ddmmyyyy}}
+                        </span>
+                    </td>
+                    <td class="text-center"
+                        [ngClass]="uS.rowState==='t' || uS.rowState==='gt'?'border-x-none border-y-none'
+                                                    :uS.rowState==='eof'?'border-x-none border-top-none'
+                                                    :uS.rowState==='b'?'border-none':''">
+                        <span class="m-0 p-0  cursor-pointer" *ngIf="(uS.yarnID!=='' || uS.rowState==='d') && uS.rowState!=='eof'"
+                            (click)="exportPDF(uS.yarnTransferUsageGroupRow)">
+                            <span class="material-symbols-outlined text-teal-500 my-0 py-0">content_paste_go</span>
+                        </span>
+                        &nbsp;
+                        <span class="" *ngIf="uS.yarnID!==''">
+                            <span class="" *ngIf="uS.rowState==='d'">[</span>
+                            <span class="">
+                                {{uS.orderID}}
+                            </span>
+                            <span class="" *ngIf="uS.rowState==='d'">]</span>
+                            &nbsp;
+                            <span class="">
+                                {{userService.strFirstAndDot(yarnService.getYarnfullName(uS.yarnID), 25)}}
+                            </span>
+                        </span>
+                    </td>
+                    <td class="text-center m-0 p-0"
+                        [ngClass]="uS.rowState==='t' || uS.rowState==='gt'?'border-left-none border-y-none'
+                                                    :uS.rowState==='eof'?'border-x-none border-top-none'
+                                                    :uS.rowState==='b'?'border-none':''">
+                        <span class="m-0 p-0">
+                            {{uS.colorCode}}
+                            <div class="text-xs text-500 m-0 p-0">
+                                {{userService.strFirstAndDot(uS.colorName, 8)}}
+                            </div>
+                        </span>
+                    </td>
+                    <td class="text-center" [ngClass]="uS.rowState==='eof'?'border-x-none border-top-none'
+                                                    :uS.rowState==='b'?'border-none':''">
+                        <span class="" [ngClass]="uS.rowState==='t'?'bg-yellow-100':uS.rowState==='gt'?'bg-orange-100':''"
+                            (dblclick)="inputUserPassPopup(uS)">
+                            {{uS.yarnLotID}}
+                        </span>
+                    </td>
+                    <td class="text-center" [ngClass]="uS.rowState==='eof'?'border-x-none border-top-none'
+                                                    :uS.rowState==='b'?'border-none':''">
+                        <span class="" [ngClass]="uS.rowState==='t'?'bg-yellow-100':uS.rowState==='gt'?'bg-orange-100':''">
+                            {{uS.carton===0?'':uS.carton}}
+                        </span>
+                    </td>
+                    <td class="text-center" [ngClass]="uS.rowState==='eof'?'border-left-none border-top-none'
+                                                    :uS.rowState==='b'?'border-left-none border-y-none':''">
+                        <span class="" [ngClass]="uS.rowState==='t'?'bg-yellow-100':uS.rowState==='gt'?'bg-orange-100':''">
+                            {{uS.yarnTransferWeightTotal===0?'':uS.yarnTransferWeightTotal}}
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+
+            </ng-template>
+            <ng-template pTemplate="summary">
+                <span class="">
+
+                </span>
+            </ng-template>
+        </p-table>
+    </div>
+
+</div>
+
+
