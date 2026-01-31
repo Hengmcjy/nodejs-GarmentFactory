@@ -1020,22 +1020,29 @@ exports.getColorValueByID_SetNmae= async (colors, colorID, setName) => {
 // #################################################################################
 // ## email zone ####################################################################
 
+// SMTP_HOST
+// SMTP_PORT
+
+
 // ## TestSendMail  send mail
 exports.TestSendMail= async (email, uuid, data) => {
   const emailFactory = 'tailin.mailsender@gmail.com';
   // ## test send mail ( nodemailer )
   let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // true for 465, false for other ports
+    // service: 'gmail',
+    // host: 'smtp.gmail.com',
+    // port: 465,
+    // secure: true, // true for 465, false for other ports
+    host: process.env.SMTP_HOST, // SMTP host, e.g., smtp.mailprovider.com
+    port: process.env.SMTP_PORT || 587, // Port (587 for TLS, 465 for SSL)
+    secure: process.env.SMTP_PORT == 465, // Use SSL for port 465
     auth: {
       user: process.env.EMAILSENDER,
       pass: process.env.EMAILSENDERPWD,
     },
-    tls:{
-      rejectUnauthorized:false
-    }
+    // tls:{
+    //   rejectUnauthorized:false
+    // }
   });
     
   // http://localhost:4200?key=514cf9e3-6f42-4b0f-ba5e-7365988bd4d6
