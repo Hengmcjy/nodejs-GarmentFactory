@@ -1020,9 +1020,14 @@ exports.getColorValueByID_SetNmae= async (colors, colorID, setName) => {
 // #################################################################################
 // ## email zone ####################################################################
 
-// SMTP_HOST
-// SMTP_PORT
 
+
+
+// ## EMAILSENDER=heng@tailin.co.th   // ## tailin.co.th
+// ## EMAILSENDERPWD=Cm8dH4yJn3v
+
+// ## EMAILSENDER2=heng@tailin.co.th   // taian.co.th
+// ## EMAILSENDERPWD2=Cm8dH4yJn3v
 
 // ## TestSendMail  send mail
 exports.TestSendMail= async (email, uuid, data) => {
@@ -1037,8 +1042,14 @@ exports.TestSendMail= async (email, uuid, data) => {
     port: process.env.SMTP_PORT || 587, // Port (587 for TLS, 465 for SSL)
     secure: process.env.SMTP_PORT == 465, // Use SSL for port 465
     auth: {
-      user: process.env.EMAILSENDER,
-      pass: process.env.EMAILSENDERPWD,
+
+      // ## tailin
+      // user: process.env.EMAILSENDER,
+      // pass: process.env.EMAILSENDERPWD,
+
+      // ## taian
+      user: process.env.EMAILSENDER2,
+      pass: process.env.EMAILSENDERPWD2,
     },
     // tls:{
     //   rejectUnauthorized:false
