@@ -6,6 +6,7 @@ const ObjectId = mongoose.Types.ObjectId;
 const moment = require('moment-timezone');
 const jwt = require("jsonwebtoken");
 const nodemailer = require('nodemailer');
+const postmark = require("postmark");
 const bcrypt = require("bcryptjs");
 const XLSX = require("xlsx");
 const { v5: uuidv5 } = require('uuid');
@@ -1059,45 +1060,17 @@ exports.TestSendMail= async (factory, email, uuid, data) => {
   }
   // console.log(user, pass);
 
-  // const emailFactory = 'tailin.mailsender@gmail.com';
-  // ## test send mail ( nodemailer )
-  let transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST, // SMTP host, e.g., smtp.mailprovider.com
-    port: process.env.SMTP_PORT || 587, // Port (587 for TLS, 465 for SSL)
-    secure: process.env.SMTP_PORT == 465, // Use SSL for port 465
-    auth: {
-      user,
-      pass
-    },
-    // tls:{
-    //   rejectUnauthorized:false
-    // }
-  });
-    
-  // http://localhost:4200?key=514cf9e3-6f42-4b0f-ba5e-7365988bd4d6
-  // http://localhost:4200/#/confirmlink?key=4c53f2c8-6c23-4369-bf32-21db104550f0
-  // http://localhost:4200/#/user/ufactory/station/nodepick?nodeFlowID=main
-  // รายละเอียดอีเมล
-  transporter.sendMail({
-    // from: process.env.EMAILSENDER2,    // ผู้ส่ง
-    from: user,    // ผู้ส่ง
-    to: email,// ผู้รับ / to: "bar@example.com, baz@example.com", // list of receivers
-    subject: "comfirm email [KOJ Garment system]",                      // หัวข้อ
-    // text: "There is a new article. It's about sending emails, check it out!", // plain text body
-    html: `
+  html = `
       <div style="border-style:solid;border-width:thin;border-color:#dadce0;border-radius:8px;padding:40px 20px"
       align="center" class="m_-8934074721175062072mdv2rw">
       <div style="font-family:'Google Sans',Roboto,RobotoDraft,Helvetica,Arial,sans-serif;border-bottom:thin solid #dadce0;color:rgba(0,0,0,0.87);line-height:32px;padding-bottom:24px;text-align:center;word-break:break-word">
           <div style="font-size:24px">
             CUSTOMER message from 
-            <span style="text-transform: uppercase;">${factory}</span>
-            -website
+            <span style="text-transform: uppercase;">${factory}</span>-website
           </div>
       </div>
       <div style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:14px;color:rgba(0,0,0,0.87);line-height:20px;padding-top:20px;text-align:left">
               
-
-
               <div style="max-width: 400px; margin: 20px auto; font-family: Arial, sans-serif; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; background-color: #fff;">
                 <!-- Header/Title -->
                 <div style="background-color: #f4f4f4; padding: 15px; font-size: 18px; font-weight: bold; color: #333; border-bottom: 1px solid #ddd;">
@@ -1111,7 +1084,7 @@ exports.TestSendMail= async (factory, email, uuid, data) => {
                   <p style="margin: 0 0 15px 0;">Message:</p>
                   <p style="margin: 20px 0 0 0;">
                     
-                      <span style="color: #FF7F50;">
+                      <span style="color: #FF8C00;">
                         ${data.message1}
                       </span>
                     
@@ -1124,7 +1097,50 @@ exports.TestSendMail= async (factory, email, uuid, data) => {
 
           </div>
       </div>
-      `,
+      `;
+
+  //
+  // const client = new postmark.ServerClient(process.env.POSTMARK_APIKEY);
+  // client.sendEmail({
+  //   // "From": "taian.garment.thailand@taian.co.th",
+  //   "From": "heng@tailin.co.th",
+  //   "To": "heng067@gmail.com", // heng@tailin.co.th , 
+  //   "Subject": "Test",
+  //   "TextBody": "Hello from Postmark!"
+  // }).then(response => {
+  //   console.log("Email sent successfully!");
+  //   console.log(response);
+  // }).catch(error => {
+  //   console.error("Error sending email:");
+  //   console.error(error);
+  // });
+
+
+
+
+  // const emailFactory = 'tailin.mailsender@gmail.com';
+  // ## test send mail ( nodemailer )
+  let transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST, // SMTP host, e.g., smtp.mailprovider.com
+    // port: process.env.SMTP_PORT || 587, // Port (587 for TLS, 465 for SSL)
+    // secure: process.env.SMTP_PORT == 465, // Use SSL for port 465
+    auth: {
+      user,
+      pass
+    },
+  });
+    
+  // http://localhost:4200?key=514cf9e3-6f42-4b0f-ba5e-7365988bd4d6
+  // http://localhost:4200/#/confirmlink?key=4c53f2c8-6c23-4369-bf32-21db104550f0
+  // http://localhost:4200/#/user/ufactory/station/nodepick?nodeFlowID=main
+  // รายละเอียดอีเมล
+  transporter.sendMail({
+    // from: process.env.EMAILSENDER2,    // ผู้ส่ง
+    from: user,    // ผู้ส่ง
+    to: email,// ผู้รับ / to: "bar@example.com, baz@example.com", // list of receivers
+    subject: "customer/visitor email from web",                      // หัวข้อ
+    // text: "There is a new article. It's about sending emails, check it out!", // plain text body
+    html: html,
     // html body 
     // attachments: [
     //   {
