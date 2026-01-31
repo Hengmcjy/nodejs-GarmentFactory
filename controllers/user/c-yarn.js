@@ -2259,7 +2259,7 @@ exports.getYarnUsage = async (req, res, next) => {
   
   // console.log('getYarnUsage');
   // console.log(yarnColorID);
-  console.log(companyID, yarnSeasonID, yarnID, yarnColorID);
+  // console.log(companyID, yarnSeasonID, yarnID, yarnColorID);
 
   await ShareFunc.upsertUserSession1hr(userID);
   // console.log(req.userData.tokenSet);

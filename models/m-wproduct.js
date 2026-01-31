@@ -5,8 +5,10 @@ const wProductSchema = mongoose.Schema({
 
   companyID: { type: String},
   factoryID: { type: String},
+  pType: { type: String},  // ## main , info , production, products
   pCategory: [{   // ## 
-    customerName: { type: String },
+    brand: { type: String },
+    pCategoryName: { type: String },
     seq: { type: Number },
     pdID: { type: String },
     colorID: { type: String },

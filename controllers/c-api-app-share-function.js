@@ -1022,13 +1022,19 @@ exports.getColorValueByID_SetNmae= async (colors, colorID, setName) => {
 
 // ## TestSendMail  send mail
 exports.TestSendMail= async (email, uuid, data) => {
-  const emailFactory = 'go.garment.mail@gmail.com';
+  const emailFactory = 'tailin.mailsender@gmail.com';
   // ## test send mail ( nodemailer )
   let transporter = nodemailer.createTransport({
     service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // true for 465, false for other ports
     auth: {
       user: process.env.EMAILSENDER,
       pass: process.env.EMAILSENDERPWD,
+    },
+    tls:{
+      rejectUnauthorized:false
     }
   });
     
@@ -1455,6 +1461,7 @@ exports.getControlApp= async () => {
     customerRunID: controlAppf.app.customerRunID,
     imgServer: controlAppf.app.imgServer,
     ver: controlAppf.app.ver,
+    appVer: controlAppf.app.appVer,
   };
   // console.log(controlApp);
   return controlApp;
@@ -2576,6 +2583,43 @@ exports.getOrderIDsBySeasonYear= async (companyID, orderStatus, seasonYearArr) =
   ]);
   // console.log(orderIDs);
   return orderIDs;
+}
+
+// ## get orders By SeasonYear
+exports.getOrdersBySeasonYearArr= async (companyID, statusArr, seasonYearArr) => {
+  // limit = +limit; // ## change to number
+  // console.log('......getOrdersBySeasonYearArr......',companyID, statusArr, seasonYearArr );
+  const orders = await Order.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderStatus":{$in: statusArr}},
+      {"seasonYear":{$in: seasonYearArr}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        orderID: 1,
+        seasonYear: 1,
+        ver: 1,
+        companyID: 1,
+        factoryID: 1,
+        bundleNo: 1,
+        orderStatus: 1,
+        orderDetail: 1,		
+        orderDate: 1,	
+        deliveryDate: 1,
+        customerOR: 1,		
+        orderTargetPlace: 1,
+        orderColor: 1,
+        productOR: 1,
+        createBy: 1,
+        orderSetting: 1,
+    }	},
+    { $sort: { _id: -1 } },
+    // { $skip: (page-1) *  limit},
+    // { $limit: limit }
+  ]);
+  // console.log(orders);
+  return orders;
 }
 		
 // ## get orders
@@ -5497,7 +5541,7 @@ exports.getYarnLotInfoCF= async (companyID, factoryID, yarnSeasonID, yarnID, uui
       // {"toFactoryID":toFactoryID},
       // {"uuid":uuid},
       // {"yarnID":yarnID},
-      {"type":{$in: type}},
+      {"type":{$in: type}},  // ## ['receive'] 
     ] } },
     { $unwind: "$packageInfo" },
     { $project: {			
@@ -5534,7 +5578,7 @@ exports.getYarnLotInfoCF= async (companyID, factoryID, yarnSeasonID, yarnID, uui
       // {"yarnLotID":yarnLotID},
       // {"yarnLotUUID":yarnLotUUID},
       // {"status":{$in: status}},
-      {"state": state},
+      {"state": state},   // ## verified
     ] } },
     { $unwind: "$yarnBoxInfo" },
     { $project: {			

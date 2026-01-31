@@ -85,6 +85,7 @@ const orderSchema = mongoose.Schema({
       seq : {type: Number},
       nodeID : {type: String},
       subNodeID : {type: String},
+      subNodeType : {type: String}, // ## blank =  ว่าง-ปกติ ,  extra = ใบ a4 เฉพาะ เช่น ทอปก ...
       cost : {type: mongoose.Types.Decimal128},
       subNodeFlowTypeID : {type: String},
     }],

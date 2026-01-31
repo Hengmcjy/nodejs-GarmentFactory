@@ -3308,12 +3308,18 @@ exports.getGeneralInfo = async (req, res, next) => {
     // ## get ver control
     const controlAppVer = await ShareFunc.getControlApp();
     const ver = controlAppVer.ver;
+    const appVer = controlAppVer.appVer;
     const imgServer = controlAppVer.imgServer;
 
     // ## get client control
     const outSourceInfo = await ShareFunc.getControlAppOutSourceLocationDepartment();
     const outSourceLocationDepartment = outSourceInfo.outSourceLocationDepartment;
     const outSourceSeasonShow = outSourceInfo.outSourceSeasonShow;
+    
+    // ## get all order list by seasonYear-active
+    const seasonYearActive = (await ShareFunc.getControlAppseasonYearActive()).seasonYearActive;
+    // console.log(getGeneralInfo);
+
     // console.log(outSourceLocationDepartment);
 
     // // ## get subNodeflow
@@ -3347,10 +3353,12 @@ exports.getGeneralInfo = async (req, res, next) => {
       userClass: userClass,
       controlApp: controlApp,
       ver: ver,
+      appVer: appVer,
       imgServer: imgServer,
       sysInfo: sysInfo,
       outSourceLocationDepartment: outSourceLocationDepartment,
-      outSourceSeasonShow: outSourceSeasonShow
+      outSourceSeasonShow: outSourceSeasonShow,
+      seasonYearActive: seasonYearActive
     });
   } catch (err) {
     console.log(err);

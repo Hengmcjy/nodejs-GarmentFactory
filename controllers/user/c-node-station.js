@@ -1011,6 +1011,24 @@ exports.getDataNodeStationLogin = async (req, res, next) => {
     // ## get 
     const userGroupScan = await ShareFunc.getUserGroupScanAll(companyID);
 
+
+
+    // ## get orders by seasonYearActive
+    // ## get all order list by seasonYear-active
+      const seasonYearActive = (await ShareFunc.getControlAppseasonYearActive()).seasonYearActive;
+      // console.log(seasonYearActive);
+      const orderStatusArr = ['open'];
+      // const orderIDss = await ShareFunc.getOrderIDsBySeasonYear(companyID, orderStatusArr, seasonYearActive);
+      // console.log(orderIDss);
+      // getOrdersBySeasonYearArr= async (companyID, statusArr, seasonYearArr)
+      const orders = await ShareFunc.getOrdersBySeasonYearArr(companyID, orderStatusArr, seasonYearActive);
+      // console.log(companyID, orderStatusArr, seasonYearActive);
+      // console.log(orders);
+
+      let orderIDs = [];
+      orders.forEach(i=>orderIDs.push(i.orderID));
+      // console.log('orderIDs ====', orderIDs);
+
     // await ShareFunc.upsertUserSession1hr(userID);
     // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -1025,6 +1043,8 @@ exports.getDataNodeStationLogin = async (req, res, next) => {
       nodeFlow: nodeFlow,
       subNodeflowC: subNodeflowC,
       userGroupScan: userGroupScan,
+      orders: orders,
+      orderIDs: orderIDs,
     });
   } catch (err) {
     return res.status(501).json({

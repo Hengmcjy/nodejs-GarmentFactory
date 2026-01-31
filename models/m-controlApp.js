@@ -10,6 +10,7 @@ const controlAppSchema = mongoose.Schema({
     customerRunID: {type: Number, required: true},
     imgServer: { type: String, required: true},
     ver: {type: Number, required: true}, // ## version
+    appVer: {type: String},
   },
   google: {
     storageAPIPath: { type: String, required: true},

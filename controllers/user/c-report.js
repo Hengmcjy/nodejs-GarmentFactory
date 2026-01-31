@@ -1537,7 +1537,7 @@ exports.getRepNodeNoScan = async (req, res, next) => {
 exports.getRepNodeStaffScannedByDate12 = async (req, res, next) => { 
   // try {} catch (err) {}
   // ## CF = /:companyID/:factoryID
-  console.log('getRepNodeStaffScannedByDate12');
+  // console.log('getRepNodeStaffScannedByDate12');
   const companyID = req.params.companyID;
   const infoType = req.params.infoType;  // ##  infoType = call by who {staffOffice, 'staffProduction'}
   // const factoryIDArr = JSON.parse(req.params.factoryIDArr);

@@ -87,7 +87,8 @@ setInterval(async() => {
   if (!isQuery_time1Group  && !isQuery_everyDayGroup && !isQuery_everyHourGroup && !isQuery_every30mnGroup && !isQuery_every15mnGroup) { 
     // ## real server database // ## from file config2.env
     // console.log(process.env.PRODUCTION === 'false', process.env.PRODUCTION);
-    if (process.env.PRODUCTION === 'true') { 
+    if (process.env.PRODUCTION === 'true' ) { 
+    // if (process.env.PRODUCTION === 'true' && process.env.MGDB === 'nodeGarmentSystem') { 
       await this.getSchedule(); 
     }
   }
@@ -198,6 +199,7 @@ exports.getSchedule = async () => {
 
   // i = i+1;
   // console.log(i);
+  // console.log('getSchedule');
 
   // ## mn everyDay=1440 , everyHour=60 , every15mn=15 , every30mn= 30
   const date1 = '2024/05/29';
@@ -352,6 +354,7 @@ async function auto_getCompanyOrderOutsource(scheduleData) {
     // console.log('timing ',  mm1 , mm);
     let isTimeing = false;
     const sDatetimeF = scheduleData.sDatetime.filter(i=> +i.mm === +mm1);
+    // console.log('[ ***  *** dateDiff3 = ', dateDiff3 +  ' / sDatetimeDiff = ', sDatetimeDiff + ' / isTimeing = ' + isTimeing+ ' mn = '+mm1);
     if (sDatetimeF.length > 0) { isTimeing = true; }
     
     if (dateDiff3 >= sDatetimeDiff  || isTimeing) {
