@@ -1022,34 +1022,52 @@ exports.getColorValueByID_SetNmae= async (colors, colorID, setName) => {
 
 
 
-
-// ## EMAILSENDER=heng@tailin.co.th   // ## tailin.co.th
+// ## FACTORY=Tailin
+// ## EMAILSENDER=tailin.garment.thailand@tailin.co.th   // ## tailin.co.th
 // ## EMAILSENDERPWD=Cm8dH4yJn3v
 
-// ## EMAILSENDER2=heng@tailin.co.th   // taian.co.th
+// ## FACTORY2=Taian
+// ## EMAILSENDER2=taian.garment.thailand@taian.co.th   // taian.co.th
 // ## EMAILSENDERPWD2=Cm8dH4yJn3v
 
+
 // ## TestSendMail  send mail
-exports.TestSendMail= async (email, uuid, data) => {
-  const emailFactory = 'tailin.mailsender@gmail.com';
+exports.TestSendMail= async (factory, email, uuid, data) => {
+  // // ## tailin
+  // const user1 = process.env.EMAILSENDER;  // ##
+  // const pass1 = process.env.EMAILSENDERPWD;  // ##
+  // console.log(user1, pass1 , '......tailin');
+
+  // // ## taian
+  // const user2 = process.env.EMAILSENDER2;  // ##
+  // const pass2 = process.env.EMAILSENDERPWD2;  // ##
+  // console.log(user2, pass2 , '......taian');
+
+  // console.log(factory, data);
+
+  let user = '';
+  let pass = '';
+  if (factory === process.env.FACTORY2) {  // ## taian
+    user = process.env.EMAILSENDER2; 
+    pass = process.env.EMAILSENDERPWD2;
+  } else if (factory === process.env.FACTORY)  { // ## tailin
+    user = process.env.EMAILSENDER; 
+    pass = process.env.EMAILSENDERPWD;
+  } else {
+    user = process.env.EMAILSENDER2; 
+    pass = process.env.EMAILSENDERPWD2;
+  }
+  // console.log(user, pass);
+
+  // const emailFactory = 'tailin.mailsender@gmail.com';
   // ## test send mail ( nodemailer )
   let transporter = nodemailer.createTransport({
-    // service: 'gmail',
-    // host: 'smtp.gmail.com',
-    // port: 465,
-    // secure: true, // true for 465, false for other ports
     host: process.env.SMTP_HOST, // SMTP host, e.g., smtp.mailprovider.com
     port: process.env.SMTP_PORT || 587, // Port (587 for TLS, 465 for SSL)
     secure: process.env.SMTP_PORT == 465, // Use SSL for port 465
     auth: {
-
-      // ## tailin
-      // user: process.env.EMAILSENDER,
-      // pass: process.env.EMAILSENDERPWD,
-
-      // ## taian
-      user: process.env.EMAILSENDER2,
-      pass: process.env.EMAILSENDERPWD2,
+      user,
+      pass
     },
     // tls:{
     //   rejectUnauthorized:false
@@ -1061,7 +1079,8 @@ exports.TestSendMail= async (email, uuid, data) => {
   // http://localhost:4200/#/user/ufactory/station/nodepick?nodeFlowID=main
   // รายละเอียดอีเมล
   transporter.sendMail({
-    from: process.env.EMAILSENDER,    // ผู้ส่ง
+    // from: process.env.EMAILSENDER2,    // ผู้ส่ง
+    from: user,    // ผู้ส่ง
     to: email,// ผู้รับ / to: "bar@example.com, baz@example.com", // list of receivers
     subject: "comfirm email [KOJ Garment system]",                      // หัวข้อ
     // text: "There is a new article. It's about sending emails, check it out!", // plain text body
@@ -1070,7 +1089,9 @@ exports.TestSendMail= async (email, uuid, data) => {
       align="center" class="m_-8934074721175062072mdv2rw">
       <div style="font-family:'Google Sans',Roboto,RobotoDraft,Helvetica,Arial,sans-serif;border-bottom:thin solid #dadce0;color:rgba(0,0,0,0.87);line-height:32px;padding-bottom:24px;text-align:center;word-break:break-word">
           <div style="font-size:24px">
-            CUSTOMER message from TAILIN-website
+            CUSTOMER message from 
+            <span style="text-transform: uppercase;">${factory}</span>
+            -website
           </div>
       </div>
       <div style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:14px;color:rgba(0,0,0,0.87);line-height:20px;padding-top:20px;text-align:left">
@@ -1089,7 +1110,11 @@ exports.TestSendMail= async (email, uuid, data) => {
                   <p style="margin: 0 0 10px 0; font-weight: bold;">Email: ${data.email1}</p>
                   <p style="margin: 0 0 15px 0;">Message:</p>
                   <p style="margin: 20px 0 0 0;">
-                    <pre>${data.message1}</pre>
+                    
+                      <span style="color: #FF7F50;">
+                        ${data.message1}
+                      </span>
+                    
                   </p>
                   
                   
