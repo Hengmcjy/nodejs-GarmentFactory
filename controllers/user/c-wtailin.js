@@ -106,10 +106,18 @@ exports.postEmailContactSend = async (req, res, next) => {
   // const factoryID = req.params.factoryID;
   const data = req.body.dataSent;
   const factory = data.factory;
+  const companyID = data.companyID;
+  const factoryID = data.factoryID;
   // console.log(factory, data);
 
   const uuid = uuidv4();
-  const email = "heng067@gmail.com, hengcrypto@gmail.com, tailin.mailsender@gmail.com";
+
+  // ## get emails from database   // "heng067@gmail.com, heng@tailin.co.th";
+  // getWInfo= async (companyID, factoryID)
+  const wInfo = await ShareFunc.getWInfo(companyID, factoryID);
+  // console.log(companyID, factoryID, wInfo);
+
+  const email = wInfo[0].companyInfo.emails.toString();
   // console.log(factory, email, uuid, data);
   const tsendmail = await ShareFunc.TestSendMail(factory, email, uuid, data);
   // console.log('OK test sent email   11');
