@@ -104,12 +104,13 @@ exports.postEmailContactSend = async (req, res, next) => {
   // console.log('postEmailContactSend');
   // const companyID = req.params.companyID;
   // const factoryID = req.params.factoryID;
-  const data = req.body;
+  const data = req.body.dataSent;
   const factory = data.factory;
   // console.log(factory, data);
 
   const uuid = uuidv4();
   const email = "heng067@gmail.com, hengcrypto@gmail.com, tailin.mailsender@gmail.com";
+  // console.log(factory, email, uuid, data);
   const tsendmail = await ShareFunc.TestSendMail(factory, email, uuid, data);
   // console.log('OK test sent email   11');
   res.status(200).json({
@@ -118,7 +119,8 @@ exports.postEmailContactSend = async (req, res, next) => {
         mode:'complete', 
         value: "send email completed"
       },
-      success: true
+      success: true,
+      txt: 'ok check'
   });
 }
 

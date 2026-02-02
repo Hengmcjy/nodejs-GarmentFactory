@@ -1046,6 +1046,8 @@ exports.TestSendMail= async (factory, email, uuid, data) => {
 
   // console.log(factory, data);
 
+  const service = process.env.EMAILSERVICE;
+
   let user = '';
   let pass = '';
   if (factory === process.env.FACTORY2) {  // ## taian
@@ -1118,17 +1120,31 @@ exports.TestSendMail= async (factory, email, uuid, data) => {
 
 
 
-  // const emailFactory = 'tailin.mailsender@gmail.com';
-  // ## test send mail ( nodemailer )
-  let transporter = nodemailer.createTransport({
+  // mail taian.co.th , tailin.co.th
+  const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST, // SMTP host, e.g., smtp.mailprovider.com
-    // port: process.env.SMTP_PORT || 587, // Port (587 for TLS, 465 for SSL)
-    // secure: process.env.SMTP_PORT == 465, // Use SSL for port 465
+    port: process.env.SMTP_PORT || 587, // Port (587 for TLS, 465 for SSL)
+    secure: process.env.SMTP_PORT == 465, // Use SSL for port 465
     auth: {
       user,
       pass
     },
   });
+
+
+  // // ## gmail
+  // user = process.env.EMAILSENDERG; 
+  // pass = process.env.EMAILSENDERPWDG;
+  // const transporter = nodemailer.createTransport({
+  //   service: service,
+  //   port: 2525,
+  //   secure: false,
+  //   auth: {
+  //     user: user, // Your Gmail email address
+  //     pass: pass   // Your 16-character App Password
+  //   }
+  // });
+
     
   // http://localhost:4200?key=514cf9e3-6f42-4b0f-ba5e-7365988bd4d6
   // http://localhost:4200/#/confirmlink?key=4c53f2c8-6c23-4369-bf32-21db104550f0
