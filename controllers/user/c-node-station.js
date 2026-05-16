@@ -454,6 +454,7 @@ exports.getNodeFlow = async (req, res, next) => {
 
   
   try {
+    // console.log(companyID, factoryID, nodeFlowID);
     // ## get node flow 1 page
     const nodeFlow = await ShareFunc.getNodeFlow(companyID, factoryID, nodeFlowID);
 
@@ -1382,6 +1383,8 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
         let scanNode = undefined;
         let isNodeIDScanListSetting = false;
         // console.log(factory);
+        // (factory && mode === 'scan' && scan1ForAll === true)
+        // console.log(factory, mode, scan1ForAll);
         if (factory && mode === 'scan' && scan1ForAll === false) {
           // console.log(mode,   '   scan + special');
           if (factory.nodeStationSetting) {
@@ -1504,6 +1507,7 @@ exports.putScanOrderProductionBarcodeNo = async (req, res, next) => {
           });
 
         } else if (orderProduction.productionNode[0].toNode === nodeID && mode === 'scan') {
+          // console.log(factory, mode, scan1ForAll, nodeID);
           if (scan1ForAll === false) {
             
             return res.status(200).json({

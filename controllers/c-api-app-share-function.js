@@ -15258,6 +15258,10 @@ exports.getCFFNStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, o
   return staffScanF;
 }
 
+
+
+
+
 // getCFSubNodeScanDate12StaffOverall
 exports.getCFSubNodeScanDate12StaffOverall= async (companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd, qrCodeArr) => {
   
@@ -15274,14 +15278,6 @@ exports.getCFSubNodeScanDate12StaffOverall= async (companyID, factoryIDArr, orde
         "datetime": { $gte: dateStart, $lte : dateEnd}, 
         // "datetime": { $lte : dateEnd} 
       }}},
-
-      // {"factoryID":{$in: factoryIDArr}},
-      // {"nodeID":{$in: nodeIDs}},
-      // {"qrCode":{$in: qrCodeArr}},
-      // {"datetime": { $gte: dateStart}} , 
-      // {"datetime": { $lte : dateEnd}} ,
-
-      // {"subNodeFlow":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "fromNode": {$in: nodeIDs}, "qrCode": {$in: qrCodeArr} }}},
 
     ] } },
     // { $project: {			
@@ -15527,6 +15523,8 @@ exports.getCFSubNodeScanDate12Overall= async (companyID, factoryIDArr, orderIDAr
   return subNodeStaffScanF;
 }
 
+
+
 // getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall
 exports.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall= async (companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd, qrCodeArr) => {
   const subNodeStaffScan = await OrderProduction.aggregate([
@@ -15541,13 +15539,7 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall= async (companyID, 
         "nodeID": {$in: nodeIDs}, 
         "qrCode": {$in: qrCodeArr}, 
         "datetime": { $gte: dateStart, $lte : dateEnd}, 
-        // "datetime": { $lte : dateEnd} 
       }}},
-      // {"factoryID":{$in: factoryIDArr}},
-      // {"nodeID":{$in: nodeIDs}},
-      // {"qrCode":{$in: qrCodeArr}},
-      // {"datetime": { $gte: dateStart}} , 
-      // {"datetime": { $lte : dateEnd}} ,
 
     ] } },
     { $project: {			
@@ -15611,19 +15603,7 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall= async (companyID, 
       targetPlace: 1,
       color: 1,
       size: 1,
-      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
-      // productID: 1,
-      // productBarcodeNo: 1,
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
-      // lottoMainTypeID: { $substr: [ "$lottoRoundID", 9, 3 ] },	
-      // item: { $toUpper: "$item" },
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // productProblem: 1,
-      // toNode: 1,
-      // datetime: 1,
-      // createBy: 1,
+
     }},
 
     { $group: {			
@@ -15664,6 +15644,191 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall= async (companyID, 
 
   return subNodeStaffScanF;
 }
+
+// getCOrderSubNodeScanAll(companyID, orderID, nodeID)
+exports.getCOrderSubNodeScanAll = async (companyID, orderID, nodeID) => {
+  const subNodeScanAll = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: [orderID]}},
+
+      {"subNodeFlow":  {$elemMatch: {
+        "nodeID": {$in: [nodeID]}, 
+      }}},
+
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,	
+        orderID: 1,	
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        subNodeFlow: 1,  // ## 
+    }	},
+
+
+    { $unwind: "$subNodeFlow" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      orderID: 1,	
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+      factoryID: "$subNodeFlow.factoryID",
+      nodeID: "$subNodeFlow.nodeID",
+      subNodeID: "$subNodeFlow.subNodeID",	
+      subNodeType: "$subNodeFlow.subNodeType",
+    }},
+
+    { $match: { $and: [
+      {"nodeID":{$in: [nodeID]}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      factoryID: 1,
+      orderID: 1,
+      nodeID: 1,
+      subNodeID: 1,
+      subNodeType: 1,
+      targetPlace: 1,
+      color: 1,
+      size: 1,
+    }},
+
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+        orderID: '$orderID',
+        nodeID: '$nodeID',
+        subNodeID: '$subNodeID',
+        subNodeType: '$subNodeType',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+
+      },
+      countQty: {$sum: 1} ,
+      // sumProductQty: {$sum:  '$amount'} ,
+    }}  
+  ])
+  .hint( { companyID: 1, orderID: 1, "subNodeFlow.nodeID": 1} );
+  
+  // console.log(subNodeScanAll);
+
+  const subNodeScanAllF = await subNodeScanAll.map(fw => ({
+    companyID: fw._id.companyID, 
+    factoryID: fw._id.factoryID,
+    orderID: fw._id.orderID,
+    nodeID: fw._id.nodeID,
+    subNodeID: fw._id.subNodeID,
+    subNodeType: fw._id.subNodeType,
+    targetPlaceID: fw._id.targetPlace,
+    color: fw._id.color,
+    size: fw._id.size,
+    countQty: fw.countQty,
+  }));
+
+  return subNodeScanAllF;
+}
+
+// const orderProductOutsource= await ShareFunc.getCOrderOutsource(companyID, orderID, nodeID);
+exports.getCOrderOutsource= async (companyID, orderID, nodeID) => {
+  // const status = 'outsource';
+  const orderProductOutsourceNodeID = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: [orderID]}},
+
+      {"productionNode":  {$elemMatch: {
+        "isOutsource": true,
+        "fromNode": {$in: [nodeID]}, 
+      }}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,	
+        orderID: 1,	
+        // productionNode: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+        productionNode: 1,
+    }	},
+    { $unwind: "$productionNode"},
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+
+      // style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+      // status: "$productionNode.status",
+      factoryID: "$productionNode.factoryID",
+      fromNode: "$productionNode.fromNode",
+      isOutsource: "$productionNode.isOutsource",
+      // outsourceData: "$productionNode.outsourceData",
+    }	},
+
+    { $match: { $and: [
+      // {"status":status},
+      {"isOutsource":true},
+      {"fromNode":{$in: [nodeID]}},
+    ] } },
+    { $project: {			
+      _id: 1,	
+      companyID: 1,	
+      orderID: 1,	
+      factoryID: 1,	// ## outsource factoryID
+      fromNode: 1,	
+      isOutsource: 1,
+      targetPlace: 1,	
+      color: 1,	
+      size: 1,	
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        orderID: '$orderID',
+        factoryID: '$factoryID',
+        fromNode: '$fromNode',
+        isOutsource: '$isOutsource',
+        targetPlace: '$targetPlace',
+        color: '$color',
+        size: '$size',
+      },
+      countQty: {$sum: 1} ,
+    }} ,  
+  ])
+  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.fromNode": 1 } );
+
+  // console.log(orderProductOutsourceNodeID);
+
+  const result = await orderProductOutsourceNodeID.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID,
+    factoryID: fw._id.factoryID, 
+    nodeID: fw._id.fromNode,  // ##  fromNode is the outsource --> nodeID
+    isOutsource: fw._id.isOutsource,
+    targetPlaceID: fw._id.targetPlace,
+    color: fw._id.color,
+    size: fw._id.size,
+    countQty: fw.countQty,
+  }));
+
+  return result;
+  // return [];
+
+}
+
 
 // getCFSubNodeScanStyleZoneColorSizeDate12Overall
 exports.getCFSubNodeScanStyleZoneColorSizeDate12Overall= async (companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd) => {
@@ -18349,6 +18514,8 @@ exports.updateOrderProductionForBundleNo = async () => {
   return true;
 }
 
+
+//  @ last position of productionNode array
 // await ShareFunc.updateProductionNodeCrossStebPosition
 // http://192.168.1.35:3968/api/user/test/test5_1
 exports.updateProductionNodeCrossStebPosition = async (companyID, factoryID, toNode, productStatus, productionNodeArr ) => {
@@ -19459,6 +19626,27 @@ exports.getWInfo= async (companyID, factoryID) => {
   ]);	
 
   return wInfo;
+}
+
+// ShareFunc.getWProducts(companyID, factoryID, pType);
+exports.getWProducts= async (companyID, factoryID, pType ) => {
+  const wProducts = await WProduct.aggregate([
+    { $match: { $and: [
+      {"companyID": companyID},
+      {"factoryID": factoryID},
+      {"pType": pType}
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,	
+        pType: 1,
+        pCategory: 1,		
+    }	},
+    // { $sort: { seq: 1 } }
+  ]);	
+
+  return wProducts;
 }
 
 

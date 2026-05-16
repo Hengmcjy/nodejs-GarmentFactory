@@ -70,6 +70,55 @@ exports.getWDataInfo1 = async (req, res, next) => {
     const wInfo = await ShareFunc.getWInfo(companyID, factoryID);
     // console.log(wInfo);
 
+    const pType = 'products';  // ## get product list
+    const wProducts = await ShareFunc.getWProducts(companyID, factoryID, pType);
+    // console.log(wProducts);
+
+    // // ## www zone
+    // const WInfo = require("../../models/m-winfo");
+    // const WProduct = require("../../models/m-wproduct");
+
+    // ## get 1 product
+    // exports.getProduct= async (companyID, productID) 
+    // const product = await ShareFunc.getProduct(companyID, productID);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: 'token',
+      expiresIn: process.env.expiresIn,
+      wInfo: wInfo,
+      wProducts: wProducts
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errwtl001', 
+        mode:'errWTailin001', 
+        value: "error www tailin 001"
+      }
+    });
+  }
+}
+
+// // ## get  /api/wtailin/getwdata2 /:companyID/:factoryID/:pType
+// router.get("/getwdata2/:companyID/:factoryID/:pType", wTailinController.getWDataInfo2);
+exports.getWDataInfo2 = async (req, res, next) => {
+  // try {} catch (err) {}
+  console.log('getWDataInfo2');
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const pType = req.params.pType;
+  try {
+    console.log(companyID, factoryID, pType);
+
+
+    // exports.getWProducts= async (companyID, factoryID, pType )
+    const wProducts = await ShareFunc.getWProducts(companyID, factoryID, pType);
+    console.log(wProducts);
+
     // // ## www zone
     // const WInfo = require("../../models/m-winfo");
     // const WProduct = require("../../models/m-wproduct");

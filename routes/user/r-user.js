@@ -43,7 +43,8 @@ router.get("/test/test4_2", userController.getTestTest4_2); // ## get orderiDs f
 router.get("/test/test4_3", userController.getTestTest4_3); // ## get all qty orderProduction by productBarcode
 router.get("/test/test4_4", userController.getTestTest4_4); // ## get all qty orderProduction 
 router.get("/test/test5", userController.getTestTest5); // ## add productionNode to orderProduction
-router.get("/test/test5_1", userController.getTestTest5_1); // ## add productionNode to orderProduction @ position nodeID
+router.get("/test/test5_1", userController.getTestTest5_1); // ## add productionNode to orderProduction @ position nodeID //  @ last position of productionNode array
+router.get("/test/test5_2", userController.getTestTest5_2); // ## add productionNode to orderProduction @ position nodeID //  @ first position of productionNode array
 router.get("/test/test6", userController.getTestTest6); // ## ## update orderProduction / edit bundleNo
 router.get("/test/test7", userController.getTestTest7); // ## cancel queue order all
 router.get("/test/test8", userController.getTestTest8); // ## cancel queue order (some)
@@ -53,7 +54,7 @@ router.get("/test/test9", userController.getTestTest9); // ## cancel queue order
 router.get("/test/test10", userController.getTestTest10); // ## cancel queue order (some) 3 ******************************
 router.get("/test/test12", userController.getTestTest12); // ## edit orderProduction forloss --> normal
 router.get("/test/test16", userController.getTestTest16);  // delete all orderProduction , orderProductionQueueList , orderProductionQueue
-
+router.get("/test/testOrderYarn1", userController.getTestOrderYarn1); // ## update yarn lot 
 
 router.get("/test/test14", userController.getTestTest14); // ## cancel orderProduction , queue (all) 100%
 
@@ -69,6 +70,9 @@ router.get("/test/test23_1", userController.getTestTest23_1);  // ## view group 
 
 router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
 router.get("/test/test20", userController.getTestTest20);  // ##  update ver for orderProductionQueue = queueInfo --> []
+
+router.get("/test/test24", userController.getTestTest24);  // ##  view orderProduction productionNode.toNodeID = ""
+router.get("/test/test24-1", userController.getTestTest24_1);  // ##  update orderProduction productionNode.toNodeID = ""
 
 
 // ## staff scan node station
@@ -293,23 +297,23 @@ let projectId = "mystorage-371212"; // Get this from Google Cloud
 let keyFilename = './'+'newkey.json'; // Get this from Google Cloud -> Credentials -> Service Accounts
 const storageGCG = new Storage({
   projectId,
-  // keyFilename,
-  credentials: 
-  {
+  keyFilename,
+  // credentials: 
+  // {
     
-    "type": "service_account",
-    "project_id": "mystorage-371212",
-    "private_key_id": "b5a26b9feada14038bde21767a7b0b9757113d37",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDKrWIftkWKoAdt\n4W4YYplH818wbcm7URtHRmlbYSL3Ox6p/gsWMPlj3xdXdjYr8d3GvUZYsAUy4g+E\nZ0+pwEpWqhhNKVdCXcXoj8enaRupGVO+3pwL5JQLZ4vNbyRIgPVx9sNpe4kSab8f\nyqjMWB7DDtC8owpNHDtjdfwLWgyzKDRsmn5HIKUCEBeCiP1C2RNcGQcyJ+Qt9lS2\nw243Ub2x2SmQjVkvVGOcCnFBUyfsxj5u9pZ4Cru5AZ6t29hAi9M3OjQ69caD+9c0\nZVorb8n/xJedMHyAGUWBS0QfqENJCH0UOvlJq4NvvJcTTrf7uns2rVuMsM4xeuLC\nIjt2sarNAgMBAAECggEAY06MHyywq0lZCopj5vfc0gfZ8sFAkJMfkg9ajSctukTR\n9AohhYiOkdRcPAMUbPjQKVJRdyAcE//3CXGTc4HgCtHCIYCpnD+VOqvEcG9MWdEq\nmwG5JQylS2c7dXfJJ+tkGCiIPBWHJqoAt0OV7LYasImAVoVuhTTZlpTXX/qJ8XfX\nfZvIvAKiL4Rk0qAKhdzVe8+bCSkofOpw6y0tVe3iCXa0FBTFEfR868jxbES/LHT7\nWlPQK2iNPTmnKH9i2EjQcXrL6MgTx2KEe7EGOWAxDO6mIjylAD/osvACPLN7KA0F\nqg2noH7j3FXfr8li4kcD8qF3DwaINfTlfZs52MnHwwKBgQD/EUw61NeCTgZjdW5r\nHpBvtNpDeoQjyOspKfO8/dNnOrxuVgmQN0MrgP5GnEXRgBSTpx7+QUrnIgUqWYUz\najDsLWSXgpBK2whq15zkYcFSxldXlKCAQ0V4Wpq7P5viFaVqVT6ZGO+GO/bzczOf\nc4LJiH9SEhkKrwETYv+4KByX1wKBgQDLaw5/t9MOsyPw8V+d+i36Nut63XRPyFF7\ngapVmFJDewxwlhzi6KkVP7mNgrPSbEMkSWrXb5DLC3okMw7c/wxLaQt1HBTIo9mr\nimZpEaW9nz4N1lbWqVBmToRkHho2bvlU+okp6xOwStuTFfRipgbIXkBDlaFAtJ3C\n3f675Mgt+wKBgQDO2ptktsoTve1GaazjqITgYt4DjW9uifnUh1ZI9dylQiggnxvg\nXkDWHiWY5BFnJqUJXaYv8ompSpi/0JvKp5sHXoTOrq8QVfPMmhF90Z1z4LBisYE8\no9HKGkiUBLEJuB5PTtSWWned+DF9G/dIn+f4Qv9mcpDmbijELSxPkBAoPwKBgGep\nuQvRLBeTpz9EYovpUMDwd/R3Iqz90rh0Dc/s/g8xh9dgSHxCQNh5TyAUeXtEfLrj\nRzVev5UZ1jbYZjytJSDQ+WvG0bil92l58FKfEa2el0sJ7dsbEcPxQ3qZ9JXE2/84\nZeocyD3RCDDewVn8bfxyO6G1gSWuZa9G3mf2YSU9AoGBANkCC1jTaCs9YK9IwSLs\nom1sfbA/b1NDvF0Hyz/YtQyem+egVtUoFddRl0pCm78ynm/PbJUOk+a54qbkEO4I\n4key2LGMFgxOpT/311yMfP7otp3cSvNfy/0VFOEovG2owjjj89Lta3wE3RfKN6XF\nQ3C9s4nTNmtA0pROrZBtpylG\n-----END PRIVATE KEY-----\n",
-    "client_email": "mystorageimage2@mystorage-371212.iam.gserviceaccount.com",
-    "client_id": "102661079380883436477",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mystorageimage2%40mystorage-371212.iam.gserviceaccount.com",
-    "universe_domain": "googleapis.com"
+  //   "type": "service_account",
+  //   "project_id": "mystorage-371212",
+  //   "private_key_id": "db39dc9c43e102f199a612f4a7418c5ef9bfd430",
+  //   "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDrinYOcH8U2raN\nz8HjW2r8Jp/yb2lRr8mtAdGxbxqBDNRtGVQvAbN/8vYefFIggMP71MAYqj4W51XN\nmFtp+ev+556bzsjaa7PQm/nXuOmZ0GJiB8sexQ8E2+IaaKJ4w89sHDczcnu5WiPL\n/yhwXGvVb4CgM2tjtz5poY8BPo9LPvdzz8m9bYiMQRDOfjXHLVE71UZ+iM8zpFYp\nuGr4zm0ZcNpOS8gjTdwbYGzDYFrRmbeVyfJXl33KKJsa+alnOK0Fyj8yHuOAUmwO\nmOc4wbkRNAiPFfVVY7fp9IgpmN3/ex70jVEWtHd7PKA2XOHg+Fh/5zLvHlvbW/OL\nJUMqcgTJAgMBAAECggEABrYmOTDwl2bIWwqaNvuuH6YMb93yVZBJfMXyPxjQG8YX\n5c2aCzvZwkcpRwLvsSWSJWJxddJ2B0o2CkVxh2JxHHfmRQDI/YZM9EsEJ7wztdJi\nV0eVvK2h86y984GF7aSAts8oAy3bg34jdSbdtLPsI65exHx/7nJfKNHgb16PD+EF\nsH3O9o/LOXinX/0eh3jVo452gK151kSQ4wN0przCw1aJuzYDJ5bbuMwJHsAtjOzq\n4OnctL4xPsqQUufQ9OYNTsp7Cqx7eVdqS3BGNBffv6tjc1BAxlF7TQooJWV0H6lC\ntmlsQbxA8ieMukmccu6+3JmjAzFue+BY12UD/T3QDQKBgQD7H655JkEkltweGNG3\nM6NQGZ5yL8249PVUFh2kuA6AIEJMXk9iYmmoHsFSEJJ1DHATJFiHTFTOxbEmv2pR\nWXev7XpwQIaWrJVAJDy3cOxcaaIuMEik22eHaMkB30tntOtu6qGUjV71mFUUoJHK\n/UDc66EAHMpjgtOif20zedPtjQKBgQDwHVFzRMheWOn0qp2+XeNNShe/fDZt+10u\nBnFitlCE2mMhKI7wnAZC0RJ/c/c+zlFSZXvAeyBp0C6w2hKf2MqFsLDjs+nes4QC\nl5V7NV4MdrO1a5puaLMjvbYj+scroZf26Y+c/A1c6Hfy+LxU2865dhHFFVNuh8hL\nmQHu6d4PLQKBgBWH4tqqR/2OHbNK53gwqjjs6WPa62WHQx2Bg+siiMO9gFGx6FaE\nH5D1iheyKgx1E4rgm+KFzeOomYa79K6i4BsqXkwPjDqQ8377XGVR/kHyIKCbLS9N\nTHQUrN9HONzcay8oWNA2ysR92hWZqsZfrlcCsNwkm8mqZuDQ0hkOwfflAoGAc0CP\nVPXB+09QVOkEOFjWfsW+qmHTumy56BqdmBUMhwhQJp1SJvmtI6s45sZh+dqMPDGL\n+fLftwp/LtItuF4Vr6AE9/bmnceq6Jeb33zZPMBJOB6DDNXijphD8fcwXKf+yjyH\ne4GcZGkNEioEM/MhwfGDTAcVeetg37B8thG5Ta0CgYARYkKO2TbT9cwzigkHws2w\nRamO0DSj2tVXeixANvEIWbKOoHzNIM39oaYt0/sShjYduc7vz/fvJEem9nG/ggKN\n5Ghd6zmhdOxdEFIFTSyKqkv8dYdz+DrBg//nrk4ranGAlyPGJBMSUmWRJxsoPqsa\nJpUH2kZ/r16CsWR0tATzVQ==\n-----END PRIVATE KEY-----\n",
+  //   "client_email": "mystorageimage2@mystorage-371212.iam.gserviceaccount.com",
+  //   "client_id": "102661079380883436477",
+  //   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  //   "token_uri": "https://oauth2.googleapis.com/token",
+  //   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  //   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mystorageimage2%40mystorage-371212.iam.gserviceaccount.com",
+  //   "universe_domain": "googleapis.com"
     
-  }
+  // }
 });
 
 // ## go.garment.mail@gmail.com

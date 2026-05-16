@@ -858,6 +858,53 @@ exports.getSubNodeFlowTypeList = async (req, res, next) => {
   }
 }
 
+// router.get("/get/Order/SubNode/:companyID/:orderID/:nodeID", orderController.getCOrderSubNodeScanAll);
+exports.getCOrderSubNodeScanAll = async (req, res, next) => {
+  // try {} catch (err) {}
+  const userID = req.userData.tokenSet.userID;
+  const companyID = req.params.companyID;
+  const orderID = req.params.orderID;
+  const nodeID = req.params.nodeID;
+  // console.log('getCOrderSubNodeScanAll');
+
+  try {
+
+    // console.log(companyID, orderID, nodeID);
+    const subNodeScanAll = await ShareFunc.getCOrderSubNodeScanAll(companyID, orderID, nodeID);
+    // console.log(subNodeScanAll);
+
+    // ## get outsource product in a node
+    const orderProductOutsourceNodeID= await ShareFunc.getCOrderOutsource(companyID, orderID, nodeID);
+    // const orderProductOutsourceNodeID= [];
+    // console.log(orderProductOutsourceNodeID);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      subNodeScanAll: subNodeScanAll,
+      orderProductOutsourceNodeID: orderProductOutsourceNodeID,
+      // ordersCount: ordersCount
+      // factory: factory
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO025', 
+        mode:'errgetCOrderSubNodeScanAll', 
+        value: "error get company SubNode scan all"
+      }
+    });
+  }
+}
+
+
 // router.get("/get/OrderLost/list/:companyID/:userID/:orderID", orderController.getOrderLostList);
 exports.getOrderLostList = async (req, res, next) => {
   // try {} catch (err) {}

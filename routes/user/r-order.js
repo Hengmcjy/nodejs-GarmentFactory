@@ -65,6 +65,9 @@ router.put("/update5/setSubNodeFlowCost", checkAuth, checkUUID, orderController.
 // getSubNodeFlowTypeList
 router.get("/get/Order/SubNodeFlowType/list/:companyID/:userID",checkAuth, checkUUID, orderController.getSubNodeFlowTypeList);
 
+// getCOrderSubNodeScanAll (companyID: string, orderID: string, nodeID: string)
+router.get("/get/Order/SubNode1/:companyID/:orderID/:nodeID",checkAuth, checkUUID, orderController.getCOrderSubNodeScanAll);
+
 
 router.get("/get/OrderLost/list/:companyID/:userID/:orderID",checkAuth, checkUUID, orderController.getOrderLostList);
 

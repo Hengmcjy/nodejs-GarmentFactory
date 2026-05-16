@@ -7,8 +7,9 @@ const wProductSchema = mongoose.Schema({
   factoryID: { type: String},
   pType: { type: String},  // ## main , info , production, products
   pCategory: [{   // ## 
-    brand: { type: String },
-    pCategoryName: { type: String },
+    customerName: { type: String },
+    setName: { type: String },
+    pCategoryName: { type: String },  // ## main , info , production, products
     seq: { type: Number },
     pdID: { type: String },
     colorID: { type: String },

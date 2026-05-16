@@ -13,6 +13,9 @@ const router = express.Router();
 // ## get  /api/wtailin/getwdata1 /:companyID/:factoryID
 router.get("/getwdata1/:companyID/:factoryID", wTailinController.getWDataInfo1);
 
+// ## get  /api/wtailin/getwdata2 /:companyID/:factoryID/:pType
+router.get("/getwdata2/:companyID/:factoryID/:pType", wTailinController.getWDataInfo2);
+
 // ##   /api/wtailin/sendcontact/mail
 router.post("/sendcontact/mail", wTailinController.postEmailContactSend);
 

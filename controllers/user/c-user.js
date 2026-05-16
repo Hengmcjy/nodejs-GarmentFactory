@@ -258,6 +258,8 @@ exports.getTestTest16 = async (req, res, next) => {
   return res.end();
 }
 
+
+
 // // ## http://192.168.53.42:3968/api/user/test/test9
 // ## cancel queue order  by product barcode
 exports.getTestTest9 = async (req, res, next) => {
@@ -606,21 +608,21 @@ exports.getTestTest22_1 = async (req, res, next) => {
     143340, 143341, 143342, 143343, 143344, 143345, 143346, 143347, 143348, 143349, 143350,, 143351, 143352
   ];
     
-    result0 = await OrderProduction.updateMany(
-      {$and: [
-        {"companyID":companyID} , 
-        {"orderID":orderID} , 
-        {"bundleNo":{$in: bundleNos}},
-      ]}, 
-      {
-        $pop: { productionNode: 1 },  // ## delete last element of productionNode
-        // $pop: { outsourceData: 1 }
-      },
-    );
-    console.log('delete last element of productionNode');
+  result0 = await OrderProduction.updateMany(
+    {$and: [
+      {"companyID":companyID} , 
+      {"orderID":orderID} , 
+      {"bundleNo":{$in: bundleNos}},
+    ]}, 
+    {
+      $pop: { productionNode: 1 },  // ## delete last element of productionNode
+      // $pop: { outsourceData: 1 }
+    },
+  );
+  console.log('delete last element of productionNode');
 
-    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
-    res.setHeader('Content-Type', 'text/html');
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  res.setHeader('Content-Type', 'text/html');
   res.write('<html>');
   res.write('<head><title>delete last element of productionNode</title><head>');
   res.write('<body>');
@@ -631,6 +633,108 @@ exports.getTestTest22_1 = async (req, res, next) => {
   res.write('</html>');
 
 
+}
+
+// ## http://192.168.1.33:3968/api/user/test/testOrderYarn1
+// router.get("/test/testOrderYarn1", userController.getTestOrderYarn1); // ## update yarn lot 
+exports.getTestOrderYarn1 = async (req, res, next) => {
+  const companyID = 'c000001';
+  const orderIDs = ['AA0VIA6A'];
+  const targetPlaces = ['UK--'];  // UK--   ASIA   JAPN    SGHI
+  const color = 'BW--------';
+  const yarnLots = [
+    {yarnLotID: 'G:DC25066681-2 '}
+    ,{yarnLotID: 'A:DC25133334-2'}
+  ]
+
+  const orderP = await OrderProduction.aggregate([
+      { $match: { $and: [
+        {"companyID":companyID},
+        {"orderID":{$in: orderIDs}},
+        // {"bundleNo": { $gte: bunNoStart, $lte : bunNoEnd}},
+      ] } },
+      { $project: {			
+          _id: 1,	
+          companyID: 1,	
+          orderID: 1,	
+          bundleNo: 1,
+          // productCount: 1,
+          // productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+          targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+          color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+          // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+          // yarnLot: 1,
+          // forLoss: 1,
+      }	},
+
+      { $match: { $and: [
+        // {"status":status},
+        // {"status":{$in: status}},
+        {"targetPlace":{$in: targetPlaces}},
+        
+        {"color":color},
+        // { "sTypeOtus": { $exists: sTypeOtusExist } }
+        // {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]}
+      ] } },
+      { $project: {			
+          _id: 1,	
+          companyID: 1,	
+          orderID: 1,	
+          bundleNo: 1,
+          targetPlace: 1,
+          color: 1,
+      }	},
+
+
+      { $group: {			
+        _id: { 
+          companyID: '$companyID',
+          orderID: '$orderID',
+          // productBarcode: '$productBarcode',
+          bundleNo: '$bundleNo',
+          // productCount: '$productCount',
+          // targetPlace: '$targetPlace',
+          // color: '$color',
+          // size: '$size',
+          // yarnLot: '$yarnLot',
+          // forLoss: '$forLoss',
+        },
+        // sumFactoryOutsQty: {$sum: 1} ,
+        // sumFactoryOutsQty: {$sum: '$productCount'} ,
+      }}   
+    ])
+    .hint( { companyID: 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
+  // console.log(orderP, orderP.length);
+
+  // ## get bundleNo list
+  const bundleNoList = orderP.map(i=>i._id.bundleNo);
+  console.log(bundleNoList);
+
+  // ## update yarnLot by bundleNo list
+  result1 = await OrderProduction.updateMany(
+    {$and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+      {"bundleNo":{$in: bundleNoList}},
+    ]},
+    {
+      "yarnLot": yarnLots,
+
+    }); 
+    
+  console.log('update orderProduction -> yarnlot complete');
+
+
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>update yarn lot </title><head>');
+  res.write('<body>');
+  res.write('<h1> update yarn lot <br>'+orderIDs.toString()+'<br>'+color+'<br>'+targetPlaces.toString()+'</h1></br>');
+  res.write('<h1></h1>');
+  res.write('<h1>'+ ' OK '+current+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
 }
 
 // ## http://192.168.1.36:3968/api/user/test/test22_2
@@ -885,6 +989,191 @@ exports.getTestTest23_1 = async (req, res, next) => {
   res.write('</body>');
   res.write('</html>');
 }
+
+
+// ## http://192.168.1.33:3968/api/user/test/test24
+// router.get("/test/test24", userController.getTestTest24);  
+// // ##  view orderProduction productionNode.toNodeID = ""
+exports.getTestTest24 = async (req, res, next) => {
+  console.log('getTestTest24');
+
+  const companyID = 'c000001';
+  const orderIDs = [
+    'AA0VUA6A',
+    // 'BA1SEA6A', 
+    // 'BA1SDA6A',
+    // 'BA1SNA6A', 'BA1STA6A'
+  ];
+  const toNode = '';
+  const fromNode = '6.PRESSING';
+
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+      // {"productBarcodeNoReal":productBarcodeNo},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        // orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcode: 1,
+      // datetime: "$productionNode.datetime",
+      // factoryIDOut: "$productionNode.factoryID",
+      fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      // outsourceData: "$productionNode.outsourceData",
+    }},
+
+    { $match: { $and: [
+      // {"datetime": { $gte: datetime1, $lte : datetime2}} , 
+      // {"factoryIDOut":factoryIDOut},
+      {"toNode":toNode},
+      {"fromNode":fromNode},
+      // {"productBarcode":productBarcode},
+      // {"productBarcode":{$in: productBarcodes}},
+      // {"factoryID":{$in: factoryIDArr}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,	
+      // productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      // outsourceDataLast: { $slice: [ "$outsourceData", -1]  },  // ## get last 1 element
+    }},
+
+  ]).hint( { companyID: 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
+
+
+  // console.log('orderProduct.length == >',orderProduct.length);
+  // console.log('orderProduct == >',orderProduct);
+
+  const productBarcodeNoReals =  Array.from(new Set(orderProduct.map((item) => item.productBarcodeNoReal)));
+  console.log(productBarcodeNoReals);
+}
+
+
+// ## http://192.168.1.33:3968/api/user/test/test24-1
+// router.get("/test/test24-1", userController.getTestTest24_1);  
+// ##  update orderProduction productionNode.toNodeID = ""
+exports.getTestTest24_1 = async (req, res, next) => {
+  console.log('getTestTest24_1');
+
+  const companyID = 'c000001';
+  const orderIDs = [
+    'AA0VUA6A',
+    // 'BA1SEA6A', 
+    // 'BA1SDA6A',
+    // 'BA1SNA6A', 'BA1STA6A'
+  ];
+  const toNode = '';
+  const fromNode = '6.PRESSING';
+
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":{$in: orderIDs}},
+      // {"productBarcodeNoReal":productBarcodeNo},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        // factoryID: 1,		
+        // orderID: 1,	
+        // bundleNo: 1,
+        // productID: 1,
+        // productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+        // productCount: 1,
+        // productionDate: 1,
+        // productStatus: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	},
+    { $unwind: "$productionNode" },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,
+      // factoryID: 1,		
+      orderID: 1,	
+      // bundleNo: 1,
+      productBarcodeNoReal: 1,
+      productBarcode: 1,
+      // datetime: "$productionNode.datetime",
+      // factoryIDOut: "$productionNode.factoryID",
+      fromNode: "$productionNode.fromNode",
+      toNode: "$productionNode.toNode",
+      // outsourceData: "$productionNode.outsourceData",
+    }},
+
+    { $match: { $and: [
+      // {"datetime": { $gte: datetime1, $lte : datetime2}} , 
+      // {"factoryIDOut":factoryIDOut},
+      {"toNode":toNode},
+      {"fromNode":fromNode},
+      // {"productBarcode":productBarcode},
+      // {"productBarcode":{$in: productBarcodes}},
+      // {"factoryID":{$in: factoryIDArr}},
+    ] } },
+    { $project: { 
+      _id: 0, 
+      companyID: 1,	
+      // productBarcodeNo: 1,
+      productBarcodeNoReal: 1,
+      // outsourceDataLast: { $slice: [ "$outsourceData", -1]  },  // ## get last 1 element
+    }},
+
+  ]).hint( { companyID: 1, orderID: 1, productBarcodeNoReal: 1 } );
+
+
+  // console.log('orderProduct.length == >',orderProduct.length);
+  // console.log('orderProduct == >',orderProduct);
+
+  const productBarcodeNoReals =  Array.from(new Set(orderProduct.map((item) => item.productBarcodeNoReal)));
+  // console.log(productBarcodeNoReals);
+
+  // const productBarcodeNoReals001 = ['AA0VUA6A    JAPN-----26PK--------XL--00100']; 
+  const toNode2 = '7.QC';
+
+  const result2 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        {"orderID":{$in: orderIDs}},
+        {"productBarcodeNoReal":{$in: productBarcodeNoReals}},
+      ]},
+      {
+        // "factoryID": toFactoryID,
+        $set: { "productionNode.$[elem].toNode" : toNode2}
+      }, 
+      {
+        multi: true, 
+        arrayFilters: [  {
+          // "elem.factoryID": fromFactoryID,
+          "elem.fromNode": fromNode,
+        } ] 
+      }); 
+
+}
+
 
 // ## http://192.168.1.35:3968/api/user/test/test19
 // router.get("/test/test19", userController.getTestTest19);  // ##  update ver for orderProductionQueue all
@@ -1481,7 +1770,7 @@ exports.getTestTest6 = async (req, res, next) => {
 
 // // ## http://192.168.1.35:3968/api/user/test/test5_1
 // router.get("/test/test5_1", userController.getTestTest5_1);
-// ## add productionNode to orderProduction @ position nodeID
+// ## add productionNode to orderProduction @ position nodeID //  @ last position of productionNode array
 exports.getTestTest5_1 = async (req, res, next) => {
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   const companyID = 'c000001';
@@ -1554,15 +1843,15 @@ exports.getTestTest5_1 = async (req, res, next) => {
     },
   ];
 
-  // await this.asyncForEach(bundleData, async (item1) => {
-  //   const result = await ShareFunc.updateProductionNodeCrossStebPosition(
-  //     item1.companyID, 
-  //     item1.factoryID,
-  //     item1.toNode,
-  //     item1.productStatus,
-  //     item1.productionNodeArr,
-  //     );
-  // });
+  await this.asyncForEach(bundleData, async (item1) => {
+    const result = await ShareFunc.updateProductionNodeCrossStebPosition(
+      item1.companyID, 
+      item1.factoryID,
+      item1.toNode,
+      item1.productStatus,
+      item1.productionNodeArr,
+      );
+  });
 
   const result = 'OK';
 
@@ -1571,6 +1860,71 @@ exports.getTestTest5_1 = async (req, res, next) => {
   res.write('<head><title>add productionNode @ position nodeID</title><head>');
   res.write('<body>');
   res.write('<h1>add productionNode to orderProduction @ position nodeID</h1></br>');
+  res.write('<h1>add push to nodeID we need to</h1>');
+  res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+}
+
+// // ## http://192.168.1.33:3968/api/user/test/test5_2
+// router.get("/test/test5_2", userController.getTestTest5_2);
+// ## add productionNode to orderProduction @ position nodeID //  @ first position of productionNode array
+exports.getTestTest5_2 = async (req, res, next) => {
+  const datetime = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const companyID = 'c000001';
+  const factoryID = 'f000003';
+  const orderID = 'AA0VGA6A';
+  const fromNode = 'starterNode';
+  const toNode = '1.COMPUTER-KNITTING'; // 1.COMPUTER-KNITTING
+  const productStatus = ['normal'];
+  const isOutsource = false;
+  const outsourceData = [];
+  const createBy = {userID: 'admin', userName: 'admin'};
+  // 1.COMPUTER-KNITTING
+  // 2.PANAL-INSPECTION
+  // 3.LINKING
+  // 4.MENDING
+  // 5.WASHING
+  // 6.PRESSING
+  // 7.QC
+
+  const productionNodeArr = [
+    {
+      factoryID: factoryID,
+      fromNode: fromNode,
+      toNode: toNode,
+      datetime: datetime,
+      status: 'normal',
+      isOutsource: false,
+      outsourceData: [],
+      problemID: '',
+      problemName: '',
+      createBy: {userID: '1xx1', userName: '1xx1'}
+    }
+  ];
+
+  const startBundleNo = 551709;
+  const endBundleNo = 551720;
+  const result1 = await OrderProduction.updateMany(
+      {$and: [
+        {"companyID":companyID},
+        {"orderID":orderID},
+        {"bundleNo": { $gte: startBundleNo}} , 
+        {"bundleNo": { $lte : endBundleNo}} ,
+      ]}, 
+      {$push: {productionNode: {$each:productionNodeArr,  $position: 0}}},  // ## add new element at the first
+      );
+
+
+  const result = 'OK';
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>add productionNode @ position nodeID</title><head>');
+  res.write('<body>');
+  res.write('<h1>add productionNode to orderProduction @ position nodeID</h1></br>');
+  res.write('<h1>add productionNode to orderProduction  @ first position of productionNode array </h1></br>');
   res.write('<h1>add push to nodeID we need to</h1>');
   res.write('<h1>'+result+'</h1>');
   res.write('</body>');
