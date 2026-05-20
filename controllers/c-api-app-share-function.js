@@ -28,6 +28,8 @@ const Dtorderoutsourcefac = require("../models/m-dt-currentcompanyorderoutsource
 const Dtcompanyorderoutsource = require("../models/m-dt-companyorderoutsource");
 
 
+const Useracc = require("../models/m-acc-user");
+
 const User = require("../models/m-user");
 const UserGroupScan = require("../models/m-userGroupScan");
 const UserClass = require("../models/m-userClass");
@@ -253,6 +255,26 @@ exports.genTokenSet= async (tokenSet, expiresIn) => {
       osVer: tokenSet.osVer
     },
     process.env.JWT_KEY,
+    { expiresIn: expiresIn }
+  );
+  return token;
+}
+
+// ## gen/set Accounting/Fin tokenSet user  /   TOKENExpiresIn=1h
+exports.genATokenSet= async (tokenSet, expiresIn) => {
+  const token = jwt.sign(
+    {
+      appName: tokenSet.appName,
+      appVer: tokenSet.appVer,
+      userID: tokenSet.userID,
+      uuid5: tokenSet.uuid5,
+      browser: tokenSet.browser,
+      browserVer: tokenSet.browserVer,
+      deviceType: tokenSet.deviceType,
+      os: tokenSet.os,
+      osVer: tokenSet.osVer
+    },
+    process.env.JWT_KEY_ACC,
     { expiresIn: expiresIn }
   );
   return token;
@@ -1747,6 +1769,21 @@ exports.editStaffPassNew= async (userID, newPass, state) => {
     userPass = hash;
     
     editStaffPass = await User.updateOne(  
+      {$and: [
+        {"userID":userID}, 
+        {"state":state},
+      ]},
+      { "uInfo.userPass": userPass});
+  });
+  return true;
+}
+
+exports.editAStaffPassNew= async (userID, newPass, state) => {
+  let userPass = '';
+  bcrypt.hash(newPass, 10).then(async (hash) => {
+    userPass = hash;
+    
+    editStaffPass = await Useracc.updateOne(  
       {$and: [
         {"userID":userID}, 
         {"state":state},

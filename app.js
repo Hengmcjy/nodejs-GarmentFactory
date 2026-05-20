@@ -33,6 +33,8 @@ const nsRoutes = require("./routes/user/r-node-station");
 const repRoutes = require("./routes/user/r-report");
 const deliRoutes = require("./routes/user/r-deli");
 
+const userAccRoutes = require("./routes/user/r-acc-user");
+
 const wTailinRoutes = require("./routes/user/r-wwwtailin");
 
 mongoose.set('strictQuery', false);
@@ -126,6 +128,10 @@ app.use("/api/cus", cusRoutes);
 app.use("/api/ns", nsRoutes);
 app.use("/api/rep", repRoutes);
 app.use("/api/deli", deliRoutes);
+
+
+// ACC zone
+app.use("/api/a/user", userAccRoutes);
 
 // wTailinRoutes
 app.use("/api/wtailin", wTailinRoutes);
