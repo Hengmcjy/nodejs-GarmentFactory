@@ -1559,6 +1559,7 @@ exports.getControlApp= async () => {
     imgServer: controlAppf.app.imgServer,
     ver: controlAppf.app.ver,
     appVer: controlAppf.app.appVer,
+    appA: controlAppf.appA,
   };
   // console.log(controlApp);
   return controlApp;
@@ -1586,6 +1587,21 @@ exports.getControlAppseasonYearActive= async () => {
   };
   // console.log(appControl);
   return controlApp;
+}
+
+// ## get app accounting
+exports.getControlAppA= async (companyID) => {
+  // console.log('appControl');
+  const controlAppf = await ControlApp.findOne();
+  // console.log(controlAppf);
+  const appA = controlAppf.appA;
+  const appAF = appA.filter(i =>{i.companyID == companyID});
+  // const controlAppA = {
+  //   seasonYearActive: controlAppf.appA,
+  // };
+  // console.log(appControl);
+  const controlAppA= appAF[0]?appAF[0]:null;
+  return controlAppA;
 }
 
 exports.getControlAppOutSourceLocationDepartment= async () => {
@@ -3979,6 +3995,130 @@ exports.getCSZCSOrderProductionBundleNosByBundleNo= async (companyID, orderIDs, 
 
   // console.log(orderProduction1F);
   return orderProduction1F;
+}
+
+// ShareFunc.getCFOrderOutsourceOwe(companyID, factoryID, orderIDs, statuss);
+exports.getCFOrderOutsourceOwe= async (companyID, factoryID, orderIDs, statuss) => {
+  const orderP = await OrderProduction.aggregate([
+        { $match: { $and: [
+          {"companyID":companyID},
+          {"orderID":{$in: orderIDs}},
+        ] } },
+        { $project: {			
+            _id: 1,	
+            companyID: 1,	
+            orderID: 1,	
+            bundleNo: 1,
+            productCount: 1,
+            productionNode: 1,
+            targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+            color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+            size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+            
+            productionNode1: { $slice: [ "$productionNode", -1] },  // ## get last 1 element
+
+            // productionNode2: { $slice: [ "$productionNode", -2] },  // ## get last 2 element
+
+            // arrayWithoutLast: {   // ## all elements before the last
+            //   $slice: ["$productionNode", 0, { $subtract: [{ $size: "$productionNode" }, 1] }] 
+            // },
+  
+            // productionNodeLL1: { $slice: [   // ## all elements before the last and then get last
+            //   {$slice: ["$productionNode", 0, { $subtract: [{ $size: "$productionNode" }, 1] }]},-1]
+            // },
+        }	},  
+
+        { $unwind: "$productionNode1" },
+        { $project: {			
+            _id: 1,	
+            companyID: 1,	
+            // factoryID: "$productionNode1.factoryID",
+            orderID: 1,	
+            bundleNo: 1,
+            productCount: 1,
+            targetPlace: 1,
+            color: 1,
+            size: 1,
+
+            productionNode: 1,
+            factoryID: "$productionNode1.factoryID",
+            // nodeID: "$productionNode1.toNode",
+            status: "$productionNode1.status",
+
+        }	}, 
+  
+        { $match: { $and: [
+          // {"orderID":{$in: orderIDs}},
+          {"factoryID":factoryID},
+          {"status":{$in: statuss}},
+        ] } },
+        { $project: {			
+            _id: 1,	
+            companyID: 1,	
+            // factoryID: "$productionNode1.factoryID",
+            orderID: 1,	
+            bundleNo: 1,
+            productCount: 1,
+            targetPlace: 1,
+            color: 1,
+            size: 1,
+
+            factoryID: 1,
+            // nodeID: 1,
+            status: 1,
+
+            // arrayWithoutLast: 1,
+            productionNode: 1,
+            // productionNode1: { $slice: [ "$productionNode", -1] }
+            // productionNode2: 1,
+            productionNodeLL1: { $slice: [   // ## all elements before the last and then get last
+              {$slice: ["$productionNode", 0, { $subtract: [{ $size: "$productionNode" }, 1] }]},-1]
+            },
+        }	}, 
+
+        { $unwind: "$productionNodeLL1" },
+        { $project: {			
+            _id: 1,	
+            companyID: 1,	
+            // factoryID: "$productionNode1.factoryID",
+            orderID: 1,	
+            bundleNo: 1,
+            productCount: 1,
+            targetPlace: 1,
+            color: 1,
+            size: 1,
+
+            factoryID: 1,
+            nodeID: "$productionNodeLL1.toNode",
+            status: 1,
+        }	},
+        { $group: {			
+          _id: { 
+            companyID: '$companyID',
+            orderID: '$orderID',
+            targetPlace: '$targetPlace',
+            color: '$color',
+            size: '$size',
+            factoryID: '$factoryID',
+            nodeID: '$nodeID',
+        },
+          countQty: {$sum: 1} ,
+        }} 
+      ])
+      .hint( { companyID: 1, orderID: 1, "productionNode.factoryID": 1, "productionNode.fromNode": 1, "productionNode.datetime": -1, "productionNode.status": 1} );
+
+  // console.log(orderP);
+  const orderPF = await orderP.map(fw => ({
+    companyID: fw._id.companyID, 
+    orderID: fw._id.orderID,
+    targetPlaceID: fw._id.targetPlace,
+    color: fw._id.color,
+    size: fw._id.size,
+    factoryID: fw._id.factoryID,
+    nodeID: fw._id.nodeID,
+    countQty: fw.countQty,
+  }));
+  return orderPF;
 }
 
 exports.getOrderProductbundleID= async (companyID, orderID, ver, productBarcodeNoReal) => {

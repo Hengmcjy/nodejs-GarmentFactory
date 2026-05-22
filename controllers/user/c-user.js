@@ -2246,6 +2246,125 @@ exports.getTestTest4_4 = async (req, res, next) => {
   return res.end();
 }
 
+// ## http://192.168.1.33:3968/api/user/test/test4_5
+// router.get("/test/test4_5", userController.getTestTest4_5); // ## get orderProduction.productionNode 
+// ## all elements before the last
+exports.getTestTest4_5 = async (req, res, next) => {
+  // console.log('getTestTest4_5')  
+  // c000001 f000009 [ 'outsource' ] [ 'AA0V7A6A' ]
+  const companyID = 'c000001';
+  const factoryID = 'f000007';
+  const factoryIDs = ['f000007'];
+  const orderIDs = ['AA0VMA6A'];
+  const bundleNo = 632026;
+
+  const status = ['outsource'];
+
+  const orderP = await OrderProduction.aggregate([
+      { $match: { $and: [
+        {"companyID":companyID},
+        {"orderID":{$in: orderIDs}},
+        {"bundleNo":bundleNo},
+        // {"bundleNo": { $gte: bunNoStart, $lte : bunNoEnd}},
+      ] } },
+      { $project: {			
+          _id: 1,	
+          companyID: 1,	
+          orderID: 1,	
+          // bundleNo: 1,
+          // productionNode: 1,
+          // productCount: 1,
+          // productBarcodeNo: 1,
+          // no: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit ] }},
+          // productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+          targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+          color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+          size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+          // yarnLot: 1,
+          // forLoss: 1,
+          productionNode1: { $slice: [ "$productionNode", -1] },  // ## get last 1 element
+          productionNode2: { $slice: [ "$productionNode", -2] },  // ## get last 2 element
+          arrayWithoutLast: {   // ## all elements before the last
+            $slice: ["$productionNode", 0, { $subtract: [{ $size: "$productionNode" }, 1] }] 
+          },
+
+          productionNodeLL1: { $slice: [   // ## all elements before the last and then get last
+            {$slice: ["$productionNode", 0, { $subtract: [{ $size: "$productionNode" }, 1] }]},-1]
+          },
+      }	},  
+
+      // { $unwind: "$productionNode1" },
+      // { $project: {	
+      //   _id: 1,	
+      //   companyID: 1,	
+      //   orderID: 1,	
+      //   bundleNo: 1,
+      //   productionNode: 1,
+      //   productCount: 1,
+
+      //   targetPlace: 1,
+      //   color: 1,
+      //   size: 1,
+
+      //   factoryID: "$productionNode1.factoryID",	
+      //   nodeID: "$productionNode1.toNode",
+      //   status: "$productionNode1.status",
+
+      //   // productionNode1: 1,
+      //   // productionNode2: 1,
+      //   // productionNodeLL1: 1,
+
+      // }	}, 
+      { $match: { $and: [
+        {"productionNode1.factoryID": factoryID},
+        // {"productionNode1.factoryID":{$in: factoryIDs}},
+        {"productionNode1.status":{$in: status}},
+
+      ] } },
+      { $project: {			
+          _id: 1,	
+          companyID: 1,	
+          orderID: 1,	
+          // bundleNo: 1,
+          // productionNode: 1,
+          // productCount: 1,
+          // productBarcodeNo: 1,
+          // no: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit ] }},
+          // productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+          // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+          // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+          // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+          targetPlace: 1,
+          color: 1,
+          size: 1,
+          // yarnLot: 1,
+          // forLoss: 1,
+          // productionNode1: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+          // arrayWithoutLast: { 
+          //   $slice: ["$productionNode", 0, { $subtract: [{ $size: "$productionNode" }, 1] }] 
+          // },
+
+          productionNode1: 1,
+          productionNode2: 1,
+          productionNodeLL1: 1,
+      }	}, 
+    ])
+    .hint( { companyID: 1, orderID: 1, bundleNo: 1, "productionNode.status": 1 } );
+  console.log("Test4_5 orderP.length = ",orderP.length)
+
+  // {len:orderP.length},
+  // const orderPF = await orderP.map(fw => ({
+  //   companyID: fw.companyID, 
+  //   orderID: fw.orderID,
+  //   targetPlace: fw.targetPlace,
+  //   color: fw.color,
+  //   size: fw.size,
+  //   factoryID: fw.productionNode1[0].factoryID,
+  //   nodeID: fw.productionNode2[0].toNode,
+  // }));
+
+  return res.send( orderP);
+}
 
 // // ## http://100.124.115.121:3968/api/user/langu/update
 // ## update multi langs here

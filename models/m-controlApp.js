@@ -20,13 +20,21 @@ const controlAppSchema = mongoose.Schema({
     ioID: { type: String, required: true},
   },
   outSourceLocationDepartment: [{   // ## for location scan outsource in and out
-    companyID : {type: String},
-    factoryID : {type: String},
-    nodeID : {type: String},
-    scanOutsource : {type: Boolean}
+    companyID: {type: String},
+    factoryID: {type: String},
+    nodeID: {type: String},
+    scanOutsource: {type: Boolean}
   }],
   outSourceSeasonShow: [{type: String}],
   seasonYearActive: [{type: String}],
+
+  appA: [{   // ## control Accounting
+    companyID: {type: String},
+    appA: [{   // #
+      appID: {type: String},
+      factoryIDs: [{type: String}],
+    }],
+  }],
 });
 
 controlAppSchema.plugin(uniqueValidator);

@@ -122,6 +122,10 @@ router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr/
 // ## putEditSchedule01 = auto_getCurrentCompanyOrderOutsourceFac
 router.put("/edit/productions/OutsourceState", reportController.putEditSchedule01);
 
+// ## getOutsourceOwe  คงค้าง
+router.get("/cpn/rep15/owe/current/order/:companyID/:factoryID/:statusArr/:orderIDArr"
+        , checkAuth, checkUUID, reportController.getOutsourceOwe);
+
 
 
 // // ##

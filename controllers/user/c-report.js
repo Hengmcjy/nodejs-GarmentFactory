@@ -2487,6 +2487,47 @@ exports.getRepCompanyOrderOutsourceState = async (req, res, next) => {
   }
 }
 
+// // ## getOutsourceOwe  คงค้าง
+// router.get("/cpn/rep15/owe/current/order/:companyID/:factoryID/:statusArr/:orderIDArr"
+//         , checkAuth, checkUUID, reportController.getOutsourceOwe);
+exports.getOutsourceOwe = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getOutsourceOwe');
+  const userID = req.userData.tokenSet.userID;
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const statuss = JSON.parse(req.params.statusArr);
+  const orderIDs = JSON.parse(req.params.orderIDArr);
+  // console.log(companyID, factoryID, statuss, orderIDs);
+  try {
+
+    const orderOutsourceOwe = await ShareFunc.getCFOrderOutsourceOwe(companyID, factoryID, orderIDs, statuss);
+
+    await ShareFunc.upsertUserSession1hr(userID);
+    // console.log(req.userData.tokenSet);
+    const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: userID,
+      orderOutsourceOwe: orderOutsourceOwe,
+      // orderProductOutsourceNodeID: orderProductOutsourceNodeID,
+      // ordersCount: ordersCount
+      // factory: factory
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errrp002', 
+        mode:'errRepCurrentCompanyOutsourceOwe', 
+        value: "error report company owe outsource"
+      }
+    });
+  }
+}
+
 // router.get("/cpn/rep14_2/current/order/state/:companyID/:ordertatus/:orderIDArr", 
 // checkAuth, checkUUID, reportController.getRepCompanyOrderOutsourceState2);
 exports.getRepCompanyOrderOutsourceState2 = async (req, res, next) => {
