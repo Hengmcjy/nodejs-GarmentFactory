@@ -57,6 +57,7 @@ const orderProductionSchema = mongoose.Schema({
     nodeID : {type: String},
     subNodeID : {type: String},
     qrCode : {type: String}, // staffID , qrCode of staff
+    empState : {type: String}, // PPI = pay per item  / DP = daily pay
     datetime : {type: Date},
     monthlyID: {type: String},  // ## งวด ID  เอาไว้ใช้เวลาทำเกี่ยวกับ บัญชี
     cost : {type: mongoose.Types.Decimal128},

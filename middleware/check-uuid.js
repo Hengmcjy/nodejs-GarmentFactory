@@ -21,11 +21,17 @@ module.exports = async (req, res, next) => {
     const userIDEncrypt = req.userData.userIDEncrypt;
     const uuid5Encrypt = req.userData.uuid5Encrypt;
     // console.log(userIDEncrypt,'-----------------',uuid5Encrypt);
+    // console.log(userIDEncrypt,'-----------------',userIDEncrypt);
+    // console.log(userIDEncrypt,'-----------------',uuid5Encrypt);
 
     const decryptUserID = CryptoJS.AES.decrypt(userIDEncrypt.trim(), process.env.passEncryt.trim()).toString(CryptoJS.enc.Utf8);
+    // console.log('decryptUserID ok');
     const decryptUUID5 = CryptoJS.AES.decrypt(uuid5Encrypt.trim(), process.env.passEncryt.trim()).toString(CryptoJS.enc.Utf8);
     // console.log(decryptUserID,'-----------------',decryptUUID5);
+    // console.log('decryptUUID5 ok');
 
+
+    // console.log(decryptUUID5,'-----------------',tokenSet.uuid5);
     // ## check uuid5  and userID
     if (decryptUserID != tokenSet.userID || decryptUUID5 != tokenSet.uuid5) {
       return res.status(401).json({

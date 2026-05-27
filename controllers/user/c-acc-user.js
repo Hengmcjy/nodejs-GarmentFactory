@@ -144,7 +144,7 @@ exports.createAUser = async (req, res, next) => {
 // router.post("/acc/login", userController.userALogin);
 exports.userALogin = async (req, res, next) => {
   // try {  } catch (err) {}
-  // console.log(req.body);
+  console.log(req.body);
   const logID= 'uli';  // ## user log in
   const body = req.body;
   const tokenSet = body.tokenSet;
@@ -153,7 +153,7 @@ exports.userALogin = async (req, res, next) => {
   let fetchedUser;
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   try {
-    const userf = await User.findOne({ userID: userID });
+    const userf = await Useracc.findOne({ userID: userID });
     if (!userf) {
       return res.status(401).json({
         message: {
@@ -182,17 +182,14 @@ exports.userALogin = async (req, res, next) => {
 
     fetchedUser.uInfo.userPass = '';  // ## clear user password before send data to web
     await ShareFunc.upsertUserSession1hr(body.comID, body.userID, tokenSet.userClassID);
-    const token = await ShareFunc.genTokenSet(tokenSet, process.env.TOKENExpiresIn);
+    const token = await ShareFunc.genATokenSet(tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
       token: token,
       expiresIn: process.env.expiresIn,
       userID: fetchedUser.userID,
       user: fetchedUser,
-      mode: 'user', // ## user = normal user  , userNode= work station login
-      nodeStation: {},
-      stationID: '',
-      company: {},
-      factory: {}
+      // mode: 'user', // ## user = normal user  , userNode= work station login
+
     });
   } catch (err) {
     // console.log(err);
@@ -241,7 +238,30 @@ exports.editAPassFactoryStaff = async (req, res, next) => {
   }
 }
 
-
+exports.getuserAInfo = async (req, res, next) => {
+  // try {  } catch (err) {}
+  const userID = '1xx1';
+  // console.log(req.body);
+  try {
+    // exports.delUserSession1hr= async (comID, userID, userClassID)
+    // await ShareFunc.delUserSession1hr(body.comID, body.userID, tokenSet.userClassID);
+    let userf = await Useracc.findOne({ userID: userID});
+    userf.uInfo.userPass = '';
+    res.status(200).json({
+      status: 'get user info',
+      user: userf
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(401).json({
+      message: {
+        messageID: 'erru005', 
+        mode:'errLogout', 
+        value: "Log out error"
+      }
+    });
+  }
+}
 
 
 

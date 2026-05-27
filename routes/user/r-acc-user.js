@@ -5,7 +5,7 @@ const { Storage } = require("@google-cloud/storage");
 // const mailController = require("../../controllers/user/c-mail");
 // const reportController = require("../../controllers/user/c-report");
 const userAController = require("../../controllers/user/c-acc-user");
-const checkAuth = require('../../middleware/check-auth');
+const checkAuthA = require('../../middleware/check-authA');
 const checkUUID = require('../../middleware/check-uuid');
 // const imageFindPath = require('../../middleware/image-find-path');
 // const imageNameSet = require('../../middleware/image-name-set');
@@ -36,6 +36,8 @@ router.post("/acc/login", userAController.userALogin);
 
 // ## http://192.168.1.33:3968/api/a/user/acc/edit1/pass
 router.put("/acc/edit1/pass", userAController.editAPassFactoryStaff);
+
+router.get("/acc/uinfo/:userID", checkAuthA, checkUUID, userAController.getuserAInfo);
 
 
 

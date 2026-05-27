@@ -61,8 +61,8 @@ module.exports = async (req, res, next) => {
     // const token = req.headers.authorization.split(" ")[1];
     // const userIDEncrypt = req.headers.authorization.split(" ")[2];
     // const uuid5Encrypt = req.headers.authorization.split(" ")[3]; JWT_KEY_ACC
-    const decodedToken = jwt.verify(token, process.env.JWT_KEY);
-    // const decodedToken = jwt.verify(token, process.env.JWT_KEY_ACC);
+    // const decodedToken = jwt.verify(token, process.env.JWT_KEY);
+    const decodedToken = jwt.verify(token, process.env.JWT_KEY_ACC);
     // console.log('decodedToken', decodedToken);
     const tokenSet = {
       appName : decodedToken.appName,
