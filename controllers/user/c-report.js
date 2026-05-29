@@ -1482,21 +1482,22 @@ exports.getRepNodeNoScan = async (req, res, next) => {
   const companyID = req.params.companyID;
   const factoryIDArr = JSON.parse(req.params.factoryIDArr);
   const nodeID = req.params.nodeID;
-  const orderIDs = JSON.parse(req.params.orderIDsArr);
-  const orderIDArr = JSON.parse(req.params.orderIDsArr);
+  const orderID = req.params.orderIDsArr;
+  // const orderIDs = JSON.parse(req.params.orderIDsArr);
+  // const orderIDArr = JSON.parse(req.params.orderIDsArr);
   const infoTypeArr = JSON.parse(req.params.infoTypeArr); // ## ['mainData', 'detailData']
   // const date12Arr = JSON.parse(req.params.date12);  // have 2 date
   const statusArr = ['normal', 'complete'];
 
   // console.log('getRepNodeNoScan');
-  // console.log(factoryIDArr, nodeID, orderIDs, infoTypeArr);
+  // console.log(factoryIDArr, nodeID, orderID, infoTypeArr);
 
   try {
     
     // ## main for show on tab selector
     let mainDataBundleNoScan = [];
     if (infoTypeArr.includes('mainData')) {
-      const mainDataBundleNoScanF = await ShareFunc.getRepCFNCurrentMainDataBundleNoscan(companyID, factoryIDArr, nodeID, orderIDArr, statusArr);
+      const mainDataBundleNoScanF = await ShareFunc.getRepCFNCurrentMainDataBundleNoscan(companyID, factoryIDArr, nodeID, orderID, statusArr);
       mainDataBundleNoScan = mainDataBundleNoScanF;  // ## current bundle no scan
     }
 

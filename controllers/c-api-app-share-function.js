@@ -14237,7 +14237,7 @@ exports.getRepCFNCurrentMainDataBundleNoscan = async (companyID, factoryIDArr, n
       {"companyID":companyID},
       // {"factoryID":factoryID},
       // {"factoryID":{$in: factoryIDArr}},
-      {"orderID":{$in: orderIDArr}},
+      {"orderID":{$in: [orderIDArr]}},
       {"productStatus":{$in: statusArr}},
 
       {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
