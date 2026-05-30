@@ -17,6 +17,18 @@ const companySchema = mongoose.Schema({
       userName: {type: String},
     },
   },
+  deptC: [{   // ## production , store , finance,...
+    deptCName: { type: Number }, // ## production , ....
+    stateC: [{
+      stateCName : {type: String}, // ## scanEmpState , …. / PPI=pay per item,  DP=daily pay  
+      stateCInfo : {type: String}, // ## ppi,dp Btn
+      factoryIDControl: [{
+        factoryID: {type: String},
+        btn: {type: Boolean},  // ##  able , disable
+        visible: {type: Boolean},  // ##  show, no show
+      }],
+    }],
+  }],
 });
 
 companySchema.plugin(uniqueValidator);

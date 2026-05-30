@@ -411,6 +411,7 @@ exports.getCompanyInfo= async (companyIDArr, page, limit) => {
         companyID: 1,		
         cDescription: 1,	
         cInfo: 1,
+        deptC: 1,
     }	},
     { $sort: { _id: 1 } },
     { $skip: (page-1) *  limit},
@@ -611,6 +612,7 @@ exports.getCompany1Info= async (companyID) => {
         companyID: 1,		
         cDescription: 1,	
         cInfo: 1,
+        deptC: 1,
     }	}
   ]);
   // console.log(company);
