@@ -2311,14 +2311,24 @@ exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
   const companyID = req.params.companyID;
   const orderID = req.params.orderID;
   const bundleNo = +req.params.bundleNo;
+  const bundleNoRange = req.params.bundleNoRange;
   // const bundleID = req.params.bundleID;
 
-  // console.log(companyID, orderID, bundleNo);
+  // console.log(companyID, orderID, bundleNo, bundleNoRange);
   try {
+    let startBundleNo = bundleNo;
+    let endBundleNo = bundleNo;
+    if (bundleNoRange != 'x') {
+      const bundleNoRangeArr = bundleNoRange.split('-');
+      if (bundleNoRangeArr.length === 2) {
+        startBundleNo = +bundleNoRangeArr[0];
+        endBundleNo = +bundleNoRangeArr[1];
+      }
+    }
     
-    // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
+    // // getWorkerInfoByQRCode1= async (companyID, factoryID, qrcode, type, status)
     let orderProductionQueueBundleNo = await ShareFunc.getOrderProductionQueueByBundleNo(companyID, orderID, bundleNo);
-    // console.log(orderProductionQueueBundleNo);
+    // // console.log(orderProductionQueueBundleNo);
     
     let orderSubNodeFlowCost = await ShareFunc.getOrderProductionSubNodeFlowCost1(companyID, orderID);
 
@@ -2332,7 +2342,14 @@ exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
     let productBarcode = '';
     let numberFrom = 0;
     let numberTo = 0;
-    const orderProductionNo = await ShareFunc.getOrderProductListByByORIDBunNo(companyID, orderID, bundleNo);
+    let orderProductionNo = [];
+    if (bundleNoRange != 'x') {  // ## get list order production by orderID and bundleNo range
+      orderProductionNo = await ShareFunc.getOrderProductListByByORIDBunNoRange(companyID, orderID, startBundleNo, endBundleNo);
+
+    } else if (bundleNo > 0) {  // ## get list order production by orderID and bundleNo
+      orderProductionNo = await ShareFunc.getOrderProductListByByORIDBunNo(companyID, orderID, bundleNo);
+
+    }
     // console.log(orderID, orderProductionNo);
     if (orderProductionNo.length > 0) {
       orderProductionNo.sort((a,b)=>{ return a.productBarcodeNoReal >b.productBarcodeNoReal?1:a.productBarcodeNoReal <b.productBarcodeNoReal?-1:0 });
@@ -2350,7 +2367,7 @@ exports.getOrderProductionQueueByBundleNo1 = async (req, res, next) => {
       // token: token,
       // expiresIn: process.env.expiresIn,
       orderSubNodeFlowCost: orderSubNodeFlowCost,
-      orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      orderProductionQueueBundleNo: [],
       orderID: orderID,
       bundleNo: bundleNo,
       bundleID: bundleID,
@@ -2778,6 +2795,64 @@ exports.getorderProductionCNByORIDBunNo = async (req, res, next) => {
     });
   }
 }
+
+// // ## get orderProduction   getorderProductionCNByORIDBunNoRange
+// router.get("/node21-1/orderProduction/lists/:companyID/:orderID/:bundleNo/:bundleNoRange/:nodeID", 
+// nsController.getorderProductionCNByORIDBunNoRange);
+exports.getorderProductionCNByORIDBunNoRange = async (req, res, next) => {
+  // try {} catch (err) {}
+  // console.log('getsubNodeFlowCost1');
+  const companyID = req.params.companyID;
+  const orderID = req.params.orderID;
+  const nodeID = req.params.nodeID;
+  const bundleNo = +req.params.bundleNo;
+  const bundleNoRange = req.params.bundleNoRange;
+
+  // console.log(companyID, orderID, nodeID, bundleNo);
+  try {
+
+    let startBundleNo = bundleNo;
+    let endBundleNo = bundleNo;
+    if (bundleNoRange != 'x') {
+      const bundleNoRangeArr = bundleNoRange.split('-');
+      if (bundleNoRangeArr.length === 2) {
+        startBundleNo = +bundleNoRangeArr[0];
+        endBundleNo = +bundleNoRangeArr[1];
+      }
+    }
+
+    // getOrderProductListByByORIDBunNoRange= async (companyID, orderID, startBundleNo, endBundleNo)
+    const orderProductions = await ShareFunc.getOrderProductListByByORIDBunNoRange(companyID, orderID, startBundleNo, endBundleNo);
+    // console.log(orderProductions);
+
+    // await ShareFunc.upsertUserSession1hr(userID);
+    // const token = await ShareFunc.genTokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      // token: token,
+      // expiresIn: process.env.expiresIn,
+      orderProductions: orderProductions,
+      // orderProductionQueueBundleNo: orderProductionQueueBundleNo,
+      success: true,
+      message: {
+        messageID: 'ok', 
+        mode:'findOrderProductionListByQueue', 
+        value: ""
+      }
+
+      // currentProductStyleCount: currentProductStyleCount,
+    });
+  } catch (err) {
+    return res.status(501).json({
+      success: false,
+      message: {
+        messageID: 'errO022', 
+        mode:'errOrderProductionListBundleNo', 
+        value: "error get Order production list by bundle no"
+      }
+    });
+  }
+}
+
 
 // // ## get staff scanned list   getorderProductionStaffScannedNameListCNByORIDQRs
 // router.get("/node24/orderProduction/staffscanned/lists/:orderID/:bundleNo/:nodeID/:qrcodeArr", 

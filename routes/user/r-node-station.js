@@ -138,11 +138,15 @@ router.get("/node18/get1/staffinfo/:companyID/:factoryID/:qrCode/:mode", nsContr
 router.get("/node19/get1/subNodeFlowCost/:companyID/:orderID", nsController.getsubNodeFlowCost1);
 
 // ## get getOrderProductionQueueByBundleNo1
-router.get("/node20/get1/orderProductionQueue/:companyID/:orderID/:bundleNo", nsController.getOrderProductionQueueByBundleNo1);
+router.get("/node20/get1/orderProductionQueue/:companyID/:orderID/:bundleNo/:bundleNoRange", nsController.getOrderProductionQueueByBundleNo1);
 
 // ## get orderProduction   getorderProductionCNByORIDBunNo
 router.get("/node21/orderProduction/lists/:companyID/:orderID/:bundleNo/:nodeID", 
 nsController.getorderProductionCNByORIDBunNo);
+
+// ## get orderProduction   getorderProductionCNByORIDBunNoRange
+router.get("/node21-1/orderProduction/lists/:companyID/:orderID/:bundleNo/:bundleNoRange/:nodeID", 
+nsController.getorderProductionCNByORIDBunNoRange);
 
 // ## get staff scanned list   getorderProductionStaffScannedNameListCNByORIDQRs
 router.get("/node24/orderProduction/staffscanned/lists/:orderID/:bundleNo/:nodeID/:qrcodeArr", 

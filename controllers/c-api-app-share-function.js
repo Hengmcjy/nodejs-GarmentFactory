@@ -8907,6 +8907,42 @@ exports.getOrderProductListByByORIDBunNo= async (companyID, orderID, bundleNo) =
   return orderProduct.length>0?orderProduct:[];
 }
 
+// ShareFunc.getOrderProductListByByORIDBunNoRange(companyID, orderID, startBundleNo, endBundleNo);
+exports.getOrderProductListByByORIDBunNoRange= async (companyID, orderID, startBundleNo, endBundleNo) => {
+  const orderProduct = await OrderProduction.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"orderID":orderID},
+      // {"bundleNo":bundleNo},
+      {"bundleNo": { $gte: startBundleNo, $lte : endBundleNo}},
+      // {"productBarcodeNo":productBarcodeNo},
+      // {"productBarcodeNoReal":{$in: productBarcodeNos}}
+    ] } },
+    { $project: {			
+        _id: 1,	
+        companyID: 1,
+        factoryID: 1,		
+        orderID: 1,	
+        bundleNo: 1,
+        bundleID: 1,
+        productID: 1,
+        productBarcodeNo: 1,
+        productBarcodeNoReal: 1,
+        // productBarcodeNoReserve: 1,
+        productCount: 1,
+        productionDate: 1,
+        productStatus: 1,
+        yarnLot: 1,
+        // outsourceData: 1,
+        subNodeFlow: 1,
+        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+    }	}
+  ]).hint( {"companyID" : 1, "orderID": 1, "bundleNo": 1, "bundleID": 1} );
+  // publicIP: { $slice: [ "$superAdmin.publicIP", 0, 1] },	
+  // console.log(orderProduct);
+  return orderProduct.length>0?orderProduct:[];
+}
+
 exports.getOrderProductListByByORIDBunNo2= async (companyID, orderID, bundleNo, bundleID) => {
   const orderProduct = await OrderProduction.aggregate([
     { $match: { $and: [
