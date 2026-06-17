@@ -9,12 +9,13 @@ const wProductSchema = mongoose.Schema({
   pCategory: [{   // ## 
     customerName: { type: String },
     setName: { type: String },
-    pCategoryName: { type: String },  // ## main , info , production, products
+    pCategoryName: { type: String },  // ## sweater , accessory , man , woman , child, …
     seq: { type: Number },
     pdID: { type: String },
     colorID: { type: String },
     colorName: { type: String },
-    imagePath: { type: String }
+    imagePath: { type: String },
+    imgFileName: { type: String }
   }],
 
 });

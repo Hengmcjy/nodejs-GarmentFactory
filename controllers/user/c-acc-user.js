@@ -37,6 +37,8 @@ const YarnStockCardPCS = require("../../models/m-yarnStockCardPCS");
 const UnitSize = require("../../models/m-unitSize");
 const UnitWeight = require("../../models/m-unitWeight");
 
+const OrderSubNodeFlowSetCost = require("../../models/m-orderSubNodeFlowSetCost");
+
 
 moment.tz.setDefault('Asia/Bangkok');
 
@@ -144,10 +146,11 @@ exports.createAUser = async (req, res, next) => {
 // router.post("/acc/login", userController.userALogin);
 exports.userALogin = async (req, res, next) => {
   // try {  } catch (err) {}
-  console.log(req.body);
+  // console.log(req.body);
   const logID= 'uli';  // ## user log in
   const body = req.body;
   const tokenSet = body.tokenSet;
+  // console.log(tokenSet);
   const userID = req.body.userID;
   const uuidUserNodeLoginWaiting = body.uuidUserNodeLoginWaiting;
   let fetchedUser;
@@ -180,7 +183,36 @@ exports.userALogin = async (req, res, next) => {
     // ## update user last login
     const userLastLogin = await User.updateOne({userID: userID} , {"uInfo.lastLogin": current});
 
+
     fetchedUser.uInfo.userPass = '';  // ## clear user password before send data to web
+    if (!fetchedUser.uCompany[0]) {
+      console.log(err);
+      return res.status(401).json({
+        message: {
+          messageID: 'erru005', 
+          mode:'errLogout', 
+          value: "Log out error"
+        }
+      });
+    }
+
+    const companyID = userf.uCompany[0].companyID;
+
+        // ## get company
+    const company = await ShareFunc.getCompany1Info(companyID);
+
+
+    // ## get all factory under company
+    const factories = await ShareFunc.getFactoryArrByCompanyID(companyID);
+
+    // ## get company season
+    const showArr = [true]; 
+    const comSeasons = await ShareFunc.getComSeasons(companyID, showArr);
+
+    // ## get subNodeflow
+    const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
+
+
     await ShareFunc.upsertUserSession1hr(body.comID, body.userID, tokenSet.userClassID);
     const token = await ShareFunc.genATokenSet(tokenSet, process.env.TOKENExpiresIn);
     res.status(200).json({
@@ -188,6 +220,10 @@ exports.userALogin = async (req, res, next) => {
       expiresIn: process.env.expiresIn,
       userID: fetchedUser.userID,
       user: fetchedUser,
+      company: company,
+      factories: factories,
+      comSeasons: comSeasons,
+      subNodeflowC: subNodeflowC
       // mode: 'user', // ## user = normal user  , userNode= work station login
 
     });
@@ -238,18 +274,63 @@ exports.editAPassFactoryStaff = async (req, res, next) => {
   }
 }
 
+// router.get("/acc/uinfo/:userID", checkAuthA, checkUUID, userAController.getuserAInfo);
 exports.getuserAInfo = async (req, res, next) => {
   // try {  } catch (err) {}
-  const userID = '1xx1';
+  // const userID = req.userData.userID;
+  const userID = req.params.userID;
   // console.log(req.body);
   try {
     // exports.delUserSession1hr= async (comID, userID, userClassID)
     // await ShareFunc.delUserSession1hr(body.comID, body.userID, tokenSet.userClassID);
     let userf = await Useracc.findOne({ userID: userID});
     userf.uInfo.userPass = '';
+    
+    if (!userf.uCompany[0]) {
+      console.log(err);
+      return res.status(401).json({
+        message: {
+          messageID: 'erru005', 
+          mode:'errLogout', 
+          value: "Log out error"
+        }
+      });
+    }
+
+    const companyID = userf.uCompany[0].companyID;
+    // console.log(companyID);
+    // ## get company
+    const company = await ShareFunc.getCompany1Info(companyID);
+    // console.log(company);
+    // ## get all factory under company
+    const factories = await ShareFunc.getFactoryArrByCompanyID(companyID);
+    // console.log(factories);
+
+    // ## get company season
+    const showArr = [true]; 
+    const status = ['open'];
+    const comSeasons = await ShareFunc.getComSeasons(companyID, showArr);
+
+    await this.asyncForEach(comSeasons , async (item) => {
+      const ordersCount = await ShareFunc.getOrdersCount(companyID, status, [item.seasonYear]);
+      item.orderCount = ordersCount;
+    });
+    // console.log(comSeasons);
+
+    // ## get subNodeflow
+    const subNodeflowC = await ShareFunc.getSubNodeflowC(companyID);
+
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
     res.status(200).json({
       status: 'get user info',
-      user: userf
+      token: token,
+      expiresIn: process.env.expiresIn,
+      user: userf,
+      company: company,
+      factories: factories,
+      comSeasons: comSeasons,
+      subNodeflowC: subNodeflowC
     });
   } catch (err) {
     console.log(err);
@@ -262,6 +343,217 @@ exports.getuserAInfo = async (req, res, next) => {
     });
   }
 }
+
+
+
+
+
+
+// ## order zone  ##########################################################################
+
+// router.get("/acc/orders/:companyID/:seasonYear", checkAuthA, checkUUID, userAController.getOrdersSeasonYear);
+exports.getOrdersSeasonYear = async (req, res, next) => {
+  // try {  } catch (err) {}
+  const companyID = req.params.companyID;
+  const seasonYear = req.params.seasonYear;
+  // console.log(req.body);
+  try {
+    
+    // getOrdersBySeasonYearArr= async (companyID, statusArr, seasonYearArr) 
+    const status = ['open'];
+    const orders = await ShareFunc.getOrdersBySeasonYearArr(companyID, status, [seasonYear]);
+    orders.sort((a,b)=>{ return a.orderID >b.orderID?1:a.orderID <b.orderID?-1:0 });
+
+    // ## get product image path
+    const productIDs = Array.from(new Set(orders.map((item) => item.orderID)));
+    const productImageProfiles = await ShareFunc.getProductImageProfiles(companyID, productIDs);
+    
+
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      status: 'get user info',
+      token: token,
+      expiresIn: process.env.expiresIn,
+      orders: orders,
+      productImageProfiles: productImageProfiles,
+
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(401).json({
+      message: {
+        messageID: 'erru005', 
+        mode:'errgetorders', 
+        value: "get orders error"
+      }
+    });
+  }
+}
+
+// router.get("/acc/subnodecostseason/:companyID/:factoryID/:orderID/:seasonYear",
+//         checkAuthA, checkUUID, userAController.getOrderSubnodeCostSeason);
+exports.getOrderSubnodeCostSeason = async (req, res, next) => {
+  // try {  } catch (err) {}
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const orderID = req.params.orderID;
+  const seasonYear = req.params.seasonYear;
+
+  try {
+    
+    const orderSubNodeFlowSetCost = 
+      await ShareFunc.getOrderSubNodeCostBySeasonYear(companyID, factoryID, [orderID], [seasonYear]);
+    // orders.sort((a,b)=>{ return a.orderID >b.orderID?1:a.orderID <b.orderID?-1:0 });
+
+    // ## 
+    // const productIDs = Array.from(new Set(orders.map((item) => item.orderID)));
+    // const productImageProfiles = await ShareFunc.getProductImageProfiles(companyID, productIDs);
+    
+
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      status: 'get user info',
+      token: token,
+      expiresIn: process.env.expiresIn,
+      orderSubNodeFlowSetCost: orderSubNodeFlowSetCost,
+      // productImageProfiles: productImageProfiles,
+
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(401).json({
+      message: {
+        messageID: 'erru005', 
+        mode:'errgetordersubnodecost', 
+        value: "get order sub node cost error"
+      }
+    });
+  }
+}
+
+
+// router.post("/acc/edit/OrderSubNodeFlowSetCost", 
+// checkAuthA, checkUUID, orderController.postOrderSubNodeFlowSetCost);
+exports.postOrderSubNodeFlowSetCost = async (req, res, next) => {
+  // try {} catch (err) {}
+  const data = req.body;
+  // console.log('postOrderSubNodeFlowSetCost');
+  // console.log(data);
+
+  try {
+    // ##  
+    const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+
+    // // console.log(bundleSetGroup);
+    const companyID = data.orderSubNodeFlowSetCost.companyID;
+    const factoryID = data.orderSubNodeFlowSetCost.factoryID;
+    const seasonYear = data.orderSubNodeFlowSetCost.seasonYear;
+    const orderID = data.orderSubNodeFlowSetCost.orderID;
+    const subNodeSetCost = await OrderSubNodeFlowSetCost.updateOne({$and: [
+        {"companyID":companyID},
+        {"factoryID":factoryID}, 
+        {"orderID":orderID}, 
+        {"seasonYear":seasonYear},
+      ]} , 
+      {
+        "facSubNodeCost": data.orderSubNodeFlowSetCost.facSubNodeCost,
+        "datetime": current
+      }, {upsert: true}); 
+
+    // // ## get all bundlesetgroups
+    // const bundleSetGroups = await ShareFunc.getBundlesetgroups(companyID, orderID, seasonYear);
+
+    // token: string; expiresIn: number; userID: string; success: boolean; message: any;
+
+    await ShareFunc.upsertUserSession1hr(data.userID);
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    res.status(200).json({
+      token: token,
+      expiresIn: process.env.expiresIn,
+      userID: data.userID,
+      success: true,
+      message: 'post OrderSubNodeFlowSetCost ok',
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(501).json({
+      message: {
+        messageID: 'errO028', 
+        mode:'errEdit/OrderSubNodeFlowSetCost', 
+        value: "error edit/OrderSubNodeFlowSetCost"
+      }
+    });
+  }
+}
+
+
+
+
+// ## hr zone  ############################################################################
+
+// router.get("/hr/emplist/:companyID/:factoryID/:status/:type/:state/:page/:limit", 
+//                 checkAuthA, checkUUID, userAController.getEmpList);
+exports.getEmpList = async (req, res, next) => {
+  // try {  } catch (err) {}
+  const companyID = req.params.companyID;
+  const factoryID = req.params.factoryID;
+  const status = req.params.status;
+  const type = req.params.type;
+  const state = req.params.state;
+  const page = +req.params.page;
+  const limit = +req.params.limit;  // ## records we need to get
+  // console.log('getEmpList');
+  try {
+    
+    // getEmpListCF= async (companyID, factoryID, status, type, state, page, limit)
+    // status = 'a'
+    // type = 's'
+    // state = ''
+    const workers = 
+      await ShareFunc.getEmpListCF(companyID, factoryID, [status], [type], [state], page, limit);
+    // console.log(users);
+
+    // getEmpsCount= async (companyID, factoryID, status, type, state) 
+    const workersCount = await ShareFunc.getEmpsCount(companyID, factoryID, [status], [type], [state]);
+
+    // const orderSubNodeFlowSetCost = 
+    //   await ShareFunc.getOrderSubNodeCostBySeasonYear(companyID, factoryID, [orderID], [seasonYear]);
+    // orders.sort((a,b)=>{ return a.orderID >b.orderID?1:a.orderID <b.orderID?-1:0 });
+
+    // ## 
+    // const productIDs = Array.from(new Set(orders.map((item) => item.orderID)));
+    // const productImageProfiles = await ShareFunc.getProductImageProfiles(companyID, productIDs);
+
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+
+    res.status(200).json({
+      status: 'get workers info',
+      token: token,
+      expiresIn: process.env.expiresIn,
+      workers: workers,
+      workersCount: workersCount,
+      page: page,
+      limit: limit,
+      // productImageProfiles: productImageProfiles,
+
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(401).json({
+      message: {
+        messageID: 'erru005', 
+        mode:'errgetWorkers', 
+        value: "get workers error"
+      }
+    });
+  }
+}
+
+
+
 
 
 

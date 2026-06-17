@@ -81,7 +81,8 @@ module.exports = async (req, res, next) => {
       userIDEncrypt : userIDEncrypt,
     };
 
-    // console.log('aaa',req.userData);
+    // console.log('req.userData',req.userData);
+    // console.log('tokenSet',tokenSet);
     // // ## check uuid5  and userID
     // if (userID != tokenSet.userID || uuid5 != tokenSet.uuid5) {
     //   return res.status(401).json({

@@ -73,6 +73,10 @@ const UnitSize = require("../models/m-unitSize");
 const UnitWeight = require("../models/m-unitWeight");
 const ProductBox = require("../models/m-productBox");
 
+// ##  
+const ComSeason = require("../models/m-comSeason");
+const OrderSubNodeFlowSetCost = require("../models/m-orderSubNodeFlowSetCost");
+
 
 // ## www zone
 const WInfo = require("../models/m-winfo");
@@ -671,6 +675,108 @@ exports.getMembersFactory= async (companyID, factoryID, state, page, limit) => {
   return membersFactory;
 }
 
+exports.getEmpListCF= async (companyID, factoryID, status, type, state, page, limit) => {
+  // status = 'a'
+  // type = 's'
+  // state = ''
+  const membersFactory1 = await User.aggregate([
+    { $match: { $and: [
+      {"status":{$in: status}},
+      {"type":{$in: type}},
+    ] } },
+    { $unwind: "$uFactory" },
+    { $project: { _id: 1, userID: 1, type: 1, uInfo: 1, uCompany: 1, status: 1, state: 1, createBy: 1,
+      companyID: "$uFactory.companyID",
+      factoryID: "$uFactory.factoryID",
+      stateFactory: "$uFactory.state",
+      userFacClass: "$uFactory.userFacClass",
+    }},
+    { $match: { $and: [
+      {"companyID":companyID}, 
+      // {"factoryID":factoryID},
+      {"factoryID":{$in: [factoryID]}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        userID: 1, type: 1, uInfo: 1, uCompany: 1, status: 1, state: 1, createBy: 1,
+        companyID: 1,	
+        factoryID: 1,	
+        stateFactory: 1,	
+        userFacClass: 1,
+    }	},
+    { $sort: { userID: 1 } },
+    { $skip: (page-1) *  limit},
+    { $limit: +limit }
+  ]);
+  // console.log(membersCompany1);
+
+  const membersFactory = await membersFactory1.map(fw => ({
+    userID: fw.userID, 
+    type: fw.type,  
+    uInfo: fw.uInfo, 
+    uCompany: fw.uCompany, 
+    status: fw.status, 
+    state: fw.state, 
+    createBy: fw.createBy, 
+    uFactory: [{
+      companyID: fw.companyID, 
+      factoryID: fw.factoryID, 
+      state: fw.stateFactory, 
+      userFacClass: fw.userFacClass, 
+    }]
+  }));
+  await this.asyncForEach(membersFactory , async (item) => {
+    item.uInfo.userPass = ''; // ## clear userPass before send to outside
+  });
+  return membersFactory;
+}
+
+exports.getEmpsCount= async (companyID, factoryID, status, type, state) => {
+  // status = 'a'
+  // type = 's'
+  // state = ''
+  const membersFactory1 = await User.aggregate([
+    { $match: { $and: [
+      {"status":{$in: status}},
+      {"type":{$in: type}},
+    ] } },
+    { $unwind: "$uFactory" },
+    { $project: { _id: 1, userID: 1, 
+      companyID: "$uFactory.companyID",
+      factoryID: "$uFactory.factoryID",
+      stateFactory: "$uFactory.state",
+      userFacClass: "$uFactory.userFacClass",
+    }},
+    { $match: { $and: [
+      {"companyID":companyID}, 
+      {"factoryID":{$in: [factoryID]}},
+    ] } },
+    { $project: {			
+        _id: 1,	
+        // userID: 1, 
+        companyID: 1,	
+        factoryID: 1,	
+        // stateFactory: 1,	
+        // userFacClass: 1,
+    }	},
+    { $group: {			
+      _id: { 
+        companyID: '$companyID',
+        factoryID: '$factoryID',
+    },
+      countUser: {$sum: 1} ,
+      // sumQty: {$sum:  '$productQty'} ,
+      // sumAffBetNumber: {$sum:  '$betAffNumber'} ,
+      // sumRewardBetNumber: {$sum:  '$reward'} ,
+    }	},
+  ]);
+  // console.log(membersFactory1);
+
+
+
+  return membersFactory1[0].countUser ?? 0;
+}
+
 // ## get factory info
 exports.getFactoryInfo= async (factoryIDArr, companyID, page, limit) => {
   const factory = await Factory.aggregate([
@@ -801,6 +907,7 @@ exports.getLangLists= async (show) => {
     { $project: {			
         _id: 0,	
         languageID: 1,		
+        state: 1,	
         languageName: 1,	
     }	},
     { $sort: { seq: 1 } },
@@ -819,6 +926,7 @@ exports.getLangData= async (languageID) => {
         _id: 0,	
         languageID: 1,		
         languageName: 1,	
+        state: 1,
         languageData: 1,
     }	}
   ]);
@@ -1074,10 +1182,10 @@ exports.TestSendMail= async (factory, email, uuid, data) => {
 
   let user = '';
   let pass = '';
-  if (factory === process.env.FACTORY2) {  // ## taian
+  if ((factory+'').toLowerCase === (process.env.FACTORY2+'').toLowerCase) {  // ## taian
     user = process.env.EMAILSENDER2; 
     pass = process.env.EMAILSENDERPWD2;
-  } else if (factory === process.env.FACTORY)  { // ## tailin
+  } else if ((factory+'').toLowerCase === (process.env.FACTORY+'').toLowerCase)  { // ## tailin
     user = process.env.EMAILSENDER; 
     pass = process.env.EMAILSENDERPWD;
   } else {
@@ -1092,7 +1200,7 @@ exports.TestSendMail= async (factory, email, uuid, data) => {
       <div style="font-family:'Google Sans',Roboto,RobotoDraft,Helvetica,Arial,sans-serif;border-bottom:thin solid #dadce0;color:rgba(0,0,0,0.87);line-height:32px;padding-bottom:24px;text-align:center;word-break:break-word">
           <div style="font-size:24px">
             CUSTOMER message from 
-            <span style="text-transform: uppercase;">${factory}</span>-website
+            <span style="text-transform: uppercase;">${(factory+'').toString}</span>-website
           </div>
       </div>
       <div style="font-family:Roboto-Regular,Helvetica,Arial,sans-serif;font-size:14px;color:rgba(0,0,0,0.87);line-height:20px;padding-top:20px;text-align:left">
@@ -7932,6 +8040,69 @@ exports.getYarnColors= async (companyID, showArr) => {
 // #################################################################################
 
 // #################################################################################
+// ## acc zone ####################################################################
+
+exports.getComSeasons= async (companyID, showArr) => {
+  // limit = +limit; // ## change to number
+  const comS = await ComSeason.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"show":{$in: showArr}} 
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        seasonYear: 1,
+        seasonYearName: 1,	
+        orderCount: 1,		
+    }	},
+    { $sort: { seasonYear: 1 } }
+  ]);
+  // console.log(comS);
+  return comS;
+}
+
+// getOrderSubNodeCostBySeasonYear(companyID, factoryID, [orderID], [seasonYear]);
+exports.getOrderSubNodeCostBySeasonYear= async (companyID, factoryID, orderIDArr, seasonYearArr) => {
+  // limit = +limit; // ## change to number
+  const orSubCost = await OrderSubNodeFlowSetCost.aggregate([
+    { $match: { $and: [
+      {"companyID":companyID},
+      {"factoryID":factoryID},
+      {"orderID":{$in: orderIDArr}},
+      {"seasonYear":{$in: seasonYearArr}},
+    ] } },
+    { $project: {			
+        _id: 0,	
+        companyID: 1,
+        factoryID: 1,
+        seasonYear: 1,
+        orderID: 1,	
+        datetime: 1,
+        facSubNodeCost: 1,		
+    }	},
+    { $sort: { seasonYear: 1 } }
+  ]);
+  
+
+  await this.asyncForEach(orSubCost, async (item1) => {
+    await this.asyncForEach2(item1.facSubNodeCost, async (item2) => {
+      item2.cost = parseFloat(item2.cost);
+    });
+  });
+
+  // console.log(orSubCost);
+
+  return orSubCost;
+}
+
+
+
+
+// ## acc zone ####################################################################
+// #################################################################################
+
+// #################################################################################
 // ## delivery zone ####################################################################
 // const DPacking = require("../models/m-dPacking");
 // const DCarton = require("../models/m-dCarton");
@@ -9282,169 +9453,214 @@ exports.getOrderBundleNoList= async (companyID, orderID, bunNoStart, bunNoEnd) =
 }
 
 exports.getCurrentCompanyOrderOutsourceFac1BY1= async (companyID, orderIDs, isOutsource, status, sTypeOtus, sTypeOtusExist) => {
-  const orderProductFacOutQTY = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
+  // const sTypeOtus = '1'; // ## 1 = 1 by 1
+  // const sTypeOtusExist = true;
+  // const orderProductFacOutQTY = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDs}},
 
-      // {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
-      {"productionNode":  {$elemMatch: {
-        "isOutsource": isOutsource, 
-        "status": {$in: status},
+  //     {"productionNode":  {$elemMatch: {
+  //       "isOutsource": isOutsource, 
+  //       "status": {$in: status},
+  //       "sTypeOtus": sTypeOtus, 
+  //     }}},
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       productBarcodeNoReal: 1,
+  //       targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //       color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //       size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //       runningNo: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit ] }},
+  //       productionNode: 1,
+  //   }	},
+  //   { $unwind: "$productionNode"},
+  //   { $project: {			
+  //     _id: 0,	
+  //     companyID: 1,	
+  //     orderID: 1,
+  //     targetPlace: 1,
+  //     color: 1,
+  //     size: 1,
+  //     runningNo: 1,
+  //     productBarcodeNoReal: 1,
+  //     factoryID: "$productionNode.factoryID",	
+  //     datetime: "$productionNode.datetime",
+  //     status: "$productionNode.status",
+  //     sTypeOtus: "$productionNode.sTypeOtus",
+  //     isOutsource: "$productionNode.isOutsource",
+  //     outsourceData: "$productionNode.outsourceData",
+  //   }	},
 
-        "sTypeOtus": sTypeOtus, 
-        // $or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]
-        
-      }}},
-    ] } },
-    { $project: {			
-        _id: 1,	
-        companyID: 1,	
-        orderID: 1,	
-        // productionNode: 1,
-        // productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-        targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-        color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-        size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-        runningNo: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit ] }},
-        // bundleNo: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: 1,
-        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-
-    }	},
-    { $unwind: "$productionNode"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,
-      targetPlace: 1,
-      color: 1,
-      size: 1,
-      runningNo: 1,
-      // bundleNo: 1,
-      // productCount: 1,
-      productBarcodeNoReal: 1,
-      factoryID: "$productionNode.factoryID",	
-      // fromNode: "$productionNode.fromNode",
-      datetime: "$productionNode.datetime",
-      status: "$productionNode.status",
-      sTypeOtus: "$productionNode.sTypeOtus",
-      isOutsource: "$productionNode.isOutsource",
-      outsourceData: "$productionNode.outsourceData",
-      // createBy: "$productionNode.createBy",
-    }	},
-
-    { $match: { $and: [
-      // {"status":status},
-      {"status":{$in: status}},
-      {"isOutsource":isOutsource},
+  //   { $match: { $and: [
+  //     {"status":{$in: status}},
+  //     {"isOutsource":isOutsource},
       
-      {"sTypeOtus":sTypeOtus},
-      { "sTypeOtus": { $exists: sTypeOtusExist } }
-      // {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]}
-    ] } },
-    { $unwind: "$outsourceData"},
-    { $project: {			
-      _id: 1,
-      companyID: 1,	
-      orderID: 1,
-      targetPlace: 1,
-      color: 1,
-      size: 1,
-      runningNo: 1,
-      // bundleNo: 1,
-      // productCount: 1,
-      productBarcodeNoReal: 1,
-      factoryID: 1,
-      // fromNode: 1,
-      toFactoryID: "$outsourceData.factoryID",
-      fromFactoryID: "$outsourceData.fromFactoryID",
-      datetime: 1,
-      yyyymmdd: { $dateToString: { format: "%Y%m%d", date: "$datetime", timezone : process.env.timezone } },
-      // mmdd: { $dateToString: { format: "%m%d", date: "$datetime" } },
-      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime", timezone : process.env.timezone } },
-      // dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime", timezone : process.env.timezone } },
-      status: 1,
-      sTypeOtus: 1,
-      isOutsource: 1,
-      // createBy: 1,
-    }	},
+  //     {"sTypeOtus":sTypeOtus},
+  //     { "sTypeOtus": { $exists: sTypeOtusExist } }
+  //   ] } },
+  //   { $unwind: "$outsourceData"},
+  //   { $project: {			
+  //     _id: 0,
+  //     companyID: 1,	
+  //     orderID: 1,
+  //     targetPlace: 1,
+  //     color: 1,
+  //     size: 1,
+  //     runningNo: 1,
+  //     productBarcodeNoReal: 1,
+  //     factoryID: 1,
+  //     toFactoryID: "$outsourceData.factoryID",
+  //     fromFactoryID: "$outsourceData.fromFactoryID",
+  //     datetime: 1,
+  //     yyyymmdd: { $dateToString: { format: "%Y%m%d", date: "$datetime", timezone : process.env.timezone } },
+  //     status: 1,
+  //     sTypeOtus: 1,
+  //     isOutsource: 1,
+  //   }	},
 
-    // ********** distinct *************************
-    { $group: {	
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
-        runningNo: '$runningNo',
-        productBarcodeNoReal: '$productBarcodeNoReal',
+  //   // ********** distinct *************************
+  //   { $group: {	
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       size: '$size',
+  //       runningNo: '$runningNo',
+  //       productBarcodeNoReal: '$productBarcodeNoReal',
+  //       factoryID: "$factoryID",	
+  //       toFactoryID: "$toFactoryID",
+  //       fromFactoryID: "$fromFactoryID",
+  //       datetime: "$datetime",
+  //       yyyymmdd: "$yyyymmdd",
+  //       status: "$status",
+  //       sTypeOtus: "$sTypeOtus",
+  //       isOutsource: "$isOutsource",
+  //     }
+  //   }},
+  //   { $project: {	
+  //     companyID: '$_id.companyID',
+  //     orderID: '$_id.orderID',
+  //     targetPlace: '$_id.targetPlace',
+  //     color: '$_id.color',
+  //     size: '$_id.size',
+  //     runningNo: '$_id.runningNo',
+  //     productBarcodeNoReal: '$_id.productBarcodeNoReal',
+  //     factoryID: "$_id.factoryID",	
+  //     toFactoryID: "$_id.toFactoryID",
+  //     fromFactoryID: "$_id.fromFactoryID",
+  //     datetime: "$_id.datetime",
+  //     yyyymmdd: "$_id.yyyymmdd",
+  //     status: "$_id.status",
+  //     sTypeOtus: "$_id.sTypeOtus",
+  //     isOutsource: "$_id.isOutsource",
+  //   }},
+  //   // ********** distinct *************************
 
-        factoryID: "$factoryID",	
-        // fromNode: "$fromNode",
-        toFactoryID: "$toFactoryID",
-        fromFactoryID: "$fromFactoryID",
-        datetime: "$datetime",
-        yyyymmdd: "$yyyymmdd",
-        // yearMonthDayUTC: "$yearMonthDayUTC",
-        // dayMonthUTC: "$dayMonthUTC",
-        status: "$status",
-        sTypeOtus: "$sTypeOtus",
-        isOutsource: "$isOutsource",
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       status: '$status',
+  //       factoryID: '$factoryID',
+  //       toFactoryID: '$toFactoryID',
+  //       fromFactoryID: '$fromFactoryID',
+  //       yyyymmdd: '$yyyymmdd',
+  //     },
+  //     sumFactoryOutsQty: {$sum: 1} ,
+  //   }}   
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+
+
+  const orderProductFacOutQTY = await OrderProduction.aggregate([
+
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        "productionNode": {
+          $elemMatch: {
+            "isOutsource": isOutsource,
+            "status": { $in: status },
+            "sTypeOtus": sTypeOtus
+          }
+        }
       }
-    }},
-    { $project: {	
-      companyID: '$_id.companyID',
-      orderID: '$_id.orderID',
-      targetPlace: '$_id.targetPlace',
-      color: '$_id.color',
-      size: '$_id.size',
-      runningNo: '$_id.runningNo',
-      productBarcodeNoReal: '$_id.productBarcodeNoReal',
+    },
 
-      factoryID: "$_id.factoryID",	
-      // fromNode: "$_id.fromNode",
-      toFactoryID: "$_id.toFactoryID",
-      fromFactoryID: "$_id.fromFactoryID",
-      datetime: "$_id.datetime",
-      yyyymmdd: "$_id.yyyymmdd",
-      // yearMonthDayUTC: "$_id.yearMonthDayUTC",
-      // dayMonthUTC: "$_id.dayMonthUTC",
+    // 2. unwind productionNode
+    { $unwind: "$productionNode" },
 
-      status: "$_id.status",
-      sTypeOtus: "$_id.sTypeOtus",
-      isOutsource: "$_id.isOutsource",
-      // outsourceData: "$_id.outsourceData",
-    }},
-    // ********** distinct *************************
+    // 3. กรอง node ที่ตรงเงื่อนไข + มี outsourceData
+    {
+      $match: {
+        "productionNode.isOutsource": isOutsource,
+        "productionNode.status": { $in: status },
+        "productionNode.sTypeOtus": sTypeOtus,
+        "productionNode.outsourceData.0": { $exists: true }
+      }
+    },
 
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        // bundleNo: '$bundleNo',
-        // productCount: '$productCount',
-        // productBarcodeNoReal: '$productBarcodeNoReal',
-        status: '$status',
-        // sTypeOtus: '$sTypeOtus',
-        factoryID: '$factoryID',
-        toFactoryID: '$toFactoryID',
-        fromFactoryID: '$fromFactoryID',
-        yyyymmdd: '$yyyymmdd',
-        // createBy: '$createBy',
-      },
-      sumFactoryOutsQty: {$sum: 1} ,
-      // sumFactoryOutsQty: {$sum: '$productCount'} ,
-    }}   
-  ])
-  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+    // 4. unwind outsourceData
+    { $unwind: "$productionNode.outsourceData" },
+
+    // 5. distinct ด้วย $group (แทน $group + $project + $group เดิม)
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit] } },
+          color:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,    +process.env.colorDigit   ] } },
+          size:        { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,     +process.env.sizeDigit    ] } },
+          runningNo:   { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit] } },
+          productBarcodeNoReal: "$productBarcodeNoReal",
+          factoryID:    "$productionNode.factoryID",
+          toFactoryID:  "$productionNode.outsourceData.factoryID",
+          fromFactoryID:"$productionNode.outsourceData.fromFactoryID",
+          datetime:     "$productionNode.datetime",
+          yyyymmdd:     { $dateToString: { format: "%Y%m%d", date: "$productionNode.datetime", timezone: process.env.timezone } },
+          status:       "$productionNode.status",
+          sTypeOtus:    "$productionNode.sTypeOtus",
+          isOutsource:  "$productionNode.isOutsource",
+        }
+      }
+    },
+
+    // 6. group สุดท้าย นับยอด
+    {
+      $group: {
+        _id: {
+          companyID: "$_id.companyID",
+          orderID: "$_id.orderID",
+          targetPlace: "$_id.targetPlace",
+          color: "$_id.color",
+          status: "$_id.status",
+          factoryID: "$_id.factoryID",
+          toFactoryID: "$_id.toFactoryID",
+          fromFactoryID: "$_id.fromFactoryID",
+          yyyymmdd: "$_id.yyyymmdd",
+        },
+        sumFactoryOutsQty: { $sum: 1 }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    "productionNode.isOutsource": 1, 
+    "productionNode.status": 1, 
+    "productionNode.sTypeOtus": 1 
+  });
+
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
     // companyID: fw._id.companyID, 
@@ -9468,124 +9684,170 @@ exports.getCurrentCompanyOrderOutsourceFac1BY1= async (companyID, orderIDs, isOu
 
 exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsource, status, sTypeOtus, sTypeOtusExist) => {
   // const status = 'outsource';
+  // const orderProductFacOutQTY = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDs}},
+
+  //     {"productionNode":  {$elemMatch: {
+  //       "isOutsource": isOutsource, 
+  //       "status": {$in: status},
+  //       $or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]
+  //     }}},
+
+  //   ] } },
+  //   { $project: {			
+  //       _id: 1,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //       color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //       bundleNo: 1,
+  //       productCount: 1,
+  //       productionNode: 1,
+  //   }	},
+  //   { $unwind: "$productionNode"},
+  //   { $project: {			
+  //     // _id: 1,	
+  //     companyID: 1,	
+  //     orderID: 1,
+  //     targetPlace: 1,
+  //     color: 1,
+  //     bundleNo: 1,
+  //     productCount: 1,
+  //     factoryID: "$productionNode.factoryID",	
+  //     fromNode: "$productionNode.fromNode",
+  //     datetime: "$productionNode.datetime",
+  //     status: "$productionNode.status",
+  //     sTypeOtus: "$productionNode.sTypeOtus",
+  //     isOutsource: "$productionNode.isOutsource",
+  //     outsourceData: "$productionNode.outsourceData",
+  //   }	},
+  //   { $match: { $and: [
+  //     {"status":{$in: status}},
+  //     {"isOutsource":isOutsource},
+    
+  //     {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]}
+  //   ] } },
+  //   { $unwind: "$outsourceData"},
+  //   { $project: {			
+  //     // _id: 1,	
+  //     companyID: 1,	
+  //     orderID: 1,
+  //     targetPlace: 1,
+  //     color: 1,
+  //     bundleNo: 1,
+  //     productCount: 1,
+  //     factoryID: 1,
+  //     fromNode: 1,
+  //     toFactoryID: "$outsourceData.factoryID",
+  //     fromFactoryID: "$outsourceData.fromFactoryID",
+  //     datetime: 1,
+  //     yyyymmdd: { $dateToString: { format: "%Y%m%d", date: "$datetime", timezone : process.env.timezone } },
+  //     yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime", timezone : process.env.timezone } },
+  //     dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime", timezone : process.env.timezone } },
+  //     status: 1,
+  //     sTypeOtus: 1,
+  //     isOutsource: 1,
+  //   }	},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       bundleNo: '$bundleNo',
+  //       productCount: '$productCount',
+  //       status: '$status',
+
+  //       factoryID: '$factoryID',
+  //       toFactoryID: '$toFactoryID',
+  //       fromFactoryID: '$fromFactoryID',
+  //       yyyymmdd: '$yyyymmdd',
+  //     },
+  //     sumFactoryOutsQty: {$sum: 1} ,
+  //   }}   
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+
   const orderProductFacOutQTY = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
+    // 1. ด่านแรก: กรองด้วย index ทันที (สะอาดยิ่งขึ้น ดึงประสิทธิภาพของ Index ได้เต็มที่)
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        "productionNode": {
+          $elemMatch: {
+            "isOutsource": isOutsource, 
+            "status": { $in: status },
+            $or: [
+              { "sTypeOtus": sTypeOtus },
+              { "sTypeOtus": { $exists: false } } // ไม่มีฟิลด์นี้เลย
+            ]
+          }
+        }
+      }
+    },
 
-      // {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
-      {"productionNode":  {$elemMatch: {
-        "isOutsource": isOutsource, 
-        "status": {$in: status},
+    // 2. ด่านสอง: unwind ตัว productionNode ออกมาเลย (ท่ามาตรฐานเข้าใจง่าย)
+    { $unwind: "$productionNode" },
 
-        // "sTypeOtus": sTypeOtus, 
-        $or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]
-        
-      }}},
+    // 3. ด่านสาม: คัดกรองข้อมูลหลังจาก unwind ดักตัวแปรขยะทิ้งไปทั้งหมด
+    {
+      $match: {
+        "productionNode.isOutsource": isOutsource,
+        "productionNode.status": { $in: status },
+        $or: [
+          { "productionNode.sTypeOtus": sTypeOtus },
+          { "productionNode.sTypeOtus": { $exists: false } } // ไม่มีฟิลด์นี้เลย
+        ],
+        "productionNode.outsourceData.0": { $exists: true } // ดักไว้เลยว่าต้องมีข้อมูลจ้างนอก ไม่เป็นอาเรย์ว่าง
+      }
+    },
 
-      // {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: true } } ]}
+    // 4. ด่านสี่: unwind ตัว outsourceData ต่ออย่างปลอดภัย ข้อมูลผอมบางที่สุดแล้ว
+    { $unwind: "$productionNode.outsourceData" },
 
-      // {"productionNode":  {$elemMatch: {"isOutsource": isOutsource, "status": status }}},
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
-
-      // {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
-
-    ] } },
-    { $project: {			
-        _id: 1,	
-        companyID: 1,	
-        orderID: 1,	
-        // productionNode: 1,
-        // productBarcodeNo: 1,
-        // productBarcodeNoReal: 1,
-        targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-        color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-        // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+    // 5. ด่านห้า: สับสตริงบาร์โค้ด และ แปลงวันที่ เฉพาะแถวที่จะออกรายงานจริง (เซฟ CPU มหาศาล)
+    {
+      $project: {
+        _id: 0,
+        companyID: 1,
+        orderID: 1,
         bundleNo: 1,
         productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: 1,
-        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+        status: "$productionNode.status",
+        factoryID: "$productionNode.factoryID",
+        toFactoryID: "$productionNode.outsourceData.factoryID",
+        fromFactoryID: "$productionNode.outsourceData.fromFactoryID",
+        targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit] } },
+        color:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,    +process.env.colorDigit] } },
+        yyyymmdd:    { $dateToString: { format: "%Y%m%d", date: "$productionNode.datetime", timezone: process.env.timezone } }
+      }
+    },
 
-    }	},
-    { $unwind: "$productionNode"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,
-      targetPlace: 1,
-      color: 1,
-      // size: 1,
-      bundleNo: 1,
-      productCount: 1,
-      // productBarcodeNoReal: 1,
-      factoryID: "$productionNode.factoryID",	
-      fromNode: "$productionNode.fromNode",
-      datetime: "$productionNode.datetime",
-      status: "$productionNode.status",
-      sTypeOtus: "$productionNode.sTypeOtus",
-      isOutsource: "$productionNode.isOutsource",
-      outsourceData: "$productionNode.outsourceData",
-      // createBy: "$productionNode.createBy",
-    }	},
-    { $match: { $and: [
-      // {"status":status},
-      {"status":{$in: status}},
-      {"isOutsource":isOutsource},
-      
-      // {"sTypeOtus":sTypeOtus},
-      {$or: [ { "sTypeOtus": sTypeOtus }, { "sTypeOtus": { $exists: sTypeOtusExist } } ]}
-    ] } },
-    { $unwind: "$outsourceData"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,
-      targetPlace: 1,
-      color: 1,
-      bundleNo: 1,
-      productCount: 1,
-      // productBarcodeNoReal: 1,
-      factoryID: 1,
-      fromNode: 1,
-      toFactoryID: "$outsourceData.factoryID",
-      fromFactoryID: "$outsourceData.fromFactoryID",
-      datetime: 1,
-      yyyymmdd: { $dateToString: { format: "%Y%m%d", date: "$datetime", timezone : process.env.timezone } },
-      // mmdd: { $dateToString: { format: "%m%d", date: "$datetime" } },
-      yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime", timezone : process.env.timezone } },
-      dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime", timezone : process.env.timezone } },
-      status: 1,
-      sTypeOtus: 1,
-      isOutsource: 1,
-      // createBy: 1,
-    }	},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        bundleNo: '$bundleNo',
-        productCount: '$productCount',
-        // productBarcodeNoReal: '$productBarcodeNoReal',
-        status: '$status',
-        // sTypeOtus: '$sTypeOtus',
-        factoryID: '$factoryID',
-        toFactoryID: '$toFactoryID',
-        fromFactoryID: '$fromFactoryID',
-        yyyymmdd: '$yyyymmdd',
-        // createBy: '$createBy',
-      },
-      sumFactoryOutsQty: {$sum: 1} ,
-      // sumFactoryOutsQty: {$sum: '$productCount'} ,
-    }}   
-  ])
-  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+    // 6. ด่านสุดท้าย: group สรุปยอดนับจำนวนส่งกลับ Node.js
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          targetPlace: "$targetPlace",
+          color: "$color",
+          bundleNo: "$bundleNo",
+          productCount: "$productCount",
+          status: "$status",
+          factoryID: "$factoryID",
+          toFactoryID: "$toFactoryID",
+          fromFactoryID: "$fromFactoryID",
+          yyyymmdd: "$yyyymmdd"
+        },
+        sumFactoryOutsQty: { $sum: 1 }
+      }
+    }
+  ]).hint({ companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 });
+
+
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
     // companyID: fw._id.companyID, 
@@ -9609,47 +9871,101 @@ exports.getCurrentCompanyOrderOutsourceFac= async (companyID, orderIDs, isOutsou
 
 // ShareFunc.getCurrentCompanyOrderOutsource(companyID, orderIDs)
 exports.getCurrentCompanyOrderOutsource= async (companyID, orderIDs) => {
-  const orderProductFacOuts = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
+  // const orderProductFacOuts = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDs}},
+  //     {"productionNode":  {$elemMatch: {"isOutsource": true }}},
 
-      {"productionNode":  {$elemMatch: {"isOutsource": true }}},
-      // { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.fromNode", -1] }, nodeIDs] } },
-
-    ] } },
-    { $project: {			
-        _id: 1,	
-        companyID: 1,	
-        // orderID: 1,	
-        productionNode: 1
-    }	},
-    { $unwind: "$productionNode"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      isOutsource: "$productionNode.isOutsource",
-      outsourceData: "$productionNode.outsourceData",
-    }	},
-    { $match: { $and: [
-      {"isOutsource":true},
-    ] } },
-    { $unwind: "$outsourceData"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      outsourcefactoryID: "$outsourceData.factoryID",
-    }	},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        // orderID: '$orderID',
-        outsourcefactoryID: '$outsourcefactoryID',
-      }
-    }}  
+  //   ] } },
+  //   { $project: {			
+  //       _id: 1,	
+  //       companyID: 1,	
+  //       productionNode: 1
+  //   }	},
+  //   { $unwind: "$productionNode"},
+  //   { $project: {			
+  //     _id: 1,	
+  //     companyID: 1,	
+  //     isOutsource: "$productionNode.isOutsource",
+  //     outsourceData: "$productionNode.outsourceData",
+  //   }	},
+  //   { $match: { $and: [
+  //     {"isOutsource":true},
+  //   ] } },
+  //   { $unwind: "$outsourceData"},
+  //   { $project: {			
+  //     _id: 1,	
+  //     companyID: 1,	
+  //     outsourcefactoryID: "$outsourceData.factoryID",
+  //   }	},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       outsourcefactoryID: '$outsourcefactoryID',
+  //     }
+  //   }}  
  
-  ])
-  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+
+
+
+
+  const orderProductFacOuts = await OrderProduction.aggregate([
+
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        "productionNode": {
+          $elemMatch: { isOutsource: true }
+        }
+      }
+    },
+
+    // 2. ตัด field ที่ไม่ใช้ออก + กรอง outsourceData ที่ isOutsource=true เท่านั้น
+    {
+      $project: {
+        // _id: 0,  // ไม่ต้องการ _id
+        companyID: 1,
+        outsourceNodes: {
+          $filter: {
+            input: "$productionNode",
+            as: "node",
+            cond: { $eq: ["$$node.isOutsource", true] }
+          }
+        }
+      }
+    },
+
+    // 3. unwind เฉพาะ node ที่ isOutsource=true แล้ว (ไม่ต้อง $match ซ้ำ)
+    { $unwind: "$outsourceNodes" },
+
+    // 4. unwind outsourceData
+    { $unwind: "$outsourceNodes.outsourceData" },
+
+    // 5. group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          outsourcefactoryID: "$outsourceNodes.outsourceData.factoryID"
+        }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    "productionNode.isOutsource": 1, 
+    "productionNode.status": 1, 
+    "productionNode.sTypeOtus": 1 
+  });
+
+
+
 
 // // console.log(orderProductFacOuts);
 const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
@@ -9664,43 +9980,62 @@ const orderProductFacOutsF = await orderProductFacOuts.map(fw => ({
 
 // ShareFunc.getCurrentCompanyOrderOutsourceQTY(companyID, orderIDs);
 exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {
+  // const orderProductFacOutQTY = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDs}},
+  //   ] } },
+  //   { $project: {			
+  //       // _id: 1,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       outsourceData: 1
+  //   }	},
+  //   { $unwind: "$outsourceData"},
+  //   { $project: {			
+  //     _id: 1,	
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     outsourcefactoryID: "$outsourceData.factoryID",
+  //   }	},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       outsourcefactoryID: '$outsourcefactoryID',
+  //     },
+  //     sumFactoryOutsQty: {$sum: 1} ,
+  //   }}   
+  // ]).hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
+
   const orderProductFacOutQTY = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
-    ] } },
-    { $project: {			
-        _id: 1,	
-        companyID: 1,	
-        orderID: 1,	
-        outsourceData: 1
-    }	},
-    { $unwind: "$outsourceData"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
-      outsourcefactoryID: "$outsourceData.factoryID",
-    }	},
-    // { $match: { $and: [
-    //   {"isOutsource":true},
-    // ] } },
-    // { $unwind: "$outsourceData"},
-    // { $project: {			
-    //   _id: 1,	
-    //   companyID: 1,	
-    //   orderID: 1,	
-    //   outsourcefactoryID: "$outsourceData.factoryID",
-    // }	},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        outsourcefactoryID: '$outsourcefactoryID',
-      },
-      sumFactoryOutsQty: {$sum: 1} ,
-    }}   
-  ]).hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
+
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        // "outsourceData": { $exists: true, $ne: [] }  // กรอง document ที่ไม่มี outsourceData ออกตั้งแต่ต้น
+        "outsourceData.0": { $exists: true } // ตัดเอกสารที่ไม่มีข้อมูลการจ้างนอกทิ้งทันทีตั้งแต่นอกประตูด่านแรก
+      }
+    },
+
+    // 3. unwind outsourceData
+    { $unwind: "$outsourceData" },
+
+    // 4. group เลย ไม่ต้อง $project ซ้ำ
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          outsourcefactoryID: "$outsourceData.factoryID"
+        },
+        sumFactoryOutsQty: { $sum: 1 }
+      }
+    }
+
+  ]).hint({ "companyID": 1, "orderID": 1, "productBarcodeNoReal": 1 });
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
     // companyID: fw._id.companyID, 
@@ -9714,61 +10049,102 @@ exports.getCurrentCompanyOrderOutsourceQTY= async (companyID, orderIDs) => {
 
 // orderProductFacOutRemainQTY = await ShareFunc.getCurrentCompanyOrderOutsourceRemianQTY(companyID, orderIDs);
 exports.getCurrentCompanyOrderOutsourceRemianQTY= async (companyID, orderIDs) => {
+  // const status = 'outsource';
+  // const orderProductFacOutQTY = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDs}},
+
+  //     {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
+  //     { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
+  //     { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
+
+  //   ] } },
+  //   { $project: {			
+  //       _id: 1,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+
+  //   }	},
+  //   { $unwind: "$productionNode"},
+  //   { $project: {			
+  //     _id: 1,	
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     status: "$productionNode.status",
+  //     isOutsource: "$productionNode.isOutsource",
+  //     outsourceData: "$productionNode.outsourceData",
+  //   }	},
+  //   { $match: { $and: [
+  //     {"status":status},
+  //     {"isOutsource":true},
+  //   ] } },
+  //   { $unwind: "$outsourceData"},
+  //   { $project: {			
+  //     _id: 1,	
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     outsourcefactoryID: "$outsourceData.factoryID",
+  //   }	},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       outsourcefactoryID: '$outsourcefactoryID',
+  //     },
+  //     sumFactoryOutsQty: {$sum: 1} ,
+  //   }}   
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+  
+
   const status = 'outsource';
   const orderProductFacOutQTY = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
-
-      {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
-
-    ] } },
-    { $project: {			
-        _id: 1,	
+    { 
+      // 1. ด่านแรก: ใช้ Index กรองข้อมูลหลักและประยุกต์ใช้ Multikey Index บน Array ทันที
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        // "productionNode.status": status,
+        // "productionNode.isOutsource": true
+        "productionNode": {
+          $elemMatch: { status: status, isOutsource: true }  // ✓ element เดียวกัน
+        }
+      } 
+    },
+    { 
+      // 2. ด่านสอง: ดึงเฉพาะ Element สุดท้ายออกมาเพื่อเช็กเงื่อนไขทันที (แปลงผลลัพธ์เป็นวัตถุธรรมดา)
+      $project: {			
         companyID: 1,	
         orderID: 1,	
-        // productionNode: 1,
-        // productBarcodeNo: 1,
-        // productBarcodeNoReal: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-
-    }	},
-    { $unwind: "$productionNode"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
-      status: "$productionNode.status",
-      isOutsource: "$productionNode.isOutsource",
-      outsourceData: "$productionNode.outsourceData",
-    }	},
-    { $match: { $and: [
-      {"status":status},
-      {"isOutsource":true},
-    ] } },
-    { $unwind: "$outsourceData"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
-      outsourcefactoryID: "$outsourceData.factoryID",
-    }	},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        outsourcefactoryID: '$outsourcefactoryID',
-      },
-      sumFactoryOutsQty: {$sum: 1} ,
-    }}   
-  ])
-  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
-  // .hint( { companyID: 1, orderID: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
+        lastNode: { $arrayElemAt: ["$productionNode", -1] }
+      }	
+    },
+    {
+      // 3. ด่านสาม: กรองทันทีว่า Element สุดท้ายเป็น Outsource จริงหรือไม่ (ทดแทน $expr และ $match เดิม)
+      $match: {
+        "lastNode.status": status,
+        "lastNode.isOutsource": true
+      }
+    },
+    { 
+      // 4. ด่านสี่: สลายโครงสร้างอาเรย์ภายใน (ขยายเฉพาะข้อมูลผู้ผลิตภายนอกที่ตรงเงื่อนไขแล้ว)
+      $unwind: "$lastNode.outsourceData"
+    },
+    { 
+      // 5. ด่านห้า: ยุบกลุ่มข้อมูลและนับยอดรวมส่งกลับ Node.js
+      $group: {			
+        _id: { 
+          companyID: '$companyID',
+          orderID: '$orderID',
+          outsourcefactoryID: '$lastNode.outsourceData.factoryID'
+        },
+        sumFactoryOutsQty: { $sum: 1 }
+      }   
+    }
+  ]).hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+  
 
   const orderProductFacOutQTYF = await orderProductFacOutQTY.map(fw => ({
     // companyID: fw._id.companyID, 
@@ -9782,50 +10158,89 @@ exports.getCurrentCompanyOrderOutsourceRemianQTY= async (companyID, orderIDs) =>
 
 // ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceQTY(companyID, orderIDs);
 exports.getCurrentCompanyOrderStyleColorSizeOutsourceQTY= async (companyID, orderIDs) => {
+  // const orderProductFacOutQTY = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDs}},
+  //   ] } },
+  //   { $project: {			
+  //       _id: 1,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       outsourceData: 1,
+  //       productBarcodeNoReal: 1,
+  //   }	},
+  //   { $unwind: "$outsourceData"},
+  //   { $project: {			
+  //     _id: 1,	
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+  //     outsourcefactoryID: "$outsourceData.factoryID",
+  //   }	},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       outsourcefactoryID: '$outsourcefactoryID',
+  //       style: '$style',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       size: '$size',
+  //     },
+  //     countQty: {$sum: 1} ,
+  //   }} ,
+ 
+  // ]).hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
+
   const orderProductFacOutQTY = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
-    ] } },
-    { $project: {			
-        _id: 1,	
+    { 
+      // 1. ด่านแรก: กรองด้วย Index และเลือกเฉพาะเอกสารที่มีข้อมูลในอาเรย์ outsourceData อยู่จริง (ไม่เป็นอาเรย์ว่าง)
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        "outsourceData.0": { $exists: true } // ตัดเอกสารขยะทิ้งตั้งแต่ประตูด่านแรก
+      } 
+    },
+    { 
+      // 2. ด่านสอง: คำนวณตัดสตริงรหัสสินค้า ขณะที่ข้อมูลยังผอมอยู่ (ก่อนแตกแถวด้วย $unwind) เซฟ CPU มหาศาล!
+      $project: {			
+        _id: 0, // ถอด _id ออกเพื่อความผอมของท่อส่ง แรมนิ่งสบาย
         companyID: 1,	
         orderID: 1,	
         outsourceData: 1,
-        // productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-    }	},
-    { $unwind: "$outsourceData"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+        style:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos,    +process.env.styleDigit] } },
+        targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos,  +process.env.targetIDDigit] } },
+        color:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,     +process.env.colorDigit] } },
+        size:        { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,      +process.env.sizeDigit] } }
+      }	
+    },
+    { 
+      // 3. ด่านสาม: แตกโครงสร้างอาเรย์ขยายข้อมูลผู้ผลิตภายนอก
+      $unwind: "$outsourceData"
+    },
+    { 
+      // 4. ด่านสุดท้าย: จัดกลุ่มยุบข้อมูลรวมยอดทั้งหมดแยกตามสไตล์และไซส์ (ผลลัพธ์จะออกมาเหมือน code1 100%)
+      $group: {			
+        _id: { 
+          companyID: '$companyID',
+          orderID: '$orderID',
+          outsourcefactoryID: '$outsourceData.factoryID',
+          style: '$style',
+          targetPlace: '$targetPlace',
+          color: '$color',
+          size: '$size'
+        },
+        countQty: { $sum: 1 } // ใช้ชื่อ countQty เหมือน code1 เพื่อไม่ให้หน้าบ้านเอ๋อครับ
+      }
+    }
+  ]).hint({ "companyID": 1, "orderID": 1, "productBarcodeNoReal": 1 });
 
-      outsourcefactoryID: "$outsourceData.factoryID",
-    }	},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        // factoryID: '$factoryID',
-        orderID: '$orderID',
-        outsourcefactoryID: '$outsourcefactoryID',
-        style: '$style',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
-        // productID: '$productID',
-        // bundleNo: '$bundleNo',
-        // mode: '$mode',
-      },
-      countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }} ,
- 
-  ]).hint( {"companyID" : 1, "orderID": 1, "productBarcodeNoReal": 1} );
+
 
   const result = await orderProductFacOutQTY.map(fw => ({
     // companyID: fw._id.companyID, 
@@ -9843,79 +10258,130 @@ exports.getCurrentCompanyOrderStyleColorSizeOutsourceQTY= async (companyID, orde
 
 // ShareFunc.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY(companyID, orderIDs);
 exports.getCurrentCompanyOrderStyleColorSizeOutsourceRemainQTY= async (companyID, orderIDs) => {
+  // const status = 'outsource';
+  // const orderProductFacOutQTY = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDs}},
+
+  //     {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
+  //     { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
+  //     { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
+
+  //   ] } },
+  //   { $project: {			
+  //       _id: 1,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       productBarcodeNoReal: 1,
+  //       productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+
+  //   }	},
+  //   { $unwind: "$productionNode"},
+  //   { $project: {			
+  //     _id: 1,	
+  //     companyID: 1,	
+  //     orderID: 1,	
+
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+  //     status: "$productionNode.status",
+  //     isOutsource: "$productionNode.isOutsource",
+  //     outsourceData: "$productionNode.outsourceData",
+  //   }	},
+  //   { $match: { $and: [
+  //     {"status":status},
+  //     {"isOutsource":true},
+  //   ] } },
+  //   { $unwind: "$outsourceData"},
+  //   { $project: {			
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     outsourcefactoryID: "$outsourceData.factoryID",
+  //     style: 1,	
+  //     targetPlace: 1,	
+  //     color: 1,	
+  //     size: 1,	
+  //   }	},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+
+  //       orderID: '$orderID',
+  //       outsourcefactoryID: '$outsourcefactoryID',
+  //       style: '$style',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       size: '$size',
+  //     },
+  //     countQty: {$sum: 1} ,
+  //   }} ,  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+
   const status = 'outsource';
   const orderProductFacOutQTY = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
-
-      {"productionNode":  {$elemMatch: {"status": status, "isOutsource": true }}},
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.status", -1] }, status] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.isOutsource", -1] }, true] } },
-
-    ] } },
-    { $project: {			
-        _id: 1,	
+    { 
+      // 1. ด่านแรก: ใช้ Index กรองข้อมูลหลัก และใช้ $elemMatch บังคับให้อยู่ใน Element เดียวกันทันที (ถอด $expr ออก)
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        "productionNode": {
+          $elemMatch: { status: status, isOutsource: true }
+        }
+      } 
+    },
+    { 
+      // 2. ด่านสอง: ดึงเฉพาะ Element สุดท้ายออกมา พร้อมคำนวณตัดสตริงบาร์โค้ดเสร็จสรรพตั้งแต่ข้อมูลยังไม่แตกแถว (เซฟ CPU มหาศาล)
+      $project: {			
+        _id: 0, // ถอด _id ออกเพื่อลดขนาดข้อมูลในท่อส่ง แรมนิ่งสบาย
         companyID: 1,	
         orderID: 1,	
-        // productionNode: 1,
-        // productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-
-    }	},
-    { $unwind: "$productionNode"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
-
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-
-      status: "$productionNode.status",
-      isOutsource: "$productionNode.isOutsource",
-      outsourceData: "$productionNode.outsourceData",
-    }	},
-    { $match: { $and: [
-      {"status":status},
-      {"isOutsource":true},
-    ] } },
-    { $unwind: "$outsourceData"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
-      outsourcefactoryID: "$outsourceData.factoryID",
-      style: 1,	
-      targetPlace: 1,	
-      color: 1,	
-      size: 1,	
-    }	},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        // factoryID: '$factoryID',
-        orderID: '$orderID',
-        outsourcefactoryID: '$outsourcefactoryID',
-        style: '$style',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
-        // productID: '$productID',
-        // bundleNo: '$bundleNo',
-        // mode: '$mode',
-      },
-      countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }} ,  
+        lastNode: { $arrayElemAt: ["$productionNode", -1] }, // ดึงตัวสุดท้ายของอาเรย์มาเป็น Object ธรรมดา
+        style: { $toUpper: { $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] } },
+        targetPlace: { $toUpper: { $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] } },
+        color: { $toUpper: { $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] } },
+        size: { $toUpper: { $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] } }
+      }	
+    },
+    {
+      // 3. ด่านสาม: ตรวจสอบความถูกต้องว่า Element ล่าสุด ณ ปัจจุบัน เป็นสถานะ outsource และส่งนอกจริงไหม (ทดแทน $match และ $expr ตัวเก่า)
+      $match: {
+        "lastNode.status": status,
+        "lastNode.isOutsource": true,
+        "lastNode.outsourceData.0": { $exists: true }
+      }
+    },
+    { 
+      // 4. ด่านสี่: สลายโครงสร้างอาเรย์ขยายเฉพาะข้อมูลโรงงานภายนอก (ทำ $unwind เพียงรอบเดียว ไม่ซ้ำซ้อน)
+      $unwind: "$lastNode.outsourceData"
+    },
+    { 
+      // 5. ด่านสุดท้าย: จัดกลุ่มยุบข้อมูลรวมยอดทั้งหมดส่งกลับให้เซิร์ฟเวอร์ Node.js ทันที (ถอด $project ขั้นกลางออกทั้งหมด)
+      $group: {			
+        _id: { 
+          companyID: '$companyID',
+          orderID: '$orderID',
+          outsourcefactoryID: '$lastNode.outsourceData.factoryID',
+          style: '$style',
+          targetPlace: '$targetPlace',
+          color: '$color',
+          size: '$size'
+        },
+        countQty: { $sum: 1 }
+      }   
+    }
   ])
   .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.status": 1, "productionNode.sTypeOtus": 1 } );
+  
+ 
+
+
+
+
 
   const result = await orderProductFacOutQTY.map(fw => ({
     // companyID: fw._id.companyID, 
@@ -11339,105 +11805,115 @@ exports.getProductionPeriodC = async (companyID, productStatusArr, productionNod
 exports.getProductionZonePeriodC = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr) => {
   // console.log('getRepCFNCurrentProductQtyByOrderID');
   // console.log(companyID, productStatusArr, productionNodeStatusArr);
+  // const productionPeriod = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+  //     {"productStatus":{$in: productStatusArr}},
+  //     {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,		
+  //       orderID: 1,	
+  //       productBarcodeNoReal: 1,
+  //       targetPlaceID: "$targetPlace.targetPlaceID",
+  //       targetPlaceName: "$targetPlace.targetPlaceName",
+  //       productionNode: 1,
+  //   }	},
+
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     targetPlaceID: 1,
+  //     targetPlaceName: 1,
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     fromNode: "$productionNode.fromNode",
+  //     status: "$productionNode.status",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"status":{$in: productionNodeStatusArr}}
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,		
+  //     orderID: 1,	
+  //     targetPlaceID: 1,
+  //     targetPlaceName: 1,
+  //     style: 1,
+  //     color: 1,
+  //     size: 1,
+  //     fromNode: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       targetPlaceID: '$targetPlaceID',
+  //       targetPlaceName: '$targetPlaceName',
+  //       style: '$style',
+  //       color: '$color',
+  //       size: '$size',
+  //       fromNode: '$fromNode',
+  //   },
+  //     sumProductQty: {$sum: 1} ,
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+
   const productionPeriod = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      // {"factoryID":factoryID},
-      {"orderID":{$in: orderIDArr}},
-      {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {"status": {$in: productionNodeStatusArr} }}},
-
-    ] } },
-    { $project: {			
-        _id: 0,	
-        companyID: 1,
-        // factoryID: 1,		
-        orderID: 1,	
-        // forLoss: 1,
-        // bundleNo: 1,
-        // productID: 1,
-        // productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-        // targetPlace: 1,
-        targetPlaceID: "$targetPlace.targetPlaceID",
-        targetPlaceName: "$targetPlace.targetPlaceName",
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-        productionNode: 1,
-    }	},
-
-    { $unwind: "$productionNode" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-      // forLoss: 1,
-      // bundleNo: 1,
-      // productID: 1,
-      // productBarcodeNo: 1,
-      // productBarcodeNoReal: 1,
-      // targetPlace: 1,
-      targetPlaceID: 1,
-      targetPlaceName: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      fromNode: "$productionNode.fromNode",
-      // toNode: "$productionNode.toNode",
-      status: "$productionNode.status",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
-
-    { $match: { $and: [
-      {"status":{$in: productionNodeStatusArr}}
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-      // forLoss: 1,
-      // bundleNo: 1,
-      // productID: 1,
-      // productBarcodeNo: 1,
-      // productBarcodeNoReal: 1,
-      // targetPlace: 1,
-      targetPlaceID: 1,
-      targetPlaceName: 1,
-      style: 1,
-      color: 1,
-      size: 1,
-      // productProblem: 1,
-      // fromNode: 1,
-      fromNode: 1,
-      // datetime: 1,
-      // createBy: 1,
-    }},
-
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        // forLoss: '$forLoss',
-        targetPlaceID: '$targetPlaceID',
-        targetPlaceName: '$targetPlaceName',
-        style: '$style',
-        color: '$color',
-        size: '$size',
-        fromNode: '$fromNode',
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "productStatus": { $in: productStatusArr },
+        "productionNode": {
+          $elemMatch: { "status": { $in: productionNodeStatusArr } }
+        }
+      }
     },
-      sumProductQty: {$sum: 1} ,
-    }}  
-  ])
-  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+
+    // 2. unwind productionNode
+    { $unwind: "$productionNode" },
+
+    // 3. กรอง node ที่ตรงเงื่อนไขทันที
+    {
+      $match: {
+        "productionNode.status": { $in: productionNodeStatusArr }
+      }
+    },
+
+    // 4. group เลย ย้าย $substr เข้ามาคำนวณใน $group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          targetPlaceID: "$targetPlace.targetPlaceID",
+          targetPlaceName: "$targetPlace.targetPlaceName",
+          style:    { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit] } },
+          color:    { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,  +process.env.colorDigit ] } },
+          size:     { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,   +process.env.sizeDigit  ] } },
+          fromNode: "$productionNode.fromNode",
+        },
+        sumProductQty: { $sum: 1 }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    productStatus: 1, 
+    "productionNode.status": 1 
+  });
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -11457,89 +11933,125 @@ exports.getProductionZonePeriodC = async (companyID, productStatusArr, productio
 }
 
 exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd) => {
+  // const productionPeriod = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+  //     {"productStatus":{$in: productStatusArr}},
+
+  //     {"productionNode":  {$elemMatch: {
+  //       "datetime": { $gte: dateStart, $lte : dateEnd}, 
+  //       "status": {$in: productionNodeStatusArr},
+  //     }}},
+
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,
+		
+  //       orderID: 1,	
+  //       productBarcodeNoReal: 1,
+
+  //       targetPlaceID: "$targetPlace.targetPlaceID",
+  //       targetPlaceName: "$targetPlace.targetPlaceName",
+  //       productionNode: 1,
+  //   }	},
+
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,	
+  //     orderID: 1,	
+
+  //     targetPlaceID: 1,
+  //     targetPlaceName: 1,
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     fromNode: "$productionNode.fromNode",
+  //     status: "$productionNode.status",
+  //     datetime: "$productionNode.datetime",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"datetime": { $gte: dateStart, $lte : dateEnd}},
+  //     {"status":{$in: productionNodeStatusArr}},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,		
+  //     orderID: 1,	
+  //     targetPlaceID: 1,
+  //     targetPlaceName: 1,
+  //     style: 1,
+  //     color: 1,
+  //     size: 1,
+  //     fromNode: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       targetPlaceID: '$targetPlaceID',
+  //       targetPlaceName: '$targetPlaceName',
+  //       style: '$style',
+  //       color: '$color',
+  //       size: '$size',
+  //       fromNode: '$fromNode',
+  //   },
+  //     sumProductQty: {$sum: 1} ,
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+
   const productionPeriod = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      // {"factoryID":factoryID},
-      {"orderID":{$in: orderIDArr}},
-      {"productStatus":{$in: productStatusArr}},
-
-      {"productionNode":  {$elemMatch: {
-        "datetime": { $gte: dateStart, $lte : dateEnd}, 
-        "status": {$in: productionNodeStatusArr},
-      }}},
-
-    ] } },
-    { $project: {			
-        _id: 0,	
-        companyID: 1,
-        // factoryID: 1,		
-        orderID: 1,	
-        productBarcodeNoReal: 1,
-        // targetPlace: 1,
-        targetPlaceID: "$targetPlace.targetPlaceID",
-        targetPlaceName: "$targetPlace.targetPlaceName",
-        productionNode: 1,
-    }	},
-
-    { $unwind: "$productionNode" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-
-      targetPlaceID: 1,
-      targetPlaceName: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-
-      fromNode: "$productionNode.fromNode",
-      // toNode: "$productionNode.toNode",
-      status: "$productionNode.status",
-      datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
-
-    { $match: { $and: [
-      {"datetime": { $gte: dateStart, $lte : dateEnd}},
-      {"status":{$in: productionNodeStatusArr}},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-
-      targetPlaceID: 1,
-      targetPlaceName: 1,
-      style: 1,
-      color: 1,
-      size: 1,
-      // productProblem: 1,
-      // fromNode: 1,
-      fromNode: 1,
-      // datetime: 1,
-      // createBy: 1,
-    }},
-
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        // forLoss: '$forLoss',
-        targetPlaceID: '$targetPlaceID',
-        targetPlaceName: '$targetPlaceName',
-        style: '$style',
-        color: '$color',
-        size: '$size',
-        fromNode: '$fromNode',
+    // 1. ด่านแรก: กรองข้อมูลดิบชั้นต้นผ่าน Index ทันทีด้วย $elemMatch รวมถึงเพิ่มเงื่อนไขช่วงเวลาดักไว้เลย
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "productStatus": { $in: productStatusArr },
+        "productionNode": {
+          $elemMatch: {
+            "datetime": { $gte: dateStart, $lte: dateEnd },
+            "status": { $in: productionNodeStatusArr }
+          }
+        }
+      }
     },
-      sumProductQty: {$sum: 1} ,
-    }}  
-  ])
-  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
+
+    // 2. ด่านสอง: unwind คลี่อาเรย์ productionNode ออกมาเลย (ท่ามาตรฐานที่คุณเขียนคล่อง)
+    { $unwind: "$productionNode" },
+
+    // 3. ด่านสาม: คัดกรองข้อมูลทันทีหลังแตกแถว เพื่อดักเอาเฉพาะตัว Node ที่ตรงทั้งช่วงเวลาและสถานะจริงๆ
+    {
+      $match: {
+        "productionNode.datetime": { $gte: dateStart, $lte: dateEnd },
+        "productionNode.status": { $in: productionNodeStatusArr }
+      }
+    },
+
+    // 4. ด่านสุดท้าย: Group ยุบกลุ่ม สรุปยอดรวมจำนวน และสับสตริงรหัสสินค้าในขั้นตอนนี้จุดเดียวจบ!
+    // (ถอดด่าน $project และขั้นตอนคั่นกลางซ้ำซ้อนออกทั้งหมด ประหยัดทั้ง RAM และ CPU ฝั่ง Atlas M10 ครับ)
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          targetPlaceID: "$targetPlace.targetPlaceID",
+          targetPlaceName: "$targetPlace.targetPlaceName",
+          fromNode: "$productionNode.fromNode",
+          // สับสตริงบาร์โค้ดดิบและแปลงอักษรเฉพาะกลุ่มเอกสารที่คัดเลือกมาแล้วรอบเดียวจบ เซฟ CPU มหาศาล
+          style: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit] } },
+          color: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit] } },
+          size:  { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,  +process.env.sizeDigit] } }
+        },
+        sumProductQty: { $sum: 1 }
+      }
+    }
+  ]).hint({ companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 });
+
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -11559,97 +12071,138 @@ exports.getProductionZonePeriodDate12C = async (companyID, productStatusArr, pro
 }
 
 exports.getProductionZonePeriodUserScanDate12C = async (companyID, productStatusArr, productionNodeStatusArr, orderIDArr, dateStart, dateEnd, userIDGroup) => {
-  // console.log(userIDGroup);
+  
+  // const productionPeriod = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+  //     {"productStatus":{$in: productStatusArr}},
+
+  //     {"productionNode":  {$elemMatch: {
+  //       "datetime": { $gte: dateStart, $lte : dateEnd}, 
+  //       "status": {$in: productionNodeStatusArr},
+  //       "createBy.userID": {$in: userIDGroup},
+  //     }}},
+
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,
+  //       orderID: 1,	
+  //       productBarcodeNoReal: 1,
+  //       targetPlaceID: "$targetPlace.targetPlaceID",
+  //       targetPlaceName: "$targetPlace.targetPlaceName",
+  //       productionNode: 1,
+  //   }	},
+
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     targetPlaceID: 1,
+  //     targetPlaceName: 1,
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+  //     fromNode: "$productionNode.fromNode",
+  //     status: "$productionNode.status",
+  //     datetime: "$productionNode.datetime",
+  //     createBy: "$productionNode.createBy",
+  //     userID: "$productionNode.createBy.userID",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"datetime": { $gte: dateStart, $lte : dateEnd}},
+  //     {"status":{$in: productionNodeStatusArr}},
+  //     {"createBy.userID":{$in: userIDGroup}},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,	
+  //     orderID: 1,	
+
+  //     targetPlaceID: 1,
+  //     targetPlaceName: 1,
+  //     style: 1,
+  //     color: 1,
+  //     size: 1,
+  //     fromNode: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       targetPlaceID: '$targetPlaceID',
+  //       targetPlaceName: '$targetPlaceName',
+  //       style: '$style',
+  //       color: '$color',
+  //       size: '$size',
+  //       fromNode: '$fromNode',
+  //   },
+  //     sumProductQty: {$sum: 1} ,
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1, "productionNode.createBy.userID": 1 } );
+
   const productionPeriod = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      // {"factoryID":factoryID},
-      {"orderID":{$in: orderIDArr}},
-      {"productStatus":{$in: productStatusArr}},
 
-      {"productionNode":  {$elemMatch: {
-        "datetime": { $gte: dateStart, $lte : dateEnd}, 
-        "status": {$in: productionNodeStatusArr},
-        "createBy.userID": {$in: userIDGroup},
-      }}},
-
-    ] } },
-    { $project: {			
-        _id: 0,	
-        companyID: 1,
-        // factoryID: 1,		
-        orderID: 1,	
-        productBarcodeNoReal: 1,
-        // targetPlace: 1,
-        targetPlaceID: "$targetPlace.targetPlaceID",
-        targetPlaceName: "$targetPlace.targetPlaceName",
-        productionNode: 1,
-    }	},
-
-    { $unwind: "$productionNode" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-
-      targetPlaceID: 1,
-      targetPlaceName: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-
-      fromNode: "$productionNode.fromNode",
-      // toNode: "$productionNode.toNode",
-      status: "$productionNode.status",
-      datetime: "$productionNode.datetime",
-      createBy: "$productionNode.createBy",
-      userID: "$productionNode.createBy.userID",
-    }},
-
-    { $match: { $and: [
-      {"datetime": { $gte: dateStart, $lte : dateEnd}},
-      {"status":{$in: productionNodeStatusArr}},
-      {"createBy.userID":{$in: userIDGroup}},
-      // {"userID":{$in: userIDGroup}},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-
-      targetPlaceID: 1,
-      targetPlaceName: 1,
-      style: 1,
-      color: 1,
-      size: 1,
-      // productProblem: 1,
-      // fromNode: 1,
-      fromNode: 1,
-      // datetime: 1,
-      // createBy: 1,
-      // userID: 1
-    }},
-
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        // forLoss: '$forLoss',
-        targetPlaceID: '$targetPlaceID',
-        targetPlaceName: '$targetPlaceName',
-        style: '$style',
-        color: '$color',
-        size: '$size',
-        fromNode: '$fromNode',
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "productStatus": { $in: productStatusArr },
+        "productionNode": {
+          $elemMatch: {
+            "datetime": { $gte: dateStart, $lte: dateEnd },
+            "status": { $in: productionNodeStatusArr },
+            "createBy.userID": { $in: userIDGroup }
+          }
+        }
+      }
     },
-      sumProductQty: {$sum: 1} ,
-    }}  
-  ])
-  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.status": 1 } );
-  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1 } );
-  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.datetime": -1, "productionNode.status": 1, "productionNode.createBy.userID": 1 } );
+
+    // 2. unwind productionNode
+    { $unwind: "$productionNode" },
+
+    // 3. กรอง node ที่ตรงเงื่อนไขทันที
+    {
+      $match: {
+        "productionNode.datetime": { $gte: dateStart, $lte: dateEnd },
+        "productionNode.status": { $in: productionNodeStatusArr },
+        "productionNode.createBy.userID": { $in: userIDGroup }
+      }
+    },
+
+    // 4. group เลย ย้าย $substr เข้ามาคำนวณใน $group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          targetPlaceID: "$targetPlace.targetPlaceID",
+          targetPlaceName: "$targetPlace.targetPlaceName",
+          fromNode: "$productionNode.fromNode",
+          style: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit] } },
+          color: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,  +process.env.colorDigit ] } },
+          size:  { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,   +process.env.sizeDigit  ] } },
+        },
+        sumProductQty: { $sum: 1 }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    productStatus: 1, 
+    "productionNode.datetime": -1, 
+    "productionNode.status": 1, 
+    "productionNode.createBy.userID": 1 
+  });
+
 
   // console.log(productionPeriod);
   const productionPeriodM = await productionPeriod.map(fw => ({
@@ -13645,67 +14198,71 @@ exports.getCNCurrentProductionNodeQty = async (companyID, orderStatusArr, produc
 exports.getCompanyCurrentProductQtyAll = async (companyID, factoryIDArr, productStatusArr, orderIDArr) => {
   // ## CFN = /:companyID/:factoryID/:nodeID
   // console.log('getRepCFNCurrentProductQtyByOrderID');
+  // const companyCurrentProductQtyAll = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+  //     {"productStatus":{$in: productStatusArr}},
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,		
+  //       orderID: 1,	
+  //       productID: 1,
+  //       productBarcodeNoReal: 1,
+  //       productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+  //   }	},
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     productID: 1,
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //   }},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       productID: '$productID',
+  //       style: '$style',
+  //     },
+  //     countQty: {$sum: 1} ,
+  //   }}  
+  // ]).hint( { companyID : 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1} );
+  
   const companyCurrentProductQtyAll = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      // {"factoryID":factoryID},
-      // {"factoryID":{$in: factoryIDArr}},
-      {"orderID":{$in: orderIDArr}},
-      {"productStatus":{$in: productStatusArr}},
 
-    ] } },
-    { $project: {			
-        _id: 0,	
-        companyID: 1,
-        // factoryID: 1,		
-        orderID: 1,	
-        // bundleNo: 1,
-        productID: 1,
-        productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-    }	},
-    { $unwind: "$productionNode" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-      // bundleNo: 1,
-      productID: 1,
-      // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", 12, 4 ] }},		
-      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", 18, 10 ] }},
-      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", 28, 3 ] }},
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      // toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        productID: '$productID',
-        style: '$style',
-        // targetPlace: '$targetPlace',
-        // color: '$color',
-        // size: '$size',
-        // productID: '$productID',
-        // bundleNo: '$bundleNo',
-        // mode: '$mode',
-      },
-      countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }}  
-  ]).hint( { companyID : 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1} );
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "productStatus": { $in: productStatusArr }
+      }
+    },
+
+    // 2. group เลย ย้าย $substr + $arrayElemAt เข้ามาคำนวณใน $group แทน $slice + $unwind + $project
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          productID: "$productID",
+          style: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit] } },
+        },
+        countQty: { $sum: 1 }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    productStatus: 1, 
+    "productionNode.factoryID": 1, 
+    "productionNode.toNode": 1 
+  });
+
   // console.log(companyCurrentProductQtyAll);
 
   const companyCurrentProductQtyAllF = await companyCurrentProductQtyAll.map(fw => ({
@@ -13988,121 +14545,138 @@ exports.getCCurrentProductQtyAllByStyleC = async (companyID, style, productStatu
 exports.getRepCFNCurrentMainDataBundleNoscanProductBarcode = async (companyID, factoryIDArr, nodeID, orderIDArr, statusArr,
   productBarcodeArr, bundleNoArr, bundleIDArr) => {
 
-  // console.log(targetPlaceID, color, size);
-  const mainDataBundleNoScan = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      // {"factoryID":factoryID},
-      {"orderID":{$in: orderIDArr}},
-      {"bundleNo":{$in: bundleNoArr}},
-      {"bundleID":{$in: bundleIDArr}},
-      {"productStatus":{$in: statusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr} }}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
-      // {"factoryID":{$in: factoryIDArr}},
-      // {"productBarcode":{$in: productBarcodeArr}},
-    ] } },
-    { $project: {			
-        _id: 0,	
-        companyID: 1,
-        // factoryID: 1,		
+  // const mainDataBundleNoScan = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+  //     {"bundleNo":{$in: bundleNoArr}},
+  //     {"bundleID":{$in: bundleIDArr}},
+  //     {"productStatus":{$in: statusArr}},
+
+  //     {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr} }}},
+  //     { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       bundleNo: 1,
+  //       bundleID: 1,
+  //       productBarcodeNoReal: 1,
+  //       productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+  //   }	},
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     bundleNo: 1,
+  //     bundleID: 1,
+  //     productBarcodeNo: 1,
+  //     productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+  //     no: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit ] }},
+
+  //     factoryID: "$productionNode.factoryID",
+  //     toNode: "$productionNode.toNode",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"factoryID":{$in: factoryIDArr}},
+  //     {"productBarcode":{$in: productBarcodeArr}},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     factoryID: 1,		
+  //     orderID: 1,	
+  //     bundleNo: 1,
+  //     bundleID: 1,
+  //     productBarcode: 1,
+  //     no: 1,
+  //     toNode: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       factoryID: '$factoryID',
+  //       orderID: '$orderID',
+  //       productBarcode: '$productBarcode',
+  //       bundleNo: '$bundleNo',
+  //       bundleID: '$bundleID',
+  //       no: '$no',
+  //       toNode: '$toNode',
+  //     },
+  //   }},
+  //   { $sort: { '_id.bundleNo': 1,  '_id.no': 1} },
+  // ]).hint( { companyID : 1, orderID: 1, bundleNo: 1, bundleID: 1 } );
+
+
+
+  const mainDataBundleNoScan = await OrderProduction.aggregate([
+    // 1. ด่านแรก: ล็อกเป้ากรองข้อมูลหลักผ่าน Index ทันทีด้วย $elemMatch (ตัด $expr ออก)
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "bundleNo": { $in: bundleNoArr },
+        "bundleID": { $in: bundleIDArr },
+        "productStatus": { $in: statusArr },
+        "productionNode": {
+          $elemMatch: {
+            "factoryID": { $in: factoryIDArr }
+          }
+        }
+      }
+    },
+
+    // 2. ด่านสอง: ดึงตัวสุดท้ายออก และสับสตริงเฉพาะ productBarcode เพื่อเอาไปคัดกรองเงื่อนไขด่านถัดไป
+    {
+      $project: {
+        _id: 0,
+        companyID: 1,	
         orderID: 1,	
         bundleNo: 1,
         bundleID: 1,
-        // productID: 1,
-        // targetPlace: 1,
-        // productBarcodeNo: 1,
         productBarcodeNoReal: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-    }	},
-    { $unwind: "$productionNode" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-      bundleNo: 1,
-      bundleID: 1,
-      // productID: 1,
-      // targetPlaceID: "$targetPlace.targetPlaceID",
-      productBarcodeNo: 1,
-      productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
-      // style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      // color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      // size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      no: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit ] }},
+        lastNode: { $arrayElemAt: ["$productionNode", -1] }, // แกะตัวสุดท้ายออกมาโดยไม่ต้องทำ $unwind
+        productBarcode: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit] } }
+      }
+    },
 
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      factoryID: "$productionNode.factoryID",
-      toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
+    // 3. ด่านสาม: คัดกรองข้อมูลตามเงื่อนไขที่ต้องการทันที (ตัดข้อมูลขยะทิ้งไปตั้งแต่จุดนี้ ท่อส่งจะเบาสุดๆ)
+    {
+      $match: {
+        "lastNode.factoryID": { $in: factoryIDArr },
+        "productBarcode": { $in: productBarcodeArr }
+      }
+    },
 
-    { $match: { $and: [
-      // {"toNode":nodeID},
-      {"factoryID":{$in: factoryIDArr}},
-      {"productBarcode":{$in: productBarcodeArr}},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      factoryID: 1,		
-      orderID: 1,	
-      bundleNo: 1,
-      bundleID: 1,
-      // productID: 1,
-      // targetPlaceID: "$targetPlace.targetPlaceID",
-      productBarcode: 1,
-      // style: 1,
-      // targetPlace: 1,
-      // color: 1,
-      // size: 1,
-      no: 1,
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      // factoryID: "$productionNode.factoryID",
-      toNode: 1,
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
+    // 4. ด่านสุดท้าย: Group ยุบกลุ่มข้อมูล (Distinct) และ คำนวณสับสตริงรหัสวิ่ง 'no' เก็บไว้ใน _id เหมือนเดิมเป๊ะ 100%
+    // ถอดด่าน $project คั่นกลางปลายทางทิ้งไปเลย เพื่อรักษาโครงสร้างรูปทรงวัตถุให้เหมือนระบบเก่าครับ
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          factoryID: "$lastNode.factoryID",
+          orderID: "$orderID",
+          productBarcode: "$productBarcode",
+          bundleNo: "$bundleNo",
+          bundleID: "$bundleID",
+          toNode: "$lastNode.toNode",
+          // สับสตริงรหัสวิ่งเฉพาะกลุ่มที่จะใช้แสดงผลในหน้ารายงานเท่านั้น เซฟ CPU สูงสุด!
+          no: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit] } }
+        }
+      }
+    },
 
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        factoryID: '$factoryID',
-        orderID: '$orderID',
-        productBarcode: '$productBarcode',
-        bundleNo: '$bundleNo',
-        bundleID: '$bundleID',
-        // style: '$style',
-        // targetPlace: '$targetPlace',
-        // color: '$color',
-        // size: '$size',
-        no: '$no',
-        toNode: '$toNode',
-        // productCount: '$productCount',
-        // bundleNo: '$bundleNo',
-        // mode: '$mode',
-      },
-      // countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }},
-    { $sort: { '_id.bundleNo': 1,  '_id.no': 1} },
-    // { $skip: (page-1) *  limit},
-    // { $limit: limit }
-  ]);
-  // { $sort : { age : -1, posts: 1 } }
+    // 5. เรียงลำดับ (Sort) โดยใช้โครงสร้างตัวแปรผูกใน _id ตามโค้ดต้นฉบับดั้งเดิมของคุณเป๊ะๆ
+    { $sort: { '_id.bundleNo': 1, '_id.no': 1 } }
+  ]).hint({ companyID: 1, orderID: 1, bundleNo: 1, bundleID: 1 });
+
+
+
   // console.log(mainDataBundleNoScan);
 
   const mainDataBundleNoScanF = await mainDataBundleNoScan.map(fw => ({
@@ -14133,119 +14707,173 @@ exports.getRepCFNCurrentMainDataBundleNoscanDetail = async (companyID, factoryID
   color = await this.setBackStrLen(10, color, '-'); // (len, str, strBack)
   size = await this.setBackStrLen(3, size, '-'); // (len, str, strBack)
   // console.log(targetPlaceID, color, size);
-  const mainDataBundleNoScan = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      // {"factoryID":factoryID},
-      // {"factoryID":{$in: factoryIDArr}},
-      {"orderID":{$in: orderIDArr}},
-      {"productStatus":{$in: statusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
-      // {"factoryID":{$in: factoryIDArr}},
-      // {"toNode":nodeID},
-    ] } },
-    { $project: {			
-        _id: 0,	
+  // const mainDataBundleNoScan = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+  //     {"productStatus":{$in: statusArr}},
+
+  //     {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
+  //     { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+  //     { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       bundleNo: 1,
+  //       bundleID: 1,
+  //       productBarcodeNoReal: 1,
+  //       productCount: 1,
+  //       productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+  //   }	},
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,		
+  //     orderID: 1,	
+  //     bundleNo: 1,
+  //     bundleID: 1,
+
+  //     productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     productCount: 1,
+  //     factoryID: "$productionNode.factoryID",
+  //     toNode: "$productionNode.toNode",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"factoryID":{$in: factoryIDArr}},
+  //     {"toNode":nodeID},
+  //     {"targetPlace":targetPlaceID},
+  //     {"color":color},
+  //     {"size":size},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     factoryID: 1,		
+  //     orderID: 1,	
+  //     bundleNo: 1,
+  //     bundleID: 1,
+  //     productBarcode: 1,
+  //     style: 1,
+  //     targetPlace: 1,
+  //     color: 1,
+  //     size: 1,
+  //     productCount: 1,
+  //     toNode: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       orderID: '$orderID',
+  //       productBarcode: '$productBarcode',
+  //       bundleNo: '$bundleNo',
+  //       bundleID: '$bundleID',
+  //       style: '$style',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       size: '$size',
+  //       toNode: '$toNode',
+  //       productCount: '$productCount',
+  //     },
+  //     countQty: {$sum: 1} ,
+  //   }},
+  //   { $sort: { countQty: 1, bundleNo: 1 } },
+  //   { $skip: (page-1) *  limit},
+  //   { $limit: limit }
+  // ])
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
+  
+  const mainDataBundleNoScan = await OrderProduction.aggregate([
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "productStatus": { $in: statusArr },
+        "productionNode": {
+          $elemMatch: {
+            "factoryID": { $in: factoryIDArr },
+            "toNode": nodeID
+          }
+        }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
         companyID: 1,
-        // factoryID: 1,		
-        orderID: 1,	
+        orderID: 1,
         bundleNo: 1,
         bundleID: 1,
-        // productID: 1,
-        // targetPlace: 1,
-        // productBarcodeNo: 1,
         productBarcodeNoReal: 1,
         productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-    }	},
+        productionNode: { $slice: ["$productionNode", -1] }
+      }
+    },
     { $unwind: "$productionNode" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-      bundleNo: 1,
-      bundleID: 1,
-      // productID: 1,
-      // targetPlaceID: "$targetPlace.targetPlaceID",
-      // productBarcodeNo: 1,
-
-      productBarcode: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit ] }},
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      factoryID: "$productionNode.factoryID",
-      toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
-
-    { $match: { $and: [
-      {"factoryID":{$in: factoryIDArr}},
-      {"toNode":nodeID},
-      {"targetPlace":targetPlaceID},
-      {"color":color},
-      {"size":size},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      factoryID: 1,		
-      orderID: 1,	
-      bundleNo: 1,
-      bundleID: 1,
-      // productID: 1,
-      // targetPlaceID: "$targetPlace.targetPlaceID",
-      productBarcode: 1,
-      style: 1,
-      targetPlace: 1,
-      color: 1,
-      size: 1,
-      productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      // factoryID: "$productionNode.factoryID",
-      toNode: 1,
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
-
-    { $group: {			
-      _id: { 
-        // companyID: '$companyID',
-        // factoryID: '$factoryID',
-        orderID: '$orderID',
-        productBarcode: '$productBarcode',
-        bundleNo: '$bundleNo',
-        bundleID: '$bundleID',
-        style: '$style',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
-        toNode: '$toNode',
-        productCount: '$productCount',
-        // bundleNo: '$bundleNo',
-        // mode: '$mode',
-      },
-      countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }},
-    { $sort: { countQty: 1, bundleNo: 1 } },
-    { $skip: (page-1) *  limit},
+    {
+      $project: {
+        _id: 0,
+        companyID: 1,
+        orderID: 1,
+        bundleNo: 1,
+        bundleID: 1,
+        productBarcode: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit] } },
+        style:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos,    +process.env.styleDigit   ] } },
+        targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos,  +process.env.targetIDDigit] } },
+        color:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,     +process.env.colorDigit   ] } },
+        size:        { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,      +process.env.sizeDigit    ] } },
+        productCount: 1,
+        factoryID: "$productionNode.factoryID",
+        toNode: "$productionNode.toNode",
+      }
+    },
+    {
+      $match: {
+        "factoryID": { $in: factoryIDArr },
+        "toNode": nodeID,
+        "targetPlace": targetPlaceID,
+        "color": color,
+        "size": size,
+      }
+    },
+    {
+      $group: {
+        _id: {
+          orderID: "$orderID",
+          productBarcode: "$productBarcode",
+          bundleNo: "$bundleNo",
+          bundleID: "$bundleID",
+          style: "$style",
+          targetPlace: "$targetPlace",
+          color: "$color",
+          size: "$size",
+          toNode: "$toNode",
+          productCount: "$productCount",
+        },
+        countQty: { $sum: 1 }
+      }
+    },
+    { $sort: { countQty: 1, "_id.bundleNo": 1 } },  // ✓ แก้ตรงนี้
+    { $skip: (page - 1) * limit },
     { $limit: limit }
-  ])
-  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    productStatus: 1, 
+    "productionNode.factoryID": 1, 
+    "productionNode.toNode": 1 
+  });
+  
+  
   // { $sort : { age : -1, posts: 1 } }
   // console.log(mainDataBundleNoScan);
 
@@ -14270,110 +14898,149 @@ exports.getRepCFNCurrentMainDataBundleNoscanDetail = async (companyID, factoryID
 
 // getRepCFNCurrentMainDataBundleNoscan(companyID, factoryIDArr, nodeID, orderIDArr, statusArr)
 exports.getRepCFNCurrentMainDataBundleNoscan = async (companyID, factoryIDArr, nodeID, orderIDArr, statusArr) => {
-  const mainDataBundleNoScan = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      // {"factoryID":factoryID},
-      // {"factoryID":{$in: factoryIDArr}},
-      {"orderID":{$in: [orderIDArr]}},
-      {"productStatus":{$in: statusArr}},
+  // const mainDataBundleNoScan = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: [orderIDArr]}},
+  //     {"productStatus":{$in: statusArr}},
 
-      {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
-      { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
-      { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
-      // {"factoryID":{$in: factoryIDArr}},
-      // {"toNode":nodeID},
-    ] } },
-    { $project: {			
-        _id: 0,	
+  //     {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr}, "toNode": nodeID }}},
+  //     { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
+  //     { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       bundleNo: 1,
+  //       bundleID: 1,
+  //       productBarcodeNoReal: 1,
+  //       productCount: 1,
+  //       productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
+  //   }	},
+  //   { $unwind: "$productionNode" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     bundleNo: 1,
+  //     bundleID: 1,
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     productCount: 1,
+  //     factoryID: "$productionNode.factoryID",
+  //     toNode: "$productionNode.toNode",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"factoryID":{$in: factoryIDArr}},
+  //     {"toNode":nodeID},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     factoryID: 1,		
+  //     orderID: 1,	
+  //     bundleNo: 1,
+  //     bundleID: 1,
+  //     style: 1,
+  //     targetPlace: 1,
+  //     color: 1,
+  //     size: 1,
+  //     productCount: 1,
+  //     toNode: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       factoryID: '$factoryID',
+  //       orderID: '$orderID',
+  //       bundleNo: '$bundleNo',
+  //       bundleID: '$bundleID',
+  //       style: '$style',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       size: '$size',
+  //       toNode: '$toNode',
+  //       productCount: '$productCount',
+  //     },
+
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
+  
+  const mainDataBundleNoScan = await OrderProduction.aggregate([
+
+    // 1. กรองด้วย index ทันที ตัด $expr ออก
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: [orderIDArr] },
+        "productStatus": { $in: statusArr },
+        "productionNode": {
+          $elemMatch: {
+            "factoryID": { $in: factoryIDArr },
+            "toNode": nodeID
+          }
+        }
+      }
+    },
+
+    // 2. ดึง lastNode ด้วย $arrayElemAt แทน $slice + $unwind
+    {
+      $project: {
+        _id: 0,
         companyID: 1,
-        // factoryID: 1,		
-        orderID: 1,	
+        orderID: 1,
         bundleNo: 1,
         bundleID: 1,
-        // productID: 1,
-        // targetPlace: 1,
-        // productBarcodeNo: 1,
         productBarcodeNoReal: 1,
         productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-    }	},
-    { $unwind: "$productionNode" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      // factoryID: 1,		
-      orderID: 1,	
-      bundleNo: 1,
-      bundleID: 1,
-      // productID: 1,
-      // targetPlaceID: "$targetPlace.targetPlaceID",
-      // productBarcodeNo: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      factoryID: "$productionNode.factoryID",
-      toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
+        lastNode: { $arrayElemAt: ["$productionNode", -1] }
+      }
+    },
 
-    { $match: { $and: [
-      {"factoryID":{$in: factoryIDArr}},
-      {"toNode":nodeID},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      factoryID: 1,		
-      orderID: 1,	
-      bundleNo: 1,
-      bundleID: 1,
-      // productID: 1,
-      // targetPlaceID: "$targetPlace.targetPlaceID",
-      // productBarcodeNo: 1,
-      style: 1,
-      targetPlace: 1,
-      color: 1,
-      size: 1,
-      productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
-      // factoryID: "$productionNode.factoryID",
-      toNode: 1,
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
+    // 3. กรอง lastNode ที่ตรงเงื่อนไขทันที
+    {
+      $match: {
+        "lastNode.factoryID": { $in: factoryIDArr },
+        "lastNode.toNode": nodeID
+      }
+    },
 
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        factoryID: '$factoryID',
-        orderID: '$orderID',
-        bundleNo: '$bundleNo',
-        bundleID: '$bundleID',
-        style: '$style',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
-        toNode: '$toNode',
-        productCount: '$productCount',
-        // bundleNo: '$bundleNo',
-        // mode: '$mode',
-      },
-      // countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }}  
-  ])
-  .hint( { companyID: 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1 } );
+    // 4. group เลย ย้าย $substr เข้ามาคำนวณใน $group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          factoryID: "$lastNode.factoryID",
+          orderID: "$orderID",
+          bundleNo: "$bundleNo",
+          bundleID: "$bundleID",
+          toNode: "$lastNode.toNode",
+          productCount: "$productCount",
+          style:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos,    +process.env.styleDigit   ] } },
+          targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos,  +process.env.targetIDDigit] } },
+          color:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,     +process.env.colorDigit   ] } },
+          size:        { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,      +process.env.sizeDigit    ] } },
+        }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    productStatus: 1, 
+    "productionNode.factoryID": 1, 
+    "productionNode.toNode": 1 
+  });
+  
+  
+  
+  
   // console.log(mainDataBundleNoScan);
 
   const mainDataBundleNoScanF = await mainDataBundleNoScan.map(fw => ({
@@ -14401,52 +15068,33 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
   const orderProductCFNodeRep = await OrderProduction.aggregate([
     { $match: { $and: [
       {"companyID":companyID},
-      // {"factoryID":factoryID},
-      // {"factoryID":{$in: factoryIDArr}},
       {"orderID":{$in: orderIDArr}},
       {"productStatus":{$in: productStatusArr}},
 
       {"productionNode":  {$elemMatch: {"factoryID": {$in: factoryIDArr} }}},
       { $expr: { $in: [{ "$arrayElemAt": ["$productionNode.factoryID", -1] }, factoryIDArr] } },
-      // { $expr: { $eq: [{ "$arrayElemAt": ["$productionNode.toNode", -1] }, nodeID] } },
 
     ] } },
     { $project: {			
         _id: 0,	
         companyID: 1,
-        // factoryID: 1,		
-        // orderID: 1,	
-        // bundleNo: 1,
         productID: 1,
         targetPlace: 1,
         productBarcodeNo: 1,
         productBarcodeNoReal: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
         productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
     }	},
     { $unwind: "$productionNode" },
     { $project: { 
       _id: 0, 
       companyID: 1,
-      // factoryID: 1,		
-      // orderID: 1,	
-      // bundleNo: 1,
       productID: 1,
       targetPlaceID: "$targetPlace.targetPlaceID",
-      // productBarcodeNo: 1,
       style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
       color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
       size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
       factoryID: "$productionNode.factoryID",
       toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
     }},
 
     { $match: { $and: [
@@ -14456,22 +15104,13 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
       _id: 0, 
       companyID: 1,
       factoryID: 1,		
-      // orderID: 1,	
-      // bundleNo: 1,
       productID: 1,
       targetPlaceID: 1,
-      // productBarcodeNo: 1,
       style: 1,	
       color: 1,	
       size: 1,	
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // fromNode: "$productionNode.fromNode",
       factoryID: 1,	
       toNode: 1,	
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
     }},
 
     { $group: {			
@@ -14484,15 +15123,14 @@ exports.getCurrentProductQtyAllCFNode = async (companyID, factoryIDArr, productS
         color: '$color',
         size: '$size',
         toNode: '$toNode',
-        // productID: '$productID',
-        // bundleNo: '$bundleNo',
-        // mode: '$mode',
       },
       countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
     }}  
   ])
   .hint( { companyID : 1, orderID: 1, productStatus: 1, "productionNode.factoryID": 1, "productionNode.toNode": 1} );
+  
+  
+  
   // console.log(orderProductRep);
 
   const orderProductCFNodeRepF = await orderProductCFNodeRep.map(fw => ({
@@ -14907,79 +15545,110 @@ exports.getCurrentCFactoryOrder = async (companyID, orderIDs) => {
 }
 
 exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
+  // const staffScan = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDs}},
+
+  //     {"productionNode":  {$elemMatch: {
+  //       "factoryID": {$in: factoryIDArr}, 
+  //       "datetime": { $gte: dateStart, $lte : dateEnd}, 
+  //       "status": {$in: statusArr}, 
+  //     }}},
+
+  //   ] } },
+
+  //   { $unwind: "$productionNode" },
+
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     orderID: 1,	
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     datetime: "$productionNode.datetime",
+  //     factoryID: "$productionNode.factoryID",	
+  //     fromNode: "$productionNode.fromNode",
+  //     status: "$productionNode.status",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"factoryID":{$in: factoryIDArr}},
+  //     {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
+  //     {"status":{$in: statusArr}},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     orderID: 1,	
+  //     style: 1,	
+  //     factoryID: 1,	
+  //     fromNode: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       factoryID: '$factoryID',
+  //       orderID: '$orderID',
+  //       fromNode: '$fromNode',
+  //       style: '$style',
+  //     },
+  //     countQty: {$sum: 1} ,
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "productionNode.datetime": 1, "productionNode.factoryID": 1, "productionNode.status": 1 } );
+
+
   const staffScan = await OrderProduction.aggregate([
-    // { $unwind: "$productionNode" },
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
 
-      // {"productionNode":  {$elemMatch: { 
-      //   "factoryID":{$in: factoryIDArr},
-      //   "datetime": { $gte: dateStart, $lte : dateEnd}, 
-      //   "status":{$in: statusArr},
-      // }}},
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        "productionNode": {
+          $elemMatch: {
+            "factoryID": { $in: factoryIDArr },
+            "datetime": { $gte: dateStart, $lte: dateEnd },
+            "status": { $in: statusArr }
+          }
+        }
+      }
+    },
 
-      // {"productionNode.factoryID":{$in: factoryIDArr}},
-      // {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // // {"productionNode.datetime": { $lte : dateEnd}} ,
-      // {"productionNode.status":{$in: statusArr}},
-
-      {"productionNode":  {$elemMatch: {
-        "factoryID": {$in: factoryIDArr}, 
-        "datetime": { $gte: dateStart, $lte : dateEnd}, 
-        "status": {$in: statusArr}, 
-      }}},
-
-    ] } },
-
-    // { $project: {			
-    //     _id: 0,	
-    //     companyID: 1,		
-    //     orderID: 1,	
-    //     productBarcodeNoReal: 1,
-    //     productionNode: 1,  // ## 
-    // }	},
+    // 2. unwind productionNode
     { $unwind: "$productionNode" },
 
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      orderID: 1,	
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      datetime: "$productionNode.datetime",
-      factoryID: "$productionNode.factoryID",	
-      fromNode: "$productionNode.fromNode",
-      status: "$productionNode.status",
-    }},
+    // 3. กรอง node ที่ตรงเงื่อนไขทันที
+    {
+      $match: {
+        "productionNode.factoryID": { $in: factoryIDArr },
+        "productionNode.datetime": { $gte: dateStart, $lte: dateEnd },
+        "productionNode.status": { $in: statusArr }
+      }
+    },
 
-    { $match: { $and: [
-      {"factoryID":{$in: factoryIDArr}},
-      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // {"datetime": { $lte : dateEnd}} ,
-      {"status":{$in: statusArr}},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      orderID: 1,	
-      style: 1,	
-      factoryID: 1,	
-      fromNode: 1,
-    }},
+    // 4. group เลย ย้าย $substr เข้ามาคำนวณใน $group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          factoryID: "$productionNode.factoryID",
+          orderID: "$orderID",
+          fromNode: "$productionNode.fromNode",
+          style: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit] } },
+        },
+        countQty: { $sum: 1 }
+      }
+    }
 
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        factoryID: '$factoryID',
-        orderID: '$orderID',
-        fromNode: '$fromNode',
-        style: '$style',
-      },
-      countQty: {$sum: 1} ,
-    }}  
-  // ]).explain("executionStats");
-  ])
-  .hint( { companyID: 1, orderID: 1, "productionNode.datetime": 1, "productionNode.factoryID": 1, "productionNode.status": 1 } );
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    "productionNode.datetime": 1, 
+    "productionNode.factoryID": 1, 
+    "productionNode.status": 1 
+  });
 
   // const staffScan = await OrderProduction.aggregate([
   //   { $match: { $and: [
@@ -15055,115 +15724,22 @@ exports.getCFStaffScannedByDate12Style = async (companyID, factoryIDArr, orderID
 }
 
 exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr) => {
-  // console.log('getCFStaffScannedByDate12StyleZone');
-  const staffScan = await OrderProduction.aggregate([
-    // { $unwind: "$productionNode" },
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDs}},
-
-      // {"productionNode":  {$elemMatch: {"status":{$in: productionNodeStatusArr}}}},
-      // {"productionNode":  {$elemMatch: { "factoryID": factoryID }}},
-
-      // {"datetime": { $gte: dateStart}} , 
-      // {"datetime": { $lte : dateEnd}} ,
-      // {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
-      // {"productionNode":  {$elemMatch: { 
-      //   "factoryID":{$in: factoryIDArr},
-      //   "datetime": { $gte: dateStart}, 
-      //   "datetime": { $lte : dateEnd},
-      //   "status":{$in: statusArr},
-      // }}},
-
-      // {"productionNode.factoryID":{$in: factoryIDArr}},
-      // {"productionNode.datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // // {"productionNode.datetime": { $lte : dateEnd}} ,
-      // {"productionNode.status":{$in: statusArr}},
-
-      {"productionNode":  {$elemMatch: {
-        "factoryID": {$in: factoryIDArr}, 
-        "datetime": { $gte: dateStart, $lte : dateEnd}, 
-        "status": {$in: statusArr}, 
-      }}},
-
-    ] } },
-
-
-    // { $project: {			
-    //     _id: 0,	
-    //     companyID: 1,		
-    //     orderID: 1,	
-    //     productBarcodeNoReal: 1,
-    //     productionNode: 1,  // ## 
-    // }	},
-    { $unwind: "$productionNode" },
-
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      orderID: 1,	
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      datetime: "$productionNode.datetime",
-      factoryID: "$productionNode.factoryID",	
-      fromNode: "$productionNode.fromNode",
-      status: "$productionNode.status",
-    }},
-    { $match: { $and: [
-      {"factoryID":{$in: factoryIDArr}},
-      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // {"datetime": { $lte : dateEnd}} ,
-      {"status":{$in: statusArr}},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      orderID: 1,	
-      style: 1,	
-      targetPlace: 1,
-      factoryID: 1,	
-      fromNode: 1,
-    }},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        factoryID: '$factoryID',
-        orderID: '$orderID',
-        fromNode: '$fromNode',
-        style: '$style',
-        targetPlace: '$targetPlace',
-      },
-      countQty: {$sum: 1} ,
-    }}  
-  ])
-  .hint( { companyID: 1, orderID: 1, "productionNode.datetime": 1, "productionNode.factoryID": 1, "productionNode.status": 1 } );
 
   // const staffScan = await OrderProduction.aggregate([
   //   { $match: { $and: [
   //     {"companyID":companyID},
   //     {"orderID":{$in: orderIDs}},
 
-  //     // {"productionNode":  {$elemMatch: {"status":{$in: productionNodeStatusArr}}}},
-  //     // {"productionNode":  {$elemMatch: { "factoryID": factoryID }}},
-
-  //     // {"datetime": { $gte: dateStart}} , 
-  //     // {"datetime": { $lte : dateEnd}} ,
-  //     // {"productionNode":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
-  //     {"productionNode":  {$elemMatch: { 
-  //       "factoryID":{$in: factoryIDArr},
-  //       "datetime": { $gte: dateStart}, 
-  //       "datetime": { $lte : dateEnd},
-  //       "status":{$in: statusArr},
+  //     {"productionNode":  {$elemMatch: {
+  //       "factoryID": {$in: factoryIDArr}, 
+  //       "datetime": { $gte: dateStart, $lte : dateEnd}, 
+  //       "status": {$in: statusArr}, 
   //     }}},
+
   //   ] } },
-  //   { $project: {			
-  //       _id: 0,	
-  //       companyID: 1,		
-  //       orderID: 1,	
-  //       productBarcodeNoReal: 1,
-  //       productionNode: 1,  // ## 
-  //   }	},
+
   //   { $unwind: "$productionNode" },
+
   //   { $project: { 
   //     _id: 0, 
   //     companyID: 1,
@@ -15177,8 +15753,7 @@ exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, ord
   //   }},
   //   { $match: { $and: [
   //     {"factoryID":{$in: factoryIDArr}},
-  //     {"datetime": { $gte: dateStart}} , 
-  //     {"datetime": { $lte : dateEnd}} ,
+  //     {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
   //     {"status":{$in: statusArr}},
   //   ] } },
   //   { $project: { 
@@ -15201,7 +15776,62 @@ exports.getCFStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, ord
   //     },
   //     countQty: {$sum: 1} ,
   //   }}  
-  // ]);
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "productionNode.datetime": 1, "productionNode.factoryID": 1, "productionNode.status": 1 } );
+
+  const staffScan = await OrderProduction.aggregate([
+
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDs },
+        "productionNode": {
+          $elemMatch: {
+            "factoryID": { $in: factoryIDArr },
+            "datetime": { $gte: dateStart, $lte: dateEnd },
+            "status": { $in: statusArr }
+          }
+        }
+      }
+    },
+
+    // 2. unwind productionNode
+    { $unwind: "$productionNode" },
+
+    // 3. กรอง node ที่ตรงเงื่อนไขทันที
+    {
+      $match: {
+        "productionNode.factoryID": { $in: factoryIDArr },
+        "productionNode.datetime": { $gte: dateStart, $lte: dateEnd },
+        "productionNode.status": { $in: statusArr }
+      }
+    },
+
+    // 4. group เลย ย้าย $substr เข้ามาคำนวณใน $group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          factoryID: "$productionNode.factoryID",
+          orderID: "$orderID",
+          fromNode: "$productionNode.fromNode",
+          style:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.stylePos,    +process.env.styleDigit   ] } },
+          targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos,  +process.env.targetIDDigit] } },
+        },
+        countQty: { $sum: 1 }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    "productionNode.datetime": 1, 
+    "productionNode.factoryID": 1, 
+    "productionNode.status": 1 
+  });
+
+  
 
   const staffScanF = await staffScan.map(fw => ({
     companyID: fw._id.companyID, 
@@ -15480,115 +16110,125 @@ exports.getCFFNStaffScannedByDate12StyleZone = async (companyID, factoryIDArr, o
 // getCFSubNodeScanDate12StaffOverall
 exports.getCFSubNodeScanDate12StaffOverall= async (companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd, qrCodeArr) => {
   
+  // const subNodeStaffScan = await OrderProduction.aggregate([
+  //   { $unwind: "$subNodeFlow" },
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+
+  //     {"subNodeFlow":  {$elemMatch: {
+  //       "factoryID": {$in: factoryIDArr}, 
+  //       "nodeID": {$in: nodeIDs}, 
+  //       "qrCode": {$in: qrCodeArr}, 
+  //       "datetime": { $gte: dateStart, $lte : dateEnd}, 
+  //     }}},
+
+  //   ] } },
+   
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     orderID: 1,	
+  //     style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     factoryID: "$subNodeFlow.factoryID",
+  //     datetime: "$subNodeFlow.datetime",
+  //     nodeID: "$subNodeFlow.nodeID",
+  //     subNodeID: "$subNodeFlow.subNodeID",	
+  //     qrCode: "$subNodeFlow.qrCode",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"factoryID":{$in: factoryIDArr}},
+  //     {"nodeID":{$in: nodeIDs}},
+  //     {"qrCode":{$in: qrCodeArr}},
+  //     {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     factoryID: 1,	
+  //     orderID: 1,	
+  //     nodeID: 1,
+  //     subNodeID: 1,	
+  //     qrCode: 1,	
+     
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       factoryID: '$factoryID',
+  //       orderID: '$orderID',
+  //       nodeID: '$nodeID',
+  //       subNodeID: '$subNodeID',
+  //       qrCode: '$qrCode',
+
+  //     },
+  //     countQty: {$sum: 1} ,
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.qrCode": 1, "subNodeFlow.datetime": -1 } );
+  
   const subNodeStaffScan = await OrderProduction.aggregate([
+
+    // 1. กรองด้วย index ทันที ก่อน $unwind
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "subNodeFlow": {
+          $elemMatch: {
+            "factoryID": { $in: factoryIDArr },
+            "nodeID": { $in: nodeIDs },
+            "qrCode": { $in: qrCodeArr },
+            "datetime": { $gte: dateStart, $lte: dateEnd }
+          }
+        }
+      }
+    },
+
+    // 2. unwind หลัง $match เพื่อลด document ที่ต้อง unwind
     { $unwind: "$subNodeFlow" },
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDArr}},
 
-      {"subNodeFlow":  {$elemMatch: {
-        "factoryID": {$in: factoryIDArr}, 
-        "nodeID": {$in: nodeIDs}, 
-        "qrCode": {$in: qrCodeArr}, 
-        "datetime": { $gte: dateStart, $lte : dateEnd}, 
-        // "datetime": { $lte : dateEnd} 
-      }}},
+    // 3. กรอง node ที่ตรงเงื่อนไขทันที
+    {
+      $match: {
+        "subNodeFlow.factoryID": { $in: factoryIDArr },
+        "subNodeFlow.nodeID": { $in: nodeIDs },
+        "subNodeFlow.qrCode": { $in: qrCodeArr },
+        "subNodeFlow.datetime": { $gte: dateStart, $lte: dateEnd }
+      }
+    },
 
-    ] } },
-    // { $project: {			
-    //     _id: 0,	
-    //     companyID: 1,
-    //     // factoryID: 1,		
-    //     orderID: 1,	
-    //     // bundleNo: 1,
-    //     // productID: 1,
-    //     productBarcodeNo: 1,
-    //     productBarcodeNoReal: 1,
-    //     // productCount: 1,
-    //     // productionDate: 1,
-    //     // productStatus: 1,
-    //     // productionNode: 1,  // ## 
-    //     subNodeFlow: 1,  // ## 
-    // }	},
-    // { $unwind: "$subNodeFlow" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      orderID: 1,	
-      // bundleNo: 1,
-      // productID: 1,
-      style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      factoryID: "$subNodeFlow.factoryID",
-      datetime: "$subNodeFlow.datetime",
-      nodeID: "$subNodeFlow.nodeID",
-      subNodeID: "$subNodeFlow.subNodeID",	
-      qrCode: "$subNodeFlow.qrCode",
-      // toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
+    // 4. group เลย ตัด $project ออกทั้งหมด
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          factoryID: "$subNodeFlow.factoryID",
+          orderID: "$orderID",
+          nodeID: "$subNodeFlow.nodeID",
+          subNodeID: "$subNodeFlow.subNodeID",
+          qrCode: "$subNodeFlow.qrCode",
+        },
+        countQty: { $sum: 1 }
+      }
+    }
 
-    { $match: { $and: [
-      {"factoryID":{$in: factoryIDArr}},
-      {"nodeID":{$in: nodeIDs}},
-      {"qrCode":{$in: qrCodeArr}},
-      // {"status":{$in: statusArr}},
-      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // {"datetime": { $lte : dateEnd}} ,
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      factoryID: 1,	
-      orderID: 1,	
-      nodeID: 1,
-      subNodeID: 1,	
-      qrCode: 1,	
-      // dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
-
-      // targetPlace: 1,
-      // color: 1,
-      // size: 1,
-      // yearMonthDayUTC: { $dateToString: { format: "%Y-%m-%d", date: "$datetime" } },
-      // productID: 1,
-      // productBarcodeNo: 1,
-      // targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNo", 8, 4 ] }},	
-      // lottoMainTypeID: { $substr: [ "$lottoRoundID", 9, 3 ] },	
-      // item: { $toUpper: "$item" },
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      // productProblem: 1,
-      // toNode: 1,
-      // datetime: 1,
-      // createBy: 1,
-    }},
-
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        factoryID: '$factoryID',
-        orderID: '$orderID',
-        nodeID: '$nodeID',
-        subNodeID: '$subNodeID',
-        qrCode: '$qrCode',
-        // dayMonthUTC: '$dayMonthUTC',
-        // targetPlace: '$targetPlace',
-        // color: '$color',
-        // size: '$size',
-
-      },
-      countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }}  
-  ])
-  .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.qrCode": 1, "subNodeFlow.datetime": -1 } );
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    "subNodeFlow.factoryID": 1, 
+    "subNodeFlow.nodeID": 1, 
+    "subNodeFlow.qrCode": 1, 
+    "subNodeFlow.datetime": -1 
+  });
+  
+  
+  
   // console.log(subNodeStaffScan);
 
   const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
@@ -15742,105 +16382,142 @@ exports.getCFSubNodeScanDate12Overall= async (companyID, factoryIDArr, orderIDAr
 
 // getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall
 exports.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall= async (companyID, factoryIDArr, orderIDArr, nodeIDs, dateStart, dateEnd, qrCodeArr) => {
-  const subNodeStaffScan = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDArr}},
+  // const subNodeStaffScan = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
 
-      {"subNodeFlow":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
+  //     {"subNodeFlow":  {$elemMatch: { "datetime": { $gte: dateStart}, "datetime": { $lte : dateEnd} }}},
 
-      {"subNodeFlow":  {$elemMatch: {
-        "factoryID": {$in: factoryIDArr}, 
-        "nodeID": {$in: nodeIDs}, 
-        "qrCode": {$in: qrCodeArr}, 
-        "datetime": { $gte: dateStart, $lte : dateEnd}, 
-      }}},
+  //     {"subNodeFlow":  {$elemMatch: {
+  //       "factoryID": {$in: factoryIDArr}, 
+  //       "nodeID": {$in: nodeIDs}, 
+  //       "qrCode": {$in: qrCodeArr}, 
+  //       "datetime": { $gte: dateStart, $lte : dateEnd}, 
+  //     }}},
 
-    ] } },
-    { $project: {			
-        _id: 0,	
-        companyID: 1,
-        // factoryID: 1,		
-        orderID: 1,	
-        // bundleNo: 1,
-        // productID: 1,
-        productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        // productionNode: 1,  // ## 
-        subNodeFlow: 1,  // ## 
-    }	},
-    { $unwind: "$subNodeFlow" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      orderID: 1,	
-      // bundleNo: 1,
-      // productID: 1,
-      // style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      // productCount: 1,
-      // productionDate: 1,
-      // productStatus: 1,
-      factoryID: "$subNodeFlow.factoryID",
-      datetime: "$subNodeFlow.datetime",
-      nodeID: "$subNodeFlow.nodeID",
-      subNodeID: "$subNodeFlow.subNodeID",	
-      qrCode: "$subNodeFlow.qrCode",
-      // status: "$subNodeFlow.status",
-      // toNode: "$productionNode.toNode",
-      // datetime: "$productionNode.datetime",
-      // createBy: "$productionNode.createBy",
-    }},
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,		
+  //       orderID: 1,	
+  //       productBarcodeNo: 1,
+  //       productBarcodeNoReal: 1,
+  //       subNodeFlow: 1,  // ## 
+  //   }	},
+  //   { $unwind: "$subNodeFlow" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     orderID: 1,	
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     factoryID: "$subNodeFlow.factoryID",
+  //     datetime: "$subNodeFlow.datetime",
+  //     nodeID: "$subNodeFlow.nodeID",
+  //     subNodeID: "$subNodeFlow.subNodeID",	
+  //     qrCode: "$subNodeFlow.qrCode",
+  //   }},
 
-    { $match: { $and: [
-      {"factoryID":{$in: factoryIDArr}},
-      {"nodeID":{$in: nodeIDs}},
-      {"qrCode":{$in: qrCodeArr}},
-      // {"status":{$in: statusArr}},
-      {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
-      // {"datetime": { $lte : dateEnd}} ,
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      factoryID: 1,	
-      orderID: 1,	
-      nodeID: 1,
-      subNodeID: 1,	
-      qrCode: 1,	
-      // dayMonthUTC: { $dateToString: { format: "%d/%m", date: "$datetime" } },
+  //   { $match: { $and: [
+  //     {"factoryID":{$in: factoryIDArr}},
+  //     {"nodeID":{$in: nodeIDs}},
+  //     {"qrCode":{$in: qrCodeArr}},
+  //     {"datetime": { $gte: dateStart, $lte : dateEnd}} , 
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     factoryID: 1,	
+  //     orderID: 1,	
+  //     nodeID: 1,
+  //     subNodeID: 1,	
+  //     qrCode: 1,	
+  //     targetPlace: 1,
+  //     color: 1,
+  //     size: 1,
 
-      targetPlace: 1,
-      color: 1,
-      size: 1,
+  //   }},
 
-    }},
-
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        factoryID: '$factoryID',
-        orderID: '$orderID',
-        nodeID: '$nodeID',
-        subNodeID: '$subNodeID',
-        qrCode: '$qrCode',
-        // dayMonthUTC: '$dayMonthUTC',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
-
-      },
-      countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }}  
-  ])
-  .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.subNodeID": 1, "subNodeFlow.qrCode": 1, "subNodeFlow.datetime": -1 } );
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       factoryID: '$factoryID',
+  //       orderID: '$orderID',
+  //       nodeID: '$nodeID',
+  //       subNodeID: '$subNodeID',
+  //       qrCode: '$qrCode',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       size: '$size',
+  //     },
+  //     countQty: {$sum: 1} ,
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "subNodeFlow.factoryID": 1, "subNodeFlow.nodeID": 1, "subNodeFlow.subNodeID": 1, "subNodeFlow.qrCode": 1, "subNodeFlow.datetime": -1 } );
   
+  const subNodeStaffScan = await OrderProduction.aggregate([
+
+    // 1. กรองด้วย index ทันที ตัด $elemMatch ซ้ำออก
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "subNodeFlow": {
+          $elemMatch: {
+            "factoryID": { $in: factoryIDArr },
+            "nodeID": { $in: nodeIDs },
+            "qrCode": { $in: qrCodeArr },
+            "datetime": { $gte: dateStart, $lte: dateEnd }
+          }
+        }
+      }
+    },
+
+    // 2. unwind หลัง $match
+    { $unwind: "$subNodeFlow" },
+
+    // 3. กรอง node ที่ตรงเงื่อนไขทันที
+    {
+      $match: {
+        "subNodeFlow.factoryID": { $in: factoryIDArr },
+        "subNodeFlow.nodeID": { $in: nodeIDs },
+        "subNodeFlow.qrCode": { $in: qrCodeArr },
+        "subNodeFlow.datetime": { $gte: dateStart, $lte: dateEnd }
+      }
+    },
+
+    // 4. group เลย ย้าย $substr เข้ามาคำนวณใน $group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          factoryID: "$subNodeFlow.factoryID",
+          orderID: "$orderID",
+          nodeID: "$subNodeFlow.nodeID",
+          subNodeID: "$subNodeFlow.subNodeID",
+          qrCode: "$subNodeFlow.qrCode",
+          targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit] } },
+          color:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,    +process.env.colorDigit   ] } },
+          size:        { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,     +process.env.sizeDigit    ] } },
+        },
+        countQty: { $sum: 1 }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    "subNodeFlow.factoryID": 1, 
+    "subNodeFlow.nodeID": 1, 
+    "subNodeFlow.subNodeID": 1, 
+    "subNodeFlow.qrCode": 1, 
+    "subNodeFlow.datetime": -1 
+  });
+
+
+
   // console.log(subNodeStaffScan);
 
   const subNodeStaffScanF = await subNodeStaffScan.map(fw => ({
@@ -15862,74 +16539,117 @@ exports.getCFSubNodeScanStyleZoneColorSizeDate12StaffOverall= async (companyID, 
 
 // getCOrderSubNodeScanAll(companyID, orderID, nodeID)
 exports.getCOrderSubNodeScanAll = async (companyID, orderID, nodeID) => {
+  // const subNodeScanAll = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: [orderID]}},
+
+  //     {"subNodeFlow":  {$elemMatch: {
+  //       "nodeID": {$in: [nodeID]}, 
+  //     }}},
+
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       productBarcodeNo: 1,
+  //       productBarcodeNoReal: 1,
+  //       subNodeFlow: 1,  // ## 
+  //   }	},
+
+  //   { $unwind: "$subNodeFlow" },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     orderID: 1,	
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+  //     factoryID: "$subNodeFlow.factoryID",
+  //     nodeID: "$subNodeFlow.nodeID",
+  //     subNodeID: "$subNodeFlow.subNodeID",	
+  //     subNodeType: "$subNodeFlow.subNodeType",
+  //   }},
+
+  //   { $match: { $and: [
+  //     {"nodeID":{$in: [nodeID]}},
+  //   ] } },
+  //   { $project: { 
+  //     _id: 0, 
+  //     companyID: 1,
+  //     factoryID: 1,
+  //     orderID: 1,
+  //     nodeID: 1,
+  //     subNodeID: 1,
+  //     subNodeType: 1,
+  //     targetPlace: 1,
+  //     color: 1,
+  //     size: 1,
+  //   }},
+
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       factoryID: '$factoryID',
+  //       orderID: '$orderID',
+  //       nodeID: '$nodeID',
+  //       subNodeID: '$subNodeID',
+  //       subNodeType: '$subNodeType',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       size: '$size',
+
+  //     },
+  //     countQty: {$sum: 1} ,
+
+  //   }}  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "subNodeFlow.nodeID": 1} );
+
   const subNodeScanAll = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: [orderID]}},
+    // 1. ด่านแรก: ล็อกเป้ากรองข้อมูลหลักผ่าน Index ทันทีด้วย $elemMatch (ถอด $and ชั้นนอกออก)
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: [orderID] },
+        "subNodeFlow": {
+          $elemMatch: { "nodeID": { $in: [nodeID] } }
+        }
+      }
+    },
 
-      {"subNodeFlow":  {$elemMatch: {
-        "nodeID": {$in: [nodeID]}, 
-      }}},
-
-    ] } },
-    { $project: {			
-        _id: 0,	
-        companyID: 1,	
-        orderID: 1,	
-        productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-        subNodeFlow: 1,  // ## 
-    }	},
-
-
+    // 2. ด่านสอง: unwind คลี่อาเรย์ subNodeFlow ออกมาเลย ท่ามาตรฐานที่คุณเขียนคล่อง
     { $unwind: "$subNodeFlow" },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      orderID: 1,	
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
-      factoryID: "$subNodeFlow.factoryID",
-      nodeID: "$subNodeFlow.nodeID",
-      subNodeID: "$subNodeFlow.subNodeID",	
-      subNodeType: "$subNodeFlow.subNodeType",
-    }},
 
-    { $match: { $and: [
-      {"nodeID":{$in: [nodeID]}},
-    ] } },
-    { $project: { 
-      _id: 0, 
-      companyID: 1,
-      factoryID: 1,
-      orderID: 1,
-      nodeID: 1,
-      subNodeID: 1,
-      subNodeType: 1,
-      targetPlace: 1,
-      color: 1,
-      size: 1,
-    }},
+    // 3. ด่านสาม: คัดกรองข้อมูลหลังจาก unwind ทันที เพื่อคัดเอาเฉพาะย่อยที่มี nodeID ตรงตามที่ค้นหาจริงๆ
+    {
+      $match: {
+        "subNodeFlow.nodeID": { $in: [nodeID] }
+      }
+    },
 
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        factoryID: '$factoryID',
-        orderID: '$orderID',
-        nodeID: '$nodeID',
-        subNodeID: '$subNodeID',
-        subNodeType: '$subNodeType',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
+    // 4. ด่านสุดท้าย: Group ยุบกลุ่ม สรุปยอดนับจำนวน และสับสตริงรหัสบาร์โค้ดในขั้นตอนนี้รอบเดียวจบ!
+    // (ถอดด่าน $project คั่นกลางและด่านจัดตัวแปรซ้ำซ้อนเก่าออกทั้งหมด แรมนิ่งสบายแน่นอนครับ)
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          factoryID: "$subNodeFlow.factoryID",
+          orderID: "$orderID",
+          nodeID: "$subNodeFlow.nodeID",
+          subNodeID: "$subNodeFlow.subNodeID",
+          subNodeType: "$subNodeFlow.subNodeType",
+          // สับสตริงรหัสสินค้าและแปลงตัวพิมพ์ใหญ่เฉพาะกลุ่มแถวที่ใช่จริงจุดนี้ทีเดียว เซฟ CPU มหาศาล
+          targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit] } },
+          color:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,    +process.env.colorDigit   ] } },
+          size:        { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,     +process.env.sizeDigit    ] } }
+        },
+        countQty: { $sum: 1 }
+      }
+    }
+  ]).hint({ companyID: 1, orderID: 1, "subNodeFlow.nodeID": 1 }); // ใช้ Compound Index ชุดตรงเงื่อนไขค้นหาหลัก
 
-      },
-      countQty: {$sum: 1} ,
-      // sumProductQty: {$sum:  '$amount'} ,
-    }}  
-  ])
-  .hint( { companyID: 1, orderID: 1, "subNodeFlow.nodeID": 1} );
   
   // console.log(subNodeScanAll);
 
@@ -15951,79 +16671,119 @@ exports.getCOrderSubNodeScanAll = async (companyID, orderID, nodeID) => {
 
 // const orderProductOutsource= await ShareFunc.getCOrderOutsource(companyID, orderID, nodeID);
 exports.getCOrderOutsource= async (companyID, orderID, nodeID) => {
-  // const status = 'outsource';
+
+  // const orderProductOutsourceNodeID = await OrderProduction.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: [orderID]}},
+
+  //     {"productionNode":  {$elemMatch: {
+  //       "isOutsource": true,
+  //       "fromNode": {$in: [nodeID]}, 
+  //     }}},
+  //   ] } },
+  //   { $project: {			
+  //       _id: 0,	
+  //       companyID: 1,	
+  //       orderID: 1,	
+  //       productBarcodeNoReal: 1,
+  //       productionNode: 1,
+  //   }	},
+  //   { $unwind: "$productionNode"},
+  //   { $project: {			
+  //     _id: 0,	
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
+  //     color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
+  //     size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+
+  //     factoryID: "$productionNode.factoryID",
+  //     fromNode: "$productionNode.fromNode",
+  //     isOutsource: "$productionNode.isOutsource",
+  //   }	},
+
+  //   { $match: { $and: [
+  //     {"isOutsource":true},
+  //     {"fromNode":{$in: [nodeID]}},
+  //   ] } },
+  //   { $project: {			
+  //     _id: 0,	
+  //     companyID: 1,	
+  //     orderID: 1,	
+  //     factoryID: 1,	// ## outsource factoryID
+  //     fromNode: 1,	
+  //     isOutsource: 1,
+  //     targetPlace: 1,	
+  //     color: 1,	
+  //     size: 1,	
+  //   }	},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       factoryID: '$factoryID',
+  //       fromNode: '$fromNode',
+  //       isOutsource: '$isOutsource',
+  //       targetPlace: '$targetPlace',
+  //       color: '$color',
+  //       size: '$size',
+  //     },
+  //     countQty: {$sum: 1} ,
+  //   }} ,  
+  // ])
+  // .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.fromNode": 1 } );
+
   const orderProductOutsourceNodeID = await OrderProduction.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: [orderID]}},
 
-      {"productionNode":  {$elemMatch: {
-        "isOutsource": true,
-        "fromNode": {$in: [nodeID]}, 
-      }}},
-    ] } },
-    { $project: {			
-        _id: 1,	
-        companyID: 1,	
-        orderID: 1,	
-        // productionNode: 1,
-        // productBarcodeNo: 1,
-        productBarcodeNoReal: 1,
-        // productCount: 1,
-        // productionDate: 1,
-        // productStatus: 1,
-        // productionNode: { $slice: [ "$productionNode", -1]  },  // ## get last 1 element
-        productionNode: 1,
-    }	},
-    { $unwind: "$productionNode"},
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: [orderID] },
+        "productionNode": {
+          $elemMatch: {
+            "isOutsource": true,
+            "fromNode": { $in: [nodeID] }
+          }
+        }
+      }
+    },
 
-      // style: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.stylePos, +process.env.styleDigit ] }},
-      targetPlace: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit ] }},
-      color: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.colorPos, +process.env.colorDigit ] }},
-      size: { $toUpper:{ $substr: [ "$productBarcodeNoReal", +process.env.sizePos, +process.env.sizeDigit ] }},
+    // 2. unwind productionNode
+    { $unwind: "$productionNode" },
 
-      // status: "$productionNode.status",
-      factoryID: "$productionNode.factoryID",
-      fromNode: "$productionNode.fromNode",
-      isOutsource: "$productionNode.isOutsource",
-      // outsourceData: "$productionNode.outsourceData",
-    }	},
+    // 3. กรอง node ที่ตรงเงื่อนไขทันที
+    {
+      $match: {
+        "productionNode.isOutsource": true,
+        "productionNode.fromNode": { $in: [nodeID] }
+      }
+    },
 
-    { $match: { $and: [
-      // {"status":status},
-      {"isOutsource":true},
-      {"fromNode":{$in: [nodeID]}},
-    ] } },
-    { $project: {			
-      _id: 1,	
-      companyID: 1,	
-      orderID: 1,	
-      factoryID: 1,	// ## outsource factoryID
-      fromNode: 1,	
-      isOutsource: 1,
-      targetPlace: 1,	
-      color: 1,	
-      size: 1,	
-    }	},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        factoryID: '$factoryID',
-        fromNode: '$fromNode',
-        isOutsource: '$isOutsource',
-        targetPlace: '$targetPlace',
-        color: '$color',
-        size: '$size',
-      },
-      countQty: {$sum: 1} ,
-    }} ,  
-  ])
-  .hint( { companyID: 1, orderID: 1, "productionNode.isOutsource": 1, "productionNode.fromNode": 1 } );
+    // 4. group เลย ย้าย $substr เข้ามาคำนวณใน $group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          factoryID: "$productionNode.factoryID",
+          fromNode: "$productionNode.fromNode",
+          isOutsource: "$productionNode.isOutsource",
+          targetPlace: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.targetIDPos, +process.env.targetIDDigit] } },
+          color:       { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.colorPos,    +process.env.colorDigit   ] } },
+          size:        { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.sizePos,     +process.env.sizeDigit    ] } },
+        },
+        countQty: { $sum: 1 }
+      }
+    }
+
+  ]).hint({ 
+    companyID: 1, 
+    orderID: 1, 
+    "productionNode.isOutsource": 1, 
+    "productionNode.fromNode": 1 
+  });
 
   // console.log(orderProductOutsourceNodeID);
 
@@ -16323,59 +17083,67 @@ exports.getCurrentCompanyOrderSpec= async (companyID, orderStatusArr, orderIDArr
   // console.log(+process.env.stylePos, +process.env.styleDigit);
   // console.log('getCurrentCompanyOrderSpec',companyID, orderStatusArr, orderIDArr);
   // ## get group style color size
+  // const orderStyleColorSizef = await Order.aggregate([
+  //   { $match: { $and: [
+  //     {"companyID":companyID},
+  //     {"orderID":{$in: orderIDArr}},
+  //     {"orderStatus":{$in: orderStatusArr}},
+  //   ] } },
+  //   { $unwind: "$productOR.productORInfo" },
+  //   { $project: {			
+  //       _id: 0,	
+  //       orderID: 1,
+  //       companyID: 1,
+  //       productID: "$productOR.productID",
+  //       style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
+  //       productColor: "$productOR.productORInfo.productColor",
+  //       productSize: "$productOR.productORInfo.productSize",
+
+  //   }	},
+  //   { $group: {			
+  //     _id: { 
+  //       companyID: '$companyID',
+  //       orderID: '$orderID',
+  //       productID: '$productID',
+  //       style: '$style',
+  //       productColor: '$productColor',
+  //       productSize: '$productSize',
+  //   },
+  //   }	},
+  // ]);
+
   const orderStyleColorSizef = await Order.aggregate([
-    { $match: { $and: [
-      {"companyID":companyID},
-      {"orderID":{$in: orderIDArr}},
-      {"orderStatus":{$in: orderStatusArr}},
-    ] } },
-    { $unwind: "$productOR.productORInfo" },
-    { $project: {			
-        _id: 0,	
-        orderID: 1,
-        // seasonYear: 1,
-        companyID: 1,
-        // bundleNo: 1,
-        // orderStatus: 1,
-        // orderDetail: 1,		
-        // orderDate: 1,	
-        // deliveryDate: 1,
-        // customerOR: 1,		
-        // createBy: 1,
 
-        productID: "$productOR.productID",
-        // productName: "$productOR.productName",
-        // productORDetail: "$productOR.productORDetail",
-        // productCustomerCode: "$productOR.productCustomerCode",
-
-        // productBarcode: "$productOR.productORInfo.productBarcode",
-        style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
-        // targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
-        // targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
-        // countryID: "$productOR.productORInfo.targetPlace.countryID",
-        // countryName: "$productOR.productORInfo.targetPlace.countryName",
-        productColor: "$productOR.productORInfo.productColor",
-        productSize: "$productOR.productORInfo.productSize",
-        // productQty: "$productOR.productORInfo.productQty",
-        // productYear: "$productOR.productORInfo.productYear",
-        // productSex: "$productOR.productORInfo.productSex",
-    }	},
-    { $group: {			
-      _id: { 
-        companyID: '$companyID',
-        orderID: '$orderID',
-        productID: '$productID',
-        style: '$style',
-        productColor: '$productColor',
-        productSize: '$productSize',
-        // betPrice: '$betPrice',
+    // 1. กรองด้วย index ทันที
+    {
+      $match: {
+        "companyID": companyID,
+        "orderID": { $in: orderIDArr },
+        "orderStatus": { $in: orderStatusArr }
+      }
     },
-      // countBetNumber: {$sum: 1} ,
-      // sumQty: {$sum:  '$productQty'} ,
-      // sumAffBetNumber: {$sum:  '$betAffNumber'} ,
-      // sumRewardBetNumber: {$sum:  '$reward'} ,
-    }	},
-  ]);
+
+    // 2. unwind productORInfo
+    { $unwind: "$productOR.productORInfo" },
+
+    // 3. group เลย ย้าย $substr เข้ามาคำนวณใน $group
+    {
+      $group: {
+        _id: {
+          companyID: "$companyID",
+          orderID: "$orderID",
+          productID: "$productOR.productID",
+          style: { $substr: ["$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit] },
+          productColor: "$productOR.productORInfo.productColor",
+          productSize: "$productOR.productORInfo.productSize",
+        }
+      }
+    }
+
+  ]).hint( { companyID: 1, orderID: 1, orderStatus : 1 } );
+
+
+
   const orderStyleColorSize = await orderStyleColorSizef.map(fw => ({
     companyID: fw._id.companyID, 
     orderID: fw._id.orderID, 
@@ -17171,30 +17939,12 @@ exports.getCurrentCompanyOrderStyle= async (companyID, orderStatusArr, orderIDAr
         _id: 0,	
         orderID: 1,
         companyID: 1,
-        // bundleNo: 1,
-        // orderStatus: 1,
-        // orderDetail: 1,		
-        // orderDate: 1,	
-        // deliveryDate: 1,
         customerOR: 1,		
-        // createBy: 1,
-
         productID: "$productOR.productID",
-        // productName: "$productOR.productName",
-        // productORDetail: "$productOR.productORDetail",
-        // productCustomerCode: "$productOR.productCustomerCode",
 
-        // productBarcode: "$productOR.productORInfo.productBarcode",
         style: { $substr: [ "$productOR.productORInfo.productBarcode", +process.env.stylePos, +process.env.styleDigit ] },	
-        // targetPlaceID: "$productOR.productORInfo.targetPlace.targetPlaceID",
-        // targetPlaceName: "$productOR.productORInfo.targetPlace.targetPlaceName",
-        // countryID: "$productOR.productORInfo.targetPlace.countryID",
-        // countryName: "$productOR.productORInfo.targetPlace.countryName",
-        // productColor: "$productOR.productORInfo.productColor",
-        // productSize: "$productOR.productORInfo.productSize",
         productQty: "$productOR.productORInfo.productQty",
-        // productYear: "$productOR.productORInfo.productYear",
-        // productSex: "$productOR.productORInfo.productSex",
+
     }	},
     { $group: {			
       _id: { 
@@ -17203,17 +17953,12 @@ exports.getCurrentCompanyOrderStyle= async (companyID, orderStatusArr, orderIDAr
         productID: '$productID',
         style: '$style',
         customerOR: '$customerOR',
-        // productSize: '$productSize',
-        // targetPlaceID: '$targetPlaceID',
-        // countryID: '$countryID',
     },
       // countBetNumber: {$sum: 1} ,
       sumQty: {$sum:  '$productQty'} ,
-      // sumAffBetNumber: {$sum:  '$betAffNumber'} ,
-      // sumRewardBetNumber: {$sum:  '$reward'} ,
     }	},
 
-  ]);
+  ]).hint( { companyID: 1, orderID: 1, orderStatus: 1 } );;
   // console.log(currentCompanyOrderf);
   const currentCompanyOrder = await currentCompanyOrderf.map(fw => ({
     companyID: fw._id.companyID, 
@@ -19844,7 +20589,7 @@ exports.getWInfo= async (companyID, factoryID) => {
     // { $sort: { seq: 1 } }
   ]);	
 
-  return wInfo;
+  return wInfo.length>0?wInfo[0]:null;
 }
 
 // ShareFunc.getWProducts(companyID, factoryID, pType);
@@ -19865,7 +20610,7 @@ exports.getWProducts= async (companyID, factoryID, pType ) => {
     // { $sort: { seq: 1 } }
   ]);	
 
-  return wProducts;
+  return wProducts.length>0?wProducts[0]:null;
 }
 
 

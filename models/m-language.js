@@ -2,8 +2,9 @@ const mongoose = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
 
 const languageSchema = mongoose.Schema({
-  languageID: { type: String, required: true, unique: true },
+  languageID: { type: String },
   languageName : {type: String},
+  state : {type: String},  // ## acc , 
   seq: { type: Number },
   show: { type: Boolean},
   languageData: [{   // ## 

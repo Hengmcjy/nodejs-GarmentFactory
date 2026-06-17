@@ -1959,9 +1959,13 @@ exports.getRepCompanyOrderOutsource = async (req, res, next) => {
   
   try {
 
+    // getCurrentCompanyOrder= async (companyID, orderStatusArr, orderIDArr)
+    // getCurrentCompanyOrderStyle= async (companyID, orderStatusArr, orderIDArr)
+
+
     // currentOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
-    // currentCompanyOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr);
-    // orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr);
+    // currentCompanyOrder = await ShareFunc.getCurrentCompanyOrder(companyID, orderStatusArr, orderIDArr);
+    // orderStyleColorSize = await ShareFunc.getCurrentCompanyOrderSpec(companyID, orderStatusArr, orderIDArr);
     currentOrderStyle = await ShareFunc.getCurrentCompanyOrderStyle(companyID, orderStatusArr, orderIDArr);
     // console.log('0000');
     // #################################

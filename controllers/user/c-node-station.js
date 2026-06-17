@@ -2499,10 +2499,14 @@ exports.putAddOrderProductionSubNodeFlow = async (req, res, next) => {
   const productBarcodeNos = data.productBarcodeNos;
   const nodeID = data.nodeID;  // ## toNode
   const bundleNo = +data.bundleNo;
+  const bundleNoRange = data.bundleNoRange;
   let subNodeFlow = data.subNodeFlow;
 
   let subNodeFlowAnywhereScan = true;  // ## can scan any time no need to exist at current nodeID station
   
+  // console.log(orderID, bundleNo, productBarcodeNos, nodeID, subNodeFlow, bundleNoRange);
+
+
   const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
   // productionNode.datetime = current;
 
@@ -2512,7 +2516,17 @@ exports.putAddOrderProductionSubNodeFlow = async (req, res, next) => {
   try {
     await ShareFunc.upsertUserSession1hr(userID);
 
-    const orderProductions = await ShareFunc.getOrderProductListByByORIDBunNo(companyID, orderID, bundleNo);
+    let startBundleNo = bundleNo;
+    let endBundleNo = bundleNo;
+    if (bundleNoRange != 'x') {
+      const bundleNoRangeArr = bundleNoRange.split('-');
+      if (bundleNoRangeArr.length === 2) {
+        startBundleNo = +bundleNoRangeArr[0];
+        endBundleNo = +bundleNoRangeArr[1];
+      }
+    }
+
+    const orderProductions = await ShareFunc.getOrderProductListByByORIDBunNoRange(companyID, orderID, startBundleNo, endBundleNo);
     // ## check err/ok for subNodeFlow
     let checkedOK = true;
     await this.asyncForEach(subNodeFlow, async (item1) => {
@@ -2554,7 +2568,8 @@ exports.putAddOrderProductionSubNodeFlow = async (req, res, next) => {
         {"companyID":companyID},
         // {"factoryID":factoryID},
         {"orderID":orderID},
-        {"bundleNo":bundleNo},
+        // {"bundleNo":bundleNo},
+        {"bundleNo": { $gte: startBundleNo, $lte : endBundleNo}},
         {"productBarcodeNoReal":{$in: productBarcodeNos}}
       ]}, 
       {

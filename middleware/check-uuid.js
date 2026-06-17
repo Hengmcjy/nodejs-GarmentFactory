@@ -32,8 +32,10 @@ module.exports = async (req, res, next) => {
 
 
     // console.log(decryptUUID5,'-----------------',tokenSet.uuid5);
+    // console.log(decryptUserID,'-----------------',tokenSet.userID);
     // ## check uuid5  and userID
     if (decryptUserID != tokenSet.userID || decryptUUID5 != tokenSet.uuid5) {
+      // console.log('Errr  11111111111111111111');
       return res.status(401).json({
         message: {
           messageID: 'errt001', 
@@ -45,7 +47,7 @@ module.exports = async (req, res, next) => {
 
     next();
   } catch (error) {
-    // console.log(error);
+    // console.log(error,'0000000000000');
     res.status(401).json({ message: "Auth failed!" , errid:"authfailed"});
   }
 };

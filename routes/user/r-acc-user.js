@@ -41,6 +41,27 @@ router.get("/acc/uinfo/:userID", checkAuthA, checkUUID, userAController.getuserA
 
 
 
+// ## order zone  ##########################################################################
+
+router.get("/acc/orders/:companyID/:seasonYear", checkAuthA, checkUUID, userAController.getOrdersSeasonYear);
+
+router.get("/acc/subnodecostseason/:companyID/:factoryID/:orderID/:seasonYear", 
+        checkAuthA, checkUUID, userAController.getOrderSubnodeCostSeason);
+
+// postOrderSubNodeFlowSetCost
+router.post("/acc/edit/OrderSubNodeFlowSetCost", 
+        checkAuthA, checkUUID, userAController.postOrderSubNodeFlowSetCost);
+
+
+
+
+// ## hr zone  ############################################################################
+
+router.get("/hr/emplist/:companyID/:factoryID/:status/:type/:state/:page/:limit", 
+                checkAuthA, checkUUID, userAController.getEmpList);
+
+
+
 
 
 
