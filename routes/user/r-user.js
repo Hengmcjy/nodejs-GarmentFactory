@@ -47,6 +47,7 @@ router.get("/test/test5", userController.getTestTest5); // ## add productionNode
 router.get("/test/test5_1", userController.getTestTest5_1); // ## add productionNode to orderProduction @ position nodeID //  @ last position of productionNode array
 router.get("/test/test5_2", userController.getTestTest5_2); // ## add productionNode to orderProduction @ position nodeID //  @ first position of productionNode array
 router.get("/test/test6", userController.getTestTest6); // ## ## update orderProduction / edit bundleNo
+router.get("/test/test6_1", userController.getTestTest6_1); // ## ## update orderProduction /set startNode productionNode
 router.get("/test/test7", userController.getTestTest7); // ## cancel queue order all
 router.get("/test/test8", userController.getTestTest8); // ## cancel queue order (some)
 router.get("/test/test11", userController.getTestTest11); // ## cancel orderProduction (some)
@@ -115,7 +116,7 @@ router.get("/test/mail/test1", mailController.postSignupSendMail2);
 // ###########################################################
 
 // ## upload update language 
-// ## http://192.168.1.35:3968/api/user/langu/update
+// ## http://192.168.1.33:3968/api/user/langu/update
 // , wwwwcheckAuth
 router.get("/langu/update", wwwcheckAuth, userController.languageUpdate);
 

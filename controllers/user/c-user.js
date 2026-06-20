@@ -1766,6 +1766,58 @@ exports.getTestTest6 = async (req, res, next) => {
 
 }
 
+// ## http://192.168.1.33:3968/api/user/test/test6_1
+// router.get("/test/test6_1", userController.getTestTest6_1); 
+// // ## ## update orderProduction /set startNode productionNode
+exports.getTestTest6_1 = async (req, res, next) => {
+  // // ## update orderProduction / edit bundleNo
+  // const result = await ShareFunc.updateOrderProductionForBundleNo();
+
+  const current = new Date(moment().tz('Asia/Bangkok').format('YYYY/MM/DD HH:mm:ss+07:00'));
+  const companyID = 'c000001';
+  const orderID = 'DDA44A6A-A';
+  const targetPlaceID = 'JAPN';
+  // const bundleNo = 678898;
+
+  const productionNode = [{
+      factoryID: 'f000016',
+      fromNode: 'starterNode',
+      toNode: '1.COMPUTER-KNITTING',
+      datetime: current,
+      status: "normal",
+      isOutsource: false,
+      outsourceData: [],
+      createBy: {
+        userID: 'fah@sd',
+        userName: 'fah@sd'
+      },
+    }];
+
+  // const result1 = await OrderProduction.updateMany(
+  //     {$and: [
+  //       {"companyID":companyID},
+  //       {"orderID":orderID},
+  //       // {"bundleNo":bundleNo},
+  //       {"targetPlace.targetPlaceID":targetPlaceID},
+  //     ]}, 
+  //     // {$push: {productionNode: {$each:productionNodeArr,  $position: 0}}},  // ## add new element at the first
+  //     {$set: { 
+  //         "productionNode": productionNode
+  //       }},
+  //   );
+
+  res.setHeader('Content-Type', 'text/html');
+  res.write('<html>');
+  res.write('<head><title>edit orderProduction set startNode productionNode</title><head>');
+  res.write('<body>');
+  res.write('<h1>update orderProduction / set startNode productionNode</h1></br>');
+
+  // res.write('<h1>'+result+'</h1>');
+  res.write('</body>');
+  res.write('</html>');
+  return res.end();
+
+}
 
 
 // // ## http://192.168.1.35:3968/api/user/test/test5_1
@@ -2366,7 +2418,7 @@ exports.getTestTest4_5 = async (req, res, next) => {
   return res.send( orderP);
 }
 
-// // ## http://100.124.115.121:3968/api/user/langu/update
+// // ## http://192.168.1.33:3968/api/user/langu/update
 // ## update multi langs here
 exports.languageUpdate = async (req, res, next) => {
 

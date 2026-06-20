@@ -104,6 +104,10 @@ mongoose
     + `${process.env.MGUSER}:${process.env.MGPWD}`
     + `${process.env.MGSVR1}/${process.env.MGDB}`
     + `?retryWrites=true&w=majority&appName=Cluster0`
+    ,
+    {
+      readPreference: 'secondaryPreferred', // ← เพิ่มตรงนี้
+    }
   )
   .then((data) => {
     console.log("Connected to database!");
