@@ -34,11 +34,25 @@ router.post("/acc/signup", userAController.createAUser);
 // ## http://192.168.1.33:3968/api/a/user/acc/login
 router.post("/acc/login", userAController.userALogin);
 
+// ## logout — เคลียร์ activeSessionKey (ป้องกัน login ซ้อน) เฉพาะถ้าเป็นเครื่องนี้เอง
+router.post("/acc/logout", checkAuthA, userAController.userALogout);
+
 // ## http://192.168.1.33:3968/api/a/user/acc/edit1/pass
 router.put("/acc/edit1/pass", userAController.editAPassFactoryStaff);
 
 router.get("/acc/uinfo/:userID", checkAuthA, checkUUID, userAController.getuserAInfo);
 
+
+// #############################################################
+// ## worker
+
+// ## create Worker
+// ## http://192.168.1.33:3968/api/a/user/create/worker
+router.post('/create/worker', checkAuthA, checkUUID, userAController.createWorker);
+
+// ## put  Worker  image
+// ## http://192.168.1.33:3968/api/a/user/edit/workerpic
+router.put('/edit/workerpic', checkAuthA, checkUUID, userAController.workerpic);
 
 
 // ## order zone  ##########################################################################
@@ -60,9 +74,17 @@ router.post("/acc/edit/OrderSubNodeFlowSetCost",
 router.get("/hr/emplist/:companyID/:factoryID/:status/:type/:state/:page/:limit", 
                 checkAuthA, checkUUID, userAController.getEmpList);
 
+// ## get EmpList LK %text%
+router.get("/hr/emplist/lk/:companyID/:factoryID/:status/:type/:state/:page/:limit", 
+                checkAuthA, checkUUID, userAController.getEmpListLK);
+
+
+// ## updateWorker
+router.put("/hr/worker", checkAuthA, checkUUID, userAController.updateWorker);
 
 
 
+// ## admin zone  ############################################################################
 
 
 

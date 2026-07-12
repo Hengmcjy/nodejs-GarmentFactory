@@ -98,7 +98,7 @@ router.get("/yarn/edit/change/invoiceid", userController.getYarnChangeInvoiceID)
 router.get("/test/get/monogdbver/getver", userController.getMonogoDbver1);
 
 // ## test nas
-// ## http://192.168.1.36:3968/api/user/test/nas/connect
+// ## http://192.168.1.33:3968/api/user/test/nas/connect
 router.get("/test/nas/connect", userController.nasConnect);
 
 
@@ -110,6 +110,13 @@ router.get("/test/download/getlist", userController.fileNameLists);
 // ## http://192.168.1.36:3968/api/user/test/mail/test1
 router.get("/test/mail/test1", mailController.postSignupSendMail2);
 
+
+// ###########################################################
+// ## admin zone
+
+
+// ## admin zone
+// ###########################################################
 
 
 // ## test

@@ -13,7 +13,10 @@ const useraccSchema = mongoose.Schema({
     email: {type: String},
     registDate: {type: Date, required: true},
     lastLogin: {type: Date},
-    menuAuthor: [{   // ## 
+    // ## ป้องกัน login ซ้อน (single session): uuid5 ของเครื่องที่ถือตั๋วอยู่ตอนนี้ · ตั้งตอน login/force · เคลียร์ตอน logout
+    activeSessionKey: {type: String, default: ''},
+    activeSessionAt:  {type: Date},
+    menuAuthor: [{   // ##
       menuID : {type: String},
       menuName : {type: String},
       visible : {type: Boolean},
@@ -42,12 +45,13 @@ const useraccSchema = mongoose.Schema({
     }
   }],
   status: {type: String, required: true},
-  state: {type: String, required: true},
+  state: {type: String},
   createdAt: { type: Date},
   createBy: {
     userID: {type: String},
     userName: {type: String},
   },
+  uiPerms: { type: mongoose.Schema.Types.Mixed, default: {} }
 });
 
 useraccSchema.plugin(uniqueValidator);

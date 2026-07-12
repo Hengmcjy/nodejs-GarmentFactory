@@ -1,5 +1,46 @@
 const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
+const UserActivity = require('../models/m-user-activity');   // ## Monitor: เก็บ session ที่ใช้งานอยู่
+const Useracc = require('../models/m-acc-user');             // ## ป้องกัน login ซ้อน: เช็ค activeSessionKey
+
+// ## ป้องกัน login ซ้อน (single session): token นี้ยังเป็น session ที่ถูกต้องของ user ไหม?
+// เทียบ uuid5 ใน token กับ Useracc.uInfo.activeSessionKey (ตั๋วใบล่าสุดที่ login/force)
+// - ตรง → ผ่าน · ไม่ตรง → เครื่องนี้ถูกเตะแล้ว (มีคน login ที่อื่น)
+// - ยังไม่เคยตั้ง (login เก่าก่อนมีฟีเจอร์) หรือ DB error → ผ่าน (fail-open · ห้ามล็อกทุกคน)
+async function isSessionValid(userID, uuid5) {
+    if (!userID || !uuid5) return true;
+    try {
+        const u = await Useracc.findOne({ userID }, { 'uInfo.activeSessionKey': 1, _id: 0 }).lean();
+        const key = u?.uInfo?.activeSessionKey || '';
+        if (!key) return true;
+        return key === uuid5;
+    } catch { return true; }
+}
+
+// ## throttle การเขียน activity (ครั้ง/15วิ ต่ออุปกรณ์) — กันเขียน DB ถี่เกิน
+const _actLastWrite = new Map();
+function trackActivity(req, tokenSet) {
+    try {
+        const key = tokenSet.uuid5 || (tokenSet.userID + '_' + (tokenSet.deviceType || ''));
+        if (!key) return;
+        const now = Date.now();
+        if (_actLastWrite.has(key) && now - _actLastWrite.get(key) < 15000) return;
+        _actLastWrite.set(key, now);
+        const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim();
+        // fire-and-forget — ไม่บล็อก request
+        UserActivity.updateOne(
+            { sessionKey: key },
+            { $set: {
+                userID: tokenSet.userID, ip,
+                appName: tokenSet.appName, appVer: tokenSet.appVer,
+                browser: tokenSet.browser, browserVer: tokenSet.browserVer,
+                deviceType: tokenSet.deviceType, os: tokenSet.os, osVer: tokenSet.osVer,
+                lastSeen: new Date(),
+            }, $setOnInsert: { loginAt: new Date() } },
+            { upsert: true }
+        ).catch(() => {});
+    } catch { /* ไม่ให้กระทบ auth */ }
+}
 
 // const Session1hr = require('../models/m-session1hrs');  // check this for current login
 
@@ -80,6 +121,16 @@ module.exports = async (req, res, next) => {
       uuid5Encrypt : uuid5Encrypt,
       userIDEncrypt : userIDEncrypt,
     };
+
+    trackActivity(req, tokenSet);   // ## Monitor: บันทึกว่า user นี้ใช้งานอยู่ (throttle + fire-and-forget)
+
+    // ## ป้องกัน login ซ้อน: ถ้า uuid5 นี้ไม่ใช่ session ล่าสุด → เด้งออก (มีคน login ที่อื่น)
+    if (!(await isSessionValid(tokenSet.userID, tokenSet.uuid5))) {
+      return res.status(401).json({
+        message: { messageID: 'errs001', mode: 'sessionReplaced', value: 'บัญชีนี้ถูกเข้าใช้จากอุปกรณ์อื่น' },
+        errid: 'session_replaced',
+      });
+    }
 
     // console.log('req.userData',req.userData);
     // console.log('tokenSet',tokenSet);

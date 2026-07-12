@@ -1,0 +1,1423 @@
+[
+{
+"scanID": "1122",
+"name": "ye naing lin",
+"days": 5,
+"rate": 262,
+"ot": 23
+},
+{
+"scanID": "10010",
+"name": "สิ่นหม่าวิน",
+"days": 23,
+"rate": 313,
+"ot": 0
+},
+{
+"scanID": "10178",
+"name": "มะเหว่ยหม่อ",
+"days": 24,
+"rate": 258,
+"ot": 0
+},
+{
+"scanID": "10445",
+"name": "maung lwin",
+"days": 23,
+"rate": 262,
+"ot": 0
+},
+{
+"scanID": "10661",
+"name": "thu zar win",
+"days": 24,
+"rate": 306,
+"ot": 0
+},
+{
+"scanID": "10725",
+"name": "chaw thiri ko",
+"days": 24,
+"rate": 300,
+"ot": 5
+},
+{
+"scanID": "10726",
+"name": "kay thi win",
+"days": 25,
+"rate": 301,
+"ot": 0
+},
+{
+"scanID": "10842",
+"name": "lae lae tun",
+"days": 23,
+"rate": 231,
+"ot": 0
+},
+{
+"scanID": "20005",
+"name": "คิ่นโมทุย",
+"days": 25,
+"rate": 215,
+"ot": 0
+},
+{
+"scanID": "20015",
+"name": "เหว่ยหม่า",
+"days": 24,
+"rate": 246,
+"ot": 0
+},
+{
+"scanID": "20050",
+"name": "มิวเอ",
+"days": 24,
+"rate": 244,
+"ot": 0
+},
+{
+"scanID": "20083",
+"name": "หม่องทุย",
+"days": 24,
+"rate": 219,
+"ot": 0
+},
+{
+"scanID": "20103",
+"name": "และและวิน",
+"days": 24,
+"rate": 206,
+"ot": 21
+},
+{
+"scanID": "20150",
+"name": "โมแท๊ะ(หม่องต๊ะ",
+"days": 25,
+"rate": 237,
+"ot": 0
+},
+{
+"scanID": "20176",
+"name": "เหม่เหม่",
+"days": 25,
+"rate": 305,
+"ot": 0
+},
+{
+"scanID": "20191",
+"name": "หม่องตานสิ่น",
+"days": 24,
+"rate": 241,
+"ot": 0
+},
+{
+"scanID": "20192",
+"name": "แยวินทุน",
+"days": 24,
+"rate": 242,
+"ot": 0
+},
+{
+"scanID": "20254",
+"name": "ส่อหน่ายทุย",
+"days": 19,
+"rate": 234,
+"ot": 0
+},
+{
+"scanID": "20257",
+"name": "ทูทู",
+"days": 25,
+"rate": 237,
+"ot": 0
+},
+{
+"scanID": "20282",
+"name": "yin len htet",
+"days": 24,
+"rate": 204,
+"ot": 0
+},
+{
+"scanID": "20330",
+"name": "san ni aung",
+"days": 25,
+"rate": 282,
+"ot": 0
+},
+{
+"scanID": "20343",
+"name": "si thu",
+"days": 24,
+"rate": 316,
+"ot": 17
+},
+{
+"scanID": "20344",
+"name": "soe len oo",
+"days": 22,
+"rate": 317,
+"ot": 0
+},
+{
+"scanID": "20381",
+"name": "aye men maing",
+"days": 23,
+"rate": 317,
+"ot": 0
+},
+{
+"scanID": "20407",
+"name": "ta nu khaing",
+"days": 2,
+"rate": 310,
+"ot": 0
+},
+{
+"scanID": "20428",
+"name": "myo tu naing",
+"days": 24,
+"rate": 252,
+"ot": 0
+},
+{
+"scanID": "20592",
+"name": "zaw win lae",
+"days": 23,
+"rate": 214,
+"ot": 18
+},
+{
+"scanID": "20598",
+"name": "tun tun win",
+"days": 23,
+"rate": 220,
+"ot": 24
+},
+{
+"scanID": "20653",
+"name": "pyae phyo aung",
+"days": 24,
+"rate": 205,
+"ot": 0
+},
+{
+"scanID": "20732",
+"name": "kyaw zin tun",
+"days": 23,
+"rate": 256,
+"ot": 0
+},
+{
+"scanID": "20733",
+"name": "hla min bo",
+"days": 2,
+"rate": 257,
+"ot": 5
+},
+{
+"scanID": "20739",
+"name": "arkar min naing",
+"days": 24,
+"rate": 263,
+"ot": 11
+},
+{
+"scanID": "50002",
+"name": "นีลาวิน",
+"days": 24,
+"rate": 238,
+"ot": 0
+},
+{
+"scanID": "50006",
+"name": "ตู่หว่าวิน",
+"days": 23,
+"rate": 242,
+"ot": 0
+},
+{
+"scanID": "50013",
+"name": "ผิ่วผิ่วมิ",
+"days": 24,
+"rate": 270,
+"ot": 4
+},
+{
+"scanID": "50044",
+"name": "เทเทอู",
+"days": 24,
+"rate": 243,
+"ot": 0
+},
+{
+"scanID": "50055",
+"name": "ไป่อิ๊ซาน",
+"days": 24,
+"rate": 275,
+"ot": 5
+},
+{
+"scanID": "50102",
+"name": "สะแปอู",
+"days": 24,
+"rate": 231,
+"ot": 0
+},
+{
+"scanID": "50139",
+"name": "โมโมเหว่ย",
+"days": 24,
+"rate": 210,
+"ot": 8
+},
+{
+"scanID": "50519",
+"name": "aye teng htwe",
+"days": 23,
+"rate": 241,
+"ot": 0
+},
+{
+"scanID": "50789",
+"name": "shew nin oo",
+"days": 24,
+"rate": 202,
+"ot": 0
+},
+{
+"scanID": "50791",
+"name": "khin moe",
+"days": 24,
+"rate": 225,
+"ot": 0
+},
+{
+"scanID": "50793",
+"name": "aye phae win",
+"days": 4,
+"rate": 227,
+"ot": 4
+},
+{
+"scanID": "50879",
+"name": "nyeng aye",
+"days": 7,
+"rate": 285,
+"ot": 0
+},
+{
+"scanID": "50881",
+"name": "lwin lwin maw",
+"days": 24,
+"rate": 308,
+"ot": 0
+},
+{
+"scanID": "60680",
+"name": "aong mar teng",
+"days": 2,
+"rate": 249,
+"ot": 0
+},
+{
+"scanID": "60787",
+"name": "teng htay",
+"days": 24,
+"rate": 249,
+"ot": 0
+},
+{
+"scanID": "60902",
+"name": "su tandar lin",
+"days": 23,
+"rate": 224,
+"ot": 0
+},
+{
+"scanID": "70040",
+"name": "เอเอวิน",
+"days": 24,
+"rate": 216,
+"ot": 0
+},
+{
+"scanID": "70644",
+"name": "mar lar win",
+"days": 23,
+"rate": 299,
+"ot": 6
+},
+{
+"scanID": "70651",
+"name": "pa pa phyo",
+"days": 24,
+"rate": 206,
+"ot": 0
+},
+{
+"scanID": "80104",
+"name": "เคนเหน่หยี่",
+"days": 24,
+"rate": 259,
+"ot": 0
+},
+{
+"scanID": "80183",
+"name": "หน่อยหนีวิน",
+"days": 24,
+"rate": 264,
+"ot": 0
+},
+{
+"scanID": "80184",
+"name": "ตานด่าข่าย",
+"days": 22,
+"rate": 265,
+"ot": 21
+},
+{
+"scanID": "80185",
+"name": "มะโชว่",
+"days": 24,
+"rate": 266,
+"ot": 0
+},
+{
+"scanID": "80342",
+"name": "nin nu",
+"days": 18,
+"rate": 246,
+"ot": 0
+},
+{
+"scanID": "80351",
+"name": "shwe khing aye",
+"days": 23,
+"rate": 276,
+"ot": 0
+},
+{
+"scanID": "80467",
+"name": "zar zar ei",
+"days": 22,
+"rate": 306,
+"ot": 0
+},
+{
+"scanID": "80523",
+"name": "su po yeng",
+"days": 24,
+"rate": 292,
+"ot": 3
+},
+{
+"scanID": "80796",
+"name": "sit sano oo",
+"days": 24,
+"rate": 256,
+"ot": 20
+},
+{
+"scanID": "80800",
+"name": "maw maw thay",
+"days": 24,
+"rate": 206,
+"ot": 0
+},
+{
+"scanID": "80802",
+"name": "hla aye nyeng",
+"days": 23,
+"rate": 208,
+"ot": 23
+},
+{
+"scanID": "80803",
+"name": "ei ta nyeng",
+"days": 24,
+"rate": 209,
+"ot": 0
+},
+{
+"scanID": "80804",
+"name": "hla zuai than",
+"days": 24,
+"rate": 210,
+"ot": 0
+},
+{
+"scanID": "80806",
+"name": "aye aye mi",
+"days": 24,
+"rate": 212,
+"ot": 0
+},
+{
+"scanID": "80807",
+"name": "nyo nyo oo",
+"days": 23,
+"rate": 213,
+"ot": 0
+},
+{
+"scanID": "80873",
+"name": "khaing htet kya",
+"days": 22,
+"rate": 305,
+"ot": 0
+},
+{
+"scanID": "80876",
+"name": "khin zew hlaing",
+"days": 24,
+"rate": 308,
+"ot": 0
+},
+{
+"scanID": "90206",
+"name": "หม่องเช่า",
+"days": 23,
+"rate": 303,
+"ot": 0
+},
+{
+"scanID": "90347",
+"name": "hnwy mar lin",
+"days": 24,
+"rate": 300,
+"ot": 0
+},
+{
+"scanID": "90495",
+"name": "ti ha aung",
+"days": 21,
+"rate": 204,
+"ot": 7
+},
+{
+"scanID": "90512",
+"name": "ko cha",
+"days": 24,
+"rate": 309,
+"ot": 0
+},
+{
+"scanID": "90537",
+"name": "zaw zaw aung",
+"days": 24,
+"rate": 255,
+"ot": 9
+},
+{
+"scanID": "90538",
+"name": "wai ya hai",
+"days": 24,
+"rate": 256,
+"ot": 0
+},
+{
+"scanID": "90540",
+"name": "naing lin",
+"days": 24,
+"rate": 279,
+"ot": 8
+},
+{
+"scanID": "90542",
+"name": "khaing za win",
+"days": 23,
+"rate": 281,
+"ot": 0
+},
+{
+"scanID": "90543",
+"name": "tu za",
+"days": 23,
+"rate": 282,
+"ot": 11
+},
+{
+"scanID": "90588",
+"name": "teng zax oo",
+"days": 24,
+"rate": 290,
+"ot": 15
+},
+{
+"scanID": "90631",
+"name": "san na mi",
+"days": 24,
+"rate": 242,
+"ot": 0
+},
+{
+"scanID": "90688",
+"name": "than than soe",
+"days": 7,
+"rate": 283,
+"ot": 0
+},
+{
+"scanID": "90809",
+"name": "pu pui wai",
+"days": 23,
+"rate": 264,
+"ot": 0
+},
+{
+"scanID": "90811",
+"name": "la mi thu",
+"days": 24,
+"rate": 287,
+"ot": 0
+},
+{
+"scanID": "90819",
+"name": "soe mi",
+"days": 22,
+"rate": 295,
+"ot": 7
+},
+{
+"scanID": "90820",
+"name": "than dar lew",
+"days": 24,
+"rate": 317,
+"ot": 0
+},
+{
+"scanID": "90823",
+"name": "phay phaw oo",
+"days": 24,
+"rate": 320,
+"ot": 0
+},
+{
+"scanID": "90824",
+"name": "htet lwin moe",
+"days": 7,
+"rate": 200,
+"ot": 0
+},
+{
+"scanID": "90829",
+"name": "nan dar lwin",
+"days": 24,
+"rate": 205,
+"ot": 0
+},
+{
+"scanID": "90856",
+"name": "zin mar oo",
+"days": 24,
+"rate": 295,
+"ot": 0
+},
+{
+"scanID": "90860",
+"name": "pyae song aung",
+"days": 24,
+"rate": 320,
+"ot": 0
+},
+{
+"scanID": "90861",
+"name": "ya min tu",
+"days": 24,
+"rate": 200,
+"ot": 4
+},
+{
+"scanID": "90864",
+"name": "zin ko htet",
+"days": 24,
+"rate": 203,
+"ot": 7
+},
+{
+"scanID": "90865",
+"name": "thin zar win",
+"days": 24,
+"rate": 204,
+"ot": 0
+},
+{
+"scanID": "99832",
+"name": "khet zin kyaw",
+"days": 24,
+"rate": 212,
+"ot": 0
+},
+{
+"scanID": "99857",
+"name": "phyo thwe",
+"days": 22,
+"rate": 279,
+"ot": 0
+},
+{
+"scanID": "101066",
+"name": "hla hla tun",
+"days": 24,
+"rate": 224,
+"ot": 0
+},
+{
+"scanID": "201030",
+"name": "zar zar lwin",
+"days": 24,
+"rate": 313,
+"ot": 24
+},
+{
+"scanID": "201065",
+"name": "aye myint thu",
+"days": 24,
+"rate": 290,
+"ot": 0
+},
+{
+"scanID": "201362",
+"name": "po ei phyu",
+"days": 24,
+"rate": 266,
+"ot": 0
+},
+{
+"scanID": "220012",
+"name": "นายซานหล่ายอู",
+"days": 24,
+"rate": 205,
+"ot": 0
+},
+{
+"scanID": "220047",
+"name": "นายอ่องเล",
+"days": 25,
+"rate": 303,
+"ot": 13
+},
+{
+"scanID": "220068",
+"name": "มิวมิไข่",
+"days": 24,
+"rate": 245,
+"ot": 1
+},
+{
+"scanID": "220097",
+"name": "เย็งหย่าอ่อง",
+"days": 24,
+"rate": 216,
+"ot": 0
+},
+{
+"scanID": "220108",
+"name": "นางสาวติ่นมิวขิ",
+"days": 25,
+"rate": 294,
+"ot": 0
+},
+{
+"scanID": "301100",
+"name": "linlinoo",
+"days": 23,
+"rate": 280,
+"ot": 0
+},
+{
+"scanID": "310129",
+"name": "ซิ่นหม่าเล",
+"days": 23,
+"rate": 254,
+"ot": 0
+},
+{
+"scanID": "320233",
+"name": "เหน่ยุ๊เหว่ย",
+"days": 2,
+"rate": 200,
+"ot": 0
+},
+{
+"scanID": "320234",
+"name": "นันด่าวิน",
+"days": 23,
+"rate": 201,
+"ot": 0
+},
+{
+"scanID": "330021",
+"name": "สิ่นหม่าเหว่ย (",
+"days": 24,
+"rate": 230,
+"ot": 17
+},
+{
+"scanID": "330186",
+"name": "ข่ายข่ายเอ (เสม",
+"days": 24,
+"rate": 293,
+"ot": 19
+},
+{
+"scanID": "330551",
+"name": "ya myo thet",
+"days": 23,
+"rate": 288,
+"ot": 0
+},
+{
+"scanID": "331221",
+"name": "phyo nin su",
+"days": 8,
+"rate": 241,
+"ot": 5
+},
+{
+"scanID": "331326",
+"name": "myat wuttyi",
+"days": 24,
+"rate": 239,
+"ot": 21
+},
+{
+"scanID": "340118",
+"name": "หน่วยโฉ่",
+"days": 23,
+"rate": 248,
+"ot": 0
+},
+{
+"scanID": "340763",
+"name": "ke ti hia",
+"days": 24,
+"rate": 235,
+"ot": 0
+},
+{
+"scanID": "440003",
+"name": "มะตานหยี่",
+"days": 23,
+"rate": 286,
+"ot": 0
+},
+{
+"scanID": "440004",
+"name": "แต๊ะโมไข่",
+"days": 24,
+"rate": 287,
+"ot": 5
+},
+{
+"scanID": "440770",
+"name": "may takyan",
+"days": 24,
+"rate": 209,
+"ot": 0
+},
+{
+"scanID": "440772",
+"name": "taw ta lin",
+"days": 5,
+"rate": 211,
+"ot": 22
+},
+{
+"scanID": "440777",
+"name": "hla ya min",
+"days": 2,
+"rate": 216,
+"ot": 0
+},
+{
+"scanID": "441628",
+"name": "nyo nyo win",
+"days": 24,
+"rate": 215,
+"ot": 0
+},
+{
+"scanID": "501049",
+"name": "swe yi win",
+"days": 24,
+"rate": 312,
+"ot": 0
+},
+{
+"scanID": "501101",
+"name": "nin yi moe",
+"days": 24,
+"rate": 294,
+"ot": 0
+},
+{
+"scanID": "501166",
+"name": "aye win",
+"days": 24,
+"rate": 243,
+"ot": 0
+},
+{
+"scanID": "501239",
+"name": "su myint aung",
+"days": 24,
+"rate": 267,
+"ot": 0
+},
+{
+"scanID": "501470",
+"name": "mimyatzinmarmo",
+"days": 24,
+"rate": 247,
+"ot": 0
+},
+{
+"scanID": "501620",
+"name": "may win maw",
+"days": 24,
+"rate": 320,
+"ot": 0
+},
+{
+"scanID": "501621",
+"name": "phoo tong",
+"days": 24,
+"rate": 200,
+"ot": 13
+},
+{
+"scanID": "501641",
+"name": "pyae phyo wai",
+"days": 24,
+"rate": 262,
+"ot": 0
+},
+{
+"scanID": "501651",
+"name": "chong ka ya",
+"days": 24,
+"rate": 293,
+"ot": 6
+},
+{
+"scanID": "601096",
+"name": "aung kyaw naing",
+"days": 23,
+"rate": 289,
+"ot": 0
+},
+{
+"scanID": "601382",
+"name": "naing lin aung",
+"days": 22,
+"rate": 233,
+"ot": 0
+},
+{
+"scanID": "601385",
+"name": "oo than htay",
+"days": 24,
+"rate": 236,
+"ot": 0
+},
+{
+"scanID": "601386",
+"name": "chit tha phyo",
+"days": 23,
+"rate": 237,
+"ot": 22
+},
+{
+"scanID": "601388",
+"name": "khin moe shwe",
+"days": 23,
+"rate": 239,
+"ot": 0
+},
+{
+"scanID": "601391",
+"name": "may ta kyan",
+"days": 24,
+"rate": 263,
+"ot": 0
+},
+{
+"scanID": "601455",
+"name": "ya thandar tun",
+"days": 23,
+"rate": 257,
+"ot": 14
+},
+{
+"scanID": "601457",
+"name": "arka win",
+"days": 23,
+"rate": 259,
+"ot": 0
+},
+{
+"scanID": "601537",
+"name": "aung myo thu",
+"days": 24,
+"rate": 311,
+"ot": 0
+},
+{
+"scanID": "601555",
+"name": "than moe thin",
+"days": 24,
+"rate": 250,
+"ot": 0
+},
+{
+"scanID": "601557",
+"name": "soe mar lwin",
+"days": 23,
+"rate": 252,
+"ot": 2
+},
+{
+"scanID": "660205",
+"name": "เอยุ๊ (หัวหน้า)",
+"days": 23,
+"rate": 264,
+"ot": 0
+},
+{
+"scanID": "701392",
+"name": "ei naing",
+"days": 24,
+"rate": 210,
+"ot": 0
+},
+{
+"scanID": "701394",
+"name": "shwe zin taw",
+"days": 24,
+"rate": 212,
+"ot": 2
+},
+{
+"scanID": "701395",
+"name": "khin san hlaing",
+"days": 22,
+"rate": 213,
+"ot": 0
+},
+{
+"scanID": "701396",
+"name": "oo nwe win",
+"days": 23,
+"rate": 214,
+"ot": 0
+},
+{
+"scanID": "701539",
+"name": "kyaw ti ha",
+"days": 24,
+"rate": 259,
+"ot": 0
+},
+{
+"scanID": "701541",
+"name": "phyo nin htwe",
+"days": 24,
+"rate": 282,
+"ot": 16
+},
+{
+"scanID": "701542",
+"name": "chang wai nin",
+"days": 23,
+"rate": 283,
+"ot": 0
+},
+{
+"scanID": "701623",
+"name": "nyein ei",
+"days": 15,
+"rate": 215,
+"ot": 0
+},
+{
+"scanID": "701625",
+"name": "than than soe",
+"days": 24,
+"rate": 217,
+"ot": 19
+},
+{
+"scanID": "801050",
+"name": "yu min hlaing",
+"days": 24,
+"rate": 293,
+"ot": 0
+},
+{
+"scanID": "801051",
+"name": "yun ti ri",
+"days": 23,
+"rate": 294,
+"ot": 18
+},
+{
+"scanID": "801108",
+"name": "hla hla san",
+"days": 23,
+"rate": 260,
+"ot": 6
+},
+{
+"scanID": "801109",
+"name": "ei ei khaing",
+"days": 24,
+"rate": 261,
+"ot": 0
+},
+{
+"scanID": "801168",
+"name": "hong jin",
+"days": 8,
+"rate": 204,
+"ot": 17
+},
+{
+"scanID": "801171",
+"name": "nwe mi myint jy",
+"days": 24,
+"rate": 228,
+"ot": 16
+},
+{
+"scanID": "801173",
+"name": "phyu nye wai",
+"days": 23,
+"rate": 230,
+"ot": 0
+},
+{
+"scanID": "801201",
+"name": "khaing ju shwe",
+"days": 23,
+"rate": 246,
+"ot": 10
+},
+{
+"scanID": "801236",
+"name": "aye aye aung",
+"days": 24,
+"rate": 223,
+"ot": 0
+},
+{
+"scanID": "801237",
+"name": "thu ya aung",
+"days": 23,
+"rate": 224,
+"ot": 9
+},
+{
+"scanID": "801248",
+"name": "ti ri nwe",
+"days": 23,
+"rate": 256,
+"ot": 0
+},
+{
+"scanID": "801269",
+"name": "khin mar thuy",
+"days": 23,
+"rate": 319,
+"ot": 0
+},
+{
+"scanID": "801350",
+"name": "aye twuy aung",
+"days": 23,
+"rate": 272,
+"ot": 0
+},
+{
+"scanID": "801352",
+"name": "kye ti khay",
+"days": 21,
+"rate": 274,
+"ot": 0
+},
+{
+"scanID": "801354",
+"name": "than htay",
+"days": 24,
+"rate": 276,
+"ot": 4
+},
+{
+"scanID": "801474",
+"name": "myo chit",
+"days": 24,
+"rate": 210,
+"ot": 2
+},
+{
+"scanID": "801475",
+"name": "khin mar",
+"days": 23,
+"rate": 211,
+"ot": 0
+},
+{
+"scanID": "801612",
+"name": "htet mu khin",
+"days": 4,
+"rate": 250,
+"ot": 11
+},
+{
+"scanID": "801613",
+"name": "ma zin",
+"days": 24,
+"rate": 251,
+"ot": 0
+},
+{
+"scanID": "801614",
+"name": "thandar aye",
+"days": 24,
+"rate": 252,
+"ot": 0
+},
+{
+"scanID": "801619",
+"name": "khinthandaraung",
+"days": 23,
+"rate": 257,
+"ot": 0
+},
+{
+"scanID": "901119",
+"name": "zu zu zin",
+"days": 7,
+"rate": 238,
+"ot": 14
+},
+{
+"scanID": "901203",
+"name": "ye thandar to",
+"days": 24,
+"rate": 315,
+"ot": 13
+},
+{
+"scanID": "901204",
+"name": "khin zin mar",
+"days": 24,
+"rate": 316,
+"ot": 0
+},
+{
+"scanID": "901226",
+"name": "aung myit soe",
+"days": 23,
+"rate": 259,
+"ot": 0
+},
+{
+"scanID": "901229",
+"name": "moe min aung",
+"days": 13,
+"rate": 262,
+"ot": 0
+},
+{
+"scanID": "901340",
+"name": "whn tho oo",
+"days": 24,
+"rate": 308,
+"ot": 0
+},
+{
+"scanID": "901342",
+"name": "khin myo htet",
+"days": 6,
+"rate": 310,
+"ot": 0
+},
+{
+"scanID": "901417",
+"name": "chit zaw oo",
+"days": 23,
+"rate": 215,
+"ot": 0
+},
+{
+"scanID": "901420",
+"name": "zaw aru aha mu",
+"days": 6,
+"rate": 239,
+"ot": 0
+},
+{
+"scanID": "901425",
+"name": "nyeng htet aung",
+"days": 24,
+"rate": 244,
+"ot": 24
+},
+{
+"scanID": "901426",
+"name": "chit men naing",
+"days": 23,
+"rate": 245,
+"ot": 0
+},
+{
+"scanID": "901479",
+"name": "mo tu zar",
+"days": 24,
+"rate": 282,
+"ot": 8
+},
+{
+"scanID": "901481",
+"name": "mo myint",
+"days": 24,
+"rate": 305,
+"ot": 0
+},
+{
+"scanID": "901482",
+"name": "ei tu naing",
+"days": 4,
+"rate": 306,
+"ot": 7
+},
+{
+"scanID": "901565",
+"name": "than than htay",
+"days": 23,
+"rate": 240,
+"ot": 0
+},
+{
+"scanID": "901566",
+"name": "aung kyaw soe",
+"days": 23,
+"rate": 241,
+"ot": 10
+},
+{
+"scanID": "901568",
+"name": "nin ti rihlaing",
+"days": 24,
+"rate": 243,
+"ot": 0
+},
+{
+"scanID": "901571",
+"name": "nandar soe",
+"days": 23,
+"rate": 267,
+"ot": 0
+},
+{
+"scanID": "901574",
+"name": "naing lin",
+"days": 23,
+"rate": 270,
+"ot": 0
+},
+{
+"scanID": "901579",
+"name": "tha su wai",
+"days": 24,
+"rate": 275,
+"ot": 0
+},
+{
+"scanID": "901580",
+"name": "khin tuza aung",
+"days": 24,
+"rate": 297,
+"ot": 0
+},
+{
+"scanID": "990001",
+"name": "นีนีส่วย",
+"days": 21,
+"rate": 259,
+"ot": 0
+},
+{
+"scanID": "990005",
+"name": "oo mi soe",
+"days": 24,
+"rate": 263,
+"ot": 0
+},
+{
+"scanID": "991128",
+"name": "htet khaing",
+"days": 22,
+"rate": 225,
+"ot": 8
+},
+{
+"scanID": "991344",
+"name": "khin htay win",
+"days": 24,
+"rate": 269,
+"ot": 13
+},
+{
+"scanID": "991483",
+"name": "zin men lwin",
+"days": 23,
+"rate": 264,
+"ot": 0
+},
+{
+"scanID": "991484",
+"name": "khaing zaw htet",
+"days": 22,
+"rate": 265,
+"ot": 0
+},
+{
+"scanID": "991485",
+"name": "kyaw naing htay",
+"days": 23,
+"rate": 266,
+"ot": 24
+},
+{
+"scanID": "991486",
+"name": "yang ko htet",
+"days": 21,
+"rate": 267,
+"ot": 0
+},
+{
+"scanID": "991488",
+"name": "khin aye",
+"days": 22,
+"rate": 269,
+"ot": 2
+},
+{
+"scanID": "991582",
+"name": "ya naing htet",
+"days": 23,
+"rate": 256,
+"ot": 0
+},
+{
+"scanID": "991657",
+"name": "tu ya lin",
+"days": 24,
+"rate": 282,
+"ot": 0
+}
+]

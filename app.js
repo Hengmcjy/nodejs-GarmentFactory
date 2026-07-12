@@ -22,7 +22,7 @@ require('dotenv').config({ path: './config2.env' });
 // console.log(process.env.PRODUCTION === 'false', process.env.PRODUCTION);
 
 // ## declare routes
-const scheduleUserRoutes = require("./routes/user/r-schedule");
+// const scheduleUserRoutes = require("./routes/user/r-schedule");
 const userUserRoutes = require("./routes/user/r-user");
 const mailUserRoutes = require("./routes/user/r-mail");
 const productUserRoutes = require("./routes/user/r-product");
@@ -32,6 +32,16 @@ const cusRoutes = require("./routes/user/r-customer");
 const nsRoutes = require("./routes/user/r-node-station");
 const repRoutes = require("./routes/user/r-report");
 const deliRoutes = require("./routes/user/r-deli");
+
+const admRoutes = require("./routes/user/r-adm");
+const admAccRoutes = require("./routes/user/r-adm-acc");
+const hrRoutes = require('./routes/user/r-adm-hr');
+const gsconfigRoutes = require('./routes/user/r-adm-gsconfig');
+
+
+
+
+
 
 const userAccRoutes = require("./routes/user/r-acc-user");
 
@@ -122,7 +132,7 @@ mongoose
 //## route user   
 
 
-app.use("/api/schedule", scheduleUserRoutes);
+// app.use("/api/schedule", scheduleUserRoutes);
 app.use("/api/user", userUserRoutes);
 app.use("/api/mail", mailUserRoutes);
 app.use("/api/product", productUserRoutes);
@@ -132,6 +142,14 @@ app.use("/api/cus", cusRoutes);
 app.use("/api/ns", nsRoutes);
 app.use("/api/rep", repRoutes);
 app.use("/api/deli", deliRoutes);
+
+app.use("/api/a/adm", admRoutes);
+app.use("/api/a/admacc", admAccRoutes);
+app.use('/api/a/hr', hrRoutes);
+app.use('/api/a/gsconfig', gsconfigRoutes);
+
+
+
 
 
 // ACC zone

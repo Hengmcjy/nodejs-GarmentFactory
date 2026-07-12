@@ -85,7 +85,13 @@ const orderProductionSchema = mongoose.Schema({
     createBy: {
       userID: {type: String},
       userName: {type: String},
-    }
+    },
+    // ## [เพิ่มใหม่ · Outsource Cost] ปักธง "คิดเงิน/จ่ายแล้ว" ต่อ node เพื่อกันจ่ายซ้ำ (ไม่แตะ field เดิม)
+    outsBilled    : {type: Boolean},   // ตั้งบิลค้างอยู่ (จองแล้ว)
+    outsPaid      : {type: Boolean},   // จ่ายจริงแล้ว
+    outsBillID    : {type: String},    // อ้างบิล outsource
+    outsPayableID : {type: String},    // อ้าง AccPayable
+    outsPaidAt    : {type: Date},      // เวลาจ่าย
   }]
 });
 
