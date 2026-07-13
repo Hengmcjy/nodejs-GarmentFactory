@@ -26,7 +26,7 @@ function trackActivity(req, tokenSet) {
         const now = Date.now();
         if (_actLastWrite.has(key) && now - _actLastWrite.get(key) < 15000) return;
         _actLastWrite.set(key, now);
-        const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim();
+        const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0].trim().replace(/^::ffff:/, '');   // ตัด prefix IPv4-mapped-IPv6 ให้โชว์ IP สวยๆ
         // fire-and-forget — ไม่บล็อก request
         UserActivity.updateOne(
             { sessionKey: key },

@@ -13,16 +13,18 @@ const workerPayProductionSchema = new mongoose.Schema({
     workerID:    { type: String, required: true },
 
     date:        { type: Date, required: true },   // วันที่ (start-of-day)
-    countryID:   { type: String, default: '' },    // ใช้ lookup cost จาก facSubNodeCost
+    countryID:   { type: String, default: '' },    // legacy — เลิกใช้ (cost แยกด้วย targetPlaceID+color แล้ว)
 
-    // ## รายการย่อย: แต่ละ order × subNode ที่ทำในวันนั้น
+    // ## รายการย่อย: แต่ละ order × subNode × targetPlaceID × สี ที่ทำในวันนั้น
     items: [{
-        orderID:   { type: String },
-        nodeID:    { type: String },
-        subNodeID: { type: String },
-        countQty:  { type: Number, default: 0 },
-        cost:      { type: Number, default: 0 },   // บาท/ชิ้น
-        subtotal:  { type: Number, default: 0 },   // countQty × cost
+        orderID:       { type: String },
+        nodeID:        { type: String },
+        subNodeID:     { type: String },
+        targetPlaceID: { type: String, default: '' },   // ASIA/UK/JAPN/SGHI — จาก bundle · ใช้ lookup cost
+        color:         { type: String, default: '' },   // colorID จาก barcode — override สี (ถ้ามี)
+        countQty:      { type: Number, default: 0 },
+        cost:          { type: Number, default: 0 },    // บาท/ชิ้น
+        subtotal:      { type: Number, default: 0 },    // countQty × cost
     }],
 
     totalAmount: { type: Number, default: 0 },     // รวมวันนี้

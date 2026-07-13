@@ -412,7 +412,7 @@ exports.getuserAInfo = async (req, res, next) => {
 // router.post('/create/worker', checkAuthA, checkUUID, hrController.createWorker);
 exports.createWorker = async (req, res, next) => {
     const {
-        userID, uInfo, uCompany, uFactory,
+        userID, qrCode, uInfo, uCompany, uFactory,
         state, createByUserID,
         payType, baseSalary, onboardingExpenses
     } = req.body;
@@ -435,7 +435,7 @@ exports.createWorker = async (req, res, next) => {
 
         const worker = new User({
             userID,
-            qrCode:  userID,
+            qrCode:  qrCode || '',   // QR Code แยกจากรหัสพนักงาน (userID) — ว่างได้
             type:    's',
             uInfo: {
                 userName:    uInfo.userName,
@@ -730,6 +730,7 @@ exports.getEmpList = async (req, res) => {
             const regex = new RegExp(search, 'i');
             query.$or = [
                 { userID:           { $regex: regex } },
+                { qrCode:           { $regex: regex } },
                 { 'uInfo.userName': { $regex: regex } },
             ];
         }
@@ -791,6 +792,7 @@ exports.getEmpListLK = async (req, res) => {
             const regex = new RegExp(search, 'i');
             query.$or = [
                 { userID:           { $regex: regex } },
+                { qrCode:           { $regex: regex } },
                 { 'uInfo.userName': { $regex: regex } },
             ];
         }
@@ -826,6 +828,7 @@ exports.updateWorker = async (req, res) => {
             { userID: f.userID },
             {
                 $set: {
+                    qrCode:              f.qrCode             ?? '',   // QR Code (แยกจากรหัสพนักงาน)
                     'uInfo.userName':    f.uInfo?.userName    ?? '',
                     'uInfo.tel':         f.uInfo?.tel         ?? '',
                     'uInfo.email':       f.uInfo?.email       ?? '',

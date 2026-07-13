@@ -1,0 +1,5 @@
+# บังคับ line-ending ให้เป็น LF ทุกที่ (กัน git มองว่าไฟล์ถูกแก้เพราะ CRLF↔LF ตอน pull บน server)
+* text=auto eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.env  text eol=lf

@@ -1556,6 +1556,8 @@ exports.getWpProductionPreview = async (req, res, next) => {
                     orderID:   i.orderID,
                     nodeID:    i.nodeID,
                     subNodeID: i.subNodeID,
+                    targetPlaceID: i.targetPlaceID || '',
+                    color:     i.color || '',
                     countQty:  Number(i.countQty) || 0,
                     cost:      parseFloat(i.cost ?? 0),
                     subtotal:  parseFloat(i.subtotal ?? 0),
@@ -1579,7 +1581,8 @@ exports.getWpProductionPreview = async (req, res, next) => {
                     datetime: { $gte: dateStart, $lte: dateEnd }
                 }}
             }},
-            { $project: { _id: 0, companyID: 1, orderID: 1, subNodeFlow: 1 }},
+            // ## targetPlace + barcode ไว้แยก cost ต่อ targetPlaceID + สี (color = substr barcode 23,10 = colorID)
+            { $project: { _id: 0, companyID: 1, orderID: 1, subNodeFlow: 1, targetPlace: 1, productBarcodeNoReal: 1 }},
             { $unwind: "$subNodeFlow" },
             { $match: {
                 "subNodeFlow.factoryID": factoryID,
@@ -1592,6 +1595,8 @@ exports.getWpProductionPreview = async (req, res, next) => {
                     orderID:   "$orderID",
                     nodeID:    "$subNodeFlow.nodeID",
                     subNodeID: "$subNodeFlow.subNodeID",
+                    targetPlaceID: "$targetPlace.targetPlaceID",
+                    color: { $trim: { input: { $substrCP: ["$productBarcodeNoReal", 23, 10] }, chars: "-" } },
                 },
                 countQty: { $sum: 1 }
             }}
@@ -1612,23 +1617,26 @@ exports.getWpProductionPreview = async (req, res, next) => {
         const costMap = {};
         costDocs.forEach(doc => { costMap[doc.orderID] = doc.facSubNodeCost || []; });
 
-        // Merge scan + cost
-        // หา cost โดย match nodeID + subNodeID ก่อน ถ้ามี countryID ให้ priority แต่ไม่บังคับ
+        // Merge scan + cost — match (nodeID, subNodeID, targetPlaceID) · สี: override สีตรงก่อน ไม่มี→ default (color='')
         const items = scanRows.map(r => {
             const costs = costMap[r._id.orderID] || [];
+            const tpid  = r._id.targetPlaceID || '';
+            const color = r._id.color || '';
             const candidates = costs.filter(c =>
-                c.nodeID    === r._id.nodeID &&
-                c.subNodeID === r._id.subNodeID
+                c.nodeID === r._id.nodeID &&
+                c.subNodeID === r._id.subNodeID &&
+                (c.targetPlaceID || '') === tpid
             );
-            // ถ้ามี countryID ให้ลอง match ก่อน ถ้าไม่เจอ fallback ไปเอาตัวแรก
-            const entry = (countryID
-                ? candidates.find(c => c.countryID === countryID)
-                : null) ?? candidates[0] ?? null;
+            const entry = (color ? candidates.find(c => (c.color || '') === color) : null)   // override สีนั้น
+                       ?? candidates.find(c => (c.color || '') === '')                        // ราคา default ทุกสี
+                       ?? null;
             const cost = parseFloat(entry?.cost ?? 0);
             return {
                 orderID:   r._id.orderID,
                 nodeID:    r._id.nodeID,
                 subNodeID: r._id.subNodeID,
+                targetPlaceID: tpid,
+                color,
                 countQty:  r.countQty,
                 cost,
                 subtotal:  r.countQty * cost,
@@ -1657,6 +1665,8 @@ exports.saveWpProduction = async (req, res, next) => {
             orderID:   i.orderID,
             nodeID:    i.nodeID,
             subNodeID: i.subNodeID,
+            targetPlaceID: i.targetPlaceID || '',
+            color:     i.color || '',
             countQty:  Number(i.countQty) || 0,
             cost:      Number(i.cost)     || 0,
             subtotal:  (Number(i.countQty) || 0) * (Number(i.cost) || 0),
@@ -2168,10 +2178,12 @@ exports.getManualSubnodeCost = async (req, res, next) => {
             { facSubNodeCost: 1, _id: 0 }
         ).lean();
         const rows = (doc?.facSubNodeCost || []).map(c => ({
-            nodeID:    c.nodeID,
-            subNodeID: c.subNodeID,
-            countryID: c.countryID ?? '',
-            cost:      parseFloat(c.cost ?? 0),
+            nodeID:        c.nodeID,
+            subNodeID:     c.subNodeID,
+            targetPlaceID: c.targetPlaceID ?? '',
+            color:         c.color ?? '',      // ''=ราคา default ทุกสี · colorID=override สี
+            countryID:     c.countryID ?? '',  // legacy
+            cost:          parseFloat(c.cost ?? 0),
         }));
         const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
         return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), subnodes: rows });

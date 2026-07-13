@@ -7,12 +7,14 @@ const orderSubNodeFlowSetCostSchema = mongoose.Schema({
   seasonYear : {type: String},  // ##  
   orderID : {type: String}, 
   datetime : {type: Date},
-  facSubNodeCost: [{   // ## 
-    targetPlaceID: { type: String },
-    countryID : {type: String},
-    nodeID : {type: String},
-    subNodeID : {type: String},
-    cost : {type: mongoose.Types.Decimal128},
+  // ## cost key = (orderID, targetPlaceID, color, subNodeID) · color='' = ใช้ทุกสี (default), color='BD' = override เฉพาะสีนั้น
+  facSubNodeCost: [{
+    targetPlaceID: { type: String },                 // ASIA / UK / JAPN / SGHI (4 กลุ่ม)
+    color:         { type: String, default: '' },    // ''=ทุกสี (default) · ถ้าตั้ง = override สีนั้น
+    countryID :    { type: String },                 // legacy — เลิกใช้ (เก็บไว้ backward-compat)
+    nodeID :       { type: String },
+    subNodeID :    { type: String },
+    cost :         { type: mongoose.Types.Decimal128 },
   }],
   
 });
