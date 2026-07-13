@@ -8,6 +8,7 @@ const AccFirm     = require("../../models/m-acc-firm");
 const AccProject  = require("../../models/m-acc-project");
 const AccShop     = require("../../models/m-acc-shop");
 const AccCashMan          = require("../../models/m-acc-cashman");
+const AccCashManMemo      = require("../../models/m-acc-cashman-memo");   // ## บันทึกช่วยจำ cash man (ไม่กระทบยอดใดๆ)
 const AccCashBook         = require("../../models/m-acc-cashbook");
 const AccCashBookPeriod   = require("../../models/m-acc-cashbook-period");
 const AccCashBookMonth    = require("../../models/m-acc-cashbook-month");
@@ -910,6 +911,114 @@ exports.deleteCashBookEntry = async (req, res, next) => {
       userID: req.userData?.tokenSet?.userID || '', userName: req.userData?.userName || '',
     });
 
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn) });
+  } catch (err) { return next(err); }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Cash Man Memo — บันทึกช่วยจำของ cash man (กันลืมลงรายวัน)
+//   ★ ไม่กระทบยอด statement / บัญชีรายวัน / balance ใดๆ — เป็นแค่ note ล้วนๆ
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ## GET /api/a/admacc/cashbook/memo/:companyID/:factoryID/:cashManID
+// requirement: ดึง memo ทั้งหมดของ cash man (รวมที่ขีดทิ้ง เพื่อโชว์แบบขีดฆ่า) ใหม่สุดอยู่บน
+exports.getCashManMemos = async (req, res, next) => {
+  const { companyID, factoryID, cashManID } = req.params;
+  try {
+    const memos = await AccCashManMemo
+      .find({ companyID, factoryID, cashManID })
+      .sort({ createdAt: -1 })
+      .lean();
+    return res.json({ success: true, memos });
+  } catch (err) { return next(err); }
+};
+
+// ## POST /api/a/admacc/cashbook/memo
+// requirement: สร้าง memo ใหม่ (detail/amount/memoDate/images) สถานะเริ่มต้น = pending
+exports.createCashManMemo = async (req, res, next) => {
+  const { companyID, factoryID, cashManID, memoDate, detail, amount, images } = req.body;
+  if (!companyID || !factoryID || !cashManID)
+    return res.status(400).json({ success: false, message: 'companyID, factoryID, cashManID required' });
+  if (!detail && (!amount || Number(amount) === 0))
+    return res.status(400).json({ success: false, message: 'ต้องมีรายละเอียดหรือจำนวนเงินอย่างน้อยอย่างใดอย่างหนึ่ง' });
+  try {
+    const count  = await AccCashManMemo.countDocuments({ companyID, factoryID });
+    const memoID = `cmm_${factoryID}_${String(count + 1).padStart(5, '0')}`;
+    const memo = await AccCashManMemo.create({
+      memoID, companyID, factoryID, cashManID,
+      memoDate: memoDate || '',
+      detail:   detail   || '',
+      amount:   Number(amount) || 0,
+      images:   Array.isArray(images) ? images : [],
+      status:   'pending', voided: false,
+      createdAt: new Date(),
+      createBy: { userID: req.userData?.tokenSet?.userID || '' },
+    });
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    return res.status(201).json({ success: true, memo, token, expiresIn: Number(process.env.TOKENExpiresIn) });
+  } catch (err) { return next(err); }
+};
+
+// ## PUT /api/a/admacc/cashbook/memo/status
+// requirement: สลับสถานะ pending ↔ done (accounting ลงรายวันให้แล้ว/ยังค้าง)
+exports.updateCashManMemoStatus = async (req, res, next) => {
+  const { memoID, status } = req.body;
+  if (!memoID || !['pending', 'done'].includes(status))
+    return res.status(400).json({ success: false, message: 'memoID + status(pending|done) required' });
+  try {
+    // เช็คสิทธิ์โรงงานของ memo นี้ (route แบบ B) แล้วอัพเดต
+    const rec = await AccCashManMemo.findOne({ memoID }).lean();
+    if (!rec) return res.status(404).json({ success: false, message: 'ไม่พบ memo' });
+    if (!(await factoryAuth.verify(req.userData?.tokenSet?.userID, rec.factoryID)))
+      return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์ในโรงงานนี้' });
+
+    await AccCashManMemo.findOneAndUpdate({ memoID }, { $set: { status, updatedAt: new Date() } });
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn) });
+  } catch (err) { return next(err); }
+};
+
+// ## PUT /api/a/admacc/cashbook/memo/void
+// requirement: ขีดทิ้ง memo (soft void — ไม่ลบจริง) กรณีไม่เอาแล้ว/ลงผิด · toggle กลับได้
+exports.voidCashManMemo = async (req, res, next) => {
+  const { memoID, voided } = req.body;
+  if (!memoID) return res.status(400).json({ success: false, message: 'memoID required' });
+  try {
+    const rec = await AccCashManMemo.findOne({ memoID }).lean();
+    if (!rec) return res.status(404).json({ success: false, message: 'ไม่พบ memo' });
+    if (!(await factoryAuth.verify(req.userData?.tokenSet?.userID, rec.factoryID)))
+      return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์ในโรงงานนี้' });
+
+    const v = voided !== false;   // default = true (ขีดทิ้ง)
+    await AccCashManMemo.findOneAndUpdate({ memoID }, {
+      $set: { voided: v, voidedAt: v ? new Date() : null, updatedAt: new Date() },
+    });
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn) });
+  } catch (err) { return next(err); }
+};
+
+// ## POST /api/a/admacc/cashbook/memo/comment
+// requirement: เพิ่มคอมเมนต์ใน 1 memo (cash man / accounting คุยกันได้) — เก็บคนพูด + เวลา
+exports.addCashManMemoComment = async (req, res, next) => {
+  const { memoID, text } = req.body;
+  if (!memoID || !text || !text.trim())
+    return res.status(400).json({ success: false, message: 'memoID + text required' });
+  try {
+    const rec = await AccCashManMemo.findOne({ memoID }).lean();
+    if (!rec) return res.status(404).json({ success: false, message: 'ไม่พบ memo' });
+    if (!(await factoryAuth.verify(req.userData?.tokenSet?.userID, rec.factoryID)))
+      return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์ในโรงงานนี้' });
+
+    await AccCashManMemo.findOneAndUpdate({ memoID }, {
+      $push: { comments: {
+        text: text.trim(),
+        by:   { userID: req.userData?.tokenSet?.userID || '', userName: req.userData?.userName || '' },
+        at:   new Date(),
+      } },
+      $set: { updatedAt: new Date() },
+    });
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn) });
   } catch (err) { return next(err); }

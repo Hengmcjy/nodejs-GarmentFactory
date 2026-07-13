@@ -110,6 +110,13 @@ router.post("/cashbook/carryforward",                              checkAuthA, c
 router.put("/cashbook/close-month",                               checkAuthA, checkUUID, checkAuthFactory, admAccController.closeCashBookMonth);
 router.delete("/cashbook/entry/:entryID",                         checkAuthA, checkUUID, checkAuthFactory, admAccController.deleteCashBookEntry);
 
+// ## Cash Man Memo — บันทึกช่วยจำ (ไม่กระทบยอด statement/รายวันใดๆ)
+router.get("/cashbook/memo/:companyID/:factoryID/:cashManID",     checkAuthA, checkUUID, checkAuthFactory, admAccController.getCashManMemos);
+router.post("/cashbook/memo",                                     checkAuthA, checkUUID, checkAuthFactory, admAccController.createCashManMemo);
+router.put("/cashbook/memo/status",                               checkAuthA, checkUUID, checkAuthFactory, admAccController.updateCashManMemoStatus);
+router.put("/cashbook/memo/void",                                 checkAuthA, checkUUID, checkAuthFactory, admAccController.voidCashManMemo);
+router.post("/cashbook/memo/comment",                             checkAuthA, checkUUID, checkAuthFactory, admAccController.addCashManMemoComment);
+
 // ## Cash Book
 // #############################################################
 
