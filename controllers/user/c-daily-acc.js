@@ -88,10 +88,12 @@ async function computeLaborLumps(companyID, factoryID) {
         piecework: { code: (cfg.WP_ALL_LABOR_CODE         || '59030001').trim(), net: 0, count: 0 },
         daily:     { code: (cfg.WP_ALL_LABOR_DAILY_CODE   || '59030002').trim(), net: 0, count: 0 },
         monthly:   { code: (cfg.WP_ALL_LABOR_MONTHLY_CODE || '59030003').trim(), net: 0, count: 0 },
+        // ★ worker ที่ยังไม่ระบุ wageType (ว่าง/ไม่รู้จัก) — แยกก้อน ไม่ยัดเข้า daily เงียบๆ (กันเงินหลุดผิดก้อน)
+        unknown:   { code: '', net: 0, count: 0 },
     };
     for (const p of per) {
-        const t = typeMap.get(p._id) || 'daily';
-        const bucket = types[t] || types.daily;
+        const t = typeMap.get(p._id);
+        const bucket = (t === 'piecework' || t === 'daily' || t === 'monthly') ? types[t] : types.unknown;
         bucket.net   += (p.income - p.deduction);
         bucket.count += 1;
     }
@@ -317,7 +319,7 @@ exports.getDailyMasterData = async (req, res, next) => {
             ? { available: true, periodID: lumps.period.periodID, periodName: lumps.period.name,
                 startDate: lumps.period.startDate, endDate: lumps.period.endDate, types: lumps.types }
             : { available: false, periodID: '', periodName: '',
-                types: { piecework: { code: '', net: 0, count: 0 }, daily: { code: '', net: 0, count: 0 }, monthly: { code: '', net: 0, count: 0 } } };
+                types: { piecework: { code: '', net: 0, count: 0 }, daily: { code: '', net: 0, count: 0 }, monthly: { code: '', net: 0, count: 0 }, unknown: { code: '', net: 0, count: 0 } } };
 
         const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
         return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn),
@@ -1328,6 +1330,237 @@ exports.getPayableReport = async (req, res, next) => {
             totalOutstanding, totalPurchased, totalPaid,
             creditorCount: byShop.length, billCount: open.length,
             purchasedThisMonth,
+        });
+    } catch (err) { next(err); }
+};
+
+// ## GET /api/a/admacc/report/cheques/:companyID/:factoryID/:month   (month = 'YYYY-MM')
+// requirement: รายงานรายการจ่ายด้วยเช็ค ประจำงวดเดือน — รวมเช็คจาก 2 แหล่ง
+//   1) บิลบัญชีรายวัน payMethod='cheque' (1 บิล = เช็ค 1 ใบ — group รายการตาม billID รวมยอด)
+//   2) การจ่ายชำระหนี้ (AccPayable.payments[]) ที่ payMethod='cheque' และวันที่จ่ายอยู่ในเดือนนั้น
+//   คืน rows (เรียงวันที่ใหม่→เก่า) + สรุป จำนวนใบ/ยอดรวม/แยกธนาคาร
+exports.getChequeReport = async (req, res, next) => {
+    const { companyID, factoryID, month } = req.params;
+    try {
+        // ## ขอบเขตงวด = วันที่ 1 ถึงก่อนวันที่ 1 เดือนถัดไป (UTC-midnight ตามกฎวันปฏิทิน)
+        const start = ymdToUTC(`${month}-01`);
+        const [y, m] = String(month).split('-').map(Number);
+        const nextYM = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`;
+        const end = ymdToUTC(`${nextYM}-01`);
+
+        const rows = [];
+
+        // ── 1) บิลรายวันที่จ่ายเช็ค — group ตาม billID (บิลเดียวหลายรายการบัญชี = เช็คใบเดียว) ──
+        const entries = await DailyEntry.find({
+            companyID, factoryID, status: 'a', payMethod: 'cheque',
+            entryDate: { $gte: start, $lt: end },
+        }).sort({ entryDate: 1 }).lean();
+
+        const billMap = new Map();
+        for (const e of entries) {
+            const row = {
+                date: ymdStr(e.entryDate), source: 'daily', type: e.type,
+                shopName: e.shopName || '', billNo: e.billNo || '',
+                bankName: e.cheque?.bankShortName || e.cheque?.bankName || '',
+                accountNo: e.cheque?.accountNo || '',
+                chequeNo: e.cheque?.chequeNo || '',
+                chequeDate: e.cheque?.chequeDate ? ymdStr(e.cheque.chequeDate) : '',
+                amount: e.amount || 0,
+            };
+            if (e.billID) {
+                if (billMap.has(e.billID)) {
+                    billMap.get(e.billID).amount += (e.amount || 0);   // รวมยอดรายการในบิลเดียวกัน
+                } else {
+                    billMap.set(e.billID, row);
+                    rows.push(row);
+                }
+            } else {
+                rows.push(row);   // รายการเดี่ยวไม่มีบิล
+            }
+        }
+
+        // ── 2) จ่ายชำระหนี้ด้วยเช็ค (จากงวดจ่ายใน AccPayable) ──
+        const payables = await AccPayable.find({
+            companyID, factoryID,
+            payments: { $elemMatch: { payMethod: 'cheque', date: { $gte: start, $lt: end } } },
+        }).lean();
+        for (const p of payables) {
+            for (const pm of (p.payments || [])) {
+                if (pm.payMethod !== 'cheque' || !pm.date) continue;
+                const d = new Date(pm.date);
+                if (d < start || d >= end) continue;
+                rows.push({
+                    date: ymdStr(pm.date), source: 'payable', type: 'expense',
+                    shopName: p.shopName || '', billNo: p.billNo || '',
+                    bankName: pm.cheque?.bankName || '',
+                    accountNo: '',
+                    chequeNo: pm.cheque?.chequeNo || '',
+                    chequeDate: pm.cheque?.chequeDate ? ymdStr(pm.cheque.chequeDate) : '',
+                    amount: pm.amount || 0,
+                });
+            }
+        }
+
+        // ## เรียงวันที่ใหม่ → เก่า (string YYYY-MM-DD เทียบตรงได้)
+        rows.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+
+        // ── สรุป: จำนวนใบ / ยอดรวม / แยกตามธนาคาร ──
+        let totalAmount = 0;
+        const bankMap = new Map();
+        for (const r of rows) {
+            totalAmount += r.amount;
+            const key = r.bankName || 'ไม่ระบุ';
+            if (!bankMap.has(key)) bankMap.set(key, { bank: key, count: 0, amount: 0 });
+            const b = bankMap.get(key);
+            b.count += 1;
+            b.amount += r.amount;
+        }
+        const byBank = Array.from(bankMap.values()).sort((a, b) => b.amount - a.amount);
+
+        const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+        return res.json({
+            success: true, token, expiresIn: Number(process.env.TOKENExpiresIn),
+            month, rows, byBank,
+            chequeCount: rows.length, totalAmount,
+        });
+    } catch (err) { next(err); }
+};
+
+// ## GET /api/a/admacc/report/cashman-summary/:companyID/:factoryID/:month   (month = 'YYYY-MM')
+// requirement: สรุปรายการบัญชีรายวันประจำงวดเดือน แยกตาม Cash Man
+//   ★ เฉพาะรายการที่เกี่ยวข้องกับ cash man เท่านั้น (payMethod='cash') — ไม่รวมเช็ค/ซื้อเชื่อ
+//   แต่ละ cash man: จำนวนรายการ / รายรับ / รายจ่าย / สุทธิ + ยอดแยกตามบัญชี (chart account)
+exports.getCashManSummaryReport = async (req, res, next) => {
+    const { companyID, factoryID, month } = req.params;
+    try {
+        // ## ขอบเขตงวด = วันที่ 1 ถึงก่อนวันที่ 1 เดือนถัดไป (UTC-midnight ตามกฎวันปฏิทิน)
+        const start = ymdToUTC(`${month}-01`);
+        const [y, m] = String(month).split('-').map(Number);
+        const nextYM = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`;
+        const end = ymdToUTC(`${nextYM}-01`);
+
+        const entries = await DailyEntry.find({
+            companyID, factoryID, status: 'a', payMethod: 'cash',
+            entryDate: { $gte: start, $lt: end },
+        }).sort({ entryDate: 1 }).lean();
+
+        // ── group ตาม cashManID + ข้างในแยกตามบัญชี ──
+        const cmMap = new Map();
+        let totalIncome = 0, totalExpense = 0, totalCount = 0;
+
+        for (const e of entries) {
+            const key = e.cashManID || 'unknown';
+            if (!cmMap.has(key))
+                cmMap.set(key, {
+                    cashManID: key,
+                    cashManName: e.cashManName || 'ไม่ระบุ',
+                    count: 0, income: 0, expense: 0, net: 0,
+                    accMap: new Map(),
+                });
+            const cm = cmMap.get(key);
+            cm.count += 1;
+            totalCount += 1;
+
+            const amt = e.amount || 0;
+            if (e.type === 'income') { cm.income += amt; totalIncome += amt; }
+            else                     { cm.expense += amt; totalExpense += amt; }
+
+            // ## ยอดแยกตามบัญชี (chart account) ของ cash man คนนี้
+            const accKey = e.chartAccCode || '-';
+            if (!cm.accMap.has(accKey))
+                cm.accMap.set(accKey, { chartAccCode: accKey, chartAccName: e.chartAccName || '', income: 0, expense: 0, count: 0 });
+            const acc = cm.accMap.get(accKey);
+            acc.count += 1;
+            if (e.type === 'income') acc.income += amt; else acc.expense += amt;
+        }
+
+        // ## แปลง Map → array: cash man เรียงตามยอดรวมมาก→น้อย · บัญชีเรียงตามรหัส
+        const byCashMan = Array.from(cmMap.values()).map(cm => ({
+            cashManID: cm.cashManID,
+            cashManName: cm.cashManName,
+            count: cm.count,
+            income: cm.income,
+            expense: cm.expense,
+            net: cm.income - cm.expense,
+            byAccount: Array.from(cm.accMap.values())
+                .sort((a, b) => (a.chartAccCode > b.chartAccCode ? 1 : a.chartAccCode < b.chartAccCode ? -1 : 0)),
+        })).sort((a, b) => (b.income + b.expense) - (a.income + a.expense));
+
+        const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+        return res.json({
+            success: true, token, expiresIn: Number(process.env.TOKENExpiresIn),
+            month, byCashMan,
+            totalIncome, totalExpense, totalNet: totalIncome - totalExpense,
+            totalCount, cashManCount: byCashMan.length,
+        });
+    } catch (err) { next(err); }
+};
+
+// ## GET /api/a/admacc/report/credit/:companyID/:factoryID/:month   (month = 'YYYY-MM')
+// requirement: รายงานติดหนี้ (ซื้อเชื่อ) ประจำงวดเดือน — บิลเชื่อที่ "ซื้อในเดือนนั้น" + สถานะล่าสุด
+//   จัดกลุ่มต่อร้าน (เรียงค้างมาก→น้อย) · แต่ละบิลมี ยอดซื้อ/จ่ายแล้ว/ค้าง/อายุหนี้/งวดจ่าย
+exports.getCreditReport = async (req, res, next) => {
+    const { companyID, factoryID, month } = req.params;
+    try {
+        const start = ymdToUTC(`${month}-01`);
+        const [y, m] = String(month).split('-').map(Number);
+        const nextYM = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`;
+        const end = ymdToUTC(`${nextYM}-01`);
+
+        const list = await AccPayable.find({
+            companyID, factoryID,
+            purchaseDate: { $gte: start, $lt: end },
+        }).sort({ purchaseDate: 1 }).lean();
+
+        // ## "วันนี้" อิงเวลาไทย — ใช้คำนวณอายุหนี้ (เหมือน getPayableReport)
+        const nowBkk   = new Date(Date.now() + 7 * 3600 * 1000);
+        const todayUTC = Date.UTC(nowBkk.getUTCFullYear(), nowBkk.getUTCMonth(), nowBkk.getUTCDate());
+
+        const byShopMap = new Map();
+        let totalPurchased = 0, totalPaid = 0, totalOutstanding = 0, openBillCount = 0;
+
+        for (const p of list) {
+            const out = (p.totalAmount || 0) - (p.paidAmount || 0);
+            totalPurchased   += (p.totalAmount || 0);
+            totalPaid        += (p.paidAmount || 0);
+            totalOutstanding += out;
+            if (out > 0) openBillCount += 1;
+
+            const pdDate = p.purchaseDate ? new Date(p.purchaseDate) : nowBkk;
+            const pdUTC  = Date.UTC(pdDate.getUTCFullYear(), pdDate.getUTCMonth(), pdDate.getUTCDate());
+            const ageDays = Math.max(0, Math.floor((todayUTC - pdUTC) / 86400000));
+
+            if (!byShopMap.has(p.shopID))
+                byShopMap.set(p.shopID, {
+                    shopID: p.shopID, shopName: p.shopName || '',
+                    billCount: 0, totalPurchased: 0, totalPaid: 0, outstanding: 0, bills: [],
+                });
+            const s = byShopMap.get(p.shopID);
+            s.billCount      += 1;
+            s.totalPurchased += (p.totalAmount || 0);
+            s.totalPaid      += (p.paidAmount || 0);
+            s.outstanding    += out;
+            s.bills.push({
+                payableID: p.payableID, billNo: p.billNo || '',
+                purchaseDate: ymdStr(p.purchaseDate), ageDays,
+                total: p.totalAmount || 0, paid: p.paidAmount || 0, outstanding: out,
+                items: (p.items || []).map(it => ({ chartAccCode: it.chartAccCode, chartAccName: it.chartAccName, amount: it.amount })),
+                payments: (p.payments || []).map(pm => ({
+                    date: ymdStr(pm.date), amount: pm.amount || 0, payMethod: pm.payMethod,
+                    cashManName: pm.cashManName || '', chequeNo: pm.cheque?.chequeNo || '', note: pm.note || '',
+                })),
+            });
+        }
+
+        const byShop = Array.from(byShopMap.values()).sort((a, b) => b.outstanding - a.outstanding);
+
+        const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+        return res.json({
+            success: true, token, expiresIn: Number(process.env.TOKENExpiresIn),
+            month, byShop,
+            totalPurchased, totalPaid, totalOutstanding,
+            billCount: list.length, openBillCount,
+            creditorCount: byShop.length,
         });
     } catch (err) { next(err); }
 };

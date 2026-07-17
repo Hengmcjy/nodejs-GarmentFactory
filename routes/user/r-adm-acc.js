@@ -229,6 +229,17 @@ router.get("/daily/data/:companyID/:factoryID/:year/:month",
 router.get("/daily/bill-search/:companyID/:factoryID",
     checkAuthA, checkUUID, checkAuthFactory, dailyAccController.searchBills);
 
+// ## รายงานตามงวดเดือน (Report Hub)
+// ## GET /api/a/admacc/report/cheques/:companyID/:factoryID/:month — รายการจ่ายเช็คในงวด
+router.get("/report/cheques/:companyID/:factoryID/:month",
+    checkAuthA, checkUUID, checkAuthFactory, dailyAccController.getChequeReport);
+// ## GET /api/a/admacc/report/credit/:companyID/:factoryID/:month — รายงานติดหนี้ (ซื้อเชื่อ) ในงวด
+router.get("/report/credit/:companyID/:factoryID/:month",
+    checkAuthA, checkUUID, checkAuthFactory, dailyAccController.getCreditReport);
+// ## GET /api/a/admacc/report/cashman-summary/:companyID/:factoryID/:month — สรุปรายวันแยกตาม Cash Man (เฉพาะเงินสด)
+router.get("/report/cashman-summary/:companyID/:factoryID/:month",
+    checkAuthA, checkUUID, checkAuthFactory, dailyAccController.getCashManSummaryReport);
+
 // ## เจ้าหนี้ / หนี้ค้างชำระ (ซื้อเชื่อ)
 router.get("/payable/report/:companyID/:factoryID",
     checkAuthA, checkUUID, checkAuthFactory, dailyAccController.getPayableReport);   // ต้องมาก่อน :companyID
