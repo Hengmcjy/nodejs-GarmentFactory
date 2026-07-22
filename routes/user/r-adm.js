@@ -37,6 +37,9 @@ router.post("/create/officeuser", checkAuthA, checkUUID, admController.createOff
 // ## update OfficeUser Perms
 router.put('/user/perms', checkAuthA, checkUUID, admController.updateOfficeUserPerms);
 
+// ## update OfficeUser Report Perms (สิทธิ์ดูรายงาน Production — ระดับบริษัท)
+router.put('/user/report-perms', checkAuthA, checkUUID, admController.updateOfficeUserReportPerms);
+
 // ## perm comments
 router.get('/perm-comments/:companyID', checkAuthA, checkUUID, admController.getPermComments);
 router.put('/perm-comments',            checkAuthA, checkUUID, admController.updatePermComment);

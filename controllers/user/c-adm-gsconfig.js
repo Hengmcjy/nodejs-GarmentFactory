@@ -41,6 +41,10 @@ const DEFAULT_CONFIGS = [
     { module: 'accounting', key: 'OUTS_PAY_CHART_CODE',  value: '5201001', label: 'บัญชีจ่าย Outsource (รายวัน auto)', dataType: 'string', levelHint: '', description: 'chartAccCode ที่ใช้ลงรายวันเมื่อจ่ายค่า outsource จริง (เช่น 5201001 ค่า Outsource) — แก้ได้' },
     // Order
     { module: 'order', key: 'ORDER_SEASON_DEFAULT', value: '', label: 'Season default ของ Order', dataType: 'string', levelHint: '', description: 'season ที่ให้หน้า Order เลือกไว้ให้อัตโนมัติตอนเปิดหน้า เช่น 2027SS (ต้องตรงกับ season ที่มีใน SEASON_LIST) · ว่าง = ใช้ season ล่าสุดที่มี order · ★ ค่าเดียวทั้งแอป — แก้ที่โรงงานเดียว ระบบกระจายให้ทุกโรงงานอัตโนมัติ' },
+
+    // QR Print (หน้า Order > พิมพ์ QR Code) — ค่าเดียวทั้งบริษัท (อยู่ใน APP_WIDE_KEYS)
+    { module: 'qrprint', key: 'QR_MAX_BUNDLES_PER_JOB', value: '100', label: 'จำนวนโหลสูงสุดต่อการสั่งพิมพ์ 1 ครั้ง', dataType: 'number', levelHint: '', description: 'หน้า Order > พิมพ์ QR Code: จำกัดจำนวนโหลสูงสุดที่สั่งพิมพ์ได้ในครั้งเดียว (กันสั่งเยอะเกินหัวพิมพ์แตก) เช่น 100 · ★ ค่าเดียวทั้งบริษัท — แก้ที่โรงงานเดียว มีผลทุกโรงงานอัตโนมัติ' },
+
     // HR
     { module: 'hr', key: 'HR_DEPARTMENTS',   value: 'ทอคอม,ปั่นด้าย,พ้ง,ตรวจทอ,เกี่ยวสอย,ซัก,ปะผ้า,ตรวจผ้า-แพ็คQC,ติดตรา,วัดผ้า,แพ็คกิ้ง,แม่บ้าน,กรรมกร,พม่ารายเดือน', label: 'แผนก worker (กลุ่มใหญ่ = tab payroll)', dataType: 'string', levelHint: '', description: 'รายชื่อแผนก (กลุ่มใหญ่) คั่นด้วย comma — ตรงกับ tab ในไฟล์ payroll (เพิ่ม/ลบได้เอง)' },
     { module: 'hr', key: 'HR_POSITIONS',     value: 'ทอผ้า,ดึงจี่เบ้,ผู้ช่วยทอ,เสมียนทอ,หัวหน้าทอ,สแกนงาน,ปั่นด้าย,ผู้ช่วยปั่นด้าย,เสมียนปั่นด้าย,ช่างพัง,ผู้ช่วยโพ้ง,ซ่อมผ้าโพ้ง,เสมียนโพ้ง,เกี่ยวสอย,ตรวจผ้าแผ่น,ตรวจผ้าทอ,ติดตรา,วัดผ้า,แพ็คกิ้ง,แม่บ้าน,กรรมกร,ปะผ้า,ช่างทำตัวอย่าง', label: 'ตำแหน่ง worker (หน้าที่ในแผนก)', dataType: 'string', levelHint: '', description: 'รายชื่อตำแหน่ง/หน้าที่ คั่นด้วย comma เช่น ทอผ้า,ดึงจี่เบ้,หัวหน้าทอ (เพิ่ม/ลบได้เอง)' },
@@ -107,7 +111,7 @@ exports.updateConfig = async (req, res) => {
         // ## Requirement: config บาง key เป็นค่าระดับ "ทั้งแอป" (ทุกโรงงานต้องเท่ากันเสมอ)
         // ##   เช่น APP_VERSION — เดิมต้องไล่แก้ทีละโรงงาน ยุ่งยาก + เสี่ยงค่าไม่ตรงกันระหว่างโรง
         // ##   → แก้ที่โรงงานไหนก็ได้ แล้วกระจายค่าเดียวกันไปทุกโรงงานในบริษัทอัตโนมัติ
-        const APP_WIDE_KEYS = ['APP_VERSION', 'ORDER_SEASON_DEFAULT'];
+        const APP_WIDE_KEYS = ['APP_VERSION', 'ORDER_SEASON_DEFAULT', 'QR_MAX_BUNDLES_PER_JOB'];
         if (APP_WIDE_KEYS.includes(updated.key)) {
             await Gsconfig.updateMany(
                 { companyID: updated.companyID, key: updated.key },

@@ -262,6 +262,7 @@ exports.userALogin = async (req, res, next) => {
       comSeasons: comSeasons,
       subNodeflowC: subNodeflowC,
       uiPerms: fetchedUser.uiPerms ?? {},   // ← เพิ่มบรรทัดนี้
+      reportPerms: fetchedUser.reportPerms ?? [],   // ← สิทธิ์รายงาน Production (ระดับบริษัท)
       // mode: 'user', // ## user = normal user  , userNode= work station login
 
     });
@@ -389,6 +390,7 @@ exports.getuserAInfo = async (req, res, next) => {
       comSeasons: comSeasons,
       subNodeflowC: subNodeflowC,
       uiPerms: userf.uiPerms ?? {},   // ← เพิ่ม
+      reportPerms: userf.reportPerms ?? [],   // ← สิทธิ์รายงาน Production (ระดับบริษัท)
     });
   } catch (err) {
     console.log(err);

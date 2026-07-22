@@ -40,6 +40,7 @@ const gsconfigRoutes = require('./routes/user/r-adm-gsconfig');
 const masterRoutes = require("./routes/user/r-master");   // ## Master Data (clean stack ใหม่: company/factory/...)
 // ── [AI] เพิ่ม: Order module ใหม่ (clean stack) · 2026-07-16 ──
 const order2Routes = require("./routes/user/r-order2");   // ## Order ใหม่ ชี้ collection เดิม — ไม่แตะ r-order.js เก่า
+const report2Routes = require("./routes/user/r-report2");   // ## Report ใหม่ (c-report2.js) — ชี้ cache เดิม ไม่แตะ r-report.js/c-report.js เก่า
 // ── [AI] จบส่วนเพิ่ม ──
 
 
@@ -152,6 +153,7 @@ app.use("/api/a/admacc", admAccRoutes);
 app.use("/api/a/master", masterRoutes);   // ## Master Data (company/factory/...)
 // ── [AI] เพิ่ม: mount Order module ใหม่ · 2026-07-16 ──
 app.use("/api/a/order", order2Routes);    // ## Order ใหม่ (c-order2.js) — /api/order เก่ายังทำงานปกติ
+app.use("/api/a/report", report2Routes);  // ## Report ใหม่ (c-report2.js) — /api/rep เก่ายังทำงานปกติ
 // ── [AI] จบส่วนเพิ่ม ──
 app.use('/api/a/hr', hrRoutes);
 app.use('/api/a/gsconfig', gsconfigRoutes);

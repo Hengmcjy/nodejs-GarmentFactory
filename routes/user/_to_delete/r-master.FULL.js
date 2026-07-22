@@ -1,6 +1,5 @@
 const express = require("express");
 const masterController = require("../../controllers/user/c-master");
-const printDeviceController = require("../../controllers/user/c-print-device");   // ## QR Print Device (แยกไฟล์)
 
 const checkAuthA = require('../../middleware/check-authA');
 const checkUUID  = require('../../middleware/check-uuid');
@@ -44,11 +43,6 @@ router.delete("/targetplace/:id", checkAuthA, checkUUID, masterController.delete
 router.get("/subnode/:companyID", checkAuthA, checkUUID, masterController.getSubnodes);
 router.post("/subnode/save",      checkAuthA, checkUUID, masterController.saveSubnode);
 router.delete("/subnode/:id",     checkAuthA, checkUUID, masterController.deleteSubnode);
-
-// ---- QR Print Device (เครื่องพิมพ์ QR/care label · ระดับ company) — [AI ใหม่ 2026-07-19] ----
-router.get("/print-device/:companyID", checkAuthA, checkUUID, printDeviceController.getPrintDevices);
-router.post("/print-device/save",      checkAuthA, checkUUID, printDeviceController.savePrintDevice);
-router.delete("/print-device/:id",     checkAuthA, checkUUID, printDeviceController.deletePrintDevice);
 
 // ---- System Info (ดับเบิลคลิกชื่อ user ใน sidebar — ดู MGDB ว่าต่อ DB ไหน) ----
 router.get("/sysinfo", checkAuthA, checkUUID, masterController.getSysInfo);

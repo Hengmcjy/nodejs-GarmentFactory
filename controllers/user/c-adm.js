@@ -316,6 +316,36 @@ exports.updateOfficeUserPerms = async (req, res, next) => {
 };
 
 
+// ## update OfficeUser Report Perms (สิทธิ์ดูรายงาน Production — ระดับบริษัท ข้ามโรงงาน)
+// ## body: { userID, reportPerms: string[] }  (array ของเลขรายงาน เช่น ["1","3","21"])
+// router.put('/user/report-perms', checkAuthA, checkUUID, admController.updateOfficeUserReportPerms);
+exports.updateOfficeUserReportPerms = async (req, res, next) => {
+    const { userID, reportPerms } = req.body;
+
+    if (!userID) {
+        return res.status(400).json({ message: 'userID required' });
+    }
+
+    try {
+        // ## normalize เป็น string + unique กันซ้ำ
+        const clean = Array.isArray(reportPerms)
+            ? [...new Set(reportPerms.map(v => String(v)))]
+            : [];
+
+        await Useracc.findOneAndUpdate(
+            { userID },
+            { $set: { reportPerms: clean } },
+            { new: true }
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[updateOfficeUserReportPerms]', err);
+        next(err);
+    }
+};
+
+
 exports.updateOfficeUserInfo = async (req, res, next) => {
     try {
         const { userID, userName, tel, email, status, uFactory } = req.body;

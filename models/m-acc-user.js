@@ -51,7 +51,10 @@ const useraccSchema = mongoose.Schema({
     userID: {type: String},
     userName: {type: String},
   },
-  uiPerms: { type: mongoose.Schema.Types.Mixed, default: {} }
+  uiPerms: { type: mongoose.Schema.Types.Mixed, default: {} },
+  // ## สิทธิ์ดูรายงาน Production (ระดับบริษัท ข้ามโรงงาน — ไม่ผูก factory ต่างจาก uiPerms)
+  // ## เก็บเป็น array ของ "เลขรายงาน" (string) เช่น ["1","3","21"] · ตั้งค่าที่ Admin > User Manage > tab รายงาน Production
+  reportPerms: { type: [String], default: [] }
 });
 
 useraccSchema.plugin(uniqueValidator);
