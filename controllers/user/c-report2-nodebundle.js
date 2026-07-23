@@ -267,7 +267,10 @@ const NODE_SHORT = { '1.COMPUTER-KNITTING': 'KNIT', '2.PANAL-INSPECTION': 'PANEL
 // GET /api/a/report/product-flow/:companyID/:code
 exports.productFlow = async (req, res, next) => {
   const companyID = String(req.params.companyID || '').trim();
-  const code = String(req.params.code || '').trim().replace(/\s+/g, '');   // ตัดช่องว่าง (บาร์โค้ดจริงไม่มีเว้นวรรค)
+  // ★ FIX 2026-07-23: ห้ามตัดช่องว่างภายใน — productBarcodeNoReal/No ใน DB มี space padding ของ style จริง
+  //   (เช่น "AA0VUA6A    JAPN-----26CG--------S---00004" · user verify ใน Compass แล้ว) ตัดทิ้งแล้ว query ไม่เจอตลอด
+  //   trim แค่หัว-ท้าย · bundleNo (เลขล้วน) ไม่มีช่องว่างอยู่แล้ว ไม่กระทบ
+  const code = String(req.params.code || '').trim();
   try {
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     if (!companyID || !code) {
@@ -282,15 +285,26 @@ exports.productFlow = async (req, res, next) => {
     let primary = null;
     try {
       if (!isNumeric) {
-        primary = await OrderProduction.findOne({ companyID, productBarcodeNoReal: code }).maxTimeMS(15000).lean();
+        // ★ FIX 2026-07-23: query บาร์โค้ดตรงๆ ไม่มี index (8M docs → multiplanner timeout)
+        //   → ดึง orderID จากบาร์โค้ด (pos 0-12 = style/orderID ตาม barcode spec) แนบเข้า query
+        //   ให้วิ่งบน index ของ orderID (แคบเหลือ docs ของ order เดียว) — เร็วทันที ไม่ต้องสร้าง index ใหม่
+        const styleID = code.slice(0, 12).trim();
+        // ★ FIX 2026-07-23: .hint() บังคับใช้ index ตรงตัว — collection มี index prefix companyID ~30 ตัว
+        //   multiplanner เอาทุกตัวมาลองเลือกแผนจนเกิน maxTimeMS เอง (error: "while multiplanner was selecting best plan")
+        //   index ยืนยันมีจริงจาก getIndexes(): companyID_1_orderID_1_productBarcodeNoReal_1 · companyID_1_bundleNo_1
+        primary = await OrderProduction.findOne({ companyID, orderID: styleID, productBarcodeNoReal: code })
+          .hint({ companyID: 1, orderID: 1, productBarcodeNoReal: 1 }).maxTimeMS(15000).lean();
         mode = 'barcodeReal';
         if (!primary) {
-          const p = await OrderProduction.findOne({ companyID, productBarcodeNo: code }).maxTimeMS(15000).lean();
+          // fallback เทียบ productBarcodeNo (ไม่มี index ตรง) — hint index orderID แล้วกรองใน docs ของ order เดียว
+          const p = await OrderProduction.findOne({ companyID, orderID: styleID, productBarcodeNo: code })
+            .hint({ companyID: 1, orderID: 1, bundleNo: 1, bundleID: 1 }).maxTimeMS(15000).lean();
           if (p) { primary = p; mode = 'barcodeNo'; }
         }
       } else {
         mode = 'bundle';
-        primary = await OrderProduction.findOne({ companyID, bundleNo: +code }).maxTimeMS(20000).lean();
+        primary = await OrderProduction.findOne({ companyID, bundleNo: +code })
+          .hint({ companyID: 1, bundleNo: 1 }).maxTimeMS(20000).lean();   // ★ index มีจริง (companyID_1_bundleNo_1) — hint ให้เร็วเสถียร
       }
     } catch (qe) {
       // timeout/หา primary นานเกิน (bundleNo ไม่มี index) → แจ้ง client ให้สแกน barcode เต็มแทน
