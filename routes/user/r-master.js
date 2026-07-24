@@ -1,6 +1,7 @@
 const express = require("express");
 const masterController = require("../../controllers/user/c-master");
 const printDeviceController = require("../../controllers/user/c-print-device");   // ## QR Print Device (แยกไฟล์)
+const scanStationController = require("../../controllers/user/c-scan-station");   // ## Scan Station (แยกไฟล์ · AI 2026-07-23)
 
 const checkAuthA = require('../../middleware/check-authA');
 const checkUUID  = require('../../middleware/check-uuid');
@@ -49,6 +50,13 @@ router.delete("/subnode/:id",     checkAuthA, checkUUID, masterController.delete
 router.get("/print-device/:companyID", checkAuthA, checkUUID, printDeviceController.getPrintDevices);
 router.post("/print-device/save",      checkAuthA, checkUUID, printDeviceController.savePrintDevice);
 router.delete("/print-device/:id",     checkAuthA, checkUUID, printDeviceController.deletePrintDevice);
+
+// ---- Scan Station (station สแกน QR ต่อ node/โรงงาน · migrate จาก app เดิม) — [AI ใหม่ 2026-07-23] ----
+router.get("/scan-station/check-userid/:companyID/:factoryID/:checkUserID", checkAuthA, checkUUID, scanStationController.checkScanStationUserID);
+router.get("/scan-station/:companyID/:factoryID", checkAuthA, checkUUID, scanStationController.getScanStations);
+router.put("/scan-station/info",    checkAuthA, checkUUID, scanStationController.saveScanStationInfo);
+router.put("/scan-station/station", checkAuthA, checkUUID, scanStationController.saveScanStationUser);
+router.post("/scan-station/clone-factory", checkAuthA, checkUUID, scanStationController.cloneScanStationFactory);   // คัดลอกโครง node จากโรงต้นแบบ → โรงใหม่
 
 // ---- System Info (ดับเบิลคลิกชื่อ user ใน sidebar — ดู MGDB ว่าต่อ DB ไหน) ----
 router.get("/sysinfo", checkAuthA, checkUUID, masterController.getSysInfo);

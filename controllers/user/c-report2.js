@@ -391,61 +391,75 @@ exports.repOrderMatrix = async (req, res, next) => {
 // ══════════════════════════════════════════════════════════════════════
 
 // ## GET /api/a/report/scan/:companyID/:seasonYear/:date1/:date2   (date = YYYY-MM-DD)
-exports.repScan = async (req, res, next) => {
-  const companyID = req.params.companyID;
-  const seasonYear = req.params.seasonYear;
-  const date1 = String(req.params.date1).slice(0, 10);
-  const date2 = String(req.params.date2).slice(0, 10);
+// ── buildScanOverview ── core no.3 (reusable: office repScan + station scan-overview) — คืน payload ล้วน (ไม่มี token/res)
+//   ★ seasonArr = array ของ season (office ส่ง 1 ตัว · station ส่งทุก season active)
+//   ★ factoryFilterArr = ล็อกเฉพาะบางโรง (station เห็นโรงตัวเอง) · null/[] = ทุกโรง (พฤติกรรม office เดิม)
+//   logic เดียว ไม่ก๊อป → เลขตรง no.3 office เป๊ะ
+exports.buildScanOverview = async (companyID, seasonArr, date1, date2, factoryFilterArr) => {
+  companyID = String(companyID || '').trim();
+  date1 = String(date1).slice(0, 10);
+  date2 = String(date2).slice(0, 10);
   const statusArr = ['normal', 'complete'];   // สถานะสแกนที่นับ (ตรงกับรายงานเดิม)
 
+  // ## ขอบเขตวัน (Bangkok) — scan datetime เป็น timestamp จริง ใช้ 00:00:00+07 ถึง 23:59:59+07
+  const dateStart = new Date(date1 + 'T00:00:00.000+07:00');
+  const dateEnd   = new Date(date2 + 'T23:59:59.999+07:00');
+
+  // ## orders ของ season (รองรับหลาย season)
+  const seasons = Array.isArray(seasonArr) ? seasonArr.filter(Boolean) : [seasonArr].filter(Boolean);
+  const seasonOrders = await ShareFunc.getOrdersBySeasonYearArr(companyID, ['open'], seasons);
+  const orderIDs = Array.from(new Set((seasonOrders || []).map(o => o.orderID)));
+
+  // ## โรงงาน (ไม่รวม outsource) — ไว้ filter + ชื่อ
+  const facAll = await ShareFunc.getFactoryArrByCompanyID(companyID);
+  let factories = (facAll || [])
+    .filter(f => !(f.fInfo && f.fInfo.isOutsource))
+    .map(f => ({ factoryID: f.factoryID, name: (f.fInfo && f.fInfo.factoryName) || f.factoryID }))
+    .sort((a, b) => (a.factoryID > b.factoryID ? 1 : a.factoryID < b.factoryID ? -1 : 0));
+  // ★ ล็อกเฉพาะโรงที่กำหนด (station) — ว่าง/ไม่ส่ง = ทุกโรง
+  if (Array.isArray(factoryFilterArr) && factoryFilterArr.length) {
+    const keep = new Set(factoryFilterArr.map(String));
+    factories = factories.filter(f => keep.has(String(f.factoryID)));
+  }
+  const factoryIDArr = factories.map(f => f.factoryID);
+
+  // ## นับสแกน (reuse ShareFunc — เลขตรงรายงานเดิม)
+  const scanStyle = await ShareFunc.getCFStaffScannedByDate12Style(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
+  const scanZone  = await ShareFunc.getCFStaffScannedByDate12StyleZone(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
+
+  // ## node columns จาก NodeFlow (main) เรียงตาม seqNo
+  // ★ ใช้ "เฉพาะ node ใน flow" ให้ตรงรายงานเดิม (แอปเก่าวนเฉพาะ flowSeq) — ไม่โชว์ pseudo node เช่น starterNode
+  const flow = await NodeFlow.findOne({ companyID, flowType: 'main' }).lean();
+  let nodes = [];
+  if (flow && Array.isArray(flow.flowSeq) && flow.flowSeq.length > 0) {
+    nodes = flow.flowSeq.slice()
+      .sort((a, b) => String(a.seqNo).localeCompare(String(b.seqNo), undefined, { numeric: true }))
+      .map(s => s.nodeID).filter(Boolean);
+  }
+  // fallback: ถ้าไม่มี NodeFlow เลย จึงใช้ node จาก data (กันตารางว่างเปล่า)
+  if (nodes.length === 0) {
+    const seen = new Set();
+    (scanStyle || []).forEach(s => { if (s.fromNode && !seen.has(s.fromNode)) { seen.add(s.fromNode); nodes.push(s.fromNode); } });
+    nodes.sort();
+  }
+
+  return {
+    date1, date2, nodes, factories,
+    scanStyle: (scanStyle || []).map(s => ({ orderID: s.orderID, fromNode: s.fromNode, factoryID: s.factoryID, countQty: s.countQty })),
+    scanZone: (scanZone || []).map(z => ({
+      orderID: z.orderID, fromNode: z.fromNode, factoryID: z.factoryID,
+      targetPlace: String(z.targetPlace || '').replace(/-/g, '').trim(),
+      countQty: z.countQty,
+    })),
+  };
+};
+
+exports.repScan = async (req, res, next) => {
   try {
-    // ## ขอบเขตวัน (Bangkok) — scan datetime เป็น timestamp จริง ใช้ 00:00:00+07 ถึง 23:59:59+07
-    const dateStart = new Date(date1 + 'T00:00:00.000+07:00');
-    const dateEnd   = new Date(date2 + 'T23:59:59.999+07:00');
-
-    // ## orders ของ season
-    const seasonOrders = await ShareFunc.getOrdersBySeasonYearArr(companyID, ['open'], [seasonYear]);
-    const orderIDs = Array.from(new Set((seasonOrders || []).map(o => o.orderID)));
-
-    // ## โรงงาน (ไม่รวม outsource) — ไว้ filter + ชื่อ
-    const facAll = await ShareFunc.getFactoryArrByCompanyID(companyID);
-    const factories = (facAll || [])
-      .filter(f => !(f.fInfo && f.fInfo.isOutsource))
-      .map(f => ({ factoryID: f.factoryID, name: (f.fInfo && f.fInfo.factoryName) || f.factoryID }))
-      .sort((a, b) => (a.factoryID > b.factoryID ? 1 : a.factoryID < b.factoryID ? -1 : 0));
-    const factoryIDArr = factories.map(f => f.factoryID);
-
-    // ## นับสแกน (reuse ShareFunc — เลขตรงรายงานเดิม)
-    const scanStyle = await ShareFunc.getCFStaffScannedByDate12Style(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
-    const scanZone  = await ShareFunc.getCFStaffScannedByDate12StyleZone(companyID, factoryIDArr, orderIDs, dateStart, dateEnd, statusArr);
-
-    // ## node columns จาก NodeFlow (main) เรียงตาม seqNo
-    // ★ ใช้ "เฉพาะ node ใน flow" ให้ตรงรายงานเดิม (แอปเก่าวนเฉพาะ flowSeq) — ไม่โชว์ pseudo node เช่น starterNode
-    const flow = await NodeFlow.findOne({ companyID, flowType: 'main' }).lean();
-    let nodes = [];
-    if (flow && Array.isArray(flow.flowSeq) && flow.flowSeq.length > 0) {
-      nodes = flow.flowSeq.slice()
-        .sort((a, b) => String(a.seqNo).localeCompare(String(b.seqNo), undefined, { numeric: true }))
-        .map(s => s.nodeID).filter(Boolean);
-    }
-    // fallback: ถ้าไม่มี NodeFlow เลย จึงใช้ node จาก data (กันตารางว่างเปล่า)
-    if (nodes.length === 0) {
-      const seen = new Set();
-      (scanStyle || []).forEach(s => { if (s.fromNode && !seen.has(s.fromNode)) { seen.add(s.fromNode); nodes.push(s.fromNode); } });
-      nodes.sort();
-    }
-
+    const payload = await exports.buildScanOverview(
+      req.params.companyID, [req.params.seasonYear], req.params.date1, req.params.date2, null);
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-    res.status(200).json({
-      success: true, token, expiresIn: Number(process.env.TOKENExpiresIn),
-      date1, date2, nodes, factories,
-      scanStyle: (scanStyle || []).map(s => ({ orderID: s.orderID, fromNode: s.fromNode, factoryID: s.factoryID, countQty: s.countQty })),
-      scanZone: (scanZone || []).map(z => ({
-        orderID: z.orderID, fromNode: z.fromNode, factoryID: z.factoryID,
-        targetPlace: String(z.targetPlace || '').replace(/-/g, '').trim(),
-        countQty: z.countQty,
-      })),
-    });
+    res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), ...payload });
   } catch (err) {
     console.error('[repScan]', err);
     return res.status(501).json({ success: false, message: 'error report scan' });
@@ -836,14 +850,16 @@ exports.repProdPeriod = async (req, res, next) => {
 //   ★ ใช้ getCFStaffScannedByDate12StyleZoneColorSize (aggregate สดจาก OrderProduction ตาม productionNode.datetime/factoryID)
 //   factoryID = '*' = ทุกโรงในเครือ (isOutsource:false) · หรือระบุ factoryID เดียว
 // ## GET /api/a/report/prod-scan/:companyID/:seasonYear/:date1/:date2/:factoryID
-exports.repProdScanPeriod = async (req, res, next) => {
-  const companyID = req.params.companyID;
-  const seasonYear = req.params.seasonYear;
-  const date1 = String(req.params.date1).slice(0, 10);
-  const date2 = String(req.params.date2).slice(0, 10);
-  const factoryParam = String(req.params.factoryID || '*').trim();
+// ── buildProdScanPeriod ── core no.22 (reusable: office repProdScanPeriod + station prod-scan) — คืน payload ล้วน (ไม่มี token/res)
+//   ★ seasonArr = array (office ส่ง 1 · station ส่งทุก season active) · factoryParam = '*'/ว่าง = ทุกโรง · อื่น = โรงนั้น (station ล็อก)
+exports.buildProdScanPeriod = async (companyID, seasonArr, date1, date2, factoryParam) => {
+  companyID = String(companyID || '').trim();
+  date1 = String(date1).slice(0, 10);
+  date2 = String(date2).slice(0, 10);
+  factoryParam = String(factoryParam || '*').trim();
   const orderStatusArr = ['open'];
   const scanStatusArr = ['normal', 'complete'];
+  const seasons = Array.isArray(seasonArr) ? seasonArr.filter(Boolean) : [seasonArr].filter(Boolean);
 
   const trimStr   = (s) => String(s == null ? '' : s).trim();
   const normSize  = (s) => String(s == null ? '' : s).replace(/-/g, '').trim();
@@ -856,9 +872,7 @@ exports.repProdScanPeriod = async (req, res, next) => {
   };
   const shortOf = (nid) => NODE_SHORT[nid] || (String(nid).split('.').pop() || String(nid));
 
-  try {
-    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-
+  {
     const dateStart = new Date(date1 + 'T00:00:00.000+07:00');
     const dateEnd   = new Date(date2 + 'T23:59:59.999+07:00');
 
@@ -871,11 +885,11 @@ exports.repProdScanPeriod = async (req, res, next) => {
     const inHouseIDs = factories.map(f => f.factoryID);
     const factoryIDArr = (factoryParam === '*' || !factoryParam) ? inHouseIDs : [factoryParam];
 
-    // orders ของ season
-    const seasonOrders = await ShareFunc.getOrdersBySeasonYearArr(companyID, orderStatusArr, [seasonYear]);
+    // orders ของ season (รองรับหลาย season)
+    const seasonOrders = await ShareFunc.getOrdersBySeasonYearArr(companyID, orderStatusArr, seasons);
     const orderIDArr = Array.from(new Set((seasonOrders || []).map(o => o.orderID)));
     if (!orderIDArr.length) {
-      return res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), seasonYear, date1, date2, factorySel: factoryParam, factories, allZones: [], nodes: [], nodesShort: [], styles: [] });
+      return { date1, date2, factorySel: factoryParam, factories, allZones: [], nodes: [], nodesShort: [], styles: [] };
     }
 
     // node columns
@@ -990,11 +1004,16 @@ exports.repProdScanPeriod = async (req, res, next) => {
 
     styles.sort((a, b) => (a.orderID > b.orderID ? 1 : a.orderID < b.orderID ? -1 : 0));
 
-    res.status(200).json({
-      success: true, token, expiresIn: Number(process.env.TOKENExpiresIn),
-      seasonYear, date1, date2, factorySel: factoryParam, factories,
-      allZones: [...allZoneSet], nodes, nodesShort, styles,
-    });
+    return { date1, date2, factorySel: factoryParam, factories, allZones: [...allZoneSet], nodes, nodesShort, styles };
+  }
+};
+
+exports.repProdScanPeriod = async (req, res, next) => {
+  try {
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    const payload = await exports.buildProdScanPeriod(
+      req.params.companyID, [req.params.seasonYear], req.params.date1, req.params.date2, req.params.factoryID);
+    res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), seasonYear: req.params.seasonYear, ...payload });
   } catch (err) {
     console.error('[repProdScanPeriod]', err);
     return res.status(501).json({ success: false, message: 'error report prod scan period' });

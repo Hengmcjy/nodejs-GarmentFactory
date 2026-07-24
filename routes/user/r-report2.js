@@ -41,6 +41,12 @@ router.put("/node-bundle/qc-complete", checkAuthA, checkUUID, nodeBundleControll
 // ## Product Flow — ป้อน bundleNo/productBarcodeNo/productBarcodeNoReal → เส้นทางเสื้อ (productionNode history)
 router.get("/product-flow/:companyID/:code", checkAuthA, checkUUID, nodeBundleController.productFlow);
 
+// ## รายงาน no.26 Factory Scan (group) — ชิ้นที่ค้างอยู่แต่ละ node ตอนนี้ (ต่อ order+factory) แยก สี×ไซซ์×โซน
+// ## detail (ต้องมาก่อน route generic) — ดับเบิลคลิก qty → รายชิ้น bundleNo/barcode ที่ค้างตรงนั้น
+router.get("/factory-scan-group/detail/:companyID/:factoryID/:orderID/:node/:zone/:color/:size", checkAuthA, checkUUID, nodeBundleController.repFactoryScanGroupDetail);
+// ## GET /api/a/report/factory-scan-group/:companyID/:factoryID/:orderID
+router.get("/factory-scan-group/:companyID/:factoryID/:orderID", checkAuthA, checkUUID, nodeBundleController.repFactoryScanGroup);
+
 // ## พิมพ์ QR Code (Order > หน้า worker) — bundles = "log ล็อกงาน" ให้เลือก · data = ข้อมูลป้ายทุกชิ้น (preview/gen)
 // ## GET /api/a/report/qr-print/bundles/:companyID/:orderID/:factoryID  (factoryID='*' = ทุกโรง)
 router.get("/qr-print/bundles/:companyID/:orderID/:factoryID", checkAuthA, checkUUID, nodeBundleController.qrPrintBundles);

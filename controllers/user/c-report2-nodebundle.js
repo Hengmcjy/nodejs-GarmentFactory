@@ -35,78 +35,85 @@ const keyU = (s) => String(s == null ? '' : s).replace(/-+$/, '').toUpperCase().
 //   frontend เอาไปสร้างแถบเลือก Zone / Color / Size (segmented)
 //   factoryID = '*' → ทุกโรง · อื่น → เฉพาะโรงนั้น (เทียบ lastNode.factoryID = โรงที่ทำ node ปัจจุบัน)
 // GET /api/a/report/node-bundle/index/:companyID/:orderID/:nodeID/:factoryID
+// ── buildNodeBundleIndex ── core no.11 index (reusable: office + station) — คืน { orderID, nodeID, style, combos }
+//   factoryID = '*' → ทุกโรง · อื่น → เฉพาะโรงนั้น (station ส่ง factory จาก token)
+exports.buildNodeBundleIndex = async (companyID, orderID, nodeID, factoryID) => {
+  companyID = String(companyID || '').trim();
+  orderID   = String(orderID || '').trim();
+  nodeID    = String(nodeID || '').trim();
+  factoryID = String(factoryID || '*').trim();
+
+  // ── $elemMatch (index-friendly) กรอง productionNode ที่ toNode = node ที่เลือก (+ factory ถ้าเจาะจง) ──
+  const elem = { toNode: nodeID };
+  if (factoryID !== '*') elem.factoryID = factoryID;
+  const lastMatch = { "lastNode.toNode": nodeID };
+  if (factoryID !== '*') lastMatch["lastNode.factoryID"] = factoryID;
+
+  const rows = await OrderProduction.aggregate([
+    { $match: { companyID, orderID, productStatus: { $in: STATUS_ARR }, productionNode: { $elemMatch: elem } } },
+    { $project: { _id: 0, productBarcodeNoReal: 1, lastNode: { $arrayElemAt: ["$productionNode", -1] } } },
+    { $match: lastMatch },
+    { $project: { _id: 0, ...barcodeKeyProj() } },
+    { $group: { _id: { zone: "$_zone", color: "$_color", size: "$_size" } } },
+  ]).allowDiskUse(true);
+
+  // ── resolve ชื่อ/ลำดับ zone-color-size จาก Order + Size master (แนวเดียวกับ repSubNodeScan) ──
+  const order = await Order.findOne({ companyID, orderID }).lean();
+
+  const zoneSeq = new Map();
+  ((order && order.orderTargetPlace) || []).forEach((tp, i) => {
+    const id = keyU(tp.targetPlace && tp.targetPlace.targetPlaceID);
+    if (id && !zoneSeq.has(id)) zoneSeq.set(id, tp.seq != null ? tp.seq : i);
+  });
+
+  const colorInfo = new Map();
+  ((order && order.orderColor) || []).forEach((c, i) => {
+    const info = {
+      colorID:    String((c.color && c.color.colorID)    || '').trim(),
+      colorName:  String((c.color && c.color.colorName)  || '').trim(),
+      colorCode:  String((c.color && c.color.colorCode)  || '').trim(),
+      colorValue: String((c.color && c.color.colorValue) || '').trim(),
+      seq: c.seq != null ? c.seq : i,
+    };
+    [info.colorID, info.colorCode, info.colorName].forEach(k => { const kk = keyU(k); if (kk) colorInfo.set(kk, info); });
+  });
+
+  const sizeDocs = await Size.find({}, { size: 1, seq: 1 }).lean();
+  const sizeMap = new Map();
+  (sizeDocs || []).forEach(s => {
+    const id = keyU(s.size && s.size.sizeID);
+    if (id) sizeMap.set(id, { name: String((s.size && s.size.sizeName) || '').trim() || id, seq: s.seq != null ? s.seq : 9999 });
+  });
+
+  const combos = rows.map(r => {
+    const zone = r._id.zone, color = r._id.color, size = r._id.size;
+    const ci = colorInfo.get(keyU(color));
+    const sm = sizeMap.get(keyU(size));
+    return {
+      zone, color, size,                                   // ← key ดิบ (ส่งกลับมาใน detail)
+      zoneSeq:  zoneSeq.has(keyU(zone)) ? zoneSeq.get(keyU(zone)) : 9999,
+      colorId:    ci ? ci.colorID    : color,
+      colorCode:  ci ? ci.colorCode  : '',
+      colorName:  ci ? ci.colorName  : '',
+      colorValue: ci ? ci.colorValue : '',
+      colorSeq:   ci ? ci.seq        : 9999,
+      sizeName:   sm ? sm.name       : size,
+      sizeSeq:    sm ? sm.seq        : 9999,
+    };
+  });
+
+  const firstBarcode = (order && order.productOR && order.productOR.productORInfo
+    && order.productOR.productORInfo[0] && order.productOR.productORInfo[0].productBarcode) || '';
+  const style = firstBarcode ? String(firstBarcode.substr(+process.env.stylePos, +process.env.styleDigit)).trim() : orderID;
+
+  return { orderID, nodeID, style, combos };
+};
+
 exports.repNodeBundleIndex = async (req, res, next) => {
-  const companyID = String(req.params.companyID).trim();
-  const orderID   = String(req.params.orderID).trim();
-  const nodeID    = String(req.params.nodeID).trim();
-  const factoryID = String(req.params.factoryID).trim();   // '*' = ทุกโรง
   try {
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-
-    // ── $elemMatch (index-friendly) กรอง productionNode ที่ toNode = node ที่เลือก (+ factory ถ้าเจาะจง) ──
-    const elem = { toNode: nodeID };
-    if (factoryID !== '*') elem.factoryID = factoryID;
-    const lastMatch = { "lastNode.toNode": nodeID };
-    if (factoryID !== '*') lastMatch["lastNode.factoryID"] = factoryID;
-
-    const rows = await OrderProduction.aggregate([
-      { $match: { companyID, orderID, productStatus: { $in: STATUS_ARR }, productionNode: { $elemMatch: elem } } },
-      { $project: { _id: 0, productBarcodeNoReal: 1, lastNode: { $arrayElemAt: ["$productionNode", -1] } } },
-      { $match: lastMatch },
-      { $project: { _id: 0, ...barcodeKeyProj() } },
-      { $group: { _id: { zone: "$_zone", color: "$_color", size: "$_size" } } },
-    ]).allowDiskUse(true);
-
-    // ── resolve ชื่อ/ลำดับ zone-color-size จาก Order + Size master (แนวเดียวกับ repSubNodeScan) ──
-    const order = await Order.findOne({ companyID, orderID }).lean();
-
-    const zoneSeq = new Map();
-    ((order && order.orderTargetPlace) || []).forEach((tp, i) => {
-      const id = keyU(tp.targetPlace && tp.targetPlace.targetPlaceID);
-      if (id && !zoneSeq.has(id)) zoneSeq.set(id, tp.seq != null ? tp.seq : i);
-    });
-
-    const colorInfo = new Map();
-    ((order && order.orderColor) || []).forEach((c, i) => {
-      const info = {
-        colorID:    String((c.color && c.color.colorID)    || '').trim(),
-        colorName:  String((c.color && c.color.colorName)  || '').trim(),
-        colorCode:  String((c.color && c.color.colorCode)  || '').trim(),
-        colorValue: String((c.color && c.color.colorValue) || '').trim(),
-        seq: c.seq != null ? c.seq : i,
-      };
-      [info.colorID, info.colorCode, info.colorName].forEach(k => { const kk = keyU(k); if (kk) colorInfo.set(kk, info); });
-    });
-
-    const sizeDocs = await Size.find({}, { size: 1, seq: 1 }).lean();
-    const sizeMap = new Map();
-    (sizeDocs || []).forEach(s => {
-      const id = keyU(s.size && s.size.sizeID);
-      if (id) sizeMap.set(id, { name: String((s.size && s.size.sizeName) || '').trim() || id, seq: s.seq != null ? s.seq : 9999 });
-    });
-
-    const combos = rows.map(r => {
-      const zone = r._id.zone, color = r._id.color, size = r._id.size;
-      const ci = colorInfo.get(keyU(color));
-      const sm = sizeMap.get(keyU(size));
-      return {
-        zone, color, size,                                   // ← key ดิบ (ส่งกลับมาใน detail)
-        zoneSeq:  zoneSeq.has(keyU(zone)) ? zoneSeq.get(keyU(zone)) : 9999,
-        colorId:    ci ? ci.colorID    : color,
-        colorCode:  ci ? ci.colorCode  : '',
-        colorName:  ci ? ci.colorName  : '',
-        colorValue: ci ? ci.colorValue : '',
-        colorSeq:   ci ? ci.seq        : 9999,
-        sizeName:   sm ? sm.name       : size,
-        sizeSeq:    sm ? sm.seq        : 9999,
-      };
-    });
-
-    const firstBarcode = (order && order.productOR && order.productOR.productORInfo
-      && order.productOR.productORInfo[0] && order.productOR.productORInfo[0].productBarcode) || '';
-    const style = firstBarcode ? String(firstBarcode.substr(+process.env.stylePos, +process.env.styleDigit)).trim() : orderID;
-
-    res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), orderID, nodeID, style, combos });
+    const payload = await exports.buildNodeBundleIndex(req.params.companyID, req.params.orderID, req.params.nodeID, req.params.factoryID);
+    res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), ...payload });
   } catch (err) {
     console.error('[repNodeBundleIndex]', err);
     return res.status(501).json({ success: false, message: 'error node-bundle index' });
@@ -117,52 +124,57 @@ exports.repNodeBundleIndex = async (req, res, next) => {
 //   1) หา bundleNo ที่มีชิ้น toNode = node (ใน combo นี้)  2) ดึงทุกชิ้นในมัดพวกนั้น (ไม่ filter node → โชว์ครบ)
 //   คืน pieces: [{ bundleNo, no (เลขวิ่ง 5 หลัก), toNode (node ปัจจุบัน) }] → frontend group by bundle + ระบายสี
 // GET /api/a/report/node-bundle/detail/:companyID/:orderID/:nodeID/:factoryID/:zone/:color/:size
+// ── buildNodeBundleDetail ── core no.11 detail (reusable: office + station) — คืน { pieces }
+exports.buildNodeBundleDetail = async (companyID, orderID, nodeID, factoryID, zone, color, size) => {
+  companyID = String(companyID || '').trim();
+  orderID   = String(orderID || '').trim();
+  nodeID    = String(nodeID || '').trim();
+  factoryID = String(factoryID || '*').trim();
+  zone  = decodeURIComponent(String(zone  || '').trim());
+  color = decodeURIComponent(String(color || '').trim());
+  size  = decodeURIComponent(String(size  || '').trim());
+
+  const elem = { toNode: nodeID };
+  if (factoryID !== '*') elem.factoryID = factoryID;
+  const lastMatch = { "lastNode.toNode": nodeID, "_zone": zone, "_color": color, "_size": size };
+  if (factoryID !== '*') lastMatch["lastNode.factoryID"] = factoryID;
+
+  // ── STEP A: หา bundleNo ที่มีชิ้นอยู่ node นี้ ใน combo นี้ ──
+  const bunRows = await OrderProduction.aggregate([
+    { $match: { companyID, orderID, productStatus: { $in: STATUS_ARR }, productionNode: { $elemMatch: elem } } },
+    { $project: { _id: 0, bundleNo: 1, productBarcodeNoReal: 1, lastNode: { $arrayElemAt: ["$productionNode", -1] } } },
+    { $project: { _id: 0, bundleNo: 1, lastNode: 1, ...barcodeKeyProj() } },
+    { $match: lastMatch },
+    { $group: { _id: "$bundleNo" } },
+  ]).allowDiskUse(true);
+  const bundleNos = bunRows.map(r => r._id).filter(b => b != null);
+
+  if (!bundleNos.length) return { pieces: [] };
+
+  // ── STEP B: ทุกชิ้นในมัดพวกนั้น (โชว์ครบทุกชิ้นพร้อม node ปัจจุบัน — ไม่ filter node/factory) ──
+  const pieceRows = await OrderProduction.aggregate([
+    { $match: { companyID, orderID, bundleNo: { $in: bundleNos }, productStatus: { $in: STATUS_ARR } } },
+    { $project: {
+        _id: 0, bundleNo: 1,
+        barcode: "$productBarcodeNoReal",
+        no: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit] } },
+        lastNode: { $arrayElemAt: ["$productionNode", -1] },
+    }},
+    { $group: { _id: { bundleNo: "$bundleNo", no: "$no", toNode: "$lastNode.toNode", barcode: "$barcode" } } },
+    { $sort: { "_id.bundleNo": 1, "_id.no": 1 } },
+  ]).allowDiskUse(true);
+
+  // ## barcode = productBarcodeNoReal (ส่งกลับเพื่อใช้ set QC to complete ให้ตรงชิ้น)
+  const pieces = pieceRows.map(r => ({ bundleNo: r._id.bundleNo, no: r._id.no, toNode: r._id.toNode || '', barcode: r._id.barcode || '' }));
+  return { pieces };
+};
+
 exports.repNodeBundleDetail = async (req, res, next) => {
-  const companyID = String(req.params.companyID).trim();
-  const orderID   = String(req.params.orderID).trim();
-  const nodeID    = String(req.params.nodeID).trim();
-  const factoryID = String(req.params.factoryID).trim();
-  const zone  = decodeURIComponent(String(req.params.zone  || '').trim());
-  const color = decodeURIComponent(String(req.params.color || '').trim());
-  const size  = decodeURIComponent(String(req.params.size  || '').trim());
   try {
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-
-    const elem = { toNode: nodeID };
-    if (factoryID !== '*') elem.factoryID = factoryID;
-    const lastMatch = { "lastNode.toNode": nodeID, "_zone": zone, "_color": color, "_size": size };
-    if (factoryID !== '*') lastMatch["lastNode.factoryID"] = factoryID;
-
-    // ── STEP A: หา bundleNo ที่มีชิ้นอยู่ node นี้ ใน combo นี้ ──
-    const bunRows = await OrderProduction.aggregate([
-      { $match: { companyID, orderID, productStatus: { $in: STATUS_ARR }, productionNode: { $elemMatch: elem } } },
-      { $project: { _id: 0, bundleNo: 1, productBarcodeNoReal: 1, lastNode: { $arrayElemAt: ["$productionNode", -1] } } },
-      { $project: { _id: 0, bundleNo: 1, lastNode: 1, ...barcodeKeyProj() } },
-      { $match: lastMatch },
-      { $group: { _id: "$bundleNo" } },
-    ]).allowDiskUse(true);
-    const bundleNos = bunRows.map(r => r._id).filter(b => b != null);
-
-    if (!bundleNos.length) {
-      return res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), pieces: [] });
-    }
-
-    // ── STEP B: ทุกชิ้นในมัดพวกนั้น (โชว์ครบทุกชิ้นพร้อม node ปัจจุบัน — ไม่ filter node/factory) ──
-    const pieceRows = await OrderProduction.aggregate([
-      { $match: { companyID, orderID, bundleNo: { $in: bundleNos }, productStatus: { $in: STATUS_ARR } } },
-      { $project: {
-          _id: 0, bundleNo: 1,
-          barcode: "$productBarcodeNoReal",
-          no: { $toUpper: { $substr: ["$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit] } },
-          lastNode: { $arrayElemAt: ["$productionNode", -1] },
-      }},
-      { $group: { _id: { bundleNo: "$bundleNo", no: "$no", toNode: "$lastNode.toNode", barcode: "$barcode" } } },
-      { $sort: { "_id.bundleNo": 1, "_id.no": 1 } },
-    ]).allowDiskUse(true);
-
-    // ## barcode = productBarcodeNoReal (ส่งกลับเพื่อใช้ set QC to complete ให้ตรงชิ้น)
-    const pieces = pieceRows.map(r => ({ bundleNo: r._id.bundleNo, no: r._id.no, toNode: r._id.toNode || '', barcode: r._id.barcode || '' }));
-    res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), pieces });
+    const p = req.params;
+    const payload = await exports.buildNodeBundleDetail(p.companyID, p.orderID, p.nodeID, p.factoryID, p.zone, p.color, p.size);
+    res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), ...payload });
   } catch (err) {
     console.error('[repNodeBundleDetail]', err);
     return res.status(501).json({ success: false, message: 'error node-bundle detail' });
@@ -265,18 +277,16 @@ const NODE_SHORT = { '1.COMPUTER-KNITTING': 'KNIT', '2.PANAL-INSPECTION': 'PANEL
 //   คืน: ทุกชิ้นในมัด (พร้อม productionNode history ต่อชิ้น) + node ปัจจุบัน + ชื่อโรงต่อ entry + flow nodes (สำหรับ dots)
 //   ★ อ่านตรงจาก OrderProduction (findOne/find) — เบามาก ไม่ต้อง aggregate · resolve ชื่อโรงจาก Factory master
 // GET /api/a/report/product-flow/:companyID/:code
-exports.productFlow = async (req, res, next) => {
-  const companyID = String(req.params.companyID || '').trim();
-  // ★ FIX 2026-07-23: ห้ามตัดช่องว่างภายใน — productBarcodeNoReal/No ใน DB มี space padding ของ style จริง
-  //   (เช่น "AA0VUA6A    JAPN-----26CG--------S---00004" · user verify ใน Compass แล้ว) ตัดทิ้งแล้ว query ไม่เจอตลอด
-  //   trim แค่หัว-ท้าย · bundleNo (เลขล้วน) ไม่มีช่องว่างอยู่แล้ว ไม่กระทบ
-  const code = String(req.params.code || '').trim();
-  try {
-    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
-    if (!companyID || !code) {
-      return res.status(400).json({ success: false, token, expiresIn: Number(process.env.TOKENExpiresIn), message: 'กรุณาป้อนรหัส' });
-    }
+// ── buildProductFlow ── core Product Flow (reusable: office /report/product-flow + station /station/product-flow)
+// Requirement: คืน payload { found, ... } ล้วนๆ (ไม่มี token/res) — logic เดียว ไม่ก๊อป
+//   ★ export เพื่อให้ station (c-station-auth.stationProductFlow) เรียกใช้ — ผลตรงหน้า office เป๊ะ
+//   คืน { _status:400, message } กรณีไม่มี companyID/code · โยน error กรณี query พังหนัก (caller จับ)
+exports.buildProductFlow = async (companyID, code) => {
+  companyID = String(companyID || '').trim();
+  code = String(code || '').trim();
+  if (!companyID || !code) return { _status: 400, message: 'กรุณาป้อนรหัส' };
 
+  try {
     // ── หา primary doc ──
     //   บาร์โค้ด (มี index → เร็ว): ทำเฉพาะเมื่อ "ไม่ใช่ตัวเลขล้วน" (bundleNo ล้วน ≠ บาร์โค้ด)
     //   bundleNo ล้วน: ยังไม่มี index เฉพาะ → ใช้ findOne (หยุดที่ตัวแรก) + maxTimeMS กัน hang collscan
@@ -309,11 +319,11 @@ exports.productFlow = async (req, res, next) => {
     } catch (qe) {
       // timeout/หา primary นานเกิน (bundleNo ไม่มี index) → แจ้ง client ให้สแกน barcode เต็มแทน
       console.error('[productFlow] find primary', qe && qe.message);
-      return res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), found: false, code, slow: isNumeric });
+      return { found: false, code, slow: isNumeric };
     }
 
     if (!primary) {
-      return res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), found: false, code });
+      return { found: false, code };
     }
 
     const orderID = primary.orderID;
@@ -370,14 +380,268 @@ exports.productFlow = async (req, res, next) => {
     const firstBc = primary.productBarcodeNoReal || '';
     const style = firstBc ? String(firstBc.substr(+process.env.stylePos, +process.env.styleDigit)).trim() : orderID;
 
-    res.status(200).json({
-      success: true, token, expiresIn: Number(process.env.TOKENExpiresIn),
+    return {
       found: true, code, mode, orderID, bundleNo, style,
       nodes, bundleCount: pieces.length, selectedBarcode, pieces,
-    });
+    };
+  } catch (err) {
+    console.error('[buildProductFlow]', err);
+    throw err;   // ให้ caller (office/station wrapper) จัดการ response error
+  }
+};
+
+// ── GET /report/product-flow/:companyID/:code  (office · checkAuthA) ──
+// Requirement: หน้าต่างลอย Product Flow — ตามรอยเสื้อ ราย bundle/ชิ้น · ตัว core = buildProductFlow (reusable)
+exports.productFlow = async (req, res, next) => {
+  try {
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    const payload = await exports.buildProductFlow(req.params.companyID, req.params.code);
+    const status = payload._status || 200;
+    delete payload._status;
+    return res.status(status).json({ success: status === 200, token, expiresIn: Number(process.env.TOKENExpiresIn), ...payload });
   } catch (err) {
     console.error('[productFlow]', err);
     return res.status(501).json({ success: false, message: 'error product flow' });
+  }
+};
+
+// ═══════════════════════ รายงาน no.26 — Factory Scan (group) ═══════════════════════
+// Requirement (user 2026-07-24): "จำนวนเสื้อที่ค้างอยู่แต่ละ node ตอนนี้" ต่อ order + factory
+//   = แต่ละ node (ที่ชิ้นอยู่ตอนนี้ = productionNode ตัวสุดท้าย .toNode) แยกเป็นตาราง สี×ไซซ์ (แถว) × โซน (คอลัมน์)
+//   ★ current node = $arrayElemAt(productionNode,-1) ตรงกับ repNodeBundle (no.11) · นับ $sum:1 (1 doc=1 ชิ้น)
+//   ★ productStatus ['normal','problem','repaired'] = ยังอยู่ในไลน์ (ตัด complete=done ออก) — ตรง logic app เดิม s-rep-fac-node-station
+//   ★ เร็ว: ล็อก order เดียว (index companyID+orderID) สแกนเฉพาะชิ้นของ order นั้น — ไม่ใช่ทั้ง collection
+//   reusable: office (repFactoryScanGroup) + station (c-station-auth.stationFactoryScanGroup) — คืน payload เดียวกัน
+
+// ลำดับไซซ์สำหรับ sort (ไซซ์ที่ไม่รู้จัก = ท้ายสุด เรียง alpha)
+const SIZE_SEQ = ['XXS','XS','S','M','L','XL','XXL','2XL','3XL','4XL','5XL','E1','E2','E3','F1','F2'];
+function sizeSeqNo(s) { const i = SIZE_SEQ.indexOf(keyU(s)); return i < 0 ? 999 : i; }
+
+exports.buildFactoryScanGroup = async (companyID, factoryID, orderID) => {
+  companyID = String(companyID || '').trim();
+  factoryID = String(factoryID || '').trim();
+  orderID   = String(orderID   || '').trim();
+  if (!companyID || !factoryID || !orderID) return { _status: 400, message: 'companyID + factoryID + orderID required' };
+
+  // ── master ของ order: zones (คอลัมน์) + colorID→ชื่อ/โค้ด ──
+  const order = await Order.findOne({ companyID, orderID }, { _id: 0, orderColor: 1, orderTargetPlace: 1 }).lean();
+  const zones = []; const zSeen = new Set();
+  for (const z of (order && order.orderTargetPlace || [])) {
+    const tp = z.targetPlace || z;
+    const id = keyU(tp.targetPlaceID);
+    if (!id || zSeen.has(id)) continue;
+    zSeen.add(id);
+    zones.push({ targetPlaceID: id, targetPlaceName: (tp.targetPlaceName || id) });
+  }
+  const colorMap = new Map();
+  for (const c of (order && order.orderColor || [])) {
+    const col = c.color || c;
+    colorMap.set(keyU(col.colorID), { colorName: col.colorName || '', colorCode: col.colorCode || '', colorValue: col.colorValue || '' });
+  }
+
+  // ── ชิ้นที่ค้างอยู่แต่ละ node ตอนนี้ (current node ในโรงนี้) แยก zone/color/size ──
+  const PSTATUS = ['normal', 'problem', 'repaired'];   // ตัด complete (done) ออก
+  const rows = await OrderProduction.aggregate([
+    { $match: { companyID, orderID, productStatus: { $in: PSTATUS } } },
+    { $project: { _id: 0, lastNode: { $arrayElemAt: ["$productionNode", -1] }, ...barcodeKeyProj() } },
+    { $match: { "lastNode.factoryID": factoryID, "lastNode.toNode": { $nin: ['completeNode', 'starterNode', ''] } } },
+    { $group: { _id: { node: "$lastNode.toNode", zone: "$_zone", color: "$_color", size: "$_size" }, qty: { $sum: 1 } } },
+  ]).hint({ companyID: 1, orderID: 1, productBarcodeNoReal: 1 }).allowDiskUse(true);
+
+  // ── zone ที่โผล่ในข้อมูลแต่ order ไม่ได้นิยาม → เพิ่มคอลัมน์ท้าย (กันข้อมูลหาย) ──
+  for (const r of rows) {
+    const z = keyU(r._id.zone);
+    if (z && !zSeen.has(z)) { zSeen.add(z); zones.push({ targetPlaceID: z, targetPlaceName: z }); }
+  }
+
+  // ── จัดกลุ่ม node → (color|size) → cells[zone] ──
+  const nodeMap = new Map();
+  for (const r of rows) {
+    const node = r._id.node;
+    if (!nodeMap.has(node)) nodeMap.set(node, new Map());
+    const rm = nodeMap.get(node);
+    const color = keyU(r._id.color), size = keyU(r._id.size), zone = keyU(r._id.zone);
+    const rk = color + '|' + size;
+    if (!rm.has(rk)) rm.set(rk, { color, size, cells: {}, rowTotal: 0 });
+    const row = rm.get(rk);
+    row.cells[zone] = (row.cells[zone] || 0) + r.qty;
+    row.rowTotal += r.qty;
+  }
+
+  // ── เรียง node ตาม flow (NODE_SHORT) → nest ตาม "สี" (colorGroups) เพื่อ merge ช่องสี (rowspan) ──
+  const nodeOrderKeys = Object.keys(NODE_SHORT);
+  const nodes = [...nodeMap.keys()].sort((a, b) => {
+    const ia = nodeOrderKeys.indexOf(a), ib = nodeOrderKeys.indexOf(b);
+    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib) || String(a).localeCompare(String(b), undefined, { numeric: true });
+  }).map(node => {
+    const rm = nodeMap.get(node);
+    // group รายแถว (color|size) → รวมเป็นกลุ่มสี
+    const colorGroupMap = new Map();   // colorID → { sizes: [{size,cells,rowTotal}] }
+    for (const row of rm.values()) {
+      if (!colorGroupMap.has(row.color)) colorGroupMap.set(row.color, []);
+      colorGroupMap.get(row.color).push({ size: row.size, cells: row.cells, rowTotal: row.rowTotal });
+    }
+    const colorGroups = [...colorGroupMap.entries()].map(([colorID, sizes]) => {
+      const cm = colorMap.get(colorID) || {};
+      sizes.sort((a, b) => (sizeSeqNo(a.size) - sizeSeqNo(b.size)) || String(a.size).localeCompare(String(b.size)));
+      return {
+        colorID,
+        colorName:  cm.colorName  || '',
+        colorCode:  cm.colorCode  || '',
+        colorValue: cm.colorValue || '',
+        sizes,
+        colorTotal: sizes.reduce((s, r) => s + r.rowTotal, 0),
+      };
+    }).sort((a, b) => String(a.colorName || a.colorID).localeCompare(String(b.colorName || b.colorID)));
+
+    const zoneTotals = {}; let nodeTotal = 0;
+    for (const z of zones) zoneTotals[z.targetPlaceID] = 0;
+    for (const g of colorGroups) for (const r of g.sizes) {
+      for (const z of zones) zoneTotals[z.targetPlaceID] += (r.cells[z.targetPlaceID] || 0);
+      nodeTotal += r.rowTotal;
+    }
+    return { nodeID: node, short: NODE_SHORT[node] || node, colorGroups, zoneTotals, nodeTotal };
+  });
+
+  return { orderID, factoryID, zones, nodes };
+};
+
+// ── buildFactoryScanFlat ── เหมือน buildFactoryScanGroup แต่ "ไม่แบ่ง node" (รวมทุก node ในโรง → ตารางเดียว)
+//   Requirement (user 2026-07-24 · station report #1): ชิ้นที่ค้างในโรงนี้ทั้งหมด (ทุก node) แยก สี×ไซซ์×โซน
+//   ★ current node เดียวกัน (lastNode) · productStatus ['normal','problem','repaired'] · เร็ว (ล็อก order เดียว)
+exports.buildFactoryScanFlat = async (companyID, factoryID, orderID) => {
+  companyID = String(companyID || '').trim();
+  factoryID = String(factoryID || '').trim();
+  orderID   = String(orderID   || '').trim();
+  if (!companyID || !factoryID || !orderID) return { _status: 400, message: 'companyID + factoryID + orderID required' };
+
+  const order = await Order.findOne({ companyID, orderID }, { _id: 0, orderColor: 1, orderTargetPlace: 1 }).lean();
+  const zones = []; const zSeen = new Set();
+  for (const z of (order && order.orderTargetPlace || [])) {
+    const tp = z.targetPlace || z;
+    const id = keyU(tp.targetPlaceID);
+    if (!id || zSeen.has(id)) continue;
+    zSeen.add(id);
+    zones.push({ targetPlaceID: id, targetPlaceName: (tp.targetPlaceName || id) });
+  }
+  const colorMap = new Map();
+  for (const c of (order && order.orderColor || [])) {
+    const col = c.color || c;
+    colorMap.set(keyU(col.colorID), { colorName: col.colorName || '', colorCode: col.colorCode || '', colorValue: col.colorValue || '' });
+  }
+
+  const PSTATUS = ['normal', 'problem', 'repaired'];
+  const rows = await OrderProduction.aggregate([
+    { $match: { companyID, orderID, productStatus: { $in: PSTATUS } } },
+    { $project: { _id: 0, lastNode: { $arrayElemAt: ["$productionNode", -1] }, ...barcodeKeyProj() } },
+    { $match: { "lastNode.factoryID": factoryID, "lastNode.toNode": { $nin: ['completeNode', 'starterNode', ''] } } },
+    { $group: { _id: { zone: "$_zone", color: "$_color", size: "$_size" }, qty: { $sum: 1 } } },
+  ]).hint({ companyID: 1, orderID: 1, productBarcodeNoReal: 1 }).allowDiskUse(true);
+
+  for (const r of rows) {
+    const z = keyU(r._id.zone);
+    if (z && !zSeen.has(z)) { zSeen.add(z); zones.push({ targetPlaceID: z, targetPlaceName: z }); }
+  }
+
+  // group (color|size) → cells[zone]  (ไม่มี node)
+  const rowMap = new Map();
+  for (const r of rows) {
+    const color = keyU(r._id.color), size = keyU(r._id.size), zone = keyU(r._id.zone);
+    const rk = color + '|' + size;
+    if (!rowMap.has(rk)) rowMap.set(rk, { color, size, cells: {}, rowTotal: 0 });
+    const row = rowMap.get(rk);
+    row.cells[zone] = (row.cells[zone] || 0) + r.qty;
+    row.rowTotal += r.qty;
+  }
+
+  // nest ตามสี (merge ช่องสี rowspan)
+  const colorGroupMap = new Map();
+  for (const row of rowMap.values()) {
+    if (!colorGroupMap.has(row.color)) colorGroupMap.set(row.color, []);
+    colorGroupMap.get(row.color).push({ size: row.size, cells: row.cells, rowTotal: row.rowTotal });
+  }
+  const colorGroups = [...colorGroupMap.entries()].map(([colorID, sizes]) => {
+    const cm = colorMap.get(colorID) || {};
+    sizes.sort((a, b) => (sizeSeqNo(a.size) - sizeSeqNo(b.size)) || String(a.size).localeCompare(String(b.size)));
+    return { colorID, colorName: cm.colorName || '', colorCode: cm.colorCode || '', colorValue: cm.colorValue || '', sizes, colorTotal: sizes.reduce((s, r) => s + r.rowTotal, 0) };
+  }).sort((a, b) => String(a.colorName || a.colorID).localeCompare(String(b.colorName || b.colorID)));
+
+  const zoneTotals = {}; let grandTotal = 0;
+  for (const z of zones) zoneTotals[z.targetPlaceID] = 0;
+  for (const g of colorGroups) for (const r of g.sizes) {
+    for (const z of zones) zoneTotals[z.targetPlaceID] += (r.cells[z.targetPlaceID] || 0);
+    grandTotal += r.rowTotal;
+  }
+
+  return { orderID, factoryID, zones, colorGroups, zoneTotals, grandTotal };
+};
+
+// ── buildFactoryScanGroupDetail ── รายชิ้นที่ค้างตรง node×zone×color×size (ดับเบิลคลิก qty → ดู bundleNo/barcode)
+//   Requirement (user 2026-07-24): บางเสื้อค้างนานในระบบแต่จริงๆ ไปแล้ว → ต้องเห็น bundleNo + productBarcodeNo ไปตรวจ
+//   ★ current node เดียวกับ buildFactoryScanGroup (ผลตรงกับตัวเลขในตาราง) · เร็ว (ล็อก order เดียว)
+//   ★ paginate ทีละ 100 (page/limit) กันช้าเวลาค้างเป็นหมื่นชิ้น — $facet คืน total + page เดียว
+exports.buildFactoryScanGroupDetail = async (companyID, factoryID, orderID, node, zone, color, size, page, limit) => {
+  companyID = String(companyID || '').trim();
+  factoryID = String(factoryID || '').trim();
+  orderID   = String(orderID   || '').trim();
+  node      = String(node || '').trim();
+  if (!companyID || !factoryID || !orderID || !node) return { _status: 400, message: 'companyID + factoryID + orderID + node required' };
+
+  const lim = Math.min(500, Math.max(1, Math.floor(+limit || 100)));
+  const pg  = Math.max(1, Math.floor(+page || 1));
+  const skip = (pg - 1) * lim;
+
+  const PSTATUS = ['normal', 'problem', 'repaired'];
+  // ★ node = '*' (report แบบไม่แบ่ง node) → ชิ้นในโรงนี้ทุก node · อื่น → เฉพาะ node นั้น
+  const nodeMatch = (node === '*') ? { $nin: ['completeNode', 'starterNode', ''] } : node;
+  const out = await OrderProduction.aggregate([
+    { $match: { companyID, orderID, productStatus: { $in: PSTATUS } } },
+    { $project: { _id: 0, bundleNo: 1, productBarcodeNoReal: 1, lastNode: { $arrayElemAt: ["$productionNode", -1] }, ...barcodeKeyProj() } },
+    { $match: {
+        "lastNode.factoryID": factoryID,
+        "lastNode.toNode": nodeMatch,
+        _zone:  keyU(zone),
+        _color: keyU(color),
+        _size:  keyU(size),
+    } },
+    { $sort: { bundleNo: 1, productBarcodeNoReal: 1 } },
+    { $facet: {
+        total:  [ { $count: 'n' } ],
+        pieces: [ { $skip: skip }, { $limit: lim }, { $project: { _id: 0, bundleNo: 1, barcode: "$productBarcodeNoReal" } } ],
+    } },
+  ]).hint({ companyID: 1, orderID: 1, productBarcodeNoReal: 1 }).allowDiskUse(true);
+
+  const total = (out[0] && out[0].total[0] && out[0].total[0].n) || 0;
+  const pieces = (out[0] && out[0].pieces) || [];
+  return { node, zone: keyU(zone), color: keyU(color), size: keyU(size), page: pg, limit: lim, count: total, pieces, hasMore: skip + pieces.length < total };
+};
+
+// GET /api/a/report/factory-scan-group/detail/:companyID/:factoryID/:orderID/:node/:zone/:color/:size?page=&limit=  (office)
+exports.repFactoryScanGroupDetail = async (req, res, next) => {
+  try {
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    const p = req.params;
+    const payload = await exports.buildFactoryScanGroupDetail(p.companyID, p.factoryID, p.orderID, p.node, p.zone, p.color, p.size, req.query.page, req.query.limit);
+    const status = payload._status || 200;
+    delete payload._status;
+    return res.status(status).json({ success: status === 200, token, expiresIn: Number(process.env.TOKENExpiresIn), ...payload });
+  } catch (err) {
+    console.error('[repFactoryScanGroupDetail]', err);
+    return res.status(501).json({ success: false, message: 'error factory scan group detail' });
+  }
+};
+
+// GET /api/a/report/factory-scan-group/:companyID/:factoryID/:orderID  (office · checkAuthA)
+exports.repFactoryScanGroup = async (req, res, next) => {
+  try {
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    const payload = await exports.buildFactoryScanGroup(req.params.companyID, req.params.factoryID, req.params.orderID);
+    const status = payload._status || 200;
+    delete payload._status;
+    return res.status(status).json({ success: status === 200, token, expiresIn: Number(process.env.TOKENExpiresIn), ...payload });
+  } catch (err) {
+    console.error('[repFactoryScanGroup]', err);
+    return res.status(501).json({ success: false, message: 'error factory scan group' });
   }
 };
 
