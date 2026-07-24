@@ -776,7 +776,9 @@ exports.getEmpList = async (req, res) => {
 exports.getEmpListLK = async (req, res) => {
     try {
         const { companyID, factoryID, status, page, limit } = req.params;
-        const search = req.query.search?.trim() || '';
+        const search     = req.query.search?.trim()     || '';
+        const department = req.query.department?.trim()  || '';   // ★ filter แผนก (uInfo.department)
+        const position   = req.query.position?.trim()    || '';   // ★ filter ตำแหน่ง (uInfo.position)
 
         // base query — ใช้นับ count ทุก status
         const baseQuery = {
@@ -785,10 +787,15 @@ exports.getEmpListLK = async (req, res) => {
             'uFactory.companyID': companyID,
         };
 
+        // ★ filter แผนก/ตำแหน่ง = เงื่อนไขเชิงโครงสร้าง → มีผลทั้ง list + การ์ดนับ (active/wait/ban)
+        const filterBase = { ...baseQuery };
+        if (department) filterBase['uInfo.department'] = department;
+        if (position)   filterBase['uInfo.position']   = position;
+
         // status filter — 'all' = ไม่กรอง
         const statusQuery = (status === 'all') ? {} : { status };
 
-        const query = { ...baseQuery, ...statusQuery };
+        const query = { ...filterBase, ...statusQuery };
 
         if (search) {
             const regex = new RegExp(search, 'i');
@@ -807,9 +814,9 @@ exports.getEmpListLK = async (req, res) => {
                 .sort({ 'uInfo.userName': 1 })
                 .skip(skip).limit(parseInt(limit)).lean(),
             User.countDocuments(query),
-            User.countDocuments({ ...baseQuery, status: 'a' }),
-            User.countDocuments({ ...baseQuery, status: 'w' }),
-            User.countDocuments({ ...baseQuery, status: 'b' }),
+            User.countDocuments({ ...filterBase, status: 'a' }),   // ★ นับตาม filter แผนก/ตำแหน่ง
+            User.countDocuments({ ...filterBase, status: 'w' }),
+            User.countDocuments({ ...filterBase, status: 'b' }),
         ]);
 
         res.json({ workers, workersCount, activeCount, waitCount, banCount });

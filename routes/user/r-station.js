@@ -21,11 +21,14 @@ router.get("/product-flow/:companyID/:code", stationAuthController.stationProduc
 router.get("/orders", stationAuthController.stationOrders);   // รายการ order ทุก season active (station ไม่เลือก season)
 router.get("/scan-overview", stationAuthController.stationScanOverview);   // report #2 (ภาพรวมการสแกน) · เลือกช่วงวัน · โรงล็อกจาก token
 router.get("/prod-scan", stationAuthController.stationProdScanPeriod);   // report #4 (WIP by period) · เลือกช่วงวัน · โรงล็อกจาก token
+router.get("/outsource-state", stationAuthController.stationOutsourceState);   // outsource ส่งออก-รับกลับ ตามวัน (cache ทุก season active)
 router.get("/node-bundle/index/:orderID/:nodeID", stationAuthController.stationNodeBundleIndex);   // report #3 (Node Bundle) index · โรงล็อกจาก token
 router.get("/node-bundle/detail/:orderID/:nodeID/:zone/:color/:size", stationAuthController.stationNodeBundleDetail);   // report #3 detail (รายชิ้นในมัด)
 router.get("/factory-scan-flat/:orderID", stationAuthController.stationFactoryScanFlat);   // report #1 (ชิ้นค้างในโรง ไม่แบ่ง node)
 router.get("/factory-scan-group/detail/:orderID/:node/:zone/:color/:size", stationAuthController.stationFactoryScanGroupDetail);   // ดับเบิลคลิก qty → รายชิ้น
 router.get("/factory-scan-group/:orderID", stationAuthController.stationFactoryScanGroup);   // รายงาน no.26 (ชิ้นค้างแต่ละ node) · factory จาก token
+router.post("/scan-product", stationAuthController.stationScanProduct);   // ★ สแกน QR ดันงานไป node ถัดไป · โหมดตาม nodeInfo (single / bundle-auto / bundle-manual)
+router.post("/scan-product/commit-bundle", stationAuthController.stationScanCommitBundle);   // ★ commit ทั้งมัด (โหมด mustBundleScan=true & scan1ForAll=false)
 
 // ---- ฝั่ง admin (อนุมัติจาก badge บน topbar) ----
 router.get("/requests/:companyID", checkAuthA, checkUUID, stationAuthController.getLoginRequests);

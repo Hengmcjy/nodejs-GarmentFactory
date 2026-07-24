@@ -1495,6 +1495,57 @@ async function readOutsStateCacheMerged(companyID, seasonYear) {
   return { facs, docsFound: docs.length };
 }
 
+// ── buildOutsourceStateAllSeasons ── รวม cache no.35 ทุก season active (สำหรับ station "Report by date")
+//   คืนทุกอย่างในก้อนเดียว: [{factoryID(โรงนอก), name, dates:[{dateName, out[], receive[]}]}] เรียงวันใหม่→เก่า
+//   ★ อ่านจาก cache เดียวกับ no.35 (เลขตรง) · merge หลาย season + ต่อ dateName เดียวกัน
+exports.buildOutsourceStateAllSeasons = async (companyID, seasonArr) => {
+  const trimStr = (s) => String(s == null ? '' : s).trim();
+  const seasons = Array.isArray(seasonArr) ? seasonArr.filter(Boolean) : [seasonArr].filter(Boolean);
+  const mapEntry = (e) => ({
+    orderID: trimStr(e.orderID), zone: trimStr(e.targetPlaceID),
+    colorCode: trimStr(e.colorCode), colorName: trimStr(e.colorName) || trimStr(e.colorCode),
+    colorValue: trimStr(e.colorValue) || '', qty: +e.qty || 0,
+    fac2: trimStr(e.factoryID2), bundleCount: Array.isArray(e.bundleNos) ? e.bundleNos.length : 0,
+  });
+
+  // รวม facs ทุก season → factoryID → dateName → {out[], receive[]}
+  const facMap = new Map();
+  for (const season of seasons) {
+    const { facs } = await readOutsStateCacheMerged(companyID, season);
+    for (const f of (facs || [])) {
+      const fid = trimStr(f.factoryID);
+      if (!fid) continue;
+      if (!facMap.has(fid)) facMap.set(fid, { factoryID: fid, factoryName: f.factoryName, factoryName2: f.factoryName2, _dm: new Map() });
+      const tgt = facMap.get(fid);
+      for (const dl of (f.dateList || [])) {
+        const key = trimStr(dl.dateName);
+        if (!tgt._dm.has(key)) tgt._dm.set(key, { dateName: dl.dateName, out: [], receive: [] });
+        const nd = tgt._dm.get(key);
+        (dl.out || []).forEach(e => nd.out.push(mapEntry(e)));
+        (dl.receive || []).forEach(e => nd.receive.push(mapEntry(e)));
+      }
+    }
+  }
+
+  // ชื่อโรง (tab) จาก master
+  const facAll = await ShareFunc.getFactoryArrByCompanyID(companyID);
+  const nameMap = new Map();
+  (facAll || []).forEach(f => nameMap.set(trimStr(f.factoryID), trimStr(f.fInfo && f.fInfo.factoryName) || trimStr(f.factoryID)));
+
+  const factories = [];
+  for (const f of facMap.values()) {
+    const dates = [...f._dm.values()]
+      .map(d => ({ dateName: trimStr(d.dateName), _sv: dateNameSortVal(d.dateName), out: d.out, receive: d.receive }))
+      .filter(d => d.out.length || d.receive.length)
+      .sort((a, b) => b._sv - a._sv)
+      .map(({ _sv, ...d }) => d);
+    if (!dates.length) continue;
+    factories.push({ factoryID: f.factoryID, name: nameMap.get(f.factoryID) || trimStr(f.factoryName) || trimStr(f.factoryName2) || f.factoryID, dates });
+  }
+  factories.sort((a, b) => a.name.localeCompare(b.name));
+  return { factories };
+};
+
 // ## GET /api/a/report/outsource-state/:companyID/:seasonYear  (overview: แท็บโรงนอก)
 exports.repOutsourceStateOverview = async (req, res, next) => {
   const companyID = req.params.companyID;

@@ -16,6 +16,7 @@ const Factory = require("../../models/m-factory");
 const Gsconfig = require("../../models/m-gsconfig");   // ## APP_VERSION (configID `${factoryID}-system-APP_VERSION`) — โชว์บน station
 const Order = require("../../models/m-order");   // ## orders ตาม season active (station ไม่เลือก season)
 const NodeFlow = require("../../models/m-nodeFlow");   // ## flowSeq main → รายชื่อ node (dropdown report node-bundle)
+const OrderProduction = require("../../models/m-orderProduction");   // ## ★ Scan product — อ่าน/เขียน productionNode ระดับชิ้น
 const User = require("../../models/m-user");   // ## staff/worker เดิมอยู่ collection users (state='staff' · pass bcrypt)
 const workerScanCtrl = require("./c-worker-scan");   // ## reuse buildWorkerScanReport (cross-module helper — ไม่ก๊อป logic · ผลตรงหน้า office เป๊ะ)
 const nodeBundleCtrl = require("./c-report2-nodebundle");   // ## reuse buildProductFlow (หน้าต่างลอย Product Flow)
@@ -452,6 +453,33 @@ exports.stationScanOverview = async (req, res, next) => {
   }
 };
 
+// GET /api/a/station/outsource-state  (header: x-station-token)
+//   รายงาน outsource "ส่งออก-รับกลับ ตามวัน" (คล้าย no.35) · ★ อ่าน cache ทุก season active · เลขตรง no.35
+exports.stationOutsourceState = async (req, res, next) => {
+  try {
+    let auth;
+    try { auth = await requireStationToken(req); }
+    catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
+
+    const seaDoc = await Gsconfig.findOne({ configID: `${auth.decoded.factoryID}-system-SEASON_ACTIVE` }, { value: 1, _id: 0 }).lean();
+    const seasons = String((seaDoc && seaDoc.value) || '').split(',').map(s => s.trim()).filter(Boolean);
+
+    let payload;
+    try { payload = await report2Ctrl.buildOutsourceStateAllSeasons(auth.decoded.companyID, seasons); }
+    catch (err) {
+      console.error('stationOutsourceState build error:', String(err && err.message || err));
+      return res.status(501).json({ success: false, message: 'error outsource state' });
+    }
+    return res.status(200).json({
+      success: true, seasonsActive: seasons, ...payload,
+      ...genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid),
+    });
+  } catch (err) {
+    console.error('stationOutsourceState error:', String(err && err.message || err));
+    return res.status(500).json({ success: false, message: String(err && err.message || err) });
+  }
+};
+
 // GET /api/a/station/prod-scan?dateStart=&dateEnd=  (header: x-station-token)
 //   รายงาน station #4 — เหมือน no.22 (Factory Scan · WIP by period) เลือกช่วงวัน · ★ ล็อกโรงจาก token · ทุก season active
 exports.stationProdScanPeriod = async (req, res, next) => {
@@ -720,4 +748,237 @@ exports.rejectLoginRequest = async (req, res, next) => {
     const requests = await listPendingRequests(companyID);
     return res.json({ success: true, requests, ...(await tokenRefresh(req)) });
   } catch (err) { return next(err); }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ★ Scan product (หน้าจอสแกนใหม่ — แทน s-work-station เดิม)
+//   worker สแกน QR (= productBarcodeNoReal) → server หาชิ้น → ตรวจ "ชิ้นนี้อยู่ node ที่ login จริงมั้ย"
+//     เงื่อนไขผ่าน (ตามที่ผู้ใช้กำหนด): productionNode[ตัวสุดท้าย].toNode === node ที่ login (decoded.nodeID)
+//   3 โหมด (จาก nodeInfo ของ station — อ่าน server-side จาก auth.ns.nodeInfo):
+//     (A) mustBundleScan=false            → สแกนทีละชิ้น ผ่านทันที (1-by-1)
+//     (B) mustBundleScan=true  scan1ForAll=true  → สแกน 1 QR = ดันทั้งมัดที่อยู่ node นี้ auto (ไม่ต้องสแกนทุกดวง)
+//     (C) mustBundleScan=true  scan1ForAll=false → สแกนทุกดวง · client สะสมจนครบมัด (bundleCount) แล้วค่อย commit ทั้งมัด
+//   ผ่าน → push productionNode ใหม่ (fromNode = node นี้ → toNode = node ถัดไปใน flowSeq main)
+//     · node สุดท้าย (QC) → toNode 'completeNode' + productStatus 'complete' (ตรงกับ setQcComplete)
+//   ★ company/factory/node ล็อกจาก token · รับเฉพาะชิ้นที่อยู่ node นี้จริง · createBy = staff ที่เข้ากะ
+// ═══════════════════════════════════════════════════════════════════════════
+
+// helper: หา node ถัดไปใน flowSeq main (เรียงตาม seqNo) · node สุดท้าย → 'completeNode' · หา node ไม่เจอ → null
+async function findNextMainNode(companyID, nodeID) {
+  const flow = await NodeFlow.findOne({ companyID, flowType: 'main' }).lean();
+  if (!flow || !Array.isArray(flow.flowSeq) || !flow.flowSeq.length) return null;
+  const seq = flow.flowSeq.slice()
+    .sort((a, b) => String(a.seqNo).localeCompare(String(b.seqNo), undefined, { numeric: true }))
+    .map(s => s.nodeID).filter(Boolean);
+  const idx = seq.indexOf(nodeID);
+  if (idx === -1) return null;                       // node นี้ไม่อยู่ใน flow → ไม่รู้ปลายทาง
+  if (idx + 1 < seq.length) return seq[idx + 1];     // node ถัดไป
+  return 'completeNode';                             // node สุดท้าย → complete
+}
+
+// helper: decode ค่าจาก productBarcodeNoReal ตามตำแหน่งใน .env (เหมือน barcodeKeyProj/productFlow) · rtrim '-'
+const sub = (s, pos, dig) => String(s || '').substr(+pos, +dig);
+const rt  = (v) => String(v == null ? '' : v).replace(/-+$/, '').trim();
+
+// helper: ประกอบ object ข้อมูลชิ้น (ไว้แสดงบนการ์ด) จาก doc OrderProduction
+function pieceInfo(piece, code) {
+  if (!piece) return { orderID: '', style: '', bundleNo: null, runningNo: '', colorCode: '', colorName: '', colorValue: '', sizeCode: '', sizeName: '', countryID: '', productCount: null, barcode: code };
+  const bc = piece.productBarcodeNoReal;
+  return {
+    orderID:    piece.orderID || '',
+    style:      rt(sub(bc, process.env.stylePos, process.env.styleDigit)) || piece.orderID || '',
+    bundleNo:   piece.bundleNo != null ? piece.bundleNo : null,
+    runningNo:  rt(sub(bc, process.env.runningNoPos, process.env.runningNoDigit)),
+    colorCode:  piece.colorCode || rt(sub(bc, process.env.colorPos, process.env.colorDigit)),
+    colorName:  piece.colorName || '',
+    colorValue: piece.colorValue || '',
+    sizeCode:   piece.sizeCode || rt(sub(bc, process.env.sizePos, process.env.sizeDigit)),
+    sizeName:   piece.sizeName || '',
+    countryID:  piece.countryID || piece.targetPlaceID || rt(sub(bc, process.env.targetIDPos, process.env.targetIDDigit)),
+    productCount: piece.productCount != null ? piece.productCount : null,
+    barcode:    bc || code,
+  };
+}
+
+// helper: หาชิ้นจากบาร์โค้ด (index companyID+orderID+productBarcodeNoReal · orderID = 12 ตัวแรก) + fallback productBarcodeNo
+async function findPieceByCode(companyID, code) {
+  const styleID = code.slice(0, 12).trim();
+  let piece = await OrderProduction.findOne({ companyID, orderID: styleID, productBarcodeNoReal: code })
+    .hint({ companyID: 1, orderID: 1, productBarcodeNoReal: 1 }).maxTimeMS(15000).lean();
+  if (!piece) {
+    // fallback: เทียบ productBarcodeNo (บาง QR เก่า) — ใช้ index เดิม (prefix companyID+orderID ครอบ query ได้ · productBarcodeNo กรองเป็น residual)
+    //   ★ ห้าม hint index ที่ไม่มีจริง (companyID_1_orderID_1_bundleNo_1 ไม่มี → planner error) — ใช้ตัวที่ยืนยันมี
+    piece = await OrderProduction.findOne({ companyID, orderID: styleID, productBarcodeNo: code })
+      .hint({ companyID: 1, orderID: 1, productBarcodeNoReal: 1 }).maxTimeMS(15000).lean();
+  }
+  return piece;
+}
+
+// helper: สร้าง productionNode object (โครงเดียวกับ scan จริง/setQcComplete)
+function mkNode(factoryID, fromNode, toNode, staffUserID, staffUserName) {
+  return {
+    factoryID, fromNode, toNode, datetime: new Date(),
+    status: 'normal', info: '', sTypeOtus: '', problemID: '', problemName: '',
+    isTracking: false, isOutsource: false, outsourceData: [],
+    createBy: { userID: staffUserID, userName: staffUserName },
+  };
+}
+
+// POST /api/a/station/scan-product  (header: x-station-token)
+//   body: { code, staffUserID, staffUserName }
+exports.stationScanProduct = async (req, res, next) => {
+  try {
+    let auth;
+    try { auth = await requireStationToken(req); }
+    catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
+
+    const tok = () => genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid);
+    const { companyID, factoryID, nodeID } = auth.decoded;
+    const ni = (auth.ns && auth.ns.nodeInfo) || {};
+    const mustBundleScan = !!ni.mustBundleScan;
+    const scan1ForAll    = !!ni.scan1ForAll;
+    const mode = !mustBundleScan ? 'single' : (scan1ForAll ? 'bundle-auto' : 'bundle-manual');
+
+    const code = String((req.body && req.body.code) || '').trim();   // ★ ตัดหัว-ท้ายพอ (มี space padding ภายใน)
+    const staffUserID   = String((req.body && req.body.staffUserID) || '').trim();
+    const staffUserName = String((req.body && req.body.staffUserName) || '').trim();
+    if (!code) return res.status(400).json({ success: false, message: 'no code', ...tok() });
+
+    let piece = null;
+    try { piece = await findPieceByCode(companyID, code); }
+    catch (qe) {
+      console.error('[stationScanProduct] find piece', qe && qe.message);
+      return res.status(200).json({ success: true, ok: false, reason: 'slow', mode, code, ...tok() });
+    }
+
+    const info = pieceInfo(piece, code);
+
+    // (1) หาไม่เจอ
+    if (!piece) return res.status(200).json({ success: true, ok: false, reason: 'notfound', mode, code, info, ...tok() });
+
+    // (2) ชิ้นมีปัญหา (รับเฉพาะ normal/repaired เหมือน app เดิม)
+    const pStatus = String(piece.productStatus || '');
+    if (pStatus !== 'normal' && pStatus !== 'repaired') {
+      return res.status(200).json({ success: true, ok: false, reason: 'problem', mode, code, productStatus: pStatus, info, ...tok() });
+    }
+
+    // (3) gate: node ปัจจุบันของชิ้น (productionNode ตัวสุดท้าย .toNode) ต้องเท่ากับ node ที่ login
+    const pn = Array.isArray(piece.productionNode) ? piece.productionNode : [];
+    const last = pn.length ? pn[pn.length - 1] : null;
+    const currentNode = (last && last.toNode) || '';
+    if (currentNode !== nodeID) {
+      return res.status(200).json({
+        success: true, ok: false, reason: 'wrongnode', mode, code,
+        currentNode, currentFactory: (last && last.factoryID) || '', loginNode: nodeID, info, ...tok(),
+      });
+    }
+
+    // ── หา node ถัดไป ──
+    const toNode = await findNextMainNode(companyID, nodeID);
+    if (!toNode) return res.status(200).json({ success: true, ok: false, reason: 'noflow', mode, code, loginNode: nodeID, info, ...tok() });
+    const setComplete = toNode === 'completeNode';
+
+    // ── (C) mustBundleScan=true & scan1ForAll=false → ยังไม่ย้าย · แค่ผ่าน gate ให้ client สะสมจนครบมัด ──
+    if (mode === 'bundle-manual') {
+      return res.status(200).json({
+        success: true, ok: true, mode, staged: true, code,
+        orderID: piece.orderID, bundleNo: piece.bundleNo, bundleCount: piece.productCount,
+        toNode, complete: setComplete, info, ...tok(),
+      });
+    }
+
+    // ── (B) mustBundleScan=true & scan1ForAll=true → ดันทั้งมัดที่อยู่ node นี้ ทันที ──
+    if (mode === 'bundle-auto') {
+      // หาบาร์โค้ดทุกชิ้นในมัด (orderID+bundleNo) ที่ "อยู่ node นี้ตอนนี้" (lastNode.toNode===nodeID) + normal/repaired
+      const rows = await OrderProduction.aggregate([
+        { $match: { companyID, orderID: piece.orderID, bundleNo: piece.bundleNo, productStatus: { $in: ['normal', 'repaired'] } } },
+        { $project: { _id: 0, productBarcodeNoReal: 1, lastNode: { $arrayElemAt: ['$productionNode', -1] } } },
+        { $match: { 'lastNode.toNode': nodeID } },
+      ]).allowDiskUse(true);
+      const barcodes = rows.map(r => r.productBarcodeNoReal).filter(Boolean);
+      if (!barcodes.length) {
+        return res.status(200).json({ success: true, ok: false, reason: 'wrongnode', mode, code, currentNode, loginNode: nodeID, info, ...tok() });
+      }
+      const node = mkNode(factoryID, nodeID, toNode, staffUserID, staffUserName);
+      const upd = setComplete ? { $push: { productionNode: node }, $set: { productStatus: 'complete' } } : { $push: { productionNode: node } };
+      const r = await OrderProduction.updateMany({ companyID, orderID: piece.orderID, productBarcodeNoReal: { $in: barcodes } }, upd);
+      const moved = (r.modifiedCount != null ? r.modifiedCount : (r.nModified || 0));
+      return res.status(200).json({
+        success: true, ok: true, mode, moved, code,
+        orderID: piece.orderID, bundleNo: piece.bundleNo, bundleCount: piece.productCount,
+        fromNode: nodeID, toNode, complete: setComplete, info, ...tok(),
+      });
+    }
+
+    // ── (A) mustBundleScan=false → ย้ายชิ้นนี้ชิ้นเดียว ทันที ──
+    const node = mkNode(factoryID, nodeID, toNode, staffUserID, staffUserName);
+    const upd = setComplete ? { $push: { productionNode: node }, $set: { productStatus: 'complete' } } : { $push: { productionNode: node } };
+    try {
+      await OrderProduction.updateOne({ companyID, orderID: piece.orderID, productBarcodeNoReal: piece.productBarcodeNoReal }, upd);
+    } catch (we) {
+      console.error('[stationScanProduct] write', we && we.message);
+      return res.status(200).json({ success: true, ok: false, reason: 'writefail', mode, code, info, ...tok() });
+    }
+    return res.status(200).json({
+      success: true, ok: true, mode, moved: 1, code,
+      fromNode: nodeID, toNode, complete: setComplete, info, ...tok(),
+    });
+  } catch (err) {
+    console.error('stationScanProduct error:', String(err && err.message || err));
+    return res.status(500).json({ success: false, message: String(err && err.message || err) });
+  }
+};
+
+// POST /api/a/station/scan-product/commit-bundle  (header: x-station-token)
+//   โหมด (C) mustBundleScan=true & scan1ForAll=false — client สะสมครบมัดแล้วส่ง barcodes ทั้งมัดมา commit
+//   body: { orderID, bundleNo, barcodes:[productBarcodeNoReal...], staffUserID, staffUserName }
+//   ★ ย้ายเฉพาะชิ้นที่ "อยู่ node นี้จริงตอนนี้" (กันย้ายชิ้นที่เลยไป node อื่นแล้ว)
+exports.stationScanCommitBundle = async (req, res, next) => {
+  try {
+    let auth;
+    try { auth = await requireStationToken(req); }
+    catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
+
+    const tok = () => genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid);
+    const { companyID, factoryID, nodeID } = auth.decoded;
+
+    const b = req.body || {};
+    const orderID = String(b.orderID || '').trim();
+    const bundleNo = b.bundleNo;
+    const staffUserID   = String(b.staffUserID || '').trim();
+    const staffUserName = String(b.staffUserName || '').trim();
+    const barcodes = Array.isArray(b.barcodes) ? b.barcodes.map(x => String(x).trim()).filter(Boolean) : [];
+    if (!orderID || !barcodes.length) {
+      return res.status(400).json({ success: false, message: 'orderID + barcodes required', ...tok() });
+    }
+
+    const toNode = await findNextMainNode(companyID, nodeID);
+    if (!toNode) return res.status(200).json({ success: true, ok: false, reason: 'noflow', loginNode: nodeID, ...tok() });
+    const setComplete = toNode === 'completeNode';
+
+    // รับเฉพาะชิ้นที่อยู่ node นี้จริง (lastNode.toNode===nodeID) + normal/repaired
+    const rows = await OrderProduction.aggregate([
+      { $match: { companyID, orderID, productBarcodeNoReal: { $in: barcodes }, productStatus: { $in: ['normal', 'repaired'] } } },
+      { $project: { _id: 0, productBarcodeNoReal: 1, lastNode: { $arrayElemAt: ['$productionNode', -1] } } },
+      { $match: { 'lastNode.toNode': nodeID } },
+    ]).allowDiskUse(true);
+    const eligible = rows.map(r => r.productBarcodeNoReal).filter(Boolean);
+    const skipped  = barcodes.filter(bc => !eligible.includes(bc));
+    if (!eligible.length) {
+      return res.status(200).json({ success: true, ok: false, reason: 'wrongnode', moved: 0, eligible: [], skipped, toNode, ...tok() });
+    }
+
+    const node = mkNode(factoryID, nodeID, toNode, staffUserID, staffUserName);
+    const upd = setComplete ? { $push: { productionNode: node }, $set: { productStatus: 'complete' } } : { $push: { productionNode: node } };
+    const r = await OrderProduction.updateMany({ companyID, orderID, productBarcodeNoReal: { $in: eligible } }, upd);
+    const moved = (r.modifiedCount != null ? r.modifiedCount : (r.nModified || 0));
+
+    return res.status(200).json({
+      success: true, ok: true, moved, eligible, skipped,
+      orderID, bundleNo, fromNode: nodeID, toNode, complete: setComplete, ...tok(),
+    });
+  } catch (err) {
+    console.error('stationScanCommitBundle error:', String(err && err.message || err));
+    return res.status(500).json({ success: false, message: String(err && err.message || err) });
+  }
 };

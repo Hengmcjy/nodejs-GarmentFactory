@@ -1564,7 +1564,7 @@ table.sum td.c { text-align:center; }
     <tr><th rowspan="2">Bundle (Running)</th><th rowspan="2">Bundle NO</th><th rowspan="2">Size</th><th rowspan="2">Qty</th>
       <th colspan="2">Staff</th><th colspan="2">Knitting Start</th><th rowspan="2">Yarn Received (Kgs)</th>
       <th colspan="2">Knitting Finish</th><th rowspan="2">Consumption (Kgs)</th><th rowspan="2">Balance Yarn (Kgs)</th></tr>
-    <tr><th>NO</th><th>Name</th><th>Date</th><th>Time</th><th>Date</th><th>Time</th></tr>
+    <tr><th>NO-1</th><th>NO-2</th><th>Date</th><th>Time</th><th>Date</th><th>Time</th></tr>
   </thead><tbody>${rowsHtml}</tbody></table>
   <table class="sum"><thead><tr><th>Size</th><th>Qty</th><th>forLoss</th></tr></thead><tbody>${sumRows}</tbody></table>
 </body></html>`;
