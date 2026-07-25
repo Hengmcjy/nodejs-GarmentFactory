@@ -29,6 +29,30 @@ router.get("/factory-scan-group/detail/:orderID/:node/:zone/:color/:size", stati
 router.get("/factory-scan-group/:orderID", stationAuthController.stationFactoryScanGroup);   // รายงาน no.26 (ชิ้นค้างแต่ละ node) · factory จาก token
 router.post("/scan-product", stationAuthController.stationScanProduct);   // ★ สแกน QR ดันงานไป node ถัดไป · โหมดตาม nodeInfo (single / bundle-auto / bundle-manual)
 router.post("/scan-product/commit-bundle", stationAuthController.stationScanCommitBundle);   // ★ commit ทั้งมัด (โหมด mustBundleScan=true & scan1ForAll=false)
+// ── Scan sub node (บันทึกผลงาน worker-เหมา) ──
+router.get("/subnode/worker/:qr", stationAuthController.stationSubnodeWorker);        // หา worker(เหมา) จาก qrCode
+router.post("/subnode/resolve", stationAuthController.stationSubnodeResolve);         // job card scan → pieces + subnode cfg + info
+router.post("/subnode/save", stationAuthController.stationSubnodeSave);               // เขียน subNodeFlow ทุกชิ้น (กันซ้ำ)
+router.get("/subnode/scanned", stationAuthController.stationSubnodeScanned);          // edit workload: ใครสแกน subnode ไหนของมัด
+router.post("/subnode/remove", stationAuthController.stationSubnodeRemove);           // ลบผลงาน subnode
+router.post("/subnode/matrix", stationAuthController.stationSubnodeMatrix);           // viewer: ผลงาน subnode ทั้งมัด (ชิ้น × subnode → ใครทำ)
+// ── Send to outsource (ส่งงานออกโรงรับจ้างช่วง) ──
+router.get("/outsource/factories", stationAuthController.stationOutsourceFactories);      // ข้อ 1: เลือกโรง outsource (fInfo.isOutsource)
+router.get("/outsource/nodes", stationAuthController.stationOutsourceNodes);              // ข้อ 2: เลือก node ที่งานอยู่ (+ โหมดสแกนของ node นั้น)
+router.post("/outsource/scan", stationAuthController.stationOutsourceScan);               // ข้อ 3: สแกนส่งออก (gate: lastNode.toNode === node ที่เลือก)
+router.post("/outsource/commit-bundle", stationAuthController.stationOutsourceCommitBundle); // linking: ครบมัดแล้วส่งออกทั้งมัด
+// ── Cancel send-out (ยกเลิกการส่งออก — เลือกโรงเดิม + node เดิม แล้วสแกน) ──
+router.post("/outsource/cancel", stationAuthController.stationOutsourceCancel);                     // สแกนยกเลิกส่งออก (gate: marker outsource โรงที่เลือก + node ก่อน marker = node ที่เลือก)
+router.post("/outsource/cancel/commit-bundle", stationAuthController.stationOutsourceCancelCommitBundle); // linking/mending: ครบมัดแล้วยกเลิกทั้งมัด
+// ── Receive outsource (รับงานกลับจากโรงรับจ้างช่วง) ──
+router.post("/outsource/receive/scan", stationAuthController.stationOutsourceReceiveScan);                 // สแกนรับเข้า (gate: marker outsource + node ก่อน marker = node แรกที่เลือก)
+router.post("/outsource/receive/commit-bundle", stationAuthController.stationOutsourceReceiveCommitBundle); // linking/mending: ครบมัดแล้วรับเข้าทั้งมัด
+router.post("/outsource/receive/cancel", stationAuthController.stationOutsourceReceiveCancel);             // cancel receive: ตัด element ที่รับเข้าออก กลับไปอยู่ outsource
+// ── ★ Scan Checking (ตรวจงานที่รับคืนจาก outsource) — เปิด/ปิดจาก config ระดับโรงงาน station-STATION_CHECK_ENABLE ──
+router.get("/check/worklist", stationAuthController.stationCheckWorklist);            // คิวมัดที่รอตรวจของ node ที่ login
+router.post("/check/scan", stationAuthController.stationCheckScan);                   // สแกนตรวจ (gate: checkPending[0] === node ที่ login)
+router.post("/check/commit-bundle", stationAuthController.stationCheckCommitBundle);  // bundle-manual: สแกนครบมัดแล้ว commit
+router.get("/check/report", stationAuthController.stationCheckReport);                // รายงาน "เหลือกี่ตัวที่ยังไม่ checking" ทั้งโรง
 
 // ---- ฝั่ง admin (อนุมัติจาก badge บน topbar) ----
 router.get("/requests/:companyID", checkAuthA, checkUUID, stationAuthController.getLoginRequests);

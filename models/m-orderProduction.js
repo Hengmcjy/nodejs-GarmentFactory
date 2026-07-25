@@ -52,7 +52,26 @@ const orderProductionSchema = mongoose.Schema({
     fromFactoryID : {type: String},
     datetime : {type: Date},
   }],
-  subNodeFlow: [{   // ## 
+  // ## [เพิ่มใหม่ · Scan Checking] ตรวจงานที่รับคืนจาก outsource (user 2026-07-25)
+  //    เปิด/ปิดด้วย config ระดับโรงงาน: station-STATION_CHECK_ENABLE / STATION_CHECK_NODES
+  //    ตอนรับคืน (outsource receive) ระบบจะ $set checkPending = node ที่ outsource ทำมา ∩ node ที่ต้องตรวจ (เรียงตาม flow)
+  //    เสื้อที่ checkPending ยังไม่ว่าง = สแกนผ่าน node ถัดไปไม่ได้ · สแกนตรวจทีละ node ตามลำดับ → shift ออกทีละตัว
+  //    โรงที่ไม่เปิด config = ไม่มีการเขียน field พวกนี้เลย (พฤติกรรมเดิมเป๊ะ)
+  checkPending: [{type: String}],   // ## คิว nodeID ที่ยังไม่ได้ตรวจ (เรียงตามลำดับ flow) · ว่าง = ตรวจครบ/ไม่ต้องตรวจ
+  checkFactoryID: {type: String},   // ## โรงงานที่รับคืนและเป็นเจ้าของคิวตรวจนี้ (ใช้ scope worklist ไม่ให้ข้ามโรง)
+  checkNode: [{   // ## ประวัติการตรวจที่ทำไปแล้ว
+    factoryID : {type: String},     // โรงที่ตรวจ
+    nodeID : {type: String},        // node ที่ตรวจ เช่น 2.PANAL-INSPECTION
+    outFactoryID : {type: String},  // outsource ที่ทำงาน node นี้มา
+    datetime : {type: Date},
+    sTypeOtus : {type: String},     // b = bundle , 1 = 1by1
+    info : {type: String},
+    createBy: {
+      userID: {type: String},
+      userName: {type: String},
+    },
+  }],
+  subNodeFlow: [{   // ##
     factoryID: { type: String},
     nodeID : {type: String},
     subNodeID : {type: String},

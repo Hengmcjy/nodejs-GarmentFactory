@@ -4,6 +4,8 @@ const express = require("express");
 
 const report2Controller = require("../../controllers/user/c-report2");
 const nodeBundleController = require("../../controllers/user/c-report2-nodebundle");
+// ## ★ รายงาน Checking (office) — เหลือกี่ตัวที่ยังไม่ได้ตรวจหลังรับคืนจาก outsource
+const checkingController = require("../../controllers/user/c-report2-checking");
 
 const checkAuthA = require('../../middleware/check-authA');
 const checkUUID = require('../../middleware/check-uuid');
@@ -95,5 +97,14 @@ router.get("/outsource-state/bundles/:companyID/:seasonYear/:factoryID", checkAu
 router.get("/outsource-state/detail/:companyID/:seasonYear/:factoryID", checkAuthA, checkUUID, report2Controller.repOutsourceStateDetail);
 // ## GET /api/a/report/outsource-state/:companyID/:seasonYear
 router.get("/outsource-state/:companyID/:seasonYear", checkAuthA, checkUUID, report2Controller.repOutsourceStateOverview);
+
+// ## ★ รายงาน Checking (office · เข้าจากการ์ดในเมนู Order) — 3 ชั้น: orders → index → detail
+// ##    ฟีเจอร์นี้เปิด/ปิดที่ config ระดับโรงงาน (`${factoryID}-station-STATION_CHECK_ENABLE`)
+// ## detail + index ต้องมาก่อน route generic /checking/orders/... (path ต่างกันอยู่แล้ว แต่เรียงให้ชัด)
+router.get("/checking/detail/:companyID/:orderID/:factoryID/:node/:color/:size/:bundleNo", checkAuthA, checkUUID, checkingController.repCheckingDetail);
+// ## GET /api/a/report/checking/index/:companyID/:orderID/:factoryID  (factoryID='*' = ทุกโรง)
+router.get("/checking/index/:companyID/:orderID/:factoryID", checkAuthA, checkUUID, checkingController.repCheckingIndex);
+// ## GET /api/a/report/checking/orders/:companyID/:seasonYear
+router.get("/checking/orders/:companyID/:seasonYear", checkAuthA, checkUUID, checkingController.repCheckingOrders);
 
 module.exports = router;

@@ -66,6 +66,13 @@ const DEFAULT_CONFIGS = [
     { module: 'system', key: 'MONITOR_ONLINE_MINUTES', value: '3', label: 'Monitor: ถือว่าออนไลน์กี่นาที', dataType: 'number', levelHint: '', description: 'หน้า Admin > Monitor: ถ้าไม่มี activity เกินกี่นาที ให้เปลี่ยนจาก "ออนไลน์" เป็น "ไม่ใช้งาน" (default 3 นาที) — เพิ่มค่าถ้าอยากให้ค้างสถานะออนไลน์นานขึ้น' },
     { module: 'system', key: 'SESSION_TAKEOVER_MINUTES', value: '5', label: 'ป้องกัน login ซ้อน: เงียบกี่นาทีให้เข้าแทนได้เลย', dataType: 'number', levelHint: '', description: 'ถ้ามีคน login user นี้อยู่ที่เครื่องอื่น จะเข้าไม่ได้ (ต้องกด "เข้าใช้แทน") · แต่ถ้าเครื่องเก่าเงียบเกินค่านี้ ถือว่าหลุดแล้ว เข้าใหม่ได้เลยไม่ต้องกด (default 5 นาที · กันล็อกตัวเอง)' },
     { module: 'system', key: 'APP_VERSION', value: '1', label: 'เวอร์ชันแอป (เปลี่ยนเพื่อบังคับ reload)', dataType: 'string', levelHint: '', description: 'ทุกครั้งที่ deploy Angular ใหม่ ให้เปลี่ยนค่านี้ (ใส่เลข/วันที่อะไรก็ได้ ขอแค่ไม่ซ้ำเดิม เช่น 2 หรือ 2026-07-12) → เครื่องที่เปิดแอปค้างอยู่จะเด้งเตือน + reload เอาเวอร์ชันใหม่ ภายใน ~2 นาที · ★ แก้ที่โรงงานเดียวพอ ระบบกระจายให้ทุกโรงงานอัตโนมัติ (ค่าเดียวทั้งแอป)' },
+
+    // ── Scan Station (ฟีเจอร์เสริมบนเครื่องสแกน — เปิด/ปิดแยกรายโรงงาน) ────────────────
+    //   Requirement (user 2026-07-25): 3 โรงในเครือ ขั้นตอนรับคืนจาก outsource ไม่เหมือนกัน
+    //     บางโรงต้อง "ตรวจ (Checking)" เสื้อที่รับคืนก่อน ถึงจะสแกนผ่าน node ถัดไปได้ — บางโรงไม่ต้อง
+    //   ★ config ระดับโรงงาน: โรงไหนไม่เปิด = ทุกอย่างเหมือนเดิมเป๊ะ (ปุ่มไม่โผล่ · ไม่มีคิวตรวจ · ไม่มี gate)
+    { module: 'station', key: 'STATION_CHECK_ENABLE', value: 'off', options: 'off,on', label: 'เปิดใช้ Scan Checking (ตรวจงานที่รับคืนจาก outsource)', dataType: 'select', levelHint: '', description: 'on = โรงงานนี้ต้องสแกนตรวจเสื้อที่รับคืนจาก outsource ก่อน ถึงจะสแกนผ่าน node ถัดไปได้ · off = ปิดสนิท (ปุ่ม Scan Checking ไม่โผล่บนเครื่องสแกน · ไม่มีคิวตรวจเกิดขึ้น) — ค่าเริ่มต้น off' },
+    { module: 'station', key: 'STATION_CHECK_NODES', value: '2.PANAL-INSPECTION,3.LINKING,4.MENDING', label: 'Node ที่ต้องตรวจ (Scan Checking)', dataType: 'string', levelHint: '', description: 'nodeID ที่ต้องตรวจหลังรับคืนจาก outsource คั่นด้วย comma · ระบบจะสร้างคิวตรวจเฉพาะ node ที่ outsource ทำมา ∩ รายชื่อนี้ แล้วบังคับตรวจเรียงตามลำดับ flow เช่น 2.PANAL-INSPECTION,3.LINKING,4.MENDING (ไม่ใส่ 1.COMPUTER-KNITTING เพราะไม่ต้องตรวจ) · ★ มีผลเมื่อ STATION_CHECK_ENABLE = on เท่านั้น' },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
