@@ -840,7 +840,14 @@ exports.qrPrintData = async (req, res, next) => {
     });
 
     // ── factory filter (โรงที่ล็อกงาน) ทำใน JS (ชุดเล็ก) ──
-    if (factoryID !== '*') records = records.filter(r => r.firstFac === factoryID);
+    //   ★ fallback: ถ้ากรองตามโรงแล้วเหลือ 0 ทั้งที่มีป้ายจริงในออเดอร์ (เช่น มัดถูกล็อกที่โหนดถักของอีกโรง
+    //   แต่ตัวมัดอยู่ในมือ worker โรงนี้แล้ว) → ใช้ชุดไม่กรอง ไม่บล็อกการพิมพ์ (bundleNo เจาะจงพออยู่แล้ว)
+    let crossFactory = false;
+    if (factoryID !== '*') {
+      const filtered = records.filter(r => r.firstFac === factoryID);
+      if (filtered.length) records = filtered;
+      else if (records.length) crossFactory = true;   // คงชุดเต็มไว้ + ติดธงบอกหน้าเว็บ
+    }
 
     // sort by bundleNo → runNo
     records.sort((a, c) => (a.bundleNo - c.bundleNo) || (a.runNo > c.runNo ? 1 : a.runNo < c.runNo ? -1 : 0));
@@ -860,7 +867,7 @@ exports.qrPrintData = async (req, res, next) => {
       success: true, token, expiresIn: Number(process.env.TOKENExpiresIn),
       count: records.length, records,
       yarnLots: [...yarnSet], warnMultiYarn: bulkYarns.size > 1,
-      notFoundRunNos,
+      notFoundRunNos, crossFactory,
     });
   } catch (err) {
     console.error('[qrPrintData]', err);
