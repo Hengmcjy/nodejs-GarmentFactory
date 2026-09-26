@@ -42,6 +42,7 @@ const masterRoutes = require("./routes/user/r-master");   // ## Master Data (cle
 const order2Routes = require("./routes/user/r-order2");   // ## Order ใหม่ ชี้ collection เดิม — ไม่แตะ r-order.js เก่า
 const report2Routes = require("./routes/user/r-report2");   // ## Report ใหม่ (c-report2.js) — ชี้ cache เดิม ไม่แตะ r-report.js/c-report.js เก่า
 const stationRoutes = require("./routes/user/r-station");   // ## Station Scan Login ใหม่ (c-station-auth.js) · 2026-07-23
+const yarn2Routes = require("./routes/user/r-yarn2");   // ## Yarn ใหม่ (c-yarn2.js) ชี้ collection เดิม — /api/yarn เก่ายังทำงานปกติ · 2026-08-28
 // ── [AI] จบส่วนเพิ่ม ──
 
 
@@ -156,6 +157,7 @@ app.use("/api/a/master", masterRoutes);   // ## Master Data (company/factory/...
 app.use("/api/a/order", order2Routes);    // ## Order ใหม่ (c-order2.js) — /api/order เก่ายังทำงานปกติ
 app.use("/api/a/report", report2Routes);  // ## Report ใหม่ (c-report2.js) — /api/rep เก่ายังทำงานปกติ
 app.use("/api/a/station", stationRoutes); // ## Station Scan Login (หน้า /scanstation) — /api/ns เก่ายังทำงานปกติ
+app.use("/api/a/yarn", yarn2Routes);   // ## Yarn ใหม่ (c-yarn2.js) — /api/yarn เก่ายังทำงานปกติ
 // ── [AI] จบส่วนเพิ่ม ──
 app.use('/api/a/hr', hrRoutes);
 app.use('/api/a/gsconfig', gsconfigRoutes);

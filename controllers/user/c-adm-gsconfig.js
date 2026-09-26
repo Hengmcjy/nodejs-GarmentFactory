@@ -8,6 +8,7 @@
 
 const Gsconfig = require('../../models/m-gsconfig');
 const factoryAuth = require('../../middleware/check-authFactory');   // เช็คสิทธิ์โรงงาน route แบบ B
+const chartSync = require('./acc-chart-scope');   // ★ ACC_CHART_FACTORY (sync ผังบัญชีระหว่างโรงงาน)
 
 // ── Default configs ที่ระบบต้องการ ───────────────────────────────────────────
 // seed ครั้งแรก หรือเมื่อ factory ใหม่ยังไม่มี config
@@ -26,6 +27,7 @@ const DEFAULT_CONFIGS = [
     { module: 'accounting', key: 'WAGE_OT_RATE',           value: '1',        label: 'ตัวคูณ OT',                     dataType: 'number', levelHint: '',        description: 'ตัวคูณเงิน OT: 1 = เท่าชั่วโมงปกติ, 1.5 = OT 1.5 เท่า' },
     { module: 'accounting', key: 'WP_INCOME_PARENT_CODE',  value: '5901',   label: 'หมวดบัญชีรายรับค่าแรง',   dataType: 'string', levelHint: 'Level 2', description: 'รหัส Level 2 ของหมวดรายรับ เช่น 5901' },
     { module: 'accounting', key: 'WP_DEDUCT_PARENT_CODE',  value: '5902',   label: 'หมวดบัญชีรายหักค่าแรง',   dataType: 'string', levelHint: 'Level 2', description: 'รหัส Level 2 ของหมวดรายหัก เช่น 5902' },
+    { module: 'accounting', key: 'ACC_CHART_FACTORY', value: 'NONE', label: 'Sync ผังบัญชีกับโรงงาน', dataType: 'select', options: 'NONE', levelHint: '', description: 'เลือกโรงงาน → copy ผังบัญชีของโรงนั้นมา แล้วเพิ่ม/แก้/ลบ ที่โรงไหนก็ได้ ระบบแก้ให้ทั้ง 2 ที่ · NONE = เลิก sync (ข้อมูลที่ sync มาแล้วยังอยู่ครบ)' },
     { module: 'accounting', key: 'ACC_DEFAULT_CURRENCY', value: 'THB',  label: 'สกุลเงินหลัก',                 dataType: 'string', levelHint: '',        description: 'THB, USD, JPY ฯลฯ' },
     { module: 'system', key: 'SEASON_LIST', value: '2024SS,2024AW,2025SS,2025AW,2026SS,2026AW,2027SS', label: 'Season (ที่เกิดขึ้นแล้ว)', dataType: 'string', levelHint: '', description: 'รายชื่อ season ที่มีแล้ว คั่นด้วย comma เช่น 2026SS,2026AW (เพิ่มได้เอง)' },
     { module: 'system', key: 'SEASON_ACTIVE', value: '2026AW,2027SS', label: 'Season ที่กำลังผลิต (active)', dataType: 'string', levelHint: '', description: 'เฉพาะ season ที่กำลังผลิตอยู่ ใช้ตอนลงค่าแรงเหมาเอง (ไม่ต้องโชว์ย้อนหลังหมด) คั่นด้วย comma เช่น 2026AW,2027SS' },
@@ -100,12 +102,24 @@ exports.getAllConfigs = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 exports.updateConfig = async (req, res) => {
     try {
-        const { configID, value, comment, updatedBy } = req.body;
+        const { configID, comment, updatedBy } = req.body;
         if (!configID) return res.status(400).json({ success: false, message: 'configID required' });
 
         // ## เช็คสิทธิ์โรงงานของ config นี้ก่อนแก้ (route แบบ B — config ผูกกับ factory)
         const rec = await factoryAuth.assertRecord(req, res, Gsconfig, { configID });
         if (!rec) return;
+
+        // ★ sync ผังบัญชี: ตรวจโรงปลายทางก่อนบันทึก
+        let value = req.body.value;
+        let syncTarget = '';
+        if (rec.key === chartSync.KEY) {
+            if (chartSync.isNone(value)) value = chartSync.NONE;
+            else {
+                syncTarget = await chartSync.resolveFactoryRef(rec.companyID, value);
+                if (!syncTarget) return res.status(400).json({ success: false, message: `ไม่พบโรงงาน "${value}"` });
+                if (syncTarget === rec.factoryID) return res.status(400).json({ success: false, message: 'เลือกโรงงานตัวเองไม่ได้' });
+            }
+        }
 
         const updated = await Gsconfig.findOneAndUpdate(
             { configID },
@@ -126,7 +140,17 @@ exports.updateConfig = async (req, res) => {
             );
         }
 
-        return res.json({ success: true, config: updated });
+        // ★ sync ผังบัญชี: เพิ่งเลือกโรงปลายทาง (เปลี่ยนจากค่าเดิม) → copy ผังของโรงนั้นมาที่โรงนี้ · เลือก NONE = แค่เลิก sync ไม่ลบอะไร
+        let chartCopy = null;
+        if (updated.key === chartSync.KEY) {
+            chartSync.clearChartScopeCache();
+            const before = await chartSync.resolveFactoryRef(rec.companyID, rec.value);
+            if (syncTarget && syncTarget !== before) {
+                chartCopy = await chartSync.copyChart(rec.companyID, syncTarget, rec.factoryID, updatedBy || '');
+                chartCopy.from = syncTarget;
+            }
+        }
+        return res.json({ success: true, config: updated, chartCopy });
     } catch (err) {
         console.error('[updateConfig]', err);
         res.status(500).json({ success: false, message: err.message });
@@ -223,6 +247,10 @@ async function seedDefaults(companyID, factoryID, updatedBy) {
     // upsert ทีละ record
     // - $setOnInsert: value → ไม่ทับค่าที่ user บันทึกไว้แล้ว
     // - $set: label/description/levelHint → update metadata เสมอ (เผื่อแก้ DEFAULT_CONFIGS)
+    // ★ ACC_CHART_FACTORY: ตัวเลือก dropdown = NONE + โรงอื่นในบริษัท (สร้างใหม่ทุกครั้ง เผื่อเพิ่มโรง)
+    const chartOpt = docs.find(d => d.key === chartSync.KEY);
+    if (chartOpt) chartOpt.options = await chartSync.factoryOptions(companyID, factoryID);
+
     for (const doc of docs) {
         await Gsconfig.updateOne(
             { configID: doc.configID },

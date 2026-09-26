@@ -4,6 +4,7 @@ const moment   = require('moment-timezone');
 const ShareFunc = require("../c-api-app-share-function");
 
 const AccChart    = require("../../models/m-acc-chart");
+const chartSync   = require("./acc-chart-scope");   // ★ sync ผังบัญชีระหว่างโรงงาน (Global Config ACC_CHART_FACTORY)
 const AccFirm     = require("../../models/m-acc-firm");
 const AccProject  = require("../../models/m-acc-project");
 const AccShop     = require("../../models/m-acc-shop");
@@ -104,9 +105,10 @@ exports.getChart = async (req, res, next) => {
     .sort({ category: 1, code: 1 })
     .lean();
 
+    const syncWith = await chartSync.syncPeersOf(companyID, factoryID);   // ★ โรงที่ sync ผังด้วย (แสดงแถบบอกในหน้าเว็บ)
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
 
-    return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), accounts });
+    return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), accounts, syncWith });
 
   } catch (err) {
     console.error('[getChart]', err.message);
@@ -142,6 +144,7 @@ exports.importChartLang = async (req, res, next) => {
         { $set: setData }
       );
       if (res1.matchedCount > 0) updated++; else notFound++;
+      await chartSync.syncLang(companyID, factoryID, code, setData);   // ★ sync โรงอื่นในกลุ่ม
     }
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), updated, notFound });
@@ -180,6 +183,7 @@ exports.createAccount = async (req, res, next) => {
       exists.parentCode = parentCode || null;
       exists.updatedAt  = new Date();
       await exists.save();
+      await chartSync.syncCreate(companyID, factoryID, exists.toObject(), createByUserID);   // ★ sync โรงอื่นในกลุ่ม
       const rToken = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
       return res.status(200).json({ success: true, token: rToken, expiresIn: Number(process.env.TOKENExpiresIn), account: exists, reactivated: true });
     }
@@ -199,6 +203,7 @@ exports.createAccount = async (req, res, next) => {
     });
 
     await account.save();
+    await chartSync.syncCreate(companyID, factoryID, account.toObject(), createByUserID);   // ★ sync โรงอื่นในกลุ่ม
 
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     return res.status(201).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), account });
@@ -230,6 +235,7 @@ exports.updateAccount = async (req, res, next) => {
     if (externalMappings) setData.externalMappings = externalMappings;
 
     await AccChart.findByIdAndUpdate(accountID, { $set: setData });
+    await chartSync.syncUpdate(rec.companyID, rec.factoryID, rec.code, setData);   // ★ sync โรงอื่นในกลุ่ม (จับคู่ด้วยรหัสเดิม)
 
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn) });
@@ -267,6 +273,7 @@ exports.deleteAccount = async (req, res, next) => {
         { $set: { status: 'i' } }
       );
     }
+    await chartSync.syncDelete(account.companyID, account.factoryID, account);   // ★ sync โรงอื่นในกลุ่ม
 
     const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
     return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn) });
@@ -1769,6 +1776,12 @@ exports.saveWpProduction = async (req, res, next) => {
         // ## date = "YYYY-MM-DD" (วันปฏิทิน) → เก็บ UTC-midnight ให้ตรง convention (ยังอยู่ในช่วง Bangkok-day ที่ query preview ใช้)
         const dateKey = ymdToUTC(date);
 
+        // ★ (26/09/2026) เช็ครหัสบัญชีก่อนบันทึก — เดิมถ้าไม่พบใน AccChart → chartAccID '' → WorkerPayItem required fail → 500
+        //   (production บันทึกไปแล้วแต่รายรับไม่ขึ้น) · ตอนนี้แจ้งชัดและไม่บันทึกครึ่งๆ กลางๆ
+        const acc = await AccChart.findOne({ companyID, factoryID, code: WP_AUTO_INCOME_CODE }).lean();
+        if (!acc) return res.status(400).json({ success: false,
+            message: `ไม่พบรหัสบัญชี ${WP_AUTO_INCOME_CODE} (ค่าแรงเหมา-auto) ในผังบัญชีของโรงงาน ${factoryID} — เพิ่มที่ผังบัญชี หรือแก้ค่า WP_AUTO_INCOME_CODE ใน Global Config` });
+
         // คำนวณ subtotal และ total
         const recalcItems = items.map(i => ({
             orderID:   i.orderID,
@@ -1783,10 +1796,12 @@ exports.saveWpProduction = async (req, res, next) => {
         const totalAmount = recalcItems.reduce((s, i) => s + i.subtotal, 0);
 
         // Upsert production record (1 วัน = 1 record)
-        const wpProdID = `wpp_${workerID}_${dateKey.getTime()}`;
+        //   ★ wpProdID ใส่ periodID ด้วย + ตั้งเฉพาะตอนสร้างใหม่ — เดิม wpp_<worker>_<date> ชน unique ถ้าวันเดียวกันเคยบันทึกในงวดอื่น (500)
+        const wpProdID = `wpp_${periodID}_${workerID}_${dateKey.getTime()}`;
         await WorkerPayProduction.findOneAndUpdate(
             { periodID, workerID, date: dateKey },
-            { $set: { wpProdID, companyID, factoryID, countryID, items: recalcItems, totalAmount, savedAt: new Date() }},
+            { $set: { companyID, factoryID, countryID, items: recalcItems, totalAmount, savedAt: new Date() },
+              $setOnInsert: { wpProdID } },
             { upsert: true }
         );
 
@@ -1797,8 +1812,6 @@ exports.saveWpProduction = async (req, res, next) => {
         ).lean();
         const grandTotal = allProd.reduce((s, p) => s + (p.totalAmount || 0), 0);
 
-        // Lookup AccChart สำหรับ 510005
-        const acc = await AccChart.findOne({ companyID, factoryID, code: WP_AUTO_INCOME_CODE }).lean();
 
         // Upsert WorkerPayItem 510005 (ค่าแรงเหมา-auto) — แยกจาก 510006 ที่ user ลง manual
         const autoFilter = { periodID, workerID, chartAccCode: WP_AUTO_INCOME_CODE };
@@ -1806,16 +1819,17 @@ exports.saveWpProduction = async (req, res, next) => {
         if (existItem) {
             await WorkerPayItem.findOneAndUpdate(
                 autoFilter,
-                { $set: { amount: grandTotal, note: 'คำนวณจากข้อมูลการผลิต (auto)' } }
+                { $set: { amount: grandTotal, note: 'คำนวณจากข้อมูลการผลิต (auto)',
+                          chartAccID: acc._id.toString(), chartAccName: acc?.nameI18n?.lText || existItem.chartAccName || 'ค่าแรงเหมา-auto' } }
             );
         } else {
             const newItem = new WorkerPayItem({
                 itemID:       `wpi_${workerID}_prod_${Date.now()}`,
                 companyID,    factoryID,    periodID,    workerID,
                 type:         'income',
-                chartAccID:   acc?._id?.toString() ?? '',
-                chartAccCode: acc?.code             ?? WP_AUTO_INCOME_CODE,
-                chartAccName: acc?.nameI18n?.lText  ?? 'ค่าแรงเหมา-auto',
+                chartAccID:   acc._id.toString(),
+                chartAccCode: acc.code || WP_AUTO_INCOME_CODE,
+                chartAccName: acc?.nameI18n?.lText || 'ค่าแรงเหมา-auto',
                 amount:       grandTotal,
                 note:         'คำนวณจากข้อมูลการผลิต (auto)',
                 itemDate:     new Date(),
@@ -1837,7 +1851,10 @@ exports.saveWpProduction = async (req, res, next) => {
 
         const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
         res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), grandTotal });
-    } catch (err) { next(err); }
+    } catch (err) {
+        console.error('[saveWpProduction]', err);
+        return res.status(500).json({ success: false, message: 'บันทึกค่าแรงเหมาไม่สำเร็จ: ' + (err?.message || err) });
+    }
 };
 
 

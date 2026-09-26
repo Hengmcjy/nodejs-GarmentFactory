@@ -11,7 +11,8 @@ const Size = require("../../models/m-size");
 const Factory = require("../../models/m-factory");     // ## resolve ชื่อโรง (product flow)
 const NodeFlow = require("../../models/m-nodeFlow");    // ## flow nodes สำหรับ dots (product flow)
 const Useracc = require("../../models/m-acc-user");   // ## perm check + ชื่อคนทำ (set QC to complete)
-const ReprintRequest = require("../../models/m-reprint-request");   // ## ใบขอ reprint QR (office→worker)
+const ReprintRequest = require("../../models/m-reprint-request");
+const OrderProductionQueueList = require("../../models/m-orderProductionQueueList");   // ## fallback ล็อตด้ายจาก log ล็อกงาน (มัดที่ชิ้นไม่มี yarnLot)   // ## ใบขอ reprint QR (office→worker)
 const ShareFunc = require("../c-api-app-share-function");
 const { writeLog } = require("./c-log-util");           // ## audit log (swallow error เสมอ)
 
@@ -650,18 +651,32 @@ exports.repFactoryScanGroup = async (req, res, next) => {
 //   แทนด้วยหน้าในแอป: worker เลือก factory→season→order → ดู log ล็อกงาน (bundleNo+ล็อตด้าย) → เลือกพิมพ์
 //   1 ดวง = 1 bundle · พิมพ์เป็นกลุ่ม bundle หรือ QR เดี่ยว (เลขวิ่ง) ก็ได้ · label mapping ดู reference_barcode_positions
 
-// helper: split yarnLotID "G:260120-24, A:51124002-2C" → { yarnG, yarnA } (ป้ายต้องการ G:/A: แยก)
-function splitYarn(s) {
-  const parts = String(s || '').split(',').map(x => x.trim()).filter(Boolean);
-  let g = '', a = '';
-  for (const p of parts) {
-    const up = p.toUpperCase();
-    if (!g && (up.startsWith('G:') || up.startsWith('G '))) g = p;
-    else if (!a && (up.startsWith('A:') || up.startsWith('A '))) a = p;
+// helper: ล็อตด้ายบนป้าย (2026-09-26 · user: "มากกว่า 1 ล็อตพิมพ์ 2 ล็อต ขึ้นบรรทัดใหม่ · สูงสุด 2 เนื้อที่ไม่พอ")
+//   ข้อมูลจริง: OrderProduction.yarnLot = [{yarnLotID:'G:ZC25322522'}, {yarnLotID:'A:H26301WQ'}] (1 รายการ = 1 ล็อต)
+//   ★ เดิมหยิบ yarnLot[0] รายการเดียว → ป้าย/preview ขึ้นล็อตเดียว · ตอนนี้รวมทุกรายการ
+//   ข้อมูลเก่าบางชุดเป็น string เดียว "G:xxx, A:yyy" → split ',' ด้วย
+//   yarnLines(): ตัดซ้ำ · เรียง G ก่อน → A → อื่นๆ · เอาสูงสุด 2 บรรทัด
+//     → yarnG = บรรทัด 1 · yarnA = บรรทัด 2 (ชื่อฟิลด์เดิม = ช่องบน/ล่างของป้าย · agent + preview ไม่ต้องเปลี่ยน)
+//     เช่น G+A → G / A · G+G → G1 / G2 · G+G+A → G1 / G2 (เกิน 2 ตัดทิ้ง)
+const YARN_MAX_LINES = 2;
+function yarnItems(list) {
+  const seen = new Set(), items = [];
+  for (const s of (list || [])) {
+    String(s || '').split(',').map(x => x.trim()).filter(Boolean).forEach(p => {
+      const k = p.toUpperCase().replace(/\s+/g, '');
+      if (!seen.has(k)) { seen.add(k); items.push(p); }
+    });
   }
-  if (!g && !a && parts.length) { g = parts[0] || ''; a = parts[1] || ''; }   // ไม่มี prefix ชัด → เดาจากตำแหน่ง
-  return { yarnG: g, yarnA: a };
+  const rank = p => /^G\s*[:\s]/i.test(p) ? 0 : /^A\s*[:\s]/i.test(p) ? 1 : 2;
+  return items.map((p, i) => ({ p, i })).sort((x, y) => (rank(x.p) - rank(y.p)) || (x.i - y.i)).map(x => x.p);
 }
+function yarnLabel(list) {
+  const items = yarnItems(list);
+  const lines = items.slice(0, YARN_MAX_LINES);
+  return { yarnLot: items.join(', '), yarnG: lines[0] || '', yarnA: lines[1] || '', yarnLines: lines, yarnOver: items.length > YARN_MAX_LINES };
+}
+// yarnLot array ของเอกสาร → string[]
+function yarnIDs(arr) { return (Array.isArray(arr) ? arr : [arr]).map(y => (y && typeof y === 'object') ? y.yarnLotID : y).filter(Boolean).map(String); }
 
 // helper: โหลด map สี(code/id/name→info) + ไซซ์(id→name/seq) + zoneSeq + style จาก Order/Size (ใช้ resolve ชื่อ)
 async function loadOrderColorSize(companyID, orderID) {
@@ -710,7 +725,7 @@ exports.qrPrintBundles = async (req, res, next) => {
       { $project: {
           _id: 0, bundleNo: 1,
           firstFac:  { $arrayElemAt: ["$productionNode.factoryID", 0] },       // โรงที่ล็อกงาน (entry แรก)
-          yarnLotID: { $ifNull: [{ $arrayElemAt: ["$yarnLot.yarnLotID", 0] }, ''] },
+          yarnLotIDs: { $ifNull: ["$yarnLot.yarnLotID", []] },                   // ★ ทุกล็อต (เดิม [0] รายการเดียว)
           _run:      { $substr: ["$productBarcodeNoReal", +process.env.runningNoPos, +process.env.runningNoDigit] },
           _combo:    { $substr: ["$productBarcodeNoReal", +process.env.productBarcodePos, +process.env.productBarcodeDigit] },  // 37 หลักแรก = คีย์ combo (ตรงกับ CellItem.productBarcode ในหน้าล็อกงาน)
           ...barcodeKeyProj(),
@@ -726,7 +741,7 @@ exports.qrPrintBundles = async (req, res, next) => {
           size:      { $first: "$_size" },
           comboBarcode: { $first: "$_combo" },       // คีย์ combo (สี×ไซซ์×โซน) จับคู่กับ cell ในหน้าล็อกงาน
           factoryID: { $first: "$firstFac" },
-          yarnLots:  { $addToSet: "$yarnLotID" },   // ปกติ 1 ค่า/มัด · addToSet เผื่อ detect ปนล็อต
+          yarnLots:  { $addToSet: "$yarnLotIDs" },  // ปกติ 1 ชุด/มัด · addToSet เผื่อ detect ปนล็อต (array ของ array)
       }},
       { $sort: { _id: 1 } },
     ]).allowDiskUse(true);
@@ -737,8 +752,9 @@ exports.qrPrintBundles = async (req, res, next) => {
     const bundles = rows.filter(r => r._id != null).map(r => {
       const ci = colorInfo.get(keyU(r.color));
       const sm = sizeMap.get(keyU(r.size));
-      const yl = (r.yarnLots || []).filter(Boolean);
-      const { yarnG, yarnA } = splitYarn(yl[0] || '');
+      const sets = (r.yarnLots || []).map(a => yarnItems(yarnIDs(a))).filter(a => a.length);
+      const sigs = new Set(sets.map(a => a.slice().sort().join('|')));
+      const { yarnLot, yarnG, yarnA } = yarnLabel(sets[0] || []);
       if (r.factoryID) facSet.add(r.factoryID);
       return {
         bundleNo: r._id, count: r.count,
@@ -749,7 +765,7 @@ exports.qrPrintBundles = async (req, res, next) => {
         size: r.size, sizeName: sm ? sm.name : r.size, sizeSeq: sm ? sm.seq : 9999,
         comboBarcode: r.comboBarcode || '',
         factoryID: r.factoryID || '',
-        yarnLot: yl[0] || '', yarnG, yarnA, multiYarn: yl.length > 1,
+        yarnLot, yarnG, yarnA, multiYarn: sigs.size > 1,
       };
     });
 
@@ -820,9 +836,7 @@ exports.qrPrintData = async (req, res, next) => {
       const sizeID    = keyU(bc.substr(P.size[0], P.size[1]));
       const ci = colorInfo.get(colorCode);
       const sm = sizeMap.get(sizeID);
-      const yl = (d.yarnLot && d.yarnLot[0] && d.yarnLot[0].yarnLotID) || '';
-      const { yarnG, yarnA } = splitYarn(yl);
-      if (yl) yarnSet.add(yl);
+      const { yarnLot: yl, yarnG, yarnA } = yarnLabel(yarnIDs(d.yarnLot));   // ★ รวมทุกล็อต (สูงสุด 2 บรรทัดบนป้าย)
       return {
         firstFac,
         barcode: bc, qr: bc,                                   // QR content = productBarcodeNoReal เต็ม
@@ -848,6 +862,23 @@ exports.qrPrintData = async (req, res, next) => {
       if (filtered.length) records = filtered;
       else if (records.length) crossFactory = true;   // คงชุดเต็มไว้ + ติดธงบอกหน้าเว็บ
     }
+
+    // ── fallback: ชิ้นที่ไม่มี yarnLot (ข้อมูลเก่า) → ดึงจาก log ล็อกงาน (OrderProductionQueueList) ตามช่วง bundle ──
+    const noYarnBundles = [...new Set(records.filter(r => !r.yarnLot && r.bundleNo != null).map(r => +r.bundleNo))];
+    if (noYarnBundles.length) {
+      try {
+        const qls = await OrderProductionQueueList.find(
+          { companyID, orderID, bundleNoFrom: { $lte: Math.max(...noYarnBundles) }, bundleNoTo: { $gte: Math.min(...noYarnBundles) } },
+          { _id: 0, bundleNoFrom: 1, bundleNoTo: 1, yarnLot: 1 }
+        ).maxTimeMS(10000).lean();
+        records.forEach(r => {
+          if (r.yarnLot || r.bundleNo == null) return;
+          const q = qls.find(x => +x.bundleNoFrom <= +r.bundleNo && +r.bundleNo <= +x.bundleNoTo && yarnIDs(x.yarnLot).length);
+          if (q) Object.assign(r, (({ yarnLot, yarnG, yarnA }) => ({ yarnLot, yarnG, yarnA }))(yarnLabel(yarnIDs(q.yarnLot))));
+        });
+      } catch (e) { console.error('[qrPrintData] yarn fallback', e.message); }
+    }
+    records.forEach(r => { if (r.yarnLot) yarnSet.add(r.yarnLot); });
 
     // sort by bundleNo → runNo
     records.sort((a, c) => (a.bundleNo - c.bundleNo) || (a.runNo > c.runNo ? 1 : a.runNo < c.runNo ? -1 : 0));
