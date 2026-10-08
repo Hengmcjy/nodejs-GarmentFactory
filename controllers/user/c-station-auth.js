@@ -16,7 +16,8 @@ const Factory = require("../../models/m-factory");
 const Gsconfig = require("../../models/m-gsconfig");   // ## APP_VERSION (configID `${factoryID}-system-APP_VERSION`) — โชว์บน station
 const Order = require("../../models/m-order");   // ## orders ตาม season active (station ไม่เลือก season)
 const NodeFlow = require("../../models/m-nodeFlow");   // ## flowSeq main → รายชื่อ node (dropdown report node-bundle)
-const OrderProduction = require("../../models/m-orderProduction");   // ## ★ Scan product — อ่าน/เขียน productionNode ระดับชิ้น
+const OrderProduction = require("../../models/m-orderProduction");
+const Language = require("../../models/m-language");   // ## ★ คำแปลรายงาน station (lType rpt · lID st_*)   // ## ★ Scan product — อ่าน/เขียน productionNode ระดับชิ้น
 const User = require("../../models/m-user");   // ## staff/worker เดิมอยู่ collection users (state='staff' · pass bcrypt)
 const mongoose = require("mongoose");   // ## ★ Scan sub node — SubNodeFlowC (master ชื่อ subnode) register แล้วที่ model อื่น → ใช้ lazy
 const getSubNodeFlowC = () => mongoose.model('SubNodeFlowC');   // ชื่อ subnode master (companyID/nodeID/subNodeID/subNodeName/seq)
@@ -1054,6 +1055,10 @@ exports.stationScanCommitBundle = async (req, res, next) => {
 
 const numCost = (c) => (c != null ? Number(c.toString ? c.toString() : c) : 0);
 const runNoOf = (bc) => rt(sub(bc, process.env.runningNoPos, process.env.runningNoDigit));
+// ★ worker-รายวันมาทำงานเหมา — บันทึกใน subNodeFlow ด้วย qrCode พิเศษ (ไม่ผูกคน) + empState 'DP'
+//   ค่าแรงเหมา (ดึงจาก scan auto) กรองตาม qrCode ของ worker แต่ละคน → รายการ DAILY ไม่ถูกนำไปคิดเงินเหมา
+const DAILY_QR = 'DAILY';
+const DAILY_LABEL = 'รายวัน (daily worker)';
 
 // GET /api/a/station/subnode/worker/:qr  — หา worker(เหมา) จาก qrCode
 exports.stationSubnodeWorker = async (req, res, next) => {
@@ -1138,6 +1143,8 @@ exports.stationSubnodeResolve = async (req, res, next) => {
       runningNo: runNoOf(p.productBarcodeNoReal || p.productBarcodeNo || ''),
       productCount: p.productCount != null ? p.productCount : null,
       doneSubs: (Array.isArray(p.subNodeFlow) ? p.subNodeFlow : []).filter(s => s.nodeID === nodeID).map(s => s.subNodeID),
+      // ★ subnode ที่ถูกสแกนเป็น "worker-รายวัน" (qrCode DAILY) — หน้า Scan daily ใช้โชว์สถานะ/ยกเลิก
+      dailySubs: (Array.isArray(p.subNodeFlow) ? p.subNodeFlow : []).filter(s => s.nodeID === nodeID && s.qrCode === DAILY_QR).map(s => s.subNodeID),
     })).sort((a, b2) => (a.bundleNo - b2.bundleNo) || (a.runningNo > b2.runningNo ? 1 : -1));
 
     // มัด + จำนวน (distinct)
@@ -1264,7 +1271,7 @@ exports.stationSubnodeScanned = async (req, res, next) => {
     if (qrs.length) {
       const ws = await User.find({ qrCode: { $in: qrs }, type: 's' }, { _id: 0, qrCode: 1, userID: 1, 'uInfo.userName': 1 }).lean();
       const wm = new Map(ws.map(w => [w.qrCode, (w.uInfo && w.uInfo.userName) || w.userID]));
-      rows.forEach(r => { r.userName = wm.get(r.qrCode) || r.qrCode; });
+      rows.forEach(r => { r.userName = r.qrCode === DAILY_QR ? DAILY_LABEL : (wm.get(r.qrCode) || r.qrCode); });
     }
     return res.status(200).json({ success: true, ok: true, orderID, bundleNo, rows, ...tok() });
   } catch (err) {
@@ -1296,6 +1303,236 @@ exports.stationSubnodeRemove = async (req, res, next) => {
     return res.status(200).json({ success: true, ok: true, removed, ...tok() });
   } catch (err) {
     console.error('stationSubnodeRemove error:', String(err && err.message || err));
+    return res.status(500).json({ success: false, message: String(err && err.message || err) });
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ★ Scan DAILY (worker-รายวัน มาทำงานเหมาบางโอกาส · 2026-10-08)
+//   - ไม่สแกน QR worker · บันทึก subNodeFlow ทุกชิ้น: qrCode='DAILY', empState='DP', datetime = วันที่เลือก
+//   - เลือกวันย้อนหลังได้ไม่จำกัด (ห้ามวันอนาคต) · วันนี้ = เวลาจริง · วันอื่น = 12:00 ของวันนั้น (เวลาไทย)
+//   - กันซ้ำแบบเดียวกับ subnode/save: ชิ้นที่มี node+subnode นี้แล้ว (ของใครก็ตาม รวมรายวัน) = conflict ทั้งชุด
+//   - ยกเลิก: ลบเฉพาะรายการ DAILY ของ subnode ที่เลือก → มัดกลับไปเหมือนยังไม่ได้สแกนให้ใคร (ไม่แตะผลงานเหมาของ worker)
+// ═══════════════════════════════════════════════════════════════════════════
+const BKK_OFFSET_MS = 7 * 60 * 60 * 1000;
+const bkkToday = () => new Date(Date.now() + BKK_OFFSET_MS).toISOString().slice(0, 10);   // 'YYYY-MM-DD' เวลาไทย
+// 'YYYY-MM-DD' → Date (วันนี้ = now · วันก่อน = 12:00 ไทย) · ผิดรูปแบบ/อนาคต = null
+function dailyWorkDate(str) {
+  const v = String(str || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return null;
+  const d = new Date(`${v}T12:00:00+07:00`);
+  if (isNaN(d.getTime()) || new Date(d.getTime() + BKK_OFFSET_MS).toISOString().slice(0, 10) !== v) return null;   // กันวันที่ไม่มีจริง เช่น 2026-02-30
+  const today = bkkToday();
+  if (v > today) return null;
+  return v === today ? new Date() : d;
+}
+
+// POST /api/a/station/daily/save  body: { orderID, barcodes:[], subNodeIDs:[], workDate:'YYYY-MM-DD', staffUserID, staffUserName }
+exports.stationDailySave = async (req, res, next) => {
+  try {
+    let auth; try { auth = await requireStationToken(req); } catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
+    const tok = () => genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid);
+    const { companyID, factoryID, nodeID } = auth.decoded;
+    const b = req.body || {};
+    const orderID = String(b.orderID || '').trim();
+    const barcodes = Array.isArray(b.barcodes) ? b.barcodes.map(x => String(x).trim()).filter(Boolean) : [];
+    const subNodeIDs = Array.isArray(b.subNodeIDs) ? b.subNodeIDs.map(x => String(x).trim()).filter(Boolean) : [];
+    const createBy = { userID: String(b.staffUserID || '').trim(), userName: String(b.staffUserName || '').trim() };
+    if (!orderID || !barcodes.length || !subNodeIDs.length) {
+      return res.status(400).json({ success: false, message: 'orderID + barcodes + subNodeIDs required', ...tok() });
+    }
+    const workDate = dailyWorkDate(b.workDate);
+    if (!workDate) return res.status(200).json({ success: true, ok: false, reason: 'baddate', ...tok() });
+
+    const { subnodes } = await subnodesOfOrder(companyID, nodeID, orderID);
+    const subMap = new Map(subnodes.map(s => [s.subNodeID, s]));
+    const useSubs = subNodeIDs.filter(id => subMap.has(id));
+    if (!useSubs.length) return res.status(200).json({ success: true, ok: false, reason: 'badsubnode', ...tok() });
+
+    // ── กันซ้ำ (all-or-nothing) ──
+    const pieces = await OrderProduction.find(
+      { companyID, orderID, productBarcodeNoReal: { $in: barcodes } },
+      { _id: 0, productBarcodeNoReal: 1, subNodeFlow: 1 }
+    ).lean();
+    const conflicts = [];
+    for (const p of pieces) {
+      const done = new Set((Array.isArray(p.subNodeFlow) ? p.subNodeFlow : []).filter(s => s.nodeID === nodeID).map(s => s.subNodeID));
+      for (const id of useSubs) if (done.has(id)) conflicts.push({ barcode: p.productBarcodeNoReal, subNodeID: id });
+    }
+    if (conflicts.length) return res.status(200).json({ success: true, ok: false, reason: 'conflict', conflicts, ...tok() });
+
+    const entries = useSubs.map(id => {
+      const s = subMap.get(id);
+      return {
+        seq: s.seq || 0, factoryID, nodeID, subNodeID: id, subNodeName: s.subNodeName || id,
+        qrCode: DAILY_QR, empState: 'DP', datetime: workDate, monthlyID: '',
+        cost: mongoose.Types.Decimal128.fromString('0'), createBy,
+      };
+    });
+    // ★ ใส่ "ยังไม่มี node+subnode นี้" ใน filter ด้วย กันสแกนชนกันจาก 2 เครื่องพร้อมกัน
+    const r = await OrderProduction.updateMany(
+      { companyID, orderID, productBarcodeNoReal: { $in: barcodes },
+        subNodeFlow: { $not: { $elemMatch: { nodeID, subNodeID: { $in: useSubs } } } } },
+      { $push: { subNodeFlow: { $each: entries } } }
+    );
+    const saved = (r.modifiedCount != null ? r.modifiedCount : (r.nModified || 0));
+    return res.status(200).json({ success: true, ok: true, saved, subCount: useSubs.length, workDate: b.workDate, ...tok() });
+  } catch (err) {
+    console.error('stationDailySave error:', String(err && err.message || err));
+    return res.status(500).json({ success: false, message: String(err && err.message || err) });
+  }
+};
+
+// POST /api/a/station/daily/remove  body: { orderID, barcodes:[], subNodeIDs:[] } — ยกเลิกเฉพาะรายการ DAILY
+exports.stationDailyRemove = async (req, res, next) => {
+  try {
+    let auth; try { auth = await requireStationToken(req); } catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
+    const tok = () => genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid);
+    const { companyID, nodeID } = auth.decoded;
+    const b = req.body || {};
+    const orderID = String(b.orderID || '').trim();
+    const barcodes = Array.isArray(b.barcodes) ? b.barcodes.map(x => String(x).trim()).filter(Boolean) : [];
+    const subNodeIDs = Array.isArray(b.subNodeIDs) ? b.subNodeIDs.map(x => String(x).trim()).filter(Boolean) : [];
+    if (!orderID || !barcodes.length || !subNodeIDs.length) {
+      return res.status(400).json({ success: false, message: 'orderID + barcodes + subNodeIDs required', ...tok() });
+    }
+    const r = await OrderProduction.updateMany(
+      { companyID, orderID, productBarcodeNoReal: { $in: barcodes } },
+      { $pull: { subNodeFlow: { nodeID, subNodeID: { $in: subNodeIDs }, qrCode: DAILY_QR } } }
+    );
+    const removed = (r.modifiedCount != null ? r.modifiedCount : (r.nModified || 0));
+    return res.status(200).json({ success: true, ok: true, removed, ...tok() });
+  } catch (err) {
+    console.error('stationDailyRemove error:', String(err && err.message || err));
+    return res.status(500).json({ success: false, message: String(err && err.message || err) });
+  }
+};
+
+// GET /api/a/station/lang/:languageID  (header: x-station-token)
+//   ★ คำแปลรายงาน/PDF ของ station — เฉพาะ lType 'rpt' ที่ lID ขึ้นต้น 'st_' (แก้ได้ที่ Admin > Report Language)
+//   ภาษาที่ยังไม่มีในระบบ = คืนว่าง (หน้า station ใช้ค่าตั้งต้นของตัวเอง)
+exports.stationLang = async (req, res, next) => {
+  try {
+    let auth; try { auth = await requireStationToken(req); } catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
+    const languageID = String(req.params.languageID || '').trim().toLowerCase();
+    if (!/^[a-z]{2,5}$/.test(languageID)) return res.status(400).json({ success: false, message: 'bad languageID' });
+    const doc = await Language.findOne({ languageID }, { languageData: 1, _id: 0 }).lean();
+    const languageData = ((doc && doc.languageData) || [])
+      .filter(it => it && it.lType === 'rpt' && String(it.lID || '').startsWith('st_') && it.lText)
+      .map(it => ({ lID: it.lID, lText: it.lText }));
+    return res.status(200).json({ success: true, languageID, languageData, ...genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid) });
+  } catch (err) {
+    console.error('stationLang error:', String(err && err.message || err));
+    return res.status(500).json({ success: false, message: String(err && err.message || err) });
+  }
+};
+
+// GET /api/a/station/daily/report?dateStart=YYYY-MM-DD&dateEnd=YYYY-MM-DD&node=all|this  (header: x-station-token)
+//   ★ รายงานสแกนรายวัน (worker-รายวันทำงานเหมา) — ต่อวัน: order / zone / color / size / subnode → จำนวนตัว
+//   ล็อกโรงจาก token · order ที่ยัง open · node=this = เฉพาะ node ของเครื่องนี้ (default ทุก node)
+//   วันที่ = วันที่เลือกตอนสแกน (subNodeFlow.datetime) ตามเวลาไทย · ช่วงสูงสุด 366 วัน
+const DAILY_REPORT_MAX_DAYS = 366;
+const keyUD = (v) => String(v == null ? '' : v).replace(/-+$/, '').toUpperCase().trim();
+exports.stationDailyReport = async (req, res, next) => {
+  try {
+    let auth; try { auth = await requireStationToken(req); } catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
+    const tok = () => genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid);
+    const { companyID, factoryID, nodeID } = auth.decoded;
+    const d1 = String(req.query.dateStart || '').slice(0, 10);
+    const d2 = String(req.query.dateEnd || d1).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d1) || !/^\d{4}-\d{2}-\d{2}$/.test(d2)) {
+      return res.status(400).json({ success: false, message: 'dateStart/dateEnd (YYYY-MM-DD) required', ...tok() });
+    }
+    const [a, b] = d1 <= d2 ? [d1, d2] : [d2, d1];
+    const dateStart = new Date(`${a}T00:00:00.000+07:00`);
+    const dateEnd   = new Date(`${b}T23:59:59.999+07:00`);
+    if (isNaN(dateStart) || isNaN(dateEnd)) return res.status(400).json({ success: false, message: 'bad date', ...tok() });
+    if ((dateEnd - dateStart) / 86400000 > DAILY_REPORT_MAX_DAYS) {
+      return res.status(400).json({ success: false, message: `ช่วงวันยาวเกิน ${DAILY_REPORT_MAX_DAYS} วัน`, ...tok() });
+    }
+    const onlyThisNode = String(req.query.node || 'all') === 'this';
+
+    const orders = await Order.find({ companyID, orderStatus: 'open' }, { _id: 0, orderID: 1, orderColor: 1 }).lean();
+    const orderIDs = orders.map(o => o.orderID);
+    const empty = { success: true, dateStart: a, dateEnd: b, node: onlyThisNode ? nodeID : 'all', rows: [], days: [], totalPieces: 0, totalEntries: 0 };
+    if (!orderIDs.length) return res.status(200).json({ ...empty, ...tok() });
+
+    const em = { factoryID, qrCode: DAILY_QR, datetime: { $gte: dateStart, $lte: dateEnd } };
+    if (onlyThisNode) em.nodeID = nodeID;
+    const bc = { $ifNull: ['$productBarcodeNoReal', '$productBarcodeNo'] };
+    const cut = (pos, dig) => ({ $rtrim: { input: { $toUpper: { $substrCP: [bc, +pos || 0, +dig || 0] } }, chars: '-' } });
+
+    const agg = await OrderProduction.aggregate([
+      { $match: { companyID, orderID: { $in: orderIDs }, subNodeFlow: { $elemMatch: em } } },
+      { $project: { _id: 0, orderID: 1, bc,
+          zoneBc: cut(process.env.targetIDPos, process.env.targetIDDigit),   // zone จากบาร์โค้ด (แบบเดียวกับ report node-bundle)
+          color: cut(process.env.colorPos, process.env.colorDigit),
+          size: cut(process.env.sizePos, process.env.sizeDigit),
+          style: cut(process.env.stylePos, process.env.styleDigit),
+          sf: { $filter: { input: '$subNodeFlow', as: 's', cond: { $and: [
+            { $eq: ['$$s.factoryID', factoryID] }, { $eq: ['$$s.qrCode', DAILY_QR] },
+            { $gte: ['$$s.datetime', dateStart] }, { $lte: ['$$s.datetime', dateEnd] },
+            ...(onlyThisNode ? [{ $eq: ['$$s.nodeID', nodeID] }] : []),
+          ] } } } } },
+      { $unwind: '$sf' },
+      { $group: {
+          _id: { day: { $dateToString: { format: '%Y-%m-%d', date: '$sf.datetime', timezone: 'Asia/Bangkok' } },
+                 orderID: '$orderID', style: '$style', zone: '$zoneBc', color: '$color', size: '$size',
+                 nodeID: '$sf.nodeID', subNodeID: '$sf.subNodeID' },
+          qty: { $sum: 1 },
+          bcs: { $addToSet: '$bc' },
+      } },
+    ]).allowDiskUse(true);
+
+    // ── ชื่อสี (จาก order) · ลำดับ size (master) · ชื่อ subnode ──
+    const colorInfo = new Map();   // orderID|KEY → info
+    orders.forEach(o => (o.orderColor || []).forEach((c, i) => {
+      const info = { name: String((c.color && c.color.colorName) || '').trim(), code: String((c.color && c.color.colorCode) || '').trim(),
+                     value: String((c.color && c.color.colorValue) || '').trim(), seq: c.seq != null ? c.seq : i };
+      [c.color && c.color.colorID, info.code, info.name].forEach(k => { const kk = keyUD(k); if (kk) colorInfo.set(`${o.orderID}|${kk}`, info); });
+    }));
+    let sizeMap = new Map();
+    try {
+      const Size = require('../../models/m-size');
+      (await Size.find({}, { size: 1, seq: 1 }).lean()).forEach(s => {
+        const id = keyUD(s.size && s.size.sizeID);
+        if (id) sizeMap.set(id, { name: String((s.size && s.size.sizeName) || '').trim() || id, seq: s.seq != null ? s.seq : 9999 });
+      });
+    } catch (e) { sizeMap = new Map(); }
+    const subNames = new Map();
+    (await getSubNodeFlowC().find({ companyID }, { _id: 0, nodeID: 1, subNodeID: 1, subNodeName: 1 }).lean())
+      .forEach(m => subNames.set(`${m.nodeID}|${m.subNodeID}`, m.subNodeName));
+
+    const dayMap = new Map();   // day → { entries, set }
+    const rows = agg.map(r => {
+      const k = r._id;
+      const ci = colorInfo.get(`${k.orderID}|${keyUD(k.color)}`);
+      const sm = sizeMap.get(keyUD(k.size));
+      if (!dayMap.has(k.day)) dayMap.set(k.day, { entries: 0, set: new Set() });
+      const dm = dayMap.get(k.day); dm.entries += r.qty; r.bcs.forEach(x => dm.set.add(x));
+      return {
+        day: k.day, orderID: k.orderID, style: k.style || k.orderID, zone: k.zone || '',
+        colorCode: (ci && ci.code) || k.color || '', colorName: (ci && ci.name) || '', colorValue: (ci && ci.value) || '', colorSeq: ci ? ci.seq : 9999,
+        sizeCode: k.size || '', sizeName: (sm && sm.name) || k.size || '', sizeSeq: sm ? sm.seq : 9999,
+        nodeID: k.nodeID || '', subNodeID: k.subNodeID || '', subNodeName: subNames.get(`${k.nodeID}|${k.subNodeID}`) || k.subNodeID || '',
+        qty: r.qty,
+      };
+    }).sort((x, y) => (x.day < y.day ? -1 : x.day > y.day ? 1 : 0)
+      || String(x.orderID).localeCompare(String(y.orderID)) || String(x.zone).localeCompare(String(y.zone))
+      || (x.colorSeq - y.colorSeq) || String(x.colorCode).localeCompare(String(y.colorCode))
+      || (x.sizeSeq - y.sizeSeq) || String(x.nodeID).localeCompare(String(y.nodeID), undefined, { numeric: true })
+      || String(x.subNodeID).localeCompare(String(y.subNodeID), undefined, { numeric: true }));
+
+    const days = [...dayMap.entries()].sort((x, y) => (x[0] < y[0] ? -1 : 1))
+      .map(([day, v]) => ({ day, pieces: v.set.size, entries: v.entries }));
+    return res.status(200).json({
+      ...empty, rows, days,
+      totalPieces: days.reduce((s, d) => s + d.pieces, 0),
+      totalEntries: days.reduce((s, d) => s + d.entries, 0),
+      ...tok(),
+    });
+  } catch (err) {
+    console.error('stationDailyReport error:', String(err && err.message || err));
     return res.status(500).json({ success: false, message: String(err && err.message || err) });
   }
 };

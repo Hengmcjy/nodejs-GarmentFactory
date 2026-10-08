@@ -123,7 +123,7 @@ exports.buildWorkerScanReport = async (companyID, factoryID, nodeID, dateStartSt
       subNodeName: subNameMap[r.subNodeID] || r.subNodeID,
       qrCode:      r.qrCode,
       userID:      w.userID   || '',
-      userName:    w.userName || '(ไม่พบชื่อ)',
+      userName:    r.qrCode === 'DAILY' ? 'รายวัน (daily worker)' : (w.userName || '(ไม่พบชื่อ)'),   // ★ สแกนรายวัน (ไม่ผูกคน)
       pic:         w.pic      || '',
       empState:    r.empState,
       countQty:    r.countQty,

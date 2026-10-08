@@ -393,6 +393,9 @@ router.get("/secure-deletion/preview/:companyID/:season",
 // ## POST execute (ลบจริง — ต้องส่ง confirmSeason ตรง)
 router.post("/secure-deletion/execute",
     checkAuthA, checkUUID, secureDeletionController.executeSeasonDeletion);
+// ★ ความคืบหน้างานลบ (execute ทำงานเบื้องหลัง · หน้าเว็บ poll)
+router.get("/secure-deletion/status/:companyID",
+    checkAuthA, checkUUID, secureDeletionController.statusSeasonDeletion);
 
 // ## Secure Deletion
 // #############################################################

@@ -90,7 +90,9 @@ exports.putImpotLanguage = async (req, res, next) => {
     }
 
     // const ALLOWED = ['en', 'th', 'cn', 'mm'];
-    const ALLOWED = ['en', 'th', 'cn'];
+    // ★ jp เพิ่ม 08/10/2026 — คำแปลรายงาน scan station (ยังไม่มี doc → สร้างให้ตอน import ครั้งแรก)
+    const ALLOWED = ['en', 'th', 'cn', 'jp'];
+    const UPSERT_NEW = { jp: 'Japanese' };
 
     try {
         const results = [];
@@ -105,8 +107,9 @@ exports.putImpotLanguage = async (req, res, next) => {
 
             const updated = await Language.findOneAndUpdate(
                 { languageID },
-                { $set: { languageData } },
-                { new: true, upsert: false }
+                { $set: { languageData },
+                  ...(UPSERT_NEW[languageID] ? { $setOnInsert: { languageID, languageName: UPSERT_NEW[languageID], show: false } } : {}) },
+                { new: true, upsert: !!UPSERT_NEW[languageID] }
             );
 
             if (!updated) {

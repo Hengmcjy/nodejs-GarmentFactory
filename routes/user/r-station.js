@@ -36,6 +36,10 @@ router.post("/subnode/save", stationAuthController.stationSubnodeSave);         
 router.get("/subnode/scanned", stationAuthController.stationSubnodeScanned);          // edit workload: ใครสแกน subnode ไหนของมัด
 router.post("/subnode/remove", stationAuthController.stationSubnodeRemove);           // ลบผลงาน subnode
 router.post("/subnode/matrix", stationAuthController.stationSubnodeMatrix);           // viewer: ผลงาน subnode ทั้งมัด (ชิ้น × subnode → ใครทำ)
+router.post("/daily/save", stationAuthController.stationDailySave);                   // ★ worker-รายวัน ทำงานเหมา (qrCode DAILY · ไม่คิดค่าเหมา)
+router.post("/daily/remove", stationAuthController.stationDailyRemove);               // ★ ยกเลิกรายการรายวัน (ลบเฉพาะ DAILY)
+router.get("/daily/report", stationAuthController.stationDailyReport);                // ★ รายงานสแกนรายวัน (เลือกวัน/ช่วงวัน) · โรงล็อกจาก token
+router.get("/lang/:languageID", stationAuthController.stationLang);              // ★ คำแปลรายงาน/PDF station (rpt · st_*)
 // ── Send to outsource (ส่งงานออกโรงรับจ้างช่วง) ──
 router.get("/outsource/factories", stationAuthController.stationOutsourceFactories);      // ข้อ 1: เลือกโรง outsource (fInfo.isOutsource)
 router.get("/outsource/nodes", stationAuthController.stationOutsourceNodes);              // ข้อ 2: เลือก node ที่งานอยู่ (+ โหมดสแกนของ node นั้น)
