@@ -17,7 +17,7 @@ const accCashBookSchema = new mongoose.Schema({
     enum: ['top_up', 'expense', 'transfer_out', 'transfer_in', 'return'],
     required: true,
   },
-  amount:        { type: Number, required: true, min: 0 },  // เก็บบวกเสมอ sign มาจาก type
+  amount:        { type: Number, required: true },  // sign หลักมาจาก type · ★ (08/10/2026) ติดลบได้ = รายการปรับลด/กลับรายการ (เช่น รับเงิน -5000) · 0 ไม่ได้
   description:   { type: String, default: '' },
 
   // สำหรับ transfer

@@ -814,6 +814,9 @@ exports.createCashBookEntry = async (req, res, next) => {
     return res.status(400).json({ success: false, message: 'companyID, factoryID, cashManID, date, type, amount required' });
   if (type === 'transfer_out' && !toCashManID)
     return res.status(400).json({ success: false, message: 'toCashManID required for transfer' });
+  // ★ (08/10/2026) จำนวนเงินติดลบได้ (ปรับลด/กลับรายการ) · ต้องเป็นตัวเลขและไม่เป็น 0
+  if (!Number.isFinite(Number(amount)) || Number(amount) === 0)
+    return res.status(400).json({ success: false, message: 'จำนวนเงินต้องเป็นตัวเลข และไม่เป็น 0' });
 
   try {
     // Lock check: ถ้าเดือนที่ entry ตกอยู่ปิดงวดแล้ว → ห้ามเพิ่ม
