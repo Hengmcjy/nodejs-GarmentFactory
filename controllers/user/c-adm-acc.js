@@ -1650,6 +1650,15 @@ exports.deleteWpItem = async (req, res, next) => {
 // #############################################################
 // ## Worker Pay Production (ข้อมูลการผลิตรายวัน → คำนวณค่าแรงเหมา)
 
+// ★ 09/10/2026 (MCJY): ค่าแรงเหมาคิด "โหล + ตัว" — ยอดรวมต่อวัน (ต่อ order/subnode/กลุ่มจัดส่ง/สี) ไม่รวมทั้งเดือนแล้วคิด
+//   โหลเต็ม (12 ตัว) × ราคาโหล + เศษที่ไม่ครบโหล × ราคาต่อตัว · ราคาโหล 0 = แบบเดิม (ทุกตัว × ราคาต่อตัว)
+function payByDozen(qty, cost, costDozen) {
+    const q = Math.max(0, Math.floor(Number(qty) || 0));
+    const p = Number(cost) || 0, d = Number(costDozen) || 0;
+    const v = d > 0 ? Math.floor(q / 12) * d + (q % 12) * p : q * p;
+    return Math.round(v * 100) / 100;
+}
+
 // ## GET /api/a/admacc/wp-production-preview/:companyID/:factoryID/:periodID/:workerID/:date?countryID=THA1
 // ## ดึงข้อมูลการสแกนของ worker ในวันนั้น + lookup cost จาก facSubNodeCost
 // ## ยังไม่ save — ให้ user ตรวจ/แก้ก่อนกดบันทึก
@@ -1679,6 +1688,7 @@ exports.getWpProductionPreview = async (req, res, next) => {
                     color:     i.color || '',
                     countQty:  Number(i.countQty) || 0,
                     cost:      parseFloat(i.cost ?? 0),
+                    costDozen: parseFloat(i.costDozen ?? 0) || 0,
                     subtotal:  parseFloat(i.subtotal ?? 0),
                 }))
             });
@@ -1750,6 +1760,7 @@ exports.getWpProductionPreview = async (req, res, next) => {
                        ?? candidates.find(c => (c.color || '') === '')                        // ราคา default ทุกสี
                        ?? null;
             const cost = parseFloat(entry?.cost ?? 0);
+            const costDozen = parseFloat(entry?.costDozen ?? 0) || 0;   // ★ ราคาต่อโหล
             return {
                 orderID:   r._id.orderID,
                 nodeID:    r._id.nodeID,
@@ -1758,7 +1769,8 @@ exports.getWpProductionPreview = async (req, res, next) => {
                 color,
                 countQty:  r.countQty,
                 cost,
-                subtotal:  r.countQty * cost,
+                costDozen,
+                subtotal:  payByDozen(r.countQty, cost, costDozen),
             };
         });
 
@@ -1794,7 +1806,8 @@ exports.saveWpProduction = async (req, res, next) => {
             color:     i.color || '',
             countQty:  Number(i.countQty) || 0,
             cost:      Number(i.cost)     || 0,
-            subtotal:  (Number(i.countQty) || 0) * (Number(i.cost) || 0),
+            costDozen: Number(i.costDozen) || 0,
+            subtotal:  payByDozen(i.countQty, i.cost, i.costDozen),   // ★ โหล + ตัว (ยอดของวันนี้)
         }));
         const totalAmount = recalcItems.reduce((s, i) => s + i.subtotal, 0);
 
@@ -2313,6 +2326,7 @@ exports.getManualSubnodeCost = async (req, res, next) => {
             color:         c.color ?? '',      // ''=ราคา default ทุกสี · colorID=override สี
             countryID:     c.countryID ?? '',  // legacy
             cost:          parseFloat(c.cost ?? 0),
+            costDozen:     parseFloat(c.costDozen ?? 0) || 0,   // ★ ราคาต่อโหล
         }));
         const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
         return res.json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), subnodes: rows });
@@ -2339,7 +2353,7 @@ exports.createManualPiece = async (req, res, next) => {
     const {
         companyID, factoryID, periodID, workerID,
         seasonYear, orderID, orderName, nodeID, subNodeID,
-        entryMode, qty, rate, amount, note, itemDate, manualCode,
+        entryMode, qty, rate, rateDozen, amount, note, itemDate, manualCode,
     } = req.body;
 
     if (!companyID || !factoryID || !periodID || !workerID || !seasonYear || !orderID || !nodeID || !subNodeID)
@@ -2349,11 +2363,12 @@ exports.createManualPiece = async (req, res, next) => {
 
     // คำนวณยอดตามโหมด
     const mode = entryMode === 'amount' ? 'amount' : 'qtyrate';
-    let finalQty = null, finalRate = null, finalAmount = 0;
+    let finalQty = null, finalRate = null, finalRateDozen = null, finalAmount = 0;
     if (mode === 'qtyrate') {
         finalQty   = Number(qty)  || 0;
         finalRate  = Number(rate) || 0;
-        finalAmount = finalQty * finalRate;
+        finalRateDozen = Number(rateDozen) || 0;
+        finalAmount = payByDozen(finalQty, finalRate, finalRateDozen);   // ★ โหล + ตัว
     } else {
         finalAmount = Number(amount) || 0;
     }
@@ -2392,7 +2407,7 @@ exports.createManualPiece = async (req, res, next) => {
             manualID, companyID, factoryID, periodID, workerID,
             seasonYear, orderID, orderName: orderName ?? '',
             nodeID, subNodeID,
-            entryMode: mode, qty: finalQty, rate: finalRate, amount: finalAmount,
+            entryMode: mode, qty: finalQty, rate: finalRate, rateDozen: finalRateDozen, amount: finalAmount,
             payItemID, note: note ?? '', itemDate: dateVal, status: 'a',
             createdAt: new Date(), createBy: { userID },
         }).save();

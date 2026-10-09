@@ -14,7 +14,10 @@ const orderSubNodeFlowSetCostSchema = mongoose.Schema({
     countryID :    { type: String },                 // legacy — เลิกใช้ (เก็บไว้ backward-compat)
     nodeID :       { type: String },
     subNodeID :    { type: String },
-    cost :         { type: mongoose.Types.Decimal128 },
+    cost :         { type: mongoose.Types.Decimal128 },   // ราคาต่อ "ตัว"
+    // ★ 09/10/2026: ราคาต่อ "โหล" (12 ตัว) — คิดเงิน: โหลเต็มใช้ costDozen ก่อน เศษที่ไม่ครบโหลใช้ cost (ต่อตัว)
+    //   ไม่ตั้ง/0 = คิดแบบเดิม (ทุกตัว × cost)
+    costDozen :    { type: mongoose.Types.Decimal128, default: 0 },
   }],
   
 });

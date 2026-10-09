@@ -6,6 +6,8 @@ const report2Controller = require("../../controllers/user/c-report2");
 const nodeBundleController = require("../../controllers/user/c-report2-nodebundle");
 // ## ★ รายงาน Checking (office) — เหลือกี่ตัวที่ยังไม่ได้ตรวจหลังรับคืนจาก outsource
 const checkingController = require("../../controllers/user/c-report2-checking");
+// ## ★ รายงาน no.27 สแกนรายวัน (worker-รายวันทำงานเหมา) — core เดียวกับหน้า station (buildDailyWorkerReport)
+const stationAuthController = require("../../controllers/user/c-station-auth");
 
 const checkAuthA = require('../../middleware/check-authA');
 const checkUUID = require('../../middleware/check-uuid');
@@ -106,5 +108,8 @@ router.get("/checking/detail/:companyID/:orderID/:factoryID/:node/:color/:size/:
 router.get("/checking/index/:companyID/:orderID/:factoryID", checkAuthA, checkUUID, checkingController.repCheckingIndex);
 // ## GET /api/a/report/checking/orders/:companyID/:seasonYear
 router.get("/checking/orders/:companyID/:seasonYear", checkAuthA, checkUUID, checkingController.repCheckingOrders);
+
+// ## รายงาน no.27 สแกนรายวัน · GET /api/a/report/daily-worker/:companyID/:factoryID?dateStart&dateEnd&node=all|<nodeID>
+router.get("/daily-worker/:companyID/:factoryID", checkAuthA, checkUUID, stationAuthController.repDailyWorker);
 
 module.exports = router;

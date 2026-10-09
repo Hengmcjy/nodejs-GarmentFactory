@@ -61,7 +61,7 @@ const DEFAULT_CONFIGS = [
     // Reports
     { module: 'reports', key: 'WP_EXCLUDE_ACC_CODES', value: '', label: 'รหัสบัญชีที่ยกเว้นในรายงาน รายวัน', dataType: 'string', levelHint: 'Level 2', description: 'บัญชีค่าแรง worker ที่ยกเว้นในบัญชีรายวัน (ทั้ง Level 2 → Level 3 ที่อยู่ใต้) — คั่นด้วย comma เช่น 5901,5902' },
     { module: 'reports', key: 'WP_SLIP_EXCLUDE_ACC_CODES', value: '59010001,59010002', label: 'บัญชียกเว้นในสลิปค่าแรงเหมา', dataType: 'string', levelHint: 'Level 3', description: 'รหัสบัญชีค่าแรงเหมา (auto/manual) ที่แสดงรายละเอียดในสลิป (①) แล้ว → ตัดออกจาก "รายได้อื่น" (②) กันนับซ้ำ · คั่นด้วย comma เช่น 59010001,59010002 · ไม่ตัดรายวัน/รายเดือน' },
-    { module: 'reports', key: 'WP_SLIP_REPORT_VER', value: 'ver1', options: 'ver1,ver2,ver3', label: 'เวอร์ชันรายงานสลิปค่าแรงเหมา', dataType: 'select', levelHint: '', description: 'เลือกหน้าตา (เวอร์ชัน) ของสลิปค่าแรงเหมา — แต่ละโรงงานเลือกเองได้ · ตอนนี้ใช้งานได้ ver1 · ver2/ver3 กำลังพัฒนา' },
+    { module: 'reports', key: 'WP_SLIP_REPORT_VER', value: 'ver1', options: 'ver1,ver2,ver3,ver4', label: 'เวอร์ชันรายงานสลิปค่าแรงเหมา', dataType: 'select', levelHint: '', description: 'เลือกหน้าตา (เวอร์ชัน) ของสลิปค่าแรงเหมา — แต่ละโรงงานเลือกเองได้ · ตอนนี้ใช้งานได้ ver1 · ver2/ver3 กำลังพัฒนา' },
     { module: 'reports', key: 'RPT_FOOTER_NOTE',      value: '', label: 'หมายเหตุท้ายรายงาน',         dataType: 'string', levelHint: '',        description: 'ข้อความที่แสดงด้านล่างรายงาน' },
     { module: 'reports', key: 'RPT_COMPANY_HEADER',   value: '', label: 'ชื่อบริษัทบนหัวรายงาน',     dataType: 'string', levelHint: '',        description: 'ถ้าว่างจะใช้ชื่อบริษัทในระบบ' },
     // System (Admin > Monitor ฯลฯ)

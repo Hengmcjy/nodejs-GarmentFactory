@@ -1427,113 +1427,133 @@ exports.stationLang = async (req, res, next) => {
   }
 };
 
-// GET /api/a/station/daily/report?dateStart=YYYY-MM-DD&dateEnd=YYYY-MM-DD&node=all|this  (header: x-station-token)
-//   ★ รายงานสแกนรายวัน (worker-รายวันทำงานเหมา) — ต่อวัน: order / zone / color / size / subnode → จำนวนตัว
-//   ล็อกโรงจาก token · order ที่ยัง open · node=this = เฉพาะ node ของเครื่องนี้ (default ทุก node)
-//   วันที่ = วันที่เลือกตอนสแกน (subNodeFlow.datetime) ตามเวลาไทย · ช่วงสูงสุด 366 วัน
+// ═══════════════════════════════════════════════════════════════════════════
+// ★ รายงานสแกนรายวัน (worker-รายวันทำงานเหมา) — core ใช้ร่วม 2 ที่ (09/10/2026)
+//   1) station: GET /api/a/station/daily/report?dateStart&dateEnd&node=all|this   (โรง/node จาก token)
+//   2) office : GET /api/a/report/daily-worker/:companyID/:factoryID?dateStart&dateEnd&node=all|<nodeID>  (รายงาน no.27)
+//   ต่อวัน: order / zone / color / size / subnode → จำนวนตัว · วัน = วันที่เลือกตอนสแกน (เวลาไทย) · order ที่ยัง open
+//   ★ aggregate ทุก node ครั้งเดียว แล้วกรอง node ใน JS → ได้ nodeList (dropdown ฝั่ง office) + ยอด "ตัวไม่ซ้ำ/วัน" ถูกต้องหลังกรอง
+// ═══════════════════════════════════════════════════════════════════════════
 const DAILY_REPORT_MAX_DAYS = 366;
 const keyUD = (v) => String(v == null ? '' : v).replace(/-+$/, '').toUpperCase().trim();
-exports.stationDailyReport = async (req, res, next) => {
+
+async function buildDailyWorkerReport({ companyID, factoryID, dateStart: d1, dateEnd: d2, node }) {
+  d1 = String(d1 || '').slice(0, 10); d2 = String(d2 || d1).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d1) || !/^\d{4}-\d{2}-\d{2}$/.test(d2)) throw { code: 400, message: 'dateStart/dateEnd (YYYY-MM-DD) required' };
+  const [a, b] = d1 <= d2 ? [d1, d2] : [d2, d1];
+  const dateStart = new Date(`${a}T00:00:00.000+07:00`);
+  const dateEnd   = new Date(`${b}T23:59:59.999+07:00`);
+  if (isNaN(dateStart) || isNaN(dateEnd)) throw { code: 400, message: 'bad date' };
+  if ((dateEnd - dateStart) / 86400000 > DAILY_REPORT_MAX_DAYS) throw { code: 400, message: `ช่วงวันยาวเกิน ${DAILY_REPORT_MAX_DAYS} วัน` };
+  const nodeFilter = node && node !== 'all' ? String(node) : '';
+
+  const orders = await Order.find({ companyID, orderStatus: 'open' }, { _id: 0, orderID: 1, orderColor: 1 }).lean();
+  const orderIDs = orders.map(o => o.orderID);
+  const out = { dateStart: a, dateEnd: b, node: nodeFilter || 'all', rows: [], days: [], nodeList: [], totalPieces: 0, totalEntries: 0 };
+  if (!orderIDs.length) return out;
+
+  const bc = { $ifNull: ['$productBarcodeNoReal', '$productBarcodeNo'] };
+  const cut = (pos, dig) => ({ $rtrim: { input: { $toUpper: { $substrCP: [bc, +pos || 0, +dig || 0] } }, chars: '-' } });
+  const agg = await OrderProduction.aggregate([
+    { $match: { companyID, orderID: { $in: orderIDs },
+        subNodeFlow: { $elemMatch: { factoryID, qrCode: DAILY_QR, datetime: { $gte: dateStart, $lte: dateEnd } } } } },
+    { $project: { _id: 0, orderID: 1, bc,
+        zoneBc: cut(process.env.targetIDPos, process.env.targetIDDigit),   // zone จากบาร์โค้ด (แบบเดียวกับ report node-bundle)
+        color: cut(process.env.colorPos, process.env.colorDigit),
+        size: cut(process.env.sizePos, process.env.sizeDigit),
+        style: cut(process.env.stylePos, process.env.styleDigit),
+        sf: { $filter: { input: '$subNodeFlow', as: 's', cond: { $and: [
+          { $eq: ['$$s.factoryID', factoryID] }, { $eq: ['$$s.qrCode', DAILY_QR] },
+          { $gte: ['$$s.datetime', dateStart] }, { $lte: ['$$s.datetime', dateEnd] },
+        ] } } } } },
+    { $unwind: '$sf' },
+    { $group: {
+        _id: { day: { $dateToString: { format: '%Y-%m-%d', date: '$sf.datetime', timezone: 'Asia/Bangkok' } },
+               orderID: '$orderID', style: '$style', zone: '$zoneBc', color: '$color', size: '$size',
+               nodeID: '$sf.nodeID', subNodeID: '$sf.subNodeID' },
+        qty: { $sum: 1 },
+        bcs: { $addToSet: '$bc' },
+    } },
+  ]).allowDiskUse(true);
+
+  out.nodeList = [...new Set(agg.map(r => r._id.nodeID).filter(Boolean))]
+    .sort((x, y) => String(x).localeCompare(String(y), undefined, { numeric: true }));
+  const use = nodeFilter ? agg.filter(r => r._id.nodeID === nodeFilter) : agg;
+
+  // ── ชื่อสี (จาก order) · ลำดับ size (master) · ชื่อ subnode ──
+  const colorInfo = new Map();
+  orders.forEach(o => (o.orderColor || []).forEach((c, i) => {
+    const info = { name: String((c.color && c.color.colorName) || '').trim(), code: String((c.color && c.color.colorCode) || '').trim(),
+                   value: String((c.color && c.color.colorValue) || '').trim(), seq: c.seq != null ? c.seq : i };
+    [c.color && c.color.colorID, info.code, info.name].forEach(k => { const kk = keyUD(k); if (kk) colorInfo.set(`${o.orderID}|${kk}`, info); });
+  }));
+  let sizeMap = new Map();
   try {
-    let auth; try { auth = await requireStationToken(req); } catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
-    const tok = () => genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid);
-    const { companyID, factoryID, nodeID } = auth.decoded;
-    const d1 = String(req.query.dateStart || '').slice(0, 10);
-    const d2 = String(req.query.dateEnd || d1).slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(d1) || !/^\d{4}-\d{2}-\d{2}$/.test(d2)) {
-      return res.status(400).json({ success: false, message: 'dateStart/dateEnd (YYYY-MM-DD) required', ...tok() });
-    }
-    const [a, b] = d1 <= d2 ? [d1, d2] : [d2, d1];
-    const dateStart = new Date(`${a}T00:00:00.000+07:00`);
-    const dateEnd   = new Date(`${b}T23:59:59.999+07:00`);
-    if (isNaN(dateStart) || isNaN(dateEnd)) return res.status(400).json({ success: false, message: 'bad date', ...tok() });
-    if ((dateEnd - dateStart) / 86400000 > DAILY_REPORT_MAX_DAYS) {
-      return res.status(400).json({ success: false, message: `ช่วงวันยาวเกิน ${DAILY_REPORT_MAX_DAYS} วัน`, ...tok() });
-    }
-    const onlyThisNode = String(req.query.node || 'all') === 'this';
-
-    const orders = await Order.find({ companyID, orderStatus: 'open' }, { _id: 0, orderID: 1, orderColor: 1 }).lean();
-    const orderIDs = orders.map(o => o.orderID);
-    const empty = { success: true, dateStart: a, dateEnd: b, node: onlyThisNode ? nodeID : 'all', rows: [], days: [], totalPieces: 0, totalEntries: 0 };
-    if (!orderIDs.length) return res.status(200).json({ ...empty, ...tok() });
-
-    const em = { factoryID, qrCode: DAILY_QR, datetime: { $gte: dateStart, $lte: dateEnd } };
-    if (onlyThisNode) em.nodeID = nodeID;
-    const bc = { $ifNull: ['$productBarcodeNoReal', '$productBarcodeNo'] };
-    const cut = (pos, dig) => ({ $rtrim: { input: { $toUpper: { $substrCP: [bc, +pos || 0, +dig || 0] } }, chars: '-' } });
-
-    const agg = await OrderProduction.aggregate([
-      { $match: { companyID, orderID: { $in: orderIDs }, subNodeFlow: { $elemMatch: em } } },
-      { $project: { _id: 0, orderID: 1, bc,
-          zoneBc: cut(process.env.targetIDPos, process.env.targetIDDigit),   // zone จากบาร์โค้ด (แบบเดียวกับ report node-bundle)
-          color: cut(process.env.colorPos, process.env.colorDigit),
-          size: cut(process.env.sizePos, process.env.sizeDigit),
-          style: cut(process.env.stylePos, process.env.styleDigit),
-          sf: { $filter: { input: '$subNodeFlow', as: 's', cond: { $and: [
-            { $eq: ['$$s.factoryID', factoryID] }, { $eq: ['$$s.qrCode', DAILY_QR] },
-            { $gte: ['$$s.datetime', dateStart] }, { $lte: ['$$s.datetime', dateEnd] },
-            ...(onlyThisNode ? [{ $eq: ['$$s.nodeID', nodeID] }] : []),
-          ] } } } } },
-      { $unwind: '$sf' },
-      { $group: {
-          _id: { day: { $dateToString: { format: '%Y-%m-%d', date: '$sf.datetime', timezone: 'Asia/Bangkok' } },
-                 orderID: '$orderID', style: '$style', zone: '$zoneBc', color: '$color', size: '$size',
-                 nodeID: '$sf.nodeID', subNodeID: '$sf.subNodeID' },
-          qty: { $sum: 1 },
-          bcs: { $addToSet: '$bc' },
-      } },
-    ]).allowDiskUse(true);
-
-    // ── ชื่อสี (จาก order) · ลำดับ size (master) · ชื่อ subnode ──
-    const colorInfo = new Map();   // orderID|KEY → info
-    orders.forEach(o => (o.orderColor || []).forEach((c, i) => {
-      const info = { name: String((c.color && c.color.colorName) || '').trim(), code: String((c.color && c.color.colorCode) || '').trim(),
-                     value: String((c.color && c.color.colorValue) || '').trim(), seq: c.seq != null ? c.seq : i };
-      [c.color && c.color.colorID, info.code, info.name].forEach(k => { const kk = keyUD(k); if (kk) colorInfo.set(`${o.orderID}|${kk}`, info); });
-    }));
-    let sizeMap = new Map();
-    try {
-      const Size = require('../../models/m-size');
-      (await Size.find({}, { size: 1, seq: 1 }).lean()).forEach(s => {
-        const id = keyUD(s.size && s.size.sizeID);
-        if (id) sizeMap.set(id, { name: String((s.size && s.size.sizeName) || '').trim() || id, seq: s.seq != null ? s.seq : 9999 });
-      });
-    } catch (e) { sizeMap = new Map(); }
-    const subNames = new Map();
-    (await getSubNodeFlowC().find({ companyID }, { _id: 0, nodeID: 1, subNodeID: 1, subNodeName: 1 }).lean())
-      .forEach(m => subNames.set(`${m.nodeID}|${m.subNodeID}`, m.subNodeName));
-
-    const dayMap = new Map();   // day → { entries, set }
-    const rows = agg.map(r => {
-      const k = r._id;
-      const ci = colorInfo.get(`${k.orderID}|${keyUD(k.color)}`);
-      const sm = sizeMap.get(keyUD(k.size));
-      if (!dayMap.has(k.day)) dayMap.set(k.day, { entries: 0, set: new Set() });
-      const dm = dayMap.get(k.day); dm.entries += r.qty; r.bcs.forEach(x => dm.set.add(x));
-      return {
-        day: k.day, orderID: k.orderID, style: k.style || k.orderID, zone: k.zone || '',
-        colorCode: (ci && ci.code) || k.color || '', colorName: (ci && ci.name) || '', colorValue: (ci && ci.value) || '', colorSeq: ci ? ci.seq : 9999,
-        sizeCode: k.size || '', sizeName: (sm && sm.name) || k.size || '', sizeSeq: sm ? sm.seq : 9999,
-        nodeID: k.nodeID || '', subNodeID: k.subNodeID || '', subNodeName: subNames.get(`${k.nodeID}|${k.subNodeID}`) || k.subNodeID || '',
-        qty: r.qty,
-      };
-    }).sort((x, y) => (x.day < y.day ? -1 : x.day > y.day ? 1 : 0)
-      || String(x.orderID).localeCompare(String(y.orderID)) || String(x.zone).localeCompare(String(y.zone))
-      || (x.colorSeq - y.colorSeq) || String(x.colorCode).localeCompare(String(y.colorCode))
-      || (x.sizeSeq - y.sizeSeq) || String(x.nodeID).localeCompare(String(y.nodeID), undefined, { numeric: true })
-      || String(x.subNodeID).localeCompare(String(y.subNodeID), undefined, { numeric: true }));
-
-    const days = [...dayMap.entries()].sort((x, y) => (x[0] < y[0] ? -1 : 1))
-      .map(([day, v]) => ({ day, pieces: v.set.size, entries: v.entries }));
-    return res.status(200).json({
-      ...empty, rows, days,
-      totalPieces: days.reduce((s, d) => s + d.pieces, 0),
-      totalEntries: days.reduce((s, d) => s + d.entries, 0),
-      ...tok(),
+    const Size = require('../../models/m-size');
+    (await Size.find({}, { size: 1, seq: 1 }).lean()).forEach(s => {
+      const id = keyUD(s.size && s.size.sizeID);
+      if (id) sizeMap.set(id, { name: String((s.size && s.size.sizeName) || '').trim() || id, seq: s.seq != null ? s.seq : 9999 });
     });
+  } catch (e) { sizeMap = new Map(); }
+  const subNames = new Map();
+  (await getSubNodeFlowC().find({ companyID }, { _id: 0, nodeID: 1, subNodeID: 1, subNodeName: 1 }).lean())
+    .forEach(m => subNames.set(`${m.nodeID}|${m.subNodeID}`, m.subNodeName));
+
+  const dayMap = new Map();
+  out.rows = use.map(r => {
+    const k = r._id;
+    const ci = colorInfo.get(`${k.orderID}|${keyUD(k.color)}`);
+    const sm = sizeMap.get(keyUD(k.size));
+    if (!dayMap.has(k.day)) dayMap.set(k.day, { entries: 0, set: new Set() });
+    const dm = dayMap.get(k.day); dm.entries += r.qty; r.bcs.forEach(x => dm.set.add(x));
+    return {
+      day: k.day, orderID: k.orderID, style: k.style || k.orderID, zone: k.zone || '',
+      colorCode: (ci && ci.code) || k.color || '', colorName: (ci && ci.name) || '', colorValue: (ci && ci.value) || '', colorSeq: ci ? ci.seq : 9999,
+      sizeCode: k.size || '', sizeName: (sm && sm.name) || k.size || '', sizeSeq: sm ? sm.seq : 9999,
+      nodeID: k.nodeID || '', subNodeID: k.subNodeID || '', subNodeName: subNames.get(`${k.nodeID}|${k.subNodeID}`) || k.subNodeID || '',
+      qty: r.qty,
+    };
+  }).sort((x, y) => (x.day < y.day ? -1 : x.day > y.day ? 1 : 0)
+    || String(x.orderID).localeCompare(String(y.orderID)) || String(x.zone).localeCompare(String(y.zone))
+    || (x.colorSeq - y.colorSeq) || String(x.colorCode).localeCompare(String(y.colorCode))
+    || (x.sizeSeq - y.sizeSeq) || String(x.nodeID).localeCompare(String(y.nodeID), undefined, { numeric: true })
+    || String(x.subNodeID).localeCompare(String(y.subNodeID), undefined, { numeric: true }));
+
+  out.days = [...dayMap.entries()].sort((x, y) => (x[0] < y[0] ? -1 : 1))
+    .map(([day, v]) => ({ day, pieces: v.set.size, entries: v.entries }));
+  out.totalPieces = out.days.reduce((s, d) => s + d.pieces, 0);
+  out.totalEntries = out.days.reduce((s, d) => s + d.entries, 0);
+  return out;
+}
+exports.buildDailyWorkerReport = buildDailyWorkerReport;
+
+// GET /api/a/station/daily/report?dateStart=YYYY-MM-DD&dateEnd=YYYY-MM-DD&node=all|this  (header: x-station-token)
+exports.stationDailyReport = async (req, res, next) => {
+  let auth; try { auth = await requireStationToken(req); } catch (e) { return res.status(e.code || 401).json(e.body || { success: false }); }
+  const tok = () => genStationTokenPack(auth.ns, auth.stationID, auth.decoded.uuid);
+  try {
+    const { companyID, factoryID, nodeID } = auth.decoded;
+    const out = await buildDailyWorkerReport({ companyID, factoryID, dateStart: req.query.dateStart, dateEnd: req.query.dateEnd,
+      node: String(req.query.node || 'all') === 'this' ? nodeID : 'all' });
+    return res.status(200).json({ success: true, ...out, ...tok() });
   } catch (err) {
+    if (err && err.code === 400) return res.status(400).json({ success: false, message: err.message, ...tok() });
     console.error('stationDailyReport error:', String(err && err.message || err));
     return res.status(500).json({ success: false, message: String(err && err.message || err) });
+  }
+};
+
+// GET /api/a/report/daily-worker/:companyID/:factoryID?dateStart&dateEnd&node=all|<nodeID>  (office · checkAuthA)
+//   ★ รายงาน no.27 ในเมนู Report ของเว็บหลัก — ข้อมูลชุดเดียวกับ station
+exports.repDailyWorker = async (req, res, next) => {
+  try {
+    const out = await buildDailyWorkerReport({ companyID: req.params.companyID, factoryID: req.params.factoryID,
+      dateStart: req.query.dateStart, dateEnd: req.query.dateEnd, node: String(req.query.node || 'all') });
+    const token = await ShareFunc.genATokenSet(req.userData.tokenSet, process.env.TOKENExpiresIn);
+    return res.status(200).json({ success: true, token, expiresIn: Number(process.env.TOKENExpiresIn), ...out });
+  } catch (err) {
+    if (err && err.code === 400) return res.status(400).json({ success: false, message: err.message });
+    return next(err);
   }
 };
 

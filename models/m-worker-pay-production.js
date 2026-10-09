@@ -24,7 +24,8 @@ const workerPayProductionSchema = new mongoose.Schema({
         color:         { type: String, default: '' },   // colorID จาก barcode — override สี (ถ้ามี)
         countQty:      { type: Number, default: 0 },
         cost:          { type: Number, default: 0 },    // บาท/ชิ้น
-        subtotal:      { type: Number, default: 0 },    // countQty × cost
+        costDozen:     { type: Number, default: 0 },    // ★ บาท/โหล (09/10/2026) · 0 = ไม่ใช้
+        subtotal:      { type: Number, default: 0 },    // โหลเต็ม×costDozen + เศษ×cost (costDozen=0 → countQty × cost)
     }],
 
     totalAmount: { type: Number, default: 0 },     // รวมวันนี้

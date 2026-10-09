@@ -8179,6 +8179,7 @@ exports.getOrderSubNodeCostBySeasonYear= async (companyID, factoryID, orderIDArr
   await this.asyncForEach(orSubCost, async (item1) => {
     await this.asyncForEach2(item1.facSubNodeCost, async (item2) => {
       item2.cost = parseFloat(item2.cost);
+      item2.costDozen = parseFloat(item2.costDozen || 0) || 0;   // ★ ราคาต่อโหล (09/10/2026)
     });
   });
 

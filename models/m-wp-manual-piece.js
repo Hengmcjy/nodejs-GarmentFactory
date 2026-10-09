@@ -24,6 +24,7 @@ const wpManualPieceSchema = new mongoose.Schema({
     entryMode:  { type: String, enum: ['qtyrate', 'amount'], default: 'qtyrate' },
     qty:        { type: Number, default: null },    // จำนวนชิ้น (null ถ้าโหมด amount)
     rate:       { type: Number, default: null },    // บาท/ชิ้น (null ถ้าโหมด amount)
+    rateDozen:  { type: Number, default: null },    // ★ บาท/โหล (09/10/2026) · โหลเต็มคิดราคานี้ เศษคิด rate
     amount:     { type: Number, default: 0 },       // ยอดรวม (qty*rate หรือกรอกตรง)
 
     payItemID:  { type: String, default: '' },      // ref → WorkerPayItem (590102) ที่สร้างคู่กัน
